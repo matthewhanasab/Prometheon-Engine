@@ -1,10 +1,5 @@
 import type { NextConfig } from "next";
-import path from "path";
 
-const nextConfig: NextConfig = {
-  experimental: {
-    turbopackRoot: path.resolve(__dirname),
-  },
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
