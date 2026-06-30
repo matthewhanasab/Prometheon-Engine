@@ -216,7 +216,7 @@ export default function CalculatorPage() {
                     <Tooltip
                       contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, fontFamily: "IBM Plex Mono" }}
                       labelStyle={{ color: "var(--accent-gold)" }}
-                      formatter={(v: number) => fmtDollar(v)}
+                      formatter={(v: any) => fmtDollar(v)}
                       labelFormatter={(l) => `Year ${l}`}
                     />
                     <Legend wrapperStyle={{ fontSize: 12, fontFamily: "IBM Plex Mono", paddingTop: 8 }} />

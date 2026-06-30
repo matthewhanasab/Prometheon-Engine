@@ -339,7 +339,7 @@ export default function ComparePage() {
                 />
                 <Tooltip
                   contentStyle={{ background: "#1C2333", border: "1px solid #2E4A6E", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12, color: "#F1F5F9" }}
-                  formatter={(v: number) => [`${v}/100`]}
+                  formatter={(v: any) => [`${v}/100`]}
                 />
               </RadarChart>
             </ResponsiveContainer>

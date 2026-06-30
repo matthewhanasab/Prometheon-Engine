@@ -54,7 +54,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
               fontSize: 12,
               color: "#F1F5F9",
             }}
-            formatter={(v: number) => [fmt(v), "Price"]}
+            formatter={(v: any) => [fmt(v), "Price"]}
             labelStyle={{ color: "#64748B", fontSize: 10, marginBottom: 4 }}
           />
           <Area

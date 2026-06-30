@@ -64,7 +64,7 @@ function last(arr: FredSeries[]): number | null {
   return arr.length ? arr[arr.length - 1].value : null;
 }
 
-function tickDate(str: string): string {
+function tickDate(str: any): string {
   // "2023-04-01" → "Apr '23"
   const d = new Date(str + "T00:00:00");
   return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
@@ -271,7 +271,7 @@ function SpreadChart({ data }: { data: FredSeries[] }) {
         <YAx unit="%" />
         <Tooltip
           {...ttStyle}
-          formatter={(v: number) => [`${v.toFixed(2)}%`, "Spread"]}
+          formatter={(v: any) => [`${v.toFixed(2)}%`, "Spread"]}
           labelFormatter={tickDate}
         />
         <ReferenceLine y={0} stroke="#64748B" strokeWidth={1} />
@@ -574,7 +574,7 @@ export default function MacroPage() {
               <YAx unit="%" />
               <Tooltip
                 {...ttStyle}
-                formatter={(v: number, name: string) => [
+                formatter={(v: any, name: any) => [
                   `${fmt(v)}%`,
                   name === "ffr"
                     ? "Fed Funds"
@@ -637,7 +637,7 @@ export default function MacroPage() {
               <YAx unit="%" />
               <Tooltip
                 {...ttStyle}
-                formatter={(v: number, name: string) => [
+                formatter={(v: any, name: any) => [
                   `${fmt(v)}%`,
                   name === "cpi" ? "CPI YoY" : "PCE YoY",
                 ]}
@@ -688,7 +688,7 @@ export default function MacroPage() {
               <YAx unit="%" />
               <Tooltip
                 {...ttStyle}
-                formatter={(v: number) => [`${fmt(v)}%`, "10Y Breakeven"]}
+                formatter={(v: any) => [`${fmt(v)}%`, "10Y Breakeven"]}
                 labelFormatter={tickDate}
               />
               <ReferenceLine
@@ -736,7 +736,7 @@ export default function MacroPage() {
               <YAx unit="%" />
               <Tooltip
                 {...ttStyle}
-                formatter={(v: number) => [`${fmt(v)}%`, "Unemployment"]}
+                formatter={(v: any) => [`${fmt(v)}%`, "Unemployment"]}
                 labelFormatter={tickDate}
               />
               <Line
@@ -762,7 +762,7 @@ export default function MacroPage() {
               <YAx />
               <Tooltip
                 {...ttStyle}
-                formatter={(v: number) => [fmtK(v), "Init. Claims"]}
+                formatter={(v: any) => [fmtK(v), "Init. Claims"]}
                 labelFormatter={tickDate}
               />
               <Area
@@ -789,7 +789,7 @@ export default function MacroPage() {
               <YAx />
               <Tooltip
                 {...ttStyle}
-                formatter={(v: number) => [fmt(v, 1), "Sentiment"]}
+                formatter={(v: any) => [fmt(v, 1), "Sentiment"]}
                 labelFormatter={tickDate}
               />
               <Area
@@ -836,7 +836,7 @@ export default function MacroPage() {
               <YAx />
               <Tooltip
                 {...ttStyle}
-                formatter={(v: number) => [fmt(v, 1), "VIX"]}
+                formatter={(v: any) => [fmt(v, 1), "VIX"]}
                 labelFormatter={tickDate}
               />
               <ReferenceLine
@@ -888,7 +888,7 @@ export default function MacroPage() {
               <YAx />
               <Tooltip
                 {...ttStyle}
-                formatter={(v: number) => [fmt(v, 1), "Sentiment"]}
+                formatter={(v: any) => [fmt(v, 1), "Sentiment"]}
                 labelFormatter={tickDate}
               />
               <Area

@@ -446,7 +446,7 @@ export default function ChartsPage() {
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: number) => [fmtVal(v), "Revenue"]}
+                  formatter={(v: any) => [fmtVal(v), "Revenue"]}
                 />
                 <Bar dataKey="value" fill="#C9A84C" radius={[2, 2, 0, 0]} isAnimationActive={false}
                   label={
@@ -470,7 +470,7 @@ export default function ChartsPage() {
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: number) => [fmtVal(v), "Operating CF"]}
+                  formatter={(v: any) => [fmtVal(v), "Operating CF"]}
                 />
                 <Bar dataKey="value" fill="#ffd600" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
@@ -488,7 +488,7 @@ export default function ChartsPage() {
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: number) => [fmtVal(v), "Operating Income"]}
+                  formatter={(v: any) => [fmtVal(v), "Operating Income"]}
                 />
                 <Bar dataKey="value" radius={[2, 2, 0, 0]} isAnimationActive={false}>
                   {opIncData.map((entry, i) => (
@@ -512,7 +512,7 @@ export default function ChartsPage() {
                 <YAxis tickFormatter={pctTick} tick={Y_TICK} axisLine={false} tickLine={false} width={44} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: number, name: string) => [
+                  formatter={(v: any, name: any) => [
                     `${v.toFixed(1)}%`,
                     name === "gross" ? "Gross Margin" : "Net Margin",
                   ]}
@@ -559,7 +559,7 @@ export default function ChartsPage() {
                 />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: number) => [`$${v.toFixed(2)}`, "EPS (Diluted)"]}
+                  formatter={(v: any) => [`$${v.toFixed(2)}`, "EPS (Diluted)"]}
                 />
                 <Bar dataKey="value" radius={[2, 2, 0, 0]} isAnimationActive={false}>
                   {epsData.map((entry, i) => (
@@ -584,7 +584,7 @@ export default function ChartsPage() {
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: number) => [fmtVal(v), "Free Cash Flow"]}
+                  formatter={(v: any) => [fmtVal(v), "Free Cash Flow"]}
                 />
                 <Bar dataKey="value" radius={[2, 2, 0, 0]} isAnimationActive={false}>
                   {fcfData.map((entry, i) => (
@@ -608,7 +608,7 @@ export default function ChartsPage() {
                 <YAxis tickFormatter={sharesTick} tick={Y_TICK} axisLine={false} tickLine={false} width={52} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: number) => [fmtShares(v), "Shares Outstanding"]}
+                  formatter={(v: any) => [fmtShares(v), "Shares Outstanding"]}
                 />
                 <Bar dataKey="value" fill="#76ff03" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
@@ -625,7 +625,7 @@ export default function ChartsPage() {
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: number, name: string) => [
+                  formatter={(v: any, name: any) => [
                     fmtVal(v),
                     name === "assets" ? "Current Assets" : "Current Liabilities",
                   ]}

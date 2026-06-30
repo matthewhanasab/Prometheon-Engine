@@ -374,7 +374,7 @@ function CombinedChart({ stock, assumptions }: { stock: StockData; assumptions: 
             contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, fontFamily: "IBM Plex Mono" }}
             labelStyle={{ color: "var(--accent-gold)" }}
             itemStyle={{ color: "var(--text-primary)" }}
-            formatter={(v: number) => `$${v.toFixed(2)}`}
+            formatter={(v: any) => `$${v.toFixed(2)}`}
           />
           <Legend wrapperStyle={{ fontSize: 12, fontFamily: "IBM Plex Mono", paddingTop: 12 }} />
           <ReferenceLine y={stock.price} stroke="var(--accent-gold)" strokeDasharray="6 3" label={{ value: `Current $${stock.price.toFixed(2)}`, fill: "var(--accent-gold)", fontSize: 11, fontFamily: "IBM Plex Mono" }} />
