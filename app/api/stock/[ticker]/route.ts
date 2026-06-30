@@ -28,7 +28,7 @@ export async function GET(
     }
 
     // Merge Finnhub price target into stock object
-    if (priceTarget && !stock.analystTarget) stock.analystTarget = priceTarget;
+    if (priceTarget && !stock.analystTarget) (stock as any).analystTarget = priceTarget;
     return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y });
   } catch (e) {
     console.error(e);
