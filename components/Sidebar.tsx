@@ -21,29 +21,29 @@ export default function Sidebar() {
 
   return (
     <aside style={{
-      width: 240,
-      minWidth: 240,
+      width: 280,
+      minWidth: 280,
       background: "var(--bg-primary)",
       borderRight: "1px solid var(--border)",
       display: "flex",
       flexDirection: "column",
-      padding: "1.75rem 0",
+      padding: "2rem 0",
     }}>
       {/* Logo */}
-      <div style={{ padding: "0 1.5rem 1.75rem" }}>
-        <Link href="/research" style={{ display: "block", lineHeight: 0 }}>
+      <div style={{ padding: "0 1.5rem 2rem", textAlign: "center" }}>
+        <Link href="/research" style={{ display: "inline-block", lineHeight: 0 }}>
           <Image
             src="/logo_transparent.png"
             alt="Prometheon Engine"
-            width={180}
-            height={58}
-            style={{ objectFit: "contain", objectPosition: "left" }}
+            width={220}
+            height={70}
+            style={{ objectFit: "contain" }}
             priority
           />
         </Link>
       </div>
 
-      <div style={{ borderTop: "1px solid var(--border)", marginBottom: "1rem" }} />
+      <div style={{ borderTop: "1px solid var(--border)", marginBottom: "1.25rem" }} />
 
       <nav style={{ flex: 1 }}>
         {NAV.map(({ href, label }) => {
@@ -51,13 +51,13 @@ export default function Sidebar() {
           return (
             <Link key={href} href={href} style={{
               display: "block",
-              padding: "0.7rem 1.5rem",
+              padding: "0.75rem 1.75rem",
               fontSize: "0.9rem",
               fontFamily: "'Inter', sans-serif",
               fontWeight: active ? 600 : 400,
               color: active ? "var(--text-primary)" : "var(--text-secondary)",
               textDecoration: "none",
-              borderLeft: active ? "2px solid var(--accent-gold)" : "2px solid transparent",
+              borderLeft: active ? "3px solid var(--accent-gold)" : "3px solid transparent",
               background: active ? "var(--bg-elevated)" : "transparent",
               transition: "all 0.1s ease",
             }}>
