@@ -303,7 +303,7 @@ export default function ChartsPage() {
   const profile = data?.profile;
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)", maxWidth: 900 }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <h1
         style={{
