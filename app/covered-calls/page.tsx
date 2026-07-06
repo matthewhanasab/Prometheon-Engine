@@ -20,7 +20,7 @@ function blackScholesATM(price: number, iv: number, dte: number): number {
 }
 
 function fmt(n: number | undefined | null, d = 2): string {
-  if (n == null) return "â€”";
+  if (n == null) return "—";
   return n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
@@ -214,7 +214,7 @@ export default function CoveredCallsPage() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
                 {[
                   { label: "Est. Premium",       value: `$${fmt(premium)}` },
-                  { label: "Premium Range",       value: `$${fmt(premium * 0.85)} â€“ $${fmt(premium * 1.15)}` },
+                  { label: "Premium Range",       value: `$${fmt(premium * 0.85)} – $${fmt(premium * 1.15)}` },
                   { label: "Yield",               value: `${fmt(yld)}%` },
                   { label: "Annualized Yield",    value: `${fmt(annYield)}%` },
                 ].map(s => (
@@ -285,7 +285,7 @@ export default function CoveredCallsPage() {
         {[
           {
             title: "What is a Covered Call?",
-            body: "A covered call is an options strategy where you hold shares of a stock and sell (write) call options on the same stock. You collect the option premium upfront as income. The buyer of the call has the right â€” but not the obligation â€” to buy your shares at the strike price before expiration.",
+            body: "A covered call is an options strategy where you hold shares of a stock and sell (write) call options on the same stock. You collect the option premium upfront as income. The buyer of the call has the right — but not the obligation — to buy your shares at the strike price before expiration.",
           },
           {
             title: "When to Use",
@@ -293,7 +293,7 @@ export default function CoveredCallsPage() {
           },
           {
             title: "Risk / Reward",
-            body: "Your upside is capped at the strike price â€” if the stock surges above it, you still deliver shares at the strike. The premium provides a buffer against downside, but you still bear the full risk of stock decline. The trade-off: income now vs. potential gains foregone.",
+            body: "Your upside is capped at the strike price — if the stock surges above it, you still deliver shares at the strike. The premium provides a buffer against downside, but you still bear the full risk of stock decline. The trade-off: income now vs. potential gains foregone.",
           },
         ].map(card => (
           <div key={card.title} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "1.1rem 1.25rem" }}>

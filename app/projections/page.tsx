@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import {
@@ -18,12 +18,12 @@ const MONO: React.CSSProperties = {
 };
 
 function fmt(n: number | null | undefined, decimals = 2): string {
-  if (n == null || isNaN(n)) return "â€”";
+  if (n == null || isNaN(n)) return "—";
   return n.toFixed(decimals);
 }
 
 function fmtB(n: number | null | undefined): string {
-  if (n == null || isNaN(n)) return "â€”";
+  if (n == null || isNaN(n)) return "—";
   if (Math.abs(n) >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
   if (Math.abs(n) >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
   return `$${n.toFixed(2)}`;
@@ -267,27 +267,27 @@ function ProjectionTable({ rows, currentPrice }: { rows: ProjectionRow[]; curren
               <td style={{ padding: "6px 10px", color: "var(--accent-gold)", textAlign: "right", fontWeight: 600 }}>{row.year}</td>
               <td style={{ padding: "6px 10px", textAlign: "right" }}>{fmtB(row.revenue)}</td>
               <td style={{ padding: "6px 10px", textAlign: "right", color: row.revGrowth == null ? "var(--text-secondary)" : "var(--text-primary)" }}>
-                {row.revGrowth == null ? "â€”" : `${row.revGrowth.toFixed(1)}%`}
+                {row.revGrowth == null ? "—" : `${row.revGrowth.toFixed(1)}%`}
               </td>
               <td style={{ padding: "6px 10px", textAlign: "right" }}>{fmtB(row.netIncome)}</td>
               <td style={{ padding: "6px 10px", textAlign: "right", color: row.niGrowth == null ? "var(--text-secondary)" : "var(--text-primary)" }}>
-                {row.niGrowth == null ? "â€”" : `${row.niGrowth.toFixed(1)}%`}
+                {row.niGrowth == null ? "—" : `${row.niGrowth.toFixed(1)}%`}
               </td>
               <td style={{ padding: "6px 10px", textAlign: "right" }}>{(row.netMargin * 100).toFixed(1)}%</td>
               <td style={{ padding: "6px 10px", textAlign: "right" }}>${fmt(row.eps)}</td>
-              <td style={{ padding: "6px 10px", textAlign: "right" }}>{row.peLow ?? "â€”"}</td>
-              <td style={{ padding: "6px 10px", textAlign: "right" }}>{row.peHigh ?? "â€”"}</td>
+              <td style={{ padding: "6px 10px", textAlign: "right" }}>{row.peLow ?? "—"}</td>
+              <td style={{ padding: "6px 10px", textAlign: "right" }}>{row.peHigh ?? "—"}</td>
               <td style={{ padding: "6px 10px", textAlign: "right", color: "var(--positive)" }}>
-                {row.spLow != null ? `$${fmt(row.spLow)}` : "â€”"}
+                {row.spLow != null ? `$${fmt(row.spLow)}` : "—"}
               </td>
               <td style={{ padding: "6px 10px", textAlign: "right", color: "var(--positive)" }}>
-                {row.spHigh != null ? `$${fmt(row.spHigh)}` : "â€”"}
+                {row.spHigh != null ? `$${fmt(row.spHigh)}` : "—"}
               </td>
               <td style={{ padding: "6px 10px", textAlign: "right", color: row.cagrLow != null && row.cagrLow >= 0 ? "var(--positive)" : "var(--negative)" }}>
-                {row.cagrLow != null ? `${(row.cagrLow * 100).toFixed(1)}%` : "â€”"}
+                {row.cagrLow != null ? `${(row.cagrLow * 100).toFixed(1)}%` : "—"}
               </td>
               <td style={{ padding: "6px 10px", textAlign: "right", color: row.cagrHigh != null && row.cagrHigh >= 0 ? "var(--positive)" : "var(--negative)" }}>
-                {row.cagrHigh != null ? `${(row.cagrHigh * 100).toFixed(1)}%` : "â€”"}
+                {row.cagrHigh != null ? `${(row.cagrHigh * 100).toFixed(1)}%` : "—"}
               </td>
             </tr>
           ))}
@@ -456,7 +456,7 @@ export default function ProjectionsPage() {
           value={inputVal}
           onChange={e => setInputVal(e.target.value)}
           onKeyDown={e => e.key === "Enter" && loadStock()}
-          placeholder="Enter ticker symbolâ€¦"
+          placeholder="Enter ticker symbol..."
           style={{
             background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6,
             color: "var(--text-primary)", padding: "9px 14px", fontSize: 14, outline: "none",
@@ -471,7 +471,7 @@ export default function ProjectionsPage() {
             padding: "9px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif",
           }}
         >
-          {loading ? "Loadingâ€¦" : "Load"}
+          {loading ? "Loading..." : "Load"}
         </button>
         {error && <span style={{ color: "var(--negative)", fontSize: 13 }}>{error}</span>}
       </div>
@@ -481,7 +481,7 @@ export default function ProjectionsPage() {
           {/* Base Year Panel */}
           <div style={{ marginBottom: 32 }}>
             <h2 style={{ ...HEADING, fontSize: 18, margin: "0 0 14px" }}>
-              {ticker} â€” Base Year ({CURRENT_YEAR})
+              {ticker} — Base Year ({CURRENT_YEAR})
             </h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
               <MetricCard label="Current Price" value={`$${stock.price.toFixed(2)}`} />
@@ -489,7 +489,7 @@ export default function ProjectionsPage() {
               <MetricCard label="Net Income TTM" value={fmtB(stock.netIncome)} />
               <MetricCard label="Net Margin" value={`${(stock.netMargin * 100).toFixed(1)}%`} />
               <MetricCard label="EPS TTM" value={`$${stock.eps.toFixed(2)}`} />
-              <MetricCard label="Shares Out." value={shares ? `${(shares / 1e6).toFixed(0)}M` : "â€”"} />
+              <MetricCard label="Shares Out." value={shares ? `${(shares / 1e6).toFixed(0)}M` : "—"} />
             </div>
           </div>
 

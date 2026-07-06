@@ -3,7 +3,7 @@ import { useState } from "react";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function fmtLarge(n: number | null | undefined): string {
-  if (n == null || !isFinite(n)) return "â€”";
+  if (n == null || !isFinite(n)) return "—";
   const abs = Math.abs(n);
   const sign = n < 0 ? "-" : "";
   if (abs >= 1e12) return `${sign}$${(abs / 1e12).toFixed(2)}T`;
@@ -13,7 +13,7 @@ function fmtLarge(n: number | null | undefined): string {
   return `${sign}$${abs.toFixed(2)}`;
 }
 function fmtEps(n: number | null | undefined): string {
-  if (n == null || !isFinite(n)) return "â€”";
+  if (n == null || !isFinite(n)) return "—";
   return `$${n.toFixed(2)}`;
 }
 function yoy(current: number | null | undefined, prev: number | null | undefined): number | null {
@@ -90,7 +90,7 @@ const CASHFLOW_ROWS: RowDef[] = [
 // â”€â”€ Period label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function periodLabel(item: any, isQuarterly: boolean): string {
   const d = item.date ?? item.calendarYear ?? "";
-  if (!d) return "â€”";
+  if (!d) return "—";
   if (isQuarterly) {
     const q = item.period ?? "";
     return `${q} ${String(d).slice(0, 4)}`;
@@ -254,7 +254,7 @@ export default function FinancialsPage() {
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
       <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'Inter',sans-serif" }}>
-        Income statement · Balance sheet · Cash flow â€” annual &amp; quarterly
+        Income statement · Balance sheet · Cash flow — annual &amp; quarterly
       </div>
 
       {/* Search form */}

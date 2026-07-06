@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import {
@@ -165,7 +165,7 @@ export default function CalculatorPage() {
               <input type="number" value={inputs.years} min={1} max={50} onChange={e => handleChange("years", parseInt(e.target.value) || 1)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Annual Return Rate â€” Base (%)</label>
+              <label style={labelStyle}>Annual Return Rate — Base (%)</label>
               <input type="number" value={inputs.baseRate} step={0.5} onChange={e => handleChange("baseRate", parseFloat(e.target.value) || 0)} style={inputStyle} />
             </div>
             <div>
@@ -242,7 +242,7 @@ export default function CalculatorPage() {
             <strong style={{ color: "var(--accent-gold)" }}>Insight: </strong>
             The difference between the high ({(results.inputs.baseRate + results.inputs.variance).toFixed(1)}%) and low ({(results.inputs.baseRate - results.inputs.variance).toFixed(1)}%) return scenarios over {results.inputs.years} years is{" "}
             <span style={{ ...MONO, color: "var(--positive)", fontWeight: 600 }}>{fmtDollar(results.high.final - results.low.final)}</span>
-            {" "}â€” a {((results.high.final / results.low.final - 1) * 100).toFixed(0)}% difference from an identical starting position.
+            {" "}— a {((results.high.final / results.low.final - 1) * 100).toFixed(0)}% difference from an identical starting position.
           </div>
 
           {/* Year-by-year table */}
