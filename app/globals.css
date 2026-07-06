@@ -33,3 +33,14 @@ html, body {
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg-elevated); }
 ::-webkit-scrollbar-thumb { background: var(--border-active); border-radius: 2px; }
+
+@media (max-width: 767px) {
+  html { font-size: clamp(14px, 4vw, 16px); }
+
+  /* On mobile the sidebar is a fixed overlay, so main fills 100% width */
+  body { overflow: hidden; }
+  .main-content {
+    padding: 4.5rem 1rem 2rem !important;
+    width: 100%;
+  }
+}
