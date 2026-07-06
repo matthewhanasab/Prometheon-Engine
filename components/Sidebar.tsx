@@ -21,8 +21,8 @@ export default function Sidebar() {
 
   return (
     <aside style={{
-      width: 280,
-      minWidth: 280,
+      width: 220,
+      minWidth: 220,
       background: "var(--bg-primary)",
       borderRight: "1px solid var(--border)",
       display: "flex",
@@ -35,8 +35,8 @@ export default function Sidebar() {
           <Image
             src="/logo_transparent.png"
             alt="Prometheon Engine"
-            width={220}
-            height={70}
+            width={180}
+            height={58}
             style={{ objectFit: "contain" }}
             priority
           />
@@ -52,7 +52,7 @@ export default function Sidebar() {
             <Link key={href} href={href} style={{
               display: "block",
               padding: "0.75rem 1.75rem",
-              fontSize: "0.9rem",
+              fontSize: "0.85rem",
               fontFamily: "'Inter', sans-serif",
               fontWeight: active ? 600 : 400,
               color: active ? "var(--text-primary)" : "var(--text-secondary)",
@@ -60,6 +60,7 @@ export default function Sidebar() {
               borderLeft: active ? "3px solid var(--accent-gold)" : "3px solid transparent",
               background: active ? "var(--bg-elevated)" : "transparent",
               transition: "all 0.1s ease",
+              whiteSpace: "nowrap",
             }}>
               {label}
             </Link>
