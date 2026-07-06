@@ -70,6 +70,30 @@ function divTone(dy: number | null): [string, "good"|"bad"|"neutral"|"default"] 
 }
 
 // ── UI components ─────────────────────────────────────────────────────────────
+function AboutSection({ description }: { description: string }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      <SectionLabel>About</SectionLabel>
+      <div style={{ maxWidth: 760 }}>
+        <p style={{
+          fontFamily: "'Inter',sans-serif", fontSize: "0.82rem",
+          color: "var(--text-secondary)", lineHeight: 1.7, margin: "0 0 0.4rem",
+          display: "-webkit-box", WebkitBoxOrient: "vertical",
+          WebkitLineClamp: expanded ? "unset" : 2,
+          overflow: expanded ? "visible" : "hidden",
+        }}>{description}</p>
+        <button onClick={() => setExpanded(e => !e)} style={{
+          background: "none", border: "none", padding: 0,
+          color: "var(--accent-gold)", fontSize: "0.75rem",
+          fontFamily: "'Inter',sans-serif", cursor: "pointer",
+          fontWeight: 500,
+        }}>{expanded ? "Show less" : "Show more"}</button>
+      </div>
+    </>
+  );
+}
+
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
@@ -431,12 +455,7 @@ function ResearchInner() {
           )}
 
           {/* ── Company Description ── */}
-          {s.description && (
-            <>
-              <SectionLabel>About</SectionLabel>
-              <p style={{ fontFamily:"'Inter',sans-serif", fontSize:"0.82rem", color:"var(--text-secondary)", lineHeight:1.7, maxWidth:760 }}>{s.description}</p>
-            </>
-          )}
+          {s.description && <AboutSection description={s.description} />}
 
           {/* ── News ── */}
           {news.length > 0 && (
