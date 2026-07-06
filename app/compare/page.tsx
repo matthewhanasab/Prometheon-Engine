@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState } from "react";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Legend, Tooltip,
@@ -11,7 +11,7 @@ function fmt(n: number | null | undefined, d = 2) {
 }
 function fmtX(n: number | null | undefined) {
   if (n == null || isNaN(n)) return "N/A";
-  return `${n.toFixed(2)}Ã—`;
+  return `${n.toFixed(2)}×`;
 }
 function fmtPct(n: number | null | undefined, alreadyPct = false) {
   if (n == null || isNaN(n)) return "N/A";
@@ -93,7 +93,7 @@ function normalize(values: (number | null)[], lowerIsBetter: boolean): number[] 
   if (mn === mx) return values.map(() => 50);
   return values.map(v => {
     if (v == null || !isFinite(v)) return 0;
-    const norm = (v - mn) / (mx - mn); // 0â€“1, higher = larger value
+    const norm = (v - mn) / (mx - mn); // 0–1, higher = larger value
     return Math.round((lowerIsBetter ? 1 - norm : norm) * 100);
   });
 }
@@ -162,7 +162,7 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
         ${fmt(stock.price)}
       </div>
       <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.78rem", color: chg == null ? "var(--text-secondary)" : chg >= 0 ? "var(--positive)" : "var(--negative)", marginBottom: 8 }}>
-        {chg != null ? `${chg >= 0 ? "â–²" : "â–¼"} ${Math.abs(chg).toFixed(2)}%` : "â€”"}
+        {chg != null ? `${chg >= 0 ? "+" : "-"}${Math.abs(chg).toFixed(2)}%` : "N/A"}
       </div>
       <div style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.68rem", color: "var(--text-secondary)" }}>
         Mkt Cap: {fmtLarge(stock.mktCap)}
@@ -220,7 +220,7 @@ export default function ComparePage() {
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
       <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'Inter',sans-serif" }}>
-        Side-by-side valuation Â· growth Â· profitability Â· health
+        Side-by-side valuation · growth · profitability · health
       </div>
 
       {/* Form */}
@@ -242,13 +242,13 @@ export default function ComparePage() {
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
         >Compare</button>
-        {loading && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loadingâ€¦</span>}
+        {loading && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading…</span>}
       </form>
       {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
 
       {!loading && stocks.length === 0 && !error && (
         <div style={{ marginTop: "5rem", textAlign: "center", color: "var(--text-muted)" }}>
-          <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: "1.1rem", color: "var(--text-secondary)", marginBottom: 8 }}>Enter 2â€“4 tickers to compare</div>
+          <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: "1.1rem", color: "var(--text-secondary)", marginBottom: 8 }}>Enter 2–4 tickers to compare</div>
           <div style={{ fontSize: "0.70rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>Powered by Financial Modeling Prep</div>
         </div>
       )}
@@ -296,7 +296,7 @@ export default function ComparePage() {
                             return (
                               <td key={s.ticker} style={{ textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
                                 <span style={{ color: isBest ? "var(--positive)" : "var(--text-secondary)", fontWeight: isBest ? 600 : undefined }}>
-                                  {isBest && <span style={{ color: "var(--accent-gold)", marginRight: 4 }}>â˜…</span>}
+                                  {isBest && <span style={{ color: "var(--accent-gold)", marginRight: 4 }}>★</span>}
                                   {metric.fmt(val)}
                                 </span>
                               </td>
@@ -314,7 +314,7 @@ export default function ComparePage() {
           {/* Radar chart */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px" }}>
             <div style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
-              Multi-Dimensional Comparison â€” Normalized 0â€“100
+              Multi-Dimensional Comparison — Normalized 0–100
             </div>
             <ResponsiveContainer width="100%" height={380}>
               <RadarChart data={radarData} margin={{ top: 10, right: 40, bottom: 10, left: 40 }}>
