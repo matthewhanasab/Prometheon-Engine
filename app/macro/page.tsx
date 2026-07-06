@@ -27,6 +27,18 @@ interface MarketQuote {
   name?: string;
 }
 
+interface YieldPoint {
+  label: string;
+  maturity: number;
+  value: number;
+}
+
+interface FearGreedData {
+  value: number | null;
+  classification: string | null;
+  history: { timestamp: string; value: number }[];
+}
+
 interface MacroData {
   fred: {
     ffr: FredSeries[];
@@ -42,6 +54,8 @@ interface MacroData {
     vix: FredSeries[];
   };
   markets: MarketQuote[];
+  yieldCurve: YieldPoint[];
+  fearGreed: FearGreedData | null;
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -413,7 +427,7 @@ export default function MacroPage() {
     );
   }
 
-  const { fred, markets } = data;
+  const { fred, markets, yieldCurve, fearGreed } = data;
 
   // snapshot values
   const ffrVal = last(fred.ffr);
@@ -481,6 +495,24 @@ export default function MacroPage() {
       label: "10Y Breakeven",
       value: beiVal != null ? `${fmt(beiVal)}%` : "—",
       sub: undefined,
+      tone: "neutral" as const,
+    },
+    {
+      label: "Fear & Greed",
+      value: fearGreed?.value != null ? String(fearGreed.value) : "—",
+      sub: fearGreed?.classification ?? undefined,
+      tone: fearGreed?.value != null
+        ? fearGreed.value <= 25 ? ("bad" as const)
+        : fearGreed.value >= 75 ? ("good" as const)
+        : ("neutral" as const)
+        : ("neutral" as const),
+    },
+    {
+      label: "10Y Yield",
+      value: yieldCurve.find(p => p.label === "10Y")?.value != null
+        ? `${fmt(yieldCurve.find(p => p.label === "10Y")!.value)}%`
+        : "—",
+      sub: "Treasury",
       tone: "neutral" as const,
     },
   ];
@@ -904,6 +936,179 @@ export default function MacroPage() {
           </ResponsiveContainer>
         </ChartCard>
       </div>
+
+      {/* 7. Yield Curve */}
+      {yieldCurve.length > 0 && (
+        <>
+          <SL>Yield Curve — Current Treasury Rates</SL>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <ChartCard height={chartH + 40} title="Yield Curve (% by Maturity)">
+              <ResponsiveContainer width="100%" height={chartH}>
+                <LineChart
+                  data={yieldCurve}
+                  margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+                >
+                  <Grid />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAx unit="%" />
+                  <Tooltip
+                    {...ttStyle}
+                    formatter={(v: any) => [`${fmt(v)}%`, "Yield"]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#C9A84C"
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: "#C9A84C" }}
+                    activeDot={{ r: 5 }}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard height={chartH + 40} title="Yield Curve Points">
+              <div style={{ padding: "8px 8px 4px", display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {yieldCurve.map((p) => (
+                  <div
+                    key={p.label}
+                    style={{
+                      background: "var(--bg-elevated)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 4,
+                      padding: "8px 12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      minWidth: 64,
+                    }}
+                  >
+                    <div style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.6rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{p.label}</div>
+                    <div style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.95rem", fontWeight: 600, color: "var(--accent-gold)" }}>{fmt(p.value)}%</div>
+                  </div>
+                ))}
+              </div>
+            </ChartCard>
+          </div>
+        </>
+      )}
+
+      {/* 8. Fear & Greed */}
+      {fearGreed && (
+        <>
+          <SL>Fear &amp; Greed Index — Alternative.me</SL>
+          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 12, alignItems: "start" }}>
+            <div
+              style={{
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 4,
+                padding: "24px 32px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                minWidth: 160,
+              }}
+            >
+              <div style={{ fontFamily: "Inter,sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>Fear &amp; Greed</div>
+              <div
+                style={{
+                  fontFamily: "'Playfair Display',Georgia,serif",
+                  fontSize: "3.5rem",
+                  fontWeight: 500,
+                  letterSpacing: "-0.03em",
+                  color:
+                    fearGreed.value != null && fearGreed.value <= 25
+                      ? "var(--negative)"
+                      : fearGreed.value != null && fearGreed.value >= 75
+                      ? "var(--positive)"
+                      : "var(--accent-gold)",
+                }}
+              >
+                {fearGreed.value ?? "—"}
+              </div>
+              <div style={{ fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+                {fearGreed.classification ?? ""}
+              </div>
+              <div style={{ width: "100%", height: 6, background: "var(--bg-elevated)", borderRadius: 3, marginTop: 4 }}>
+                <div
+                  style={{
+                    width: `${fearGreed.value ?? 50}%`,
+                    height: "100%",
+                    borderRadius: 3,
+                    background:
+                      fearGreed.value != null && fearGreed.value <= 25
+                        ? "var(--negative)"
+                        : fearGreed.value != null && fearGreed.value >= 75
+                        ? "var(--positive)"
+                        : "var(--accent-gold)",
+                  }}
+                />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", width: "100%", fontSize: "0.58rem", color: "var(--text-secondary)", fontFamily: "IBM Plex Mono, monospace" }}>
+                <span>Fear</span>
+                <span>Greed</span>
+              </div>
+            </div>
+
+            <ChartCard height={chartH + 40} title="Fear & Greed — 30 Days">
+              <ResponsiveContainer width="100%" height={chartH}>
+                <AreaChart
+                  data={fearGreed.history}
+                  margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+                >
+                  <Grid />
+                  <XAxis
+                    dataKey="timestamp"
+                    tickFormatter={(v: any) => {
+                      const d = new Date(parseInt(v) * 1000);
+                      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                    }}
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    tickFormatter={(v) => String(v)}
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={44}
+                  />
+                  <Tooltip
+                    {...ttStyle}
+                    formatter={(v: any) => [String(v), "Fear & Greed"]}
+                    labelFormatter={(l: any) => {
+                      const d = new Date(parseInt(l) * 1000);
+                      return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                    }}
+                  />
+                  <ReferenceLine y={25} stroke="#EF4444" strokeDasharray="4 3" label={{ value: "Fear", fill: "#EF4444", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
+                  <ReferenceLine y={75} stroke="#22C55E" strokeDasharray="4 3" label={{ value: "Greed", fill: "#22C55E", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#C9A84C"
+                    fill="rgba(201,168,76,0.08)"
+                    strokeWidth={2}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        </>
+      )}
 
       {/* Footer */}
       <div

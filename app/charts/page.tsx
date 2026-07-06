@@ -15,6 +15,11 @@ import {
   Legend,
 } from "recharts";
 
+const SEGMENT_COLORS = [
+  "#C9A84C","#3B82F6","#22C55E","#EF4444","#A78BFA","#F97316",
+  "#06B6D4","#EC4899","#84CC16","#F59E0B","#6366F1","#14B8A6",
+];
+
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function qLabel(dateStr: string): string {
@@ -175,6 +180,8 @@ interface ChartsData {
   cashflow: CashflowRow[];
   balance: BalanceRow[];
   profile: Profile;
+  productSegments: Record<string, number>[];
+  geoSegments: Record<string, number>[];
 }
 
 // ─── page ────────────────────────────────────────────────────────────────────
@@ -217,9 +224,11 @@ export default function ChartsPage() {
 
   // ── derived chart data ──────────────────────────────────────────────────
 
-  const income   = data?.income   ?? [];
-  const cashflow = data?.cashflow ?? [];
-  const balance  = data?.balance  ?? [];
+  const income          = data?.income          ?? [];
+  const cashflow        = data?.cashflow        ?? [];
+  const balance         = data?.balance         ?? [];
+  const productSegments = data?.productSegments ?? [];
+  const geoSegments     = data?.geoSegments     ?? [];
 
   const labels        = income.map((r) => qLabel(r.date));
   const cfLabels      = cashflow.map((r) => qLabel(r.date));
@@ -281,6 +290,34 @@ export default function ChartsPage() {
     assets:      balance[i]?.totalCurrentAssets      ?? null,
     liabilities: balance[i]?.totalCurrentLiabilities ?? null,
   }));
+
+  // ── segment helpers ───────────────────────────────────────────────────────
+
+  function buildSegmentData(segs: Record<string, unknown>[]) {
+    if (!segs || segs.length === 0) return { chartData: [], keys: [] as string[] };
+    const rows: { label: string; [k: string]: number | string }[] = [];
+    const allKeys = new Set<string>();
+
+    segs.slice(-12).forEach((item) => {
+      const dateKey = Object.keys(item).find((k) => /^\d{4}-\d{2}-\d{2}$/.test(k));
+      if (!dateKey) return;
+      const segments = item[dateKey] as Record<string, number>;
+      if (!segments || typeof segments !== "object") return;
+      const d = new Date(dateKey);
+      const q = Math.floor(d.getMonth() / 3) + 1;
+      const label = `Q${q} '${String(d.getFullYear()).slice(2)}`;
+      const row: { label: string; [k: string]: number | string } = { label };
+      Object.entries(segments).forEach(([k, v]) => {
+        if (typeof v === "number") { row[k] = v; allKeys.add(k); }
+      });
+      rows.push(row);
+    });
+
+    return { chartData: rows, keys: Array.from(allKeys) };
+  }
+
+  const { chartData: prodChartData, keys: prodKeys } = buildSegmentData(productSegments as Record<string, unknown>[]);
+  const { chartData: geoChartData, keys: geoKeys } = buildSegmentData(geoSegments as Record<string, unknown>[]);
 
   // ── render helpers ────────────────────────────────────────────────────────
 
@@ -614,6 +651,54 @@ export default function ChartsPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          {/* 9. Revenue by Product */}
+          {prodChartData.length > 0 && prodKeys.length > 0 && (
+            <>
+              <SectionLabel>Revenue by Product</SectionLabel>
+              <div style={CARD_STYLE}>
+                <ResponsiveContainer width="100%" height={360}>
+                  <BarChart data={prodChartData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
+                    <CartesianGrid vertical={false} stroke="#1E2D45" />
+                    <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                    <Tooltip
+                      {...TOOLTIP_STYLE}
+                      formatter={(v: any, name: any) => [fmtVal(v), name]}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }} />
+                    {prodKeys.map((key, i) => (
+                      <Bar key={key} dataKey={key} stackId="a" fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]} isAnimationActive={false} />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
+
+          {/* 10. Revenue by Geography */}
+          {geoChartData.length > 0 && geoKeys.length > 0 && (
+            <>
+              <SectionLabel>Revenue by Geography</SectionLabel>
+              <div style={CARD_STYLE}>
+                <ResponsiveContainer width="100%" height={360}>
+                  <BarChart data={geoChartData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
+                    <CartesianGrid vertical={false} stroke="#1E2D45" />
+                    <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                    <Tooltip
+                      {...TOOLTIP_STYLE}
+                      formatter={(v: any, name: any) => [fmtVal(v), name]}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }} />
+                    {geoKeys.map((key, i) => (
+                      <Bar key={key} dataKey={key} stackId="a" fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]} isAnimationActive={false} />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
 
           {/* 8. Current Assets vs Liabilities */}
           <SectionLabel>Current Assets vs Liabilities</SectionLabel>

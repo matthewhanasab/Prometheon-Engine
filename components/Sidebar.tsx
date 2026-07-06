@@ -14,6 +14,7 @@ const NAV = [
   { href: "/earnings",      label: "Earnings" },
   { href: "/calculator",    label: "Compound Calculator" },
   { href: "/macro",         label: "Macro Dashboard" },
+  { href: "/screener",      label: "Screener" },
   { href: "/sec",           label: "SEC Filings" },
 ];
 

@@ -158,8 +158,9 @@ function ResearchInner() {
   const earnings = data?.earnings ?? [];
   const recs     = data?.recs;
   const news     = data?.news     ?? [];
-  const insiders = data?.insiders ?? [];
-  const rf       = data?.rf       ?? 0.043;
+  const insiders      = data?.insiders      ?? [];
+  const institutional = data?.institutional ?? [];
+  const rf            = data?.rf            ?? 0.043;
   const ret1Y    = data?.return1Y ?? null;
 
   // CAPM
@@ -452,6 +453,32 @@ function ResearchInner() {
             </>
           ) : (
             <div style={{ color:"var(--text-muted)", fontSize:"0.82rem", padding:"12px 0" }}>No recent Form 4 filings found for this ticker.</div>
+          )}
+
+          {/* ── Institutional Holders ── */}
+          {institutional.length > 0 && (
+            <>
+              <SectionLabel>Institutional Holders</SectionLabel>
+              <Table
+                headers={["Holder", "Shares", "% of Float", "Change"]}
+                rows={institutional.map((h: any) => [
+                  { value: h.holder ?? h.investorName ?? "—", color: "var(--text-primary)", bold: true },
+                  h.shares != null ? h.shares.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "—",
+                  h.sharesPercent != null
+                    ? `${(h.sharesPercent * 100).toFixed(2)}%`
+                    : h.percentOfShare != null
+                    ? `${h.percentOfShare.toFixed(2)}%`
+                    : "—",
+                  h.change != null
+                    ? {
+                        value: `${h.change >= 0 ? "+" : ""}${h.change.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                        color: h.change >= 0 ? "var(--positive)" : "var(--negative)",
+                      }
+                    : "—",
+                ])}
+              />
+              <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: 6 }}>Top 10 institutional holders · Financial Modeling Prep · Not financial advice.</div>
+            </>
           )}
 
           {/* ── Company Description ── */}
