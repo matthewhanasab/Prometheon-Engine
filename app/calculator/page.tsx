@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import {
@@ -143,7 +143,7 @@ export default function CalculatorPage() {
   };
 
   return (
-    <div style={{ padding: "2rem", maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ padding: "2rem", margin: "0 auto" }}>
       <h1 style={{ ...HEADING, fontSize: "2rem", margin: "0 0 0.5rem" }}>Compound Calculator</h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "2rem" }} />
 
@@ -165,11 +165,11 @@ export default function CalculatorPage() {
               <input type="number" value={inputs.years} min={1} max={50} onChange={e => handleChange("years", parseInt(e.target.value) || 1)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Annual Return Rate — Base (%)</label>
+              <label style={labelStyle}>Annual Return Rate â€” Base (%)</label>
               <input type="number" value={inputs.baseRate} step={0.5} onChange={e => handleChange("baseRate", parseFloat(e.target.value) || 0)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Variance Range (±%)</label>
+              <label style={labelStyle}>Variance Range (Â±%)</label>
               <input type="number" value={inputs.variance} step={0.5} onChange={e => handleChange("variance", parseFloat(e.target.value) || 0)} style={inputStyle} />
             </div>
 
@@ -242,7 +242,7 @@ export default function CalculatorPage() {
             <strong style={{ color: "var(--accent-gold)" }}>Insight: </strong>
             The difference between the high ({(results.inputs.baseRate + results.inputs.variance).toFixed(1)}%) and low ({(results.inputs.baseRate - results.inputs.variance).toFixed(1)}%) return scenarios over {results.inputs.years} years is{" "}
             <span style={{ ...MONO, color: "var(--positive)", fontWeight: 600 }}>{fmtDollar(results.high.final - results.low.final)}</span>
-            {" "}— a {((results.high.final / results.low.final - 1) * 100).toFixed(0)}% difference from an identical starting position.
+            {" "}â€” a {((results.high.final / results.low.final - 1) * 100).toFixed(0)}% difference from an identical starting position.
           </div>
 
           {/* Year-by-year table */}
@@ -276,3 +276,4 @@ export default function CalculatorPage() {
     </div>
   );
 }
+

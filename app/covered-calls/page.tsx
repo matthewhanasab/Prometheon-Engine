@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -20,7 +20,7 @@ function blackScholesATM(price: number, iv: number, dte: number): number {
 }
 
 function fmt(n: number | undefined | null, d = 2): string {
-  if (n == null) return "—";
+  if (n == null) return "â€”";
   return n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
@@ -114,7 +114,7 @@ export default function CoveredCallsPage() {
   const strikeRows = price && iv && dte ? buildStrikeTable(price, iv, dte) : [];
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)", maxWidth: 1000 }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem", fontWeight: 700, margin: 0 }}>
@@ -152,7 +152,7 @@ export default function CoveredCallsPage() {
             opacity: loading ? 0.7 : 1,
           }}
         >
-          {loading ? "Loading…" : "Load"}
+          {loading ? "Loadingâ€¦" : "Load"}
         </button>
       </div>
 
@@ -214,7 +214,7 @@ export default function CoveredCallsPage() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
                 {[
                   { label: "Est. Premium",       value: `$${fmt(premium)}` },
-                  { label: "Premium Range",       value: `$${fmt(premium * 0.85)} – $${fmt(premium * 1.15)}` },
+                  { label: "Premium Range",       value: `$${fmt(premium * 0.85)} â€“ $${fmt(premium * 1.15)}` },
                   { label: "Yield",               value: `${fmt(yld)}%` },
                   { label: "Annualized Yield",    value: `${fmt(annYield)}%` },
                 ].map(s => (
@@ -235,7 +235,7 @@ export default function CoveredCallsPage() {
                   Strike Comparison Table
                 </h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.2rem 0 0" }}>
-                  Based on {iv}% IV · {dte} DTE · Stock @ ${fmt(price)}
+                  Based on {iv}% IV Â· {dte} DTE Â· Stock @ ${fmt(price)}
                 </p>
               </div>
               <div style={{ overflowX: "auto" }}>
@@ -255,7 +255,7 @@ export default function CoveredCallsPage() {
                       return (
                         <tr key={i} style={{ borderBottom: "1px solid var(--border)", background: isATM ? "rgba(201,168,76,0.06)" : "transparent" }}>
                           <td style={{ padding: "0.6rem 1rem", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", fontWeight: isATM ? 700 : 400, color: isATM ? "var(--accent-gold)" : "var(--text-primary)" }}>
-                            ${fmt(row.strike, 0)}{isATM ? " ★" : ""}
+                            ${fmt(row.strike, 0)}{isATM ? " â˜…" : ""}
                           </td>
                           <td style={{ padding: "0.6rem 1rem", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", color: row.otm_pct > 0 ? "var(--text-secondary)" : row.otm_pct < 0 ? "var(--negative)" : "var(--positive)" }}>
                             {row.otm_pct >= 0 ? "+" : ""}{fmt(row.otm_pct)}%
@@ -285,7 +285,7 @@ export default function CoveredCallsPage() {
         {[
           {
             title: "What is a Covered Call?",
-            body: "A covered call is an options strategy where you hold shares of a stock and sell (write) call options on the same stock. You collect the option premium upfront as income. The buyer of the call has the right — but not the obligation — to buy your shares at the strike price before expiration.",
+            body: "A covered call is an options strategy where you hold shares of a stock and sell (write) call options on the same stock. You collect the option premium upfront as income. The buyer of the call has the right â€” but not the obligation â€” to buy your shares at the strike price before expiration.",
           },
           {
             title: "When to Use",
@@ -293,7 +293,7 @@ export default function CoveredCallsPage() {
           },
           {
             title: "Risk / Reward",
-            body: "Your upside is capped at the strike price — if the stock surges above it, you still deliver shares at the strike. The premium provides a buffer against downside, but you still bear the full risk of stock decline. The trade-off: income now vs. potential gains foregone.",
+            body: "Your upside is capped at the strike price â€” if the stock surges above it, you still deliver shares at the strike. The premium provides a buffer against downside, but you still bear the full risk of stock decline. The trade-off: income now vs. potential gains foregone.",
           },
         ].map(card => (
           <div key={card.title} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "1.1rem 1.25rem" }}>
@@ -309,3 +309,4 @@ export default function CoveredCallsPage() {
     </div>
   );
 }
+

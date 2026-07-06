@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function fmtLarge(n: number | null | undefined): string {
-  if (n == null || !isFinite(n)) return "—";
+  if (n == null || !isFinite(n)) return "â€”";
   const abs = Math.abs(n);
   const sign = n < 0 ? "-" : "";
   if (abs >= 1e12) return `${sign}$${(abs / 1e12).toFixed(2)}T`;
@@ -13,7 +13,7 @@ function fmtLarge(n: number | null | undefined): string {
   return `${sign}$${abs.toFixed(2)}`;
 }
 function fmtEps(n: number | null | undefined): string {
-  if (n == null || !isFinite(n)) return "—";
+  if (n == null || !isFinite(n)) return "â€”";
   return `$${n.toFixed(2)}`;
 }
 function yoy(current: number | null | undefined, prev: number | null | undefined): number | null {
@@ -21,7 +21,7 @@ function yoy(current: number | null | undefined, prev: number | null | undefined
   return ((current - prev) / Math.abs(prev)) * 100;
 }
 
-// ── Row definitions ───────────────────────────────────────────────────────────
+// â”€â”€ Row definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type RowDef = {
   label: string;
   field: string;
@@ -87,10 +87,10 @@ const CASHFLOW_ROWS: RowDef[] = [
   { label: "Net Change in Cash",   field: "netChangeInCash" },
 ];
 
-// ── Period label ──────────────────────────────────────────────────────────────
+// â”€â”€ Period label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function periodLabel(item: any, isQuarterly: boolean): string {
   const d = item.date ?? item.calendarYear ?? "";
-  if (!d) return "—";
+  if (!d) return "â€”";
   if (isQuarterly) {
     const q = item.period ?? "";
     return `${q} ${String(d).slice(0, 4)}`;
@@ -98,7 +98,7 @@ function periodLabel(item: any, isQuarterly: boolean): string {
   return `FY ${String(d).slice(0, 4)}`;
 }
 
-// ── FinancialsTable ───────────────────────────────────────────────────────────
+// â”€â”€ FinancialsTable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function FinancialsTable({ rows, data, isQuarterly }: {
   rows: RowDef[];
   data: any[];
@@ -205,7 +205,7 @@ function FinancialsTable({ rows, data, isQuarterly }: {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
+// â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function FinancialsPage() {
   const [input, setInput]     = useState("");
   const [period, setPeriod]   = useState<"annual" | "quarterly">("annual");
@@ -247,14 +247,14 @@ export default function FinancialsPage() {
   ];
 
   return (
-    <div style={{ maxWidth: 1300, paddingBottom: "4rem" }}>
+    <div style={{ paddingBottom: "4rem" }}>
       {/* Header */}
       <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: "1.75rem", fontWeight: 500, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
         Financials
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
       <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'Inter',sans-serif" }}>
-        Income statement · Balance sheet · Cash flow — annual &amp; quarterly
+        Income statement Â· Balance sheet Â· Cash flow â€” annual &amp; quarterly
       </div>
 
       {/* Search form */}
@@ -296,7 +296,7 @@ export default function FinancialsPage() {
           }}
         >Load</button>
 
-        {loading && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading {input}…</span>}
+        {loading && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading {input}â€¦</span>}
       </form>
 
       {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
@@ -320,7 +320,7 @@ export default function FinancialsPage() {
               background: "rgba(201,168,76,0.15)", color: "var(--accent-gold)",
               border: "1px solid rgba(201,168,76,0.3)", borderRadius: 3, padding: "2px 8px",
             }}>
-              {period === "annual" ? "Annual · 5 years" : "Quarterly · 8 quarters"}
+              {period === "annual" ? "Annual Â· 5 years" : "Quarterly Â· 8 quarters"}
             </span>
           </div>
 
@@ -356,10 +356,11 @@ export default function FinancialsPage() {
           )}
 
           <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: 10 }}>
-            YoY % change shown left of each value · Green = improved · Red = worsened · Source: Financial Modeling Prep
+            YoY % change shown left of each value Â· Green = improved Â· Red = worsened Â· Source: Financial Modeling Prep
           </div>
         </>
       )}
     </div>
   );
 }
+

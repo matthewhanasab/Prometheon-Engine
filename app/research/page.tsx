@@ -186,7 +186,7 @@ function ResearchInner() {
   ).slice(0, 5);
 
   return (
-    <div style={{ maxWidth: 1200, paddingBottom: "4rem" }}>
+    <div style={{ paddingBottom: "4rem" }}>
       {/* Header */}
       <h1 style={{ fontFamily:"'Playfair Display',Georgia,serif", fontSize:"1.75rem", fontWeight:500, color:"var(--text-primary)", letterSpacing:"-0.02em", marginBottom:"0.4rem" }}>Stock Research</h1>
       <div style={{ height:1, background:"linear-gradient(to right,var(--accent-gold),transparent)", opacity:0.4, maxWidth:200, marginBottom:"1.5rem" }} />
