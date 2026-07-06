@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -254,7 +254,7 @@ export default function FinancialsPage() {
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
       <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'Inter',sans-serif" }}>
-        Income statement Â· Balance sheet Â· Cash flow â€” annual &amp; quarterly
+        Income statement · Balance sheet · Cash flow â€” annual &amp; quarterly
       </div>
 
       {/* Search form */}
@@ -296,7 +296,7 @@ export default function FinancialsPage() {
           }}
         >Load</button>
 
-        {loading && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading {input}â€¦</span>}
+        {loading && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading {input}...</span>}
       </form>
 
       {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
@@ -320,7 +320,7 @@ export default function FinancialsPage() {
               background: "rgba(201,168,76,0.15)", color: "var(--accent-gold)",
               border: "1px solid rgba(201,168,76,0.3)", borderRadius: 3, padding: "2px 8px",
             }}>
-              {period === "annual" ? "Annual Â· 5 years" : "Quarterly Â· 8 quarters"}
+              {period === "annual" ? "Annual · 5 years" : "Quarterly · 8 quarters"}
             </span>
           </div>
 
@@ -356,7 +356,7 @@ export default function FinancialsPage() {
           )}
 
           <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: 10 }}>
-            YoY % change shown left of each value Â· Green = improved Â· Red = worsened Â· Source: Financial Modeling Prep
+            YoY % change shown left of each value · Green = improved · Red = worsened · Source: Financial Modeling Prep
           </div>
         </>
       )}

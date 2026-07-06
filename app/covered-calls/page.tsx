@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -152,7 +152,7 @@ export default function CoveredCallsPage() {
             opacity: loading ? 0.7 : 1,
           }}
         >
-          {loading ? "Loadingâ€¦" : "Load"}
+          {loading ? "Loading..." : "Load"}
         </button>
       </div>
 
@@ -235,7 +235,7 @@ export default function CoveredCallsPage() {
                   Strike Comparison Table
                 </h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.2rem 0 0" }}>
-                  Based on {iv}% IV Â· {dte} DTE Â· Stock @ ${fmt(price)}
+                  Based on {iv}% IV · {dte} DTE · Stock @ ${fmt(price)}
                 </p>
               </div>
               <div style={{ overflowX: "auto" }}>
@@ -255,7 +255,7 @@ export default function CoveredCallsPage() {
                       return (
                         <tr key={i} style={{ borderBottom: "1px solid var(--border)", background: isATM ? "rgba(201,168,76,0.06)" : "transparent" }}>
                           <td style={{ padding: "0.6rem 1rem", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", fontWeight: isATM ? 700 : 400, color: isATM ? "var(--accent-gold)" : "var(--text-primary)" }}>
-                            ${fmt(row.strike, 0)}{isATM ? " â˜…" : ""}
+                            ${fmt(row.strike, 0)}{isATM ? " *" : ""}
                           </td>
                           <td style={{ padding: "0.6rem 1rem", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", color: row.otm_pct > 0 ? "var(--text-secondary)" : row.otm_pct < 0 ? "var(--negative)" : "var(--positive)" }}>
                             {row.otm_pct >= 0 ? "+" : ""}{fmt(row.otm_pct)}%
