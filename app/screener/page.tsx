@@ -78,11 +78,12 @@ interface ScreenerResult {
   symbol: string;
   companyName: string;
   sector: string;
+  industry: string;
   marketCap: number;
-  pe: number;
-  forwardPE: number;
-  revenueGrowth: number;
-  netProfitMargin: number;
+  pe: number | null;
+  ps: number | null;
+  netMargin: number | null;
+  beta: number | null;
   price: number;
 }
 
@@ -91,7 +92,7 @@ export default function ScreenerPage() {
   const [capIdx, setCapIdx] = useState(0);
   const [minPE, setMinPE] = useState("");
   const [maxPE, setMaxPE] = useState("");
-  const [minRevGrowth, setMinRevGrowth] = useState("");
+  const [minNetMargin, setMinNetMargin] = useState("");
   const [results, setResults] = useState<ScreenerResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [ran, setRan] = useState(false);
@@ -107,7 +108,7 @@ export default function ScreenerPage() {
       if (cap.max) params.set("maxMarketCap", cap.max);
       if (minPE) params.set("minPE", minPE);
       if (maxPE) params.set("maxPE", maxPE);
-      if (minRevGrowth) params.set("minRevenueGrowth", (parseFloat(minRevGrowth) / 100).toFixed(4));
+      if (minNetMargin) params.set("minNetMargin", minNetMargin);
       const res = await fetch(`/api/screener?${params}`);
       const data = await res.json();
       setResults(data.results ?? []);
@@ -134,7 +135,7 @@ export default function ScreenerPage() {
         Stock Screener
       </h1>
       <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginBottom: "0.9rem" }}>
-        Filter stocks by sector, market cap, valuation, and growth
+        Filter stocks by sector, market cap, valuation, and profitability
       </div>
       <div
         style={{
@@ -189,14 +190,14 @@ export default function ScreenerPage() {
           </select>
         </div>
 
-        {/* Min Revenue Growth */}
+        {/* Min Net Margin */}
         <div>
-          <label style={LABEL_STYLE}>Min Revenue Growth (%)</label>
+          <label style={LABEL_STYLE}>Min Net Margin (%)</label>
           <input
             type="number"
             placeholder="e.g. 10"
-            value={minRevGrowth}
-            onChange={(e) => setMinRevGrowth(e.target.value)}
+            value={minNetMargin}
+            onChange={(e) => setMinNetMargin(e.target.value)}
             style={INPUT_STYLE}
           />
         </div>
@@ -283,7 +284,7 @@ export default function ScreenerPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
-                  {["Ticker", "Company", "Sector", "Market Cap", "P/E", "Forward P/E", "Rev Growth", "Net Margin", "Price"].map((h, i) => (
+                  {["Ticker", "Company", "Sector", "Market Cap", "P/E", "P/S", "Net Margin", "Beta", "Price"].map((h, i) => (
                     <th
                       key={h}
                       style={{
@@ -340,17 +341,15 @@ export default function ScreenerPage() {
                       {r.pe != null && r.pe > 0 ? `${fmt(r.pe)}×` : "N/A"}
                     </td>
                     <td style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)", color: "var(--text-secondary)", textAlign: "right", whiteSpace: "nowrap" }}>
-                      {r.forwardPE != null && r.forwardPE > 0 ? `${fmt(r.forwardPE)}×` : "N/A"}
+                      {r.ps != null && r.ps > 0 ? `${fmt(r.ps)}×` : "N/A"}
                     </td>
                     <td style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)", textAlign: "right", whiteSpace: "nowrap" }}>
-                      <span style={{ color: r.revenueGrowth != null ? (r.revenueGrowth >= 0 ? "var(--positive)" : "var(--negative)") : "var(--text-secondary)" }}>
-                        {r.revenueGrowth != null ? fmtPct(r.revenueGrowth) : "N/A"}
+                      <span style={{ color: r.netMargin != null ? (r.netMargin >= 0 ? "var(--positive)" : "var(--negative)") : "var(--text-secondary)" }}>
+                        {r.netMargin != null ? fmtPct(r.netMargin) : "N/A"}
                       </span>
                     </td>
-                    <td style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)", textAlign: "right", whiteSpace: "nowrap" }}>
-                      <span style={{ color: r.netProfitMargin != null ? (r.netProfitMargin >= 0 ? "var(--positive)" : "var(--negative)") : "var(--text-secondary)" }}>
-                        {r.netProfitMargin != null ? fmtPct(r.netProfitMargin) : "N/A"}
-                      </span>
+                    <td style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)", color: "var(--text-secondary)", textAlign: "right", whiteSpace: "nowrap" }}>
+                      {r.beta != null ? fmt(r.beta) : "N/A"}
                     </td>
                     <td style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)", color: "var(--text-primary)", textAlign: "right", whiteSpace: "nowrap", fontWeight: 600 }}>
                       {r.price != null ? `$${fmt(r.price)}` : "N/A"}
