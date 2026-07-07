@@ -3,6 +3,49 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+// ── Launch button with ignition animation ────────────────────────────────────
+function LaunchButton({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const [launching, setLaunching] = useState(false);
+
+  function launch() {
+    if (launching) return;
+    setLaunching(true);
+    router.prefetch("/research");
+    setTimeout(() => router.push("/research"), 1500);
+  }
+
+  return (
+    <>
+      <button onClick={launch} style={{
+        background: "var(--accent-gold)", color: "#131C2E", border: "none", cursor: "pointer",
+        padding: "14px 34px", borderRadius: 4, fontSize: "0.78rem", fontWeight: 700,
+        textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'IBM Plex Sans', sans-serif",
+      }}>
+        {children}
+      </button>
+
+      {launching && (
+        <div className="launch-overlay">
+          <div className="launch-ring" />
+          <div className="launch-ring launch-ring-2" />
+          <div className="launch-flame">
+            <Image src="/logo_icon.png" alt="" width={120} height={140} style={{ objectFit: "contain" }} priority />
+          </div>
+          <div className="launch-bar-track"><div className="launch-bar" /></div>
+          <div className="launch-text" style={{
+            marginTop: "1.1rem", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.68rem",
+            color: "var(--accent-gold)", textTransform: "uppercase", letterSpacing: "0.3em",
+          }}>
+            Igniting Engine
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 // ── Particle constellation background ────────────────────────────────────────
 function Constellation() {
@@ -164,13 +207,7 @@ export default function LandingPage() {
         </p>
 
         <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
-          <Link href="/research" style={{
-            background: "var(--accent-gold)", color: "#131C2E", textDecoration: "none",
-            padding: "14px 34px", borderRadius: 4, fontSize: "0.78rem", fontWeight: 700,
-            textTransform: "uppercase", letterSpacing: "0.12em",
-          }}>
-            Launch the Engine
-          </Link>
+          <LaunchButton>Launch the Engine</LaunchButton>
           <Link href="/screener" style={{
             background: "transparent", color: "var(--text-primary)", textDecoration: "none",
             border: "1px solid var(--border-active)", padding: "14px 34px", borderRadius: 4,
@@ -226,13 +263,7 @@ export default function LandingPage() {
         <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", color: "var(--text-primary)", marginBottom: "1.4rem" }}>
           Stop tab-hopping. Start researching.
         </div>
-        <Link href="/research" style={{
-          background: "var(--accent-gold)", color: "#131C2E", textDecoration: "none",
-          padding: "14px 38px", borderRadius: 4, fontSize: "0.78rem", fontWeight: 700,
-          textTransform: "uppercase", letterSpacing: "0.12em",
-        }}>
-          Launch the Engine
-        </Link>
+        <LaunchButton>Launch the Engine</LaunchButton>
       </section>
 
       {/* ── Footer ── */}
