@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFullStockData, getPriceHistory, getEarnings } from "@/lib/fmp";
-import { getFinnhubRecommendations, getFinnhubNews, getFinnhubPriceTarget } from "@/lib/finnhub";
+import { getFinnhubRecommendations, getFinnhubNews } from "@/lib/finnhub";
 import { getInsiderTrades } from "@/lib/sec";
 import { get10YTreasury } from "@/lib/fred";
 
 const FMP_BASE = "https://financialmodelingprep.com/stable";
+
+async function getPriceTargetConsensus(ticker: string): Promise<number | null> {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/price-target-consensus?symbol=${ticker}&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const row = Array.isArray(data) ? data[0] : data;
+    return row?.targetConsensus ?? row?.targetMedian ?? null;
+  } catch { return null; }
+}
 
 async function getInstitutionalHolders(ticker: string) {
   const key = process.env.FMP_KEY ?? "";
@@ -33,7 +47,7 @@ export async function GET(
       getFinnhubNews(ticker),
       getInsiderTrades(ticker),
       get10YTreasury(),
-      getFinnhubPriceTarget(ticker),
+      getPriceTargetConsensus(ticker),
       getInstitutionalHolders(ticker),
     ]);
 
