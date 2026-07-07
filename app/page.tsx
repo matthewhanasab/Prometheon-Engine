@@ -14,7 +14,7 @@ function LaunchButton({ children }: { children: React.ReactNode }) {
     if (launching) return;
     setLaunching(true);
     router.prefetch("/research");
-    setTimeout(() => router.push("/research"), 1500);
+    setTimeout(() => router.push("/research"), 1000);
   }
 
   return (
@@ -29,18 +29,10 @@ function LaunchButton({ children }: { children: React.ReactNode }) {
 
       {launching && (
         <div className="launch-overlay">
-          <div className="launch-ring" />
-          <div className="launch-ring launch-ring-2" />
-          <div className="launch-flame">
-            <Image src="/logo_icon.png" alt="" width={120} height={140} style={{ objectFit: "contain" }} priority />
+          <div className="fade-up">
+            <Image src="/logo_icon.png" alt="" width={90} height={105} style={{ objectFit: "contain" }} priority />
           </div>
           <div className="launch-bar-track"><div className="launch-bar" /></div>
-          <div className="launch-text" style={{
-            marginTop: "1.1rem", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.68rem",
-            color: "var(--accent-gold)", textTransform: "uppercase", letterSpacing: "0.3em",
-          }}>
-            Igniting Engine
-          </div>
         </div>
       )}
     </>
