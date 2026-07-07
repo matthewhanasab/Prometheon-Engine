@@ -7,7 +7,7 @@ import {
 } from "recharts";
 
 const HEADING: React.CSSProperties = {
-  fontFamily: "'Playfair Display', Georgia, serif",
+  fontFamily: "'IBM Plex Serif', Georgia, serif",
   fontWeight: 500,
   letterSpacing: "-0.02em",
   color: "var(--text-primary)",
@@ -460,15 +460,15 @@ export default function ProjectionsPage() {
           style={{
             background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6,
             color: "var(--text-primary)", padding: "9px 14px", fontSize: 14, outline: "none",
-            width: 200, fontFamily: "Inter, sans-serif",
+            width: 200, fontFamily: "'IBM Plex Sans', sans-serif",
           }}
         />
         <button
           onClick={loadStock}
           disabled={loading}
           style={{
-            background: "var(--accent-gold)", color: "#0A0F1E", border: "none", borderRadius: 4,
-            padding: "10px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "Inter, sans-serif",
+            background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
+            padding: "10px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif",
           }}
         >
           {loading ? "Loading..." : "Load"}

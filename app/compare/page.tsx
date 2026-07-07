@@ -26,7 +26,7 @@ function fmtLarge(n: number | null | undefined) {
   return `$${n.toLocaleString()}`;
 }
 
-const COLORS = ["#3B82F6", "#C9A84C", "#22C55E", "#A78BFA"];
+const COLORS = ["#3B82F6", "#D4B45E", "#22C55E", "#A78BFA"];
 
 // â”€â”€ Metric config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type MetricDef = {
@@ -154,17 +154,17 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
           borderRadius: 3, padding: "2px 7px",
         }}>{stock.ticker}</span>
         {stock.sector && (
-          <span style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.60rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stock.sector}</span>
+          <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stock.sector}</span>
         )}
       </div>
-      <div style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.82rem", fontWeight: 500, color: "var(--text-primary)", marginBottom: 8, lineHeight: 1.3 }}>{stock.name}</div>
+      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.82rem", fontWeight: 500, color: "var(--text-primary)", marginBottom: 8, lineHeight: 1.3 }}>{stock.name}</div>
       <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "1.4rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
         ${fmt(stock.price)}
       </div>
       <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.78rem", color: chg == null ? "var(--text-secondary)" : chg >= 0 ? "var(--positive)" : "var(--negative)", marginBottom: 8 }}>
         {chg != null ? `${chg >= 0 ? "+" : "-"}${Math.abs(chg).toFixed(2)}%` : "N/A"}
       </div>
-      <div style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.68rem", color: "var(--text-secondary)" }}>
+      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.68rem", color: "var(--text-secondary)" }}>
         Mkt Cap: {fmtLarge(stock.mktCap)}
       </div>
     </div>
@@ -215,11 +215,11 @@ export default function ComparePage() {
   return (
     <div style={{ paddingBottom: "4rem" }}>
       {/* Header */}
-      <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: "1.75rem", fontWeight: 500, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
+      <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
         Compare Stocks
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
-      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'Inter',sans-serif" }}>
+      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'IBM Plex Sans', sans-serif" }}>
         Side-by-side valuation · growth · profitability · health
       </div>
 
@@ -237,18 +237,18 @@ export default function ComparePage() {
         <button
           type="submit"
           style={{
-            background: "var(--accent-gold)", color: "#0A0F1E", border: "none", borderRadius: 4,
-            padding: "9px 22px", fontFamily: "'Inter',sans-serif", fontSize: "0.72rem",
+            background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
+            padding: "9px 22px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
         >Compare</button>
-        {loading && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading…</span>}
+        {loading && <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading…</span>}
       </form>
       {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
 
       {!loading && stocks.length === 0 && !error && (
         <div style={{ marginTop: "5rem", textAlign: "center", color: "var(--text-muted)" }}>
-          <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: "1.1rem", color: "var(--text-secondary)", marginBottom: 8 }}>Enter 2–4 tickers to compare</div>
+          <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.1rem", color: "var(--text-secondary)", marginBottom: 8 }}>Enter 2–4 tickers to compare</div>
           <div style={{ fontSize: "0.70rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>Prometheon Engine</div>
         </div>
       )}
@@ -267,7 +267,7 @@ export default function ComparePage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.80rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
-                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: "'Inter',sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 140 }}>Metric</th>
+                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 140 }}>Metric</th>
                   {stocks.map((s, i) => (
                     <th key={s.ticker} style={{ textAlign: "right", padding: "9px 14px", fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.78rem", fontWeight: 700, color: COLORS[i], borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
                       {s.ticker}
@@ -279,7 +279,7 @@ export default function ComparePage() {
                 {SECTIONS.map(section => (
                   <React.Fragment key={section.title}>
                     <tr style={{ background: "var(--bg-elevated)" }}>
-                      <td colSpan={stocks.length + 1} style={{ padding: "6px 14px", fontFamily: "'Inter',sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)" }}>
+                      <td colSpan={stocks.length + 1} style={{ padding: "6px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)" }}>
                         {section.title}
                       </td>
                     </tr>
@@ -287,7 +287,7 @@ export default function ComparePage() {
                       const best = bestIdx(metric);
                       return (
                         <tr key={metric.label} style={{ background: mi % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
-                          <td style={{ padding: "8px 14px", color: "var(--text-primary)", fontFamily: "'Inter',sans-serif", fontSize: "0.78rem", borderBottom: "1px solid var(--border)" }}>
+                          <td style={{ padding: "8px 14px", color: "var(--text-primary)", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", borderBottom: "1px solid var(--border)" }}>
                             {metric.label}
                           </td>
                           {stocks.map((s, si) => {
@@ -313,7 +313,7 @@ export default function ComparePage() {
 
           {/* Radar chart */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px" }}>
-            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
+            <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
               Multi-Dimensional Comparison — Normalized 0–100
             </div>
             <ResponsiveContainer width="100%" height={380}>
@@ -321,7 +321,7 @@ export default function ComparePage() {
                 <PolarGrid stroke="var(--border)" />
                 <PolarAngleAxis
                   dataKey="subject"
-                  tick={{ fill: "#94A3B8", fontSize: 11, fontFamily: "IBM Plex Mono" }}
+                  tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono" }}
                 />
                 {stocks.map((s, i) => (
                   <Radar
@@ -338,7 +338,7 @@ export default function ComparePage() {
                   wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12 }}
                 />
                 <Tooltip
-                  contentStyle={{ background: "#1C2333", border: "1px solid #2E4A6E", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12, color: "#F1F5F9" }}
+                  contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12, color: "#F1F5F9" }}
                   formatter={(v: any) => [`${v}/100`]}
                 />
               </RadarChart>

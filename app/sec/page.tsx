@@ -21,9 +21,9 @@ interface Insider {
 }
 
 const FORM_COLORS: Record<string, { bg: string; color: string }> = {
-  "10-K": { bg: "rgba(201,168,76,0.15)",  color: "#C9A84C" },
+  "10-K": { bg: "rgba(212,180,94,0.15)",  color: "#D4B45E" },
   "10-Q": { bg: "rgba(59,130,246,0.15)",  color: "#60A5FA" },
-  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "#94A3B8" },
+  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "#A9B8D0" },
   "4":    { bg: "rgba(34,197,94,0.15)",   color: "#22C55E" },
   "S-1":  { bg: "rgba(168,85,247,0.15)",  color: "#C084FC" },
   "DEF 14A": { bg: "rgba(249,115,22,0.15)", color: "#FB923C" },
@@ -114,10 +114,10 @@ export default function SecFilingsPage() {
   const totalInsiderPages = Math.ceil(insiders.length / INSIDER_PAGE_SIZE);
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
+        <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
           SEC Filings
         </h1>
         <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.25rem 0 0" }}>
@@ -153,8 +153,8 @@ export default function SecFilingsPage() {
             background: "var(--accent-gold)",
             border: "none",
             borderRadius: 4,
-            color: "#0A0F1E",
-            fontFamily: "Inter, sans-serif",
+            color: "#131C2E",
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,
             textTransform: "uppercase",
@@ -186,7 +186,7 @@ export default function SecFilingsPage() {
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", marginBottom: "1.75rem" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Recent Filings</h2>
+                <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Recent Filings</h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: "0.76rem", margin: "0.15rem 0 0" }}>Last 30 filings from EDGAR</p>
               </div>
               <span style={{ color: "var(--text-secondary)", fontSize: "0.78rem" }}>{filings.length} filings</span>
@@ -240,7 +240,7 @@ export default function SecFilingsPage() {
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Insider Transactions</h2>
+                <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Insider Transactions</h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: "0.76rem", margin: "0.15rem 0 0" }}>Form 4 filings · Recent insider buying &amp; selling</p>
               </div>
               <span style={{ color: "var(--text-secondary)", fontSize: "0.78rem" }}>{insiders.length} transactions</span>

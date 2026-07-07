@@ -119,7 +119,7 @@ export default function Sidebar() {
                 display: "block",
                 padding: "0.75rem 1.75rem",
                 fontSize: "0.85rem",
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'IBM Plex Sans', sans-serif",
                 fontWeight: active ? 600 : 400,
                 color: active ? "var(--text-primary)" : "var(--text-secondary)",
                 textDecoration: "none",

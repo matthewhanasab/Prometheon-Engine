@@ -114,10 +114,10 @@ export default function CoveredCallsPage() {
   const strikeRows = price && iv && dte ? buildStrikeTable(price, iv, dte) : [];
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
+        <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
           Covered Calls
         </h1>
         <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
@@ -146,8 +146,8 @@ export default function CoveredCallsPage() {
             background: "var(--accent-gold)",
             border: "none",
             borderRadius: 4,
-            color: "#0A0F1E",
-            fontFamily: "Inter, sans-serif",
+            color: "#131C2E",
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,
             textTransform: "uppercase",
@@ -196,7 +196,7 @@ export default function CoveredCallsPage() {
 
           {/* Calculator */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "1.25rem", marginBottom: "1.5rem" }}>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, margin: "0 0 1.1rem" }}>
+            <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.2rem", fontWeight: 600, margin: "0 0 1.1rem" }}>
               Covered Call Calculator
             </h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem", marginBottom: "1.25rem" }}>
@@ -235,7 +235,7 @@ export default function CoveredCallsPage() {
           {strikeRows.length > 0 && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", marginBottom: "1.5rem" }}>
               <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)" }}>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 600, margin: 0 }}>
+                <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.1rem", fontWeight: 600, margin: 0 }}>
                   Strike Comparison Table
                 </h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.2rem 0 0" }}>
@@ -257,7 +257,7 @@ export default function CoveredCallsPage() {
                     {strikeRows.map((row, i) => {
                       const isATM = Math.abs(row.strike - roundToNearest5(price)) < 0.01;
                       return (
-                        <tr key={i} style={{ borderBottom: "1px solid var(--border)", background: isATM ? "rgba(201,168,76,0.06)" : "transparent" }}>
+                        <tr key={i} style={{ borderBottom: "1px solid var(--border)", background: isATM ? "rgba(212,180,94,0.06)" : "transparent" }}>
                           <td style={{ padding: "0.6rem 1rem", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", fontWeight: isATM ? 700 : 400, color: isATM ? "var(--accent-gold)" : "var(--text-primary)" }}>
                             ${fmt(row.strike, 0)}{isATM ? " *" : ""}
                           </td>
@@ -301,7 +301,7 @@ export default function CoveredCallsPage() {
           },
         ].map(card => (
           <div key={card.title} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "1.1rem 1.25rem" }}>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", fontWeight: 600, marginBottom: "0.6rem", color: "var(--accent-gold)" }}>
+            <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", fontWeight: 600, marginBottom: "0.6rem", color: "var(--accent-gold)" }}>
               {card.title}
             </div>
             <p style={{ color: "var(--text-secondary)", fontSize: "0.82rem", lineHeight: 1.65, margin: 0 }}>

@@ -127,10 +127,10 @@ export default function EarningsCalendarPage() {
   const totalAmc = filtered.filter(e => e.hour === "amc").length;
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
+        <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
           Earnings Calendar
         </h1>
         <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
@@ -161,7 +161,7 @@ export default function EarningsCalendarPage() {
               fontSize: "0.78rem",
               fontWeight: 600,
               background: filter === f ? "var(--accent-gold)" : "transparent",
-              color: filter === f ? "#0A0F1E" : "var(--text-secondary)",
+              color: filter === f ? "#131C2E" : "var(--text-secondary)",
               border: "none",
               cursor: "pointer",
               letterSpacing: "0.01em",
@@ -197,7 +197,7 @@ export default function EarningsCalendarPage() {
                   <div style={{
                     padding: "0.55rem 0.7rem",
                     borderBottom: "1px solid var(--border)",
-                    background: today ? "rgba(201,168,76,0.1)" : "var(--bg-elevated)",
+                    background: today ? "rgba(212,180,94,0.1)" : "var(--bg-elevated)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -209,7 +209,7 @@ export default function EarningsCalendarPage() {
                       </div>
                     </div>
                     {today && (
-                      <span style={{ background: "var(--accent-gold)", color: "#0A0F1E", fontSize: "0.62rem", fontWeight: 800, padding: "0.12rem 0.4rem", borderRadius: 4, letterSpacing: "0.06em" }}>
+                      <span style={{ background: "var(--accent-gold)", color: "#131C2E", fontSize: "0.62rem", fontWeight: 800, padding: "0.12rem 0.4rem", borderRadius: 4, letterSpacing: "0.06em" }}>
                         TODAY
                       </span>
                     )}

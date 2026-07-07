@@ -25,7 +25,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="#1E2D45" strokeDasharray="3 3" />
+          <CartesianGrid vertical={false} stroke="#35456A" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
             tickFormatter={(v) => {
@@ -47,8 +47,8 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
           />
           <Tooltip
             contentStyle={{
-              background: "#1C2333",
-              border: "1px solid #2E4A6E",
+              background: "#283552",
+              border: "1px solid #4C6190",
               borderRadius: 4,
               fontFamily: "IBM Plex Mono",
               fontSize: 12,

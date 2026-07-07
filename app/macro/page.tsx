@@ -95,7 +95,7 @@ function SL({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontFamily: "Inter,sans-serif",
+        fontFamily: "'IBM Plex Sans', sans-serif",
         fontSize: "0.58rem",
         fontWeight: 600,
         textTransform: "uppercase",
@@ -134,7 +134,7 @@ function ChartCard({
       {title && (
         <div
           style={{
-            fontFamily: "Inter,sans-serif",
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: "0.65rem",
             fontWeight: 600,
             color: "var(--text-secondary)",
@@ -154,8 +154,8 @@ function ChartCard({
 
 const ttStyle = {
   contentStyle: {
-    background: "#1E2D45",
-    border: "1px solid #2E4A6E",
+    background: "#35456A",
+    border: "1px solid #4C6190",
     borderRadius: 4,
     fontFamily: "IBM Plex Mono, monospace",
     fontSize: 11,
@@ -198,7 +198,7 @@ function YAx({
 
 function Grid() {
   return (
-    <CartesianGrid vertical={false} stroke="#1A2640" strokeDasharray="3 3" />
+    <CartesianGrid vertical={false} stroke="#2A3854" strokeDasharray="3 3" />
   );
 }
 
@@ -234,7 +234,7 @@ function MCard({
     >
       <div
         style={{
-          fontFamily: "Inter,sans-serif",
+          fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: "0.6rem",
           fontWeight: 600,
           textTransform: "uppercase",
@@ -246,7 +246,7 @@ function MCard({
       </div>
       <div
         style={{
-          fontFamily: "'Playfair Display',Georgia,serif",
+          fontFamily: "'IBM Plex Serif', Georgia, serif",
           fontSize: "1.5rem",
           fontWeight: 500,
           color: "var(--text-primary)",
@@ -258,7 +258,7 @@ function MCard({
       {sub && (
         <div
           style={{
-            fontFamily: "Inter,sans-serif",
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: "0.65rem",
             color: subColor,
           }}
@@ -321,7 +321,7 @@ const MARKET_META: Record<
 > = {
   SPY: { label: "S&P 500", color: "#22C55E" },
   QQQ: { label: "Nasdaq", color: "#3B82F6" },
-  GLD: { label: "Gold", color: "#C9A84C" },
+  GLD: { label: "Gold", color: "#D4B45E" },
   USO: { label: "Crude Oil", color: "#F97316" },
   BTCUSD: { label: "Bitcoin", color: "#F59E0B" },
   UUP: { label: "USD Index", color: "#8B5CF6" },
@@ -347,7 +347,7 @@ function MarketCard({ q }: { q: MarketQuote }) {
     >
       <div
         style={{
-          fontFamily: "Inter,sans-serif",
+          fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: "0.58rem",
           fontWeight: 600,
           textTransform: "uppercase",
@@ -359,7 +359,7 @@ function MarketCard({ q }: { q: MarketQuote }) {
       </div>
       <div
         style={{
-          fontFamily: "'Playfair Display',Georgia,serif",
+          fontFamily: "'IBM Plex Serif', Georgia, serif",
           fontSize: "1.35rem",
           fontWeight: 500,
           color: "var(--text-primary)",
@@ -538,11 +538,11 @@ export default function MacroPage() {
   const chartH = 230;
 
   return (
-    <div style={{ fontFamily: "Inter,sans-serif" }}>
+    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
       {/* Header */}
       <h1
         style={{
-          fontFamily: "'Playfair Display',Georgia,serif",
+          fontFamily: "'IBM Plex Serif', Georgia, serif",
           fontSize: "1.75rem",
           fontWeight: 500,
           color: "var(--text-primary)",
@@ -619,7 +619,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="ffr"
-                stroke="#C9A84C"
+                stroke="#D4B45E"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -677,11 +677,11 @@ export default function MacroPage() {
               />
               <ReferenceLine
                 y={2}
-                stroke="#C9A84C"
+                stroke="#D4B45E"
                 strokeDasharray="5 3"
                 label={{
                   value: "2%",
-                  fill: "#C9A84C",
+                  fill: "#D4B45E",
                   fontSize: 9,
                   fontFamily: "IBM Plex Mono",
                 }}
@@ -725,11 +725,11 @@ export default function MacroPage() {
               />
               <ReferenceLine
                 y={2}
-                stroke="#C9A84C"
+                stroke="#D4B45E"
                 strokeDasharray="5 3"
                 label={{
                   value: "2%",
-                  fill: "#C9A84C",
+                  fill: "#D4B45E",
                   fontSize: 9,
                   fontFamily: "IBM Plex Mono",
                 }}
@@ -873,11 +873,11 @@ export default function MacroPage() {
               />
               <ReferenceLine
                 y={20}
-                stroke="#C9A84C"
+                stroke="#D4B45E"
                 strokeDasharray="4 3"
                 label={{
                   value: "Caution",
-                  fill: "#C9A84C",
+                  fill: "#D4B45E",
                   fontSize: 9,
                   fontFamily: "IBM Plex Mono",
                 }}
@@ -963,9 +963,9 @@ export default function MacroPage() {
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#C9A84C"
+                    stroke="#D4B45E"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: "#C9A84C" }}
+                    dot={{ r: 3, fill: "#D4B45E" }}
                     activeDot={{ r: 5 }}
                     isAnimationActive={false}
                   />
@@ -1017,10 +1017,10 @@ export default function MacroPage() {
                 minWidth: 160,
               }}
             >
-              <div style={{ fontFamily: "Inter,sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>Fear &amp; Greed</div>
+              <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>Fear &amp; Greed</div>
               <div
                 style={{
-                  fontFamily: "'Playfair Display',Georgia,serif",
+                  fontFamily: "'IBM Plex Serif', Georgia, serif",
                   fontSize: "3.5rem",
                   fontWeight: 500,
                   letterSpacing: "-0.03em",
@@ -1034,7 +1034,7 @@ export default function MacroPage() {
               >
                 {fearGreed.value ?? "—"}
               </div>
-              <div style={{ fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+              <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                 {fearGreed.classification ?? ""}
               </div>
               <div style={{ width: "100%", height: 6, background: "var(--bg-elevated)", borderRadius: 3, marginTop: 4 }}>
@@ -1097,8 +1097,8 @@ export default function MacroPage() {
                   <Area
                     type="monotone"
                     dataKey="value"
-                    stroke="#C9A84C"
-                    fill="rgba(201,168,76,0.08)"
+                    stroke="#D4B45E"
+                    fill="rgba(212,180,94,0.08)"
                     strokeWidth={2}
                     dot={false}
                     isAnimationActive={false}
@@ -1118,7 +1118,7 @@ export default function MacroPage() {
           borderTop: "1px solid var(--border)",
           fontSize: "0.62rem",
           color: "var(--text-secondary)",
-          fontFamily: "Inter,sans-serif",
+          fontFamily: "'IBM Plex Sans', sans-serif",
           textAlign: "center",
         }}
       >

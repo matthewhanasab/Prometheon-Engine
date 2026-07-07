@@ -62,7 +62,7 @@ const INPUT_STYLE: React.CSSProperties = {
 };
 
 const LABEL_STYLE: React.CSSProperties = {
-  fontFamily: "Inter, sans-serif",
+  fontFamily: "'IBM Plex Sans', sans-serif",
   fontSize: "0.58rem",
   fontWeight: 600,
   textTransform: "uppercase",
@@ -120,11 +120,11 @@ export default function ScreenerPage() {
   }
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <h1
         style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
+          fontFamily: "'IBM Plex Serif', Georgia, serif",
           fontSize: "1.75rem",
           fontWeight: 500,
           color: "var(--text-primary)",
@@ -233,11 +233,11 @@ export default function ScreenerPage() {
             disabled={loading}
             style={{
               background: "var(--accent-gold)",
-              color: "#0A0F1E",
+              color: "#131C2E",
               border: "none",
               borderRadius: 4,
               padding: "10px 28px",
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "'IBM Plex Sans', sans-serif",
               fontSize: "0.78rem",
               fontWeight: 700,
               textTransform: "uppercase",
@@ -267,7 +267,7 @@ export default function ScreenerPage() {
             padding: "48px",
             textAlign: "center",
             color: "var(--text-secondary)",
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: "0.85rem",
           }}
         >
@@ -277,7 +277,7 @@ export default function ScreenerPage() {
 
       {!loading && results.length > 0 && (
         <>
-          <div style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: 8 }}>
+          <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: 8 }}>
             {results.length} result{results.length !== 1 ? "s" : ""}
           </div>
           <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4 }}>
@@ -290,7 +290,7 @@ export default function ScreenerPage() {
                       style={{
                         textAlign: i === 0 ? "left" : "right",
                         padding: "10px 14px",
-                        fontFamily: "Inter, sans-serif",
+                        fontFamily: "'IBM Plex Sans', sans-serif",
                         fontSize: "0.58rem",
                         fontWeight: 500,
                         textTransform: "uppercase",
@@ -359,7 +359,7 @@ export default function ScreenerPage() {
               </tbody>
             </table>
           </div>
-          <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginTop: 8, fontFamily: "Inter, sans-serif" }}>
+          <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginTop: 8, fontFamily: "'IBM Plex Sans', sans-serif" }}>
             Click a ticker to open Research · Not financial advice
           </div>
         </>

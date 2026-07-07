@@ -14,20 +14,20 @@ Professional stock research platform. Next.js 14 App Router, TypeScript, rechart
 
 ### Palette (CSS variables in `app/globals.css` — always use the variables)
 
-- `--bg-primary: #0A0F1E` — page canvas (deep navy, not black)
-- `--bg-surface: #111827` — cards
-- `--bg-elevated: #1C2333` — inputs, chips, nested surfaces
-- `--border: #1E2D45` / `--border-active: #2E4A6E`
-- `--accent-gold: #C9A84C` — THE brand color. Primary buttons, active states, dividers, revenue bars. Use sparingly so it stays special.
-- `--text-primary: #F1F5F9`, `--text-secondary: #64748B`, `--text-muted: #4B5563`
-- `--positive: #22C55E`, `--negative: #EF4444` — gains/losses only
+- `--bg-primary: #131C2E` — page canvas (medium navy — lighter than near-black so gold buttons and cards have contrast)
+- `--bg-surface: #1C2740` — cards
+- `--bg-elevated: #283552` — inputs, chips, nested surfaces
+- `--border: #35456A` / `--border-active: #4C6190`
+- `--accent-gold: #D4B45E` — THE brand color. Primary buttons, active states, dividers, revenue bars. Use sparingly so it stays special.
+- `--text-primary: #F1F5F9`, `--text-secondary: #8FA0BC`, `--text-muted: #5E6E8C`
+- `--positive: #2ED573`, `--negative: #F0564A` — gains/losses only
 
-Chart series palette (muted, no neon): gold `#C9A84C`, steel blue `#5B8DEF`, green `#22C55E`, teal `#14B8A6`, slate `#64748B`, red `#EF4444` (negative values only). Forecast/estimate bars: same hue at `fillOpacity 0.3` with dashed stroke.
+Chart series palette (muted, no neon): gold `#D4B45E`, steel blue `#5B8DEF`, green `#22C55E`, teal `#14B8A6`, slate `#64748B`, red `#EF4444` (negative values only). Forecast/estimate bars: same hue at `fillOpacity 0.3` with dashed stroke.
 
 ### Typography (three fonts, three jobs)
 
-- **Playfair Display** (serif) — page titles and section headings only. 1.75rem / weight 500 / letterSpacing -0.02em for h1.
-- **Inter** (sans) — UI labels, body copy, buttons.
+- **IBM Plex Serif** — page titles and section headings only. 1.75rem / weight 500 / letterSpacing -0.02em for h1.
+- **IBM Plex Sans** — UI labels, body copy, buttons.
 - **IBM Plex Mono** — every number: prices, tickers, table figures, chart ticks. Numbers are never set in Inter.
 
 ### Recurring patterns (match these exactly)

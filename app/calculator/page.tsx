@@ -7,7 +7,7 @@ import {
 } from "recharts";
 
 const HEADING: React.CSSProperties = {
-  fontFamily: "'Playfair Display', Georgia, serif",
+  fontFamily: "'IBM Plex Serif', Georgia, serif",
   fontWeight: 500,
   letterSpacing: "-0.02em",
   color: "var(--text-primary)",
@@ -67,7 +67,7 @@ function SummaryCard({ label, result, color, accentBg }: { label: string; result
   return (
     <div style={{ background: "var(--bg-elevated)", border: `1px solid ${color}40`, borderRadius: 10, overflow: "hidden", flex: 1, minWidth: 180 }}>
       <div style={{ background: accentBg, padding: "8px 14px" }}>
-        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#fff", fontFamily: "Inter, sans-serif" }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#fff", fontFamily: "'IBM Plex Sans', sans-serif" }}>{label}</span>
       </div>
       <div style={{ padding: "14px 16px" }}>
         <div style={{ ...HEADING, fontSize: "1.6rem", color, marginBottom: 8 }}>{fmtDollar(result.final)}</div>
@@ -138,7 +138,7 @@ export default function CalculatorPage() {
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter, sans-serif",
+    fontSize: 12, color: "var(--text-secondary)", fontFamily: "'IBM Plex Sans', sans-serif",
     marginBottom: 4, display: "block", letterSpacing: "0.03em",
   };
 
@@ -182,11 +182,11 @@ export default function CalculatorPage() {
             <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
               <button
                 onClick={calculate}
-                style={{ flex: 1, background: "var(--accent-gold)", color: "#000", border: "none", borderRadius: 6, padding: "10px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "Inter, sans-serif" }}
+                style={{ flex: 1, background: "var(--accent-gold)", color: "#000", border: "none", borderRadius: 6, padding: "10px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif" }}
               >Calculate</button>
               <button
                 onClick={reset}
-                style={{ background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "Inter, sans-serif" }}
+                style={{ background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif" }}
               >Reset</button>
             </div>
           </div>
@@ -206,8 +206,8 @@ export default function CalculatorPage() {
                   <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 8, bottom: 0 }}>
                     <defs>
                       <linearGradient id="bandFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.07} />
-                        <stop offset="95%" stopColor="#C9A84C" stopOpacity={0.01} />
+                        <stop offset="5%" stopColor="#D4B45E" stopOpacity={0.07} />
+                        <stop offset="95%" stopColor="#D4B45E" stopOpacity={0.01} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
@@ -238,7 +238,7 @@ export default function CalculatorPage() {
       {results && (
         <>
           {/* Insight box */}
-          <div style={{ marginTop: 28, background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: "3px solid var(--accent-gold)", borderRadius: 8, padding: "14px 18px", fontSize: 14, color: "var(--text-primary)", fontFamily: "Inter, sans-serif" }}>
+          <div style={{ marginTop: 28, background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: "3px solid var(--accent-gold)", borderRadius: 8, padding: "14px 18px", fontSize: 14, color: "var(--text-primary)", fontFamily: "'IBM Plex Sans', sans-serif" }}>
             <strong style={{ color: "var(--accent-gold)" }}>Insight: </strong>
             The difference between the high ({(results.inputs.baseRate + results.inputs.variance).toFixed(1)}%) and low ({(results.inputs.baseRate - results.inputs.variance).toFixed(1)}%) return scenarios over {results.inputs.years} years is{" "}
             <span style={{ ...MONO, color: "var(--positive)", fontWeight: 600 }}>{fmtDollar(results.high.final - results.low.final)}</span>
