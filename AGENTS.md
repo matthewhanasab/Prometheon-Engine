@@ -10,19 +10,19 @@ Professional stock research platform. Next.js 14 App Router, TypeScript, rechart
 
 ## Visual direction
 
-**"Warm, earthy financial reading room."** Dark, dense, editorial — like an old library with leather, walnut, and gold leaf. Warm charcoal-brown surfaces, cream text, serif headlines, monospaced figures. Never playful, never neon, never cool-toned, never generic SaaS.
+**"Bloomberg terminal meets luxury print journal."** Dark, dense, editorial. Think a financial reading room: navy ink, gold leaf, serif headlines, monospaced figures. Never playful, never neon, never generic SaaS.
 
 ### Palette (CSS variables in `app/globals.css` — always use the variables)
 
-- `--bg-primary: #17120E` — page canvas (deep warm charcoal-brown, not black)
-- `--bg-surface: #201914` — cards
-- `--bg-elevated: #2B221A` — inputs, chips, nested surfaces
-- `--border: #3A2E23` / `--border-active: #57432F`
+- `--bg-primary: #0A0F1E` — page canvas (deep navy, not black)
+- `--bg-surface: #111827` — cards
+- `--bg-elevated: #1C2333` — inputs, chips, nested surfaces
+- `--border: #1E2D45` / `--border-active: #2E4A6E`
 - `--accent-gold: #C9A84C` — THE brand color. Primary buttons, active states, dividers, revenue bars. Use sparingly so it stays special.
-- `--text-primary: #F2EAD9` (warm cream), `--text-secondary: #A08F7A` (taupe), `--text-muted: #6E5F4E`
-- `--positive: #7A9B4E` (moss), `--negative: #C25B4E` (clay) — gains/losses only
+- `--text-primary: #F1F5F9`, `--text-secondary: #64748B`, `--text-muted: #4B5563`
+- `--positive: #22C55E`, `--negative: #EF4444` — gains/losses only
 
-Chart series palette (muted, earthy, no neon and no cool blues): gold `#C9A84C`, terracotta `#C1683C`, moss `#7A9B4E`, sage `#7FA98F`, ochre `#C97B3D`, taupe `#A08F7A`, clay `#C25B4E` (negative values only). Forecast/estimate bars: same hue at `fillOpacity 0.3` with dashed stroke.
+Chart series palette (muted, no neon): gold `#C9A84C`, steel blue `#5B8DEF`, green `#22C55E`, teal `#14B8A6`, slate `#64748B`, red `#EF4444` (negative values only). Forecast/estimate bars: same hue at `fillOpacity 0.3` with dashed stroke.
 
 ### Typography (three fonts, three jobs)
 

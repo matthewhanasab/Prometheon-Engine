@@ -16,8 +16,8 @@ import {
 } from "recharts";
 
 const SEGMENT_COLORS = [
-  "#C9A84C","#C1683C","#7A9B4E","#C25B4E","#9A7B6E","#C97B3D",
-  "#7FA98F","#B0685C","#8B9556","#C9A84C","#8C7A5B","#7FA98F",
+  "#C9A84C","#3B82F6","#22C55E","#EF4444","#A78BFA","#F97316",
+  "#06B6D4","#EC4899","#84CC16","#F59E0B","#6366F1","#14B8A6",
 ];
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -58,12 +58,12 @@ function rollingTTM(arr: number[]): (number | null)[] {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: "#2B221A",
-    border: "1px solid #57432F",
+    background: "#1C2333",
+    border: "1px solid #2E4A6E",
     borderRadius: 4,
     fontFamily: "IBM Plex Mono, monospace",
     fontSize: 15,
-    color: "#F2EAD9",
+    color: "#F1F5F9",
   },
 };
 
@@ -84,8 +84,8 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   letterSpacing: "0.01em",
 };
 
-const X_TICK = { fill: "#B3A28C", fontSize: 16 };
-const Y_TICK = { fill: "#B3A28C", fontSize: 16 };
+const X_TICK = { fill: "#94A3B8", fontSize: 16 };
+const Y_TICK = { fill: "#94A3B8", fontSize: 16 };
 
 // ─── TTM toggle ──────────────────────────────────────────────────────────────
 
@@ -100,7 +100,7 @@ function TtmToggle({ isTtm, onChange }: { isTtm: boolean; onChange: (v: boolean)
             onClick={() => onChange(opt === "TTM")}
             style={{
               background: active ? "var(--accent-gold)" : "var(--bg-elevated)",
-              color: active ? "#17120E" : "var(--text-secondary)",
+              color: active ? "#0A0F1E" : "var(--text-secondary)",
               border: "1px solid var(--border)",
               borderRadius: 3,
               padding: "3px 10px",
@@ -127,7 +127,7 @@ function QoQLabel(props: {
   const prev = values[index - 1];
   if (prev == null || prev === 0) return null;
   const pct = ((value - prev) / Math.abs(prev)) * 100;
-  const color = pct >= 0 ? "#7A9B4E" : "#C25B4E";
+  const color = pct >= 0 ? "#22C55E" : "#EF4444";
   const label = `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
   return (
     <text
@@ -428,7 +428,7 @@ export default function ChartsPage() {
             background: "var(--accent-gold)",
             border: "none",
             borderRadius: 4,
-            color: "#17120E",
+            color: "#0A0F1E",
             fontFamily: "Inter, sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,
@@ -492,7 +492,7 @@ export default function ChartsPage() {
           {profile?.industry && (
             <span
               style={{
-                background: "rgba(160,143,122,0.12)",
+                background: "rgba(100,116,139,0.12)",
                 border: "1px solid var(--border)",
                 borderRadius: 3,
                 padding: "2px 8px",
@@ -516,7 +516,7 @@ export default function ChartsPage() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={revenueData} margin={{ top: 20, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#3A2E23" />
+                <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
@@ -541,14 +541,14 @@ export default function ChartsPage() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={ocfData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#3A2E23" />
+                <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtVal(v), "Operating CF"]}
                 />
-                <Bar dataKey="value" fill="#C1683C" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="value" fill="#5B8DEF" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -559,7 +559,7 @@ export default function ChartsPage() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={opIncData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#3A2E23" />
+                <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
@@ -570,7 +570,7 @@ export default function ChartsPage() {
                   {opIncData.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={(entry.value as number) < 0 ? "#C25B4E" : "#7A9B4E"}
+                      fill={(entry.value as number) < 0 ? "#EF4444" : "#22C55E"}
                     />
                   ))}
                 </Bar>
@@ -583,7 +583,7 @@ export default function ChartsPage() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <LineChart data={marginData} margin={{ top: 14, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#3A2E23" />
+                <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={pctTick} tick={Y_TICK} axisLine={false} tickLine={false} width={64} />
                 <Tooltip
@@ -594,7 +594,7 @@ export default function ChartsPage() {
                   ]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#A08F7A" }}
+                  wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }}
                   formatter={(v) => (v === "gross" ? "Gross Margin" : "Net Margin")}
                 />
                 <Line
@@ -609,9 +609,9 @@ export default function ChartsPage() {
                 <Line
                   type="monotone"
                   dataKey="net"
-                  stroke="#C1683C"
+                  stroke="#5B8DEF"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#C1683C" }}
+                  dot={{ r: 3, fill: "#5B8DEF" }}
                   activeDot={{ r: 4 }}
                   isAnimationActive={false}
                 />
@@ -624,7 +624,7 @@ export default function ChartsPage() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={epsData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#3A2E23" />
+                <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis
                   tickFormatter={(v) => `$${v.toFixed(2)}`}
@@ -641,11 +641,11 @@ export default function ChartsPage() {
                   {epsData.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={(entry.value as number) < 0 ? "#C25B4E" : "#7A9B4E"}
+                      fill={(entry.value as number) < 0 ? "#EF4444" : "#22C55E"}
                     />
                   ))}
                 </Bar>
-                <Bar dataKey="forecast" stackId="eps" fill="#7A9B4E" fillOpacity={0.3} stroke="#7A9B4E" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="forecast" stackId="eps" fill="#22C55E" fillOpacity={0.3} stroke="#22C55E" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -656,7 +656,7 @@ export default function ChartsPage() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={fcfData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#3A2E23" />
+                <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
@@ -667,7 +667,7 @@ export default function ChartsPage() {
                   {fcfData.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={(entry.value as number) < 0 ? "#C25B4E" : "#7FA98F"}
+                      fill={(entry.value as number) < 0 ? "#EF4444" : "#14B8A6"}
                     />
                   ))}
                 </Bar>
@@ -680,14 +680,14 @@ export default function ChartsPage() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={sharesData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#3A2E23" />
+                <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={sharesTick} tick={Y_TICK} axisLine={false} tickLine={false} width={52} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtShares(v), "Shares Outstanding"]}
                 />
-                <Bar dataKey="value" fill="#A08F7A" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="value" fill="#64748B" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -699,14 +699,14 @@ export default function ChartsPage() {
               <div style={CARD_STYLE}>
                 <ResponsiveContainer width="100%" height={360}>
                   <BarChart data={prodChartData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                    <CartesianGrid vertical={false} stroke="#3A2E23" />
+                    <CartesianGrid vertical={false} stroke="#1E2D45" />
                     <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                     <Tooltip
                       {...TOOLTIP_STYLE}
                       formatter={(v: any, name: any) => [fmtVal(v), name]}
                     />
-                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#A08F7A" }} />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }} />
                     {prodKeys.map((key, i) => (
                       <Bar key={key} dataKey={key} stackId="a" fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]} isAnimationActive={false} />
                     ))}
@@ -723,14 +723,14 @@ export default function ChartsPage() {
               <div style={CARD_STYLE}>
                 <ResponsiveContainer width="100%" height={360}>
                   <BarChart data={geoChartData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                    <CartesianGrid vertical={false} stroke="#3A2E23" />
+                    <CartesianGrid vertical={false} stroke="#1E2D45" />
                     <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                     <Tooltip
                       {...TOOLTIP_STYLE}
                       formatter={(v: any, name: any) => [fmtVal(v), name]}
                     />
-                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#A08F7A" }} />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }} />
                     {geoKeys.map((key, i) => (
                       <Bar key={key} dataKey={key} stackId="a" fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]} isAnimationActive={false} />
                     ))}
@@ -745,7 +745,7 @@ export default function ChartsPage() {
           <div style={{ ...CARD_STYLE, marginBottom: "2rem" }}>
             <ResponsiveContainer width="100%" height={360}>
               <LineChart data={balData} margin={{ top: 14, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#3A2E23" />
+                <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
@@ -756,24 +756,24 @@ export default function ChartsPage() {
                   ]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#A08F7A" }}
+                  wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }}
                   formatter={(v) => (v === "assets" ? "Current Assets" : "Current Liabilities")}
                 />
                 <Line
                   type="monotone"
                   dataKey="assets"
-                  stroke="#C1683C"
+                  stroke="#3B82F6"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#C1683C" }}
+                  dot={{ r: 3, fill: "#3B82F6" }}
                   activeDot={{ r: 4 }}
                   isAnimationActive={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="liabilities"
-                  stroke="#C25B4E"
+                  stroke="#EF4444"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#C25B4E" }}
+                  dot={{ r: 3, fill: "#EF4444" }}
                   activeDot={{ r: 4 }}
                   isAnimationActive={false}
                 />

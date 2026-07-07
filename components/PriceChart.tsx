@@ -8,7 +8,7 @@ function fmt(n: number) {
 }
 
 export default function PriceChart({ data, positive }: { data: PricePoint[]; positive: boolean }) {
-  const color = positive ? "#7A9B4E" : "#C25B4E";
+  const color = positive ? "#22C55E" : "#EF4444";
 
   return (
     <div style={{
@@ -25,14 +25,14 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="#3A2E23" strokeDasharray="3 3" />
+          <CartesianGrid vertical={false} stroke="#1E2D45" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
             tickFormatter={(v) => {
               const d = new Date(v);
               return d.toLocaleString("en-US", { month: "short", year: "2-digit" });
             }}
-            tick={{ fill: "#A08F7A", fontSize: 10, fontFamily: "IBM Plex Mono" }}
+            tick={{ fill: "#64748B", fontSize: 10, fontFamily: "IBM Plex Mono" }}
             axisLine={false}
             tickLine={false}
             interval={Math.floor(data.length / 6)}
@@ -40,22 +40,22 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
           <YAxis
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v}`}
-            tick={{ fill: "#A08F7A", fontSize: 10, fontFamily: "IBM Plex Mono" }}
+            tick={{ fill: "#64748B", fontSize: 10, fontFamily: "IBM Plex Mono" }}
             axisLine={false}
             tickLine={false}
             width={60}
           />
           <Tooltip
             contentStyle={{
-              background: "#2B221A",
-              border: "1px solid #57432F",
+              background: "#1C2333",
+              border: "1px solid #2E4A6E",
               borderRadius: 4,
               fontFamily: "IBM Plex Mono",
               fontSize: 12,
-              color: "#F2EAD9",
+              color: "#F1F5F9",
             }}
             formatter={(v: any) => [fmt(v), "Price"]}
-            labelStyle={{ color: "#A08F7A", fontSize: 10, marginBottom: 4 }}
+            labelStyle={{ color: "#64748B", fontSize: 10, marginBottom: 4 }}
           />
           <Area
             type="monotone"

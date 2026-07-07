@@ -154,14 +154,14 @@ function ChartCard({
 
 const ttStyle = {
   contentStyle: {
-    background: "#3A2E23",
-    border: "1px solid #57432F",
+    background: "#1E2D45",
+    border: "1px solid #2E4A6E",
     borderRadius: 4,
     fontFamily: "IBM Plex Mono, monospace",
     fontSize: 11,
-    color: "#F2EAD9",
+    color: "#F1F5F9",
   },
-  labelStyle: { color: "#A08F7A" },
+  labelStyle: { color: "#64748B" },
 };
 
 function XAx() {
@@ -169,7 +169,7 @@ function XAx() {
     <XAxis
       dataKey="date"
       tickFormatter={tickDate}
-      tick={{ fill: "#A08F7A", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+      tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
       axisLine={false}
       tickLine={false}
       interval="preserveStartEnd"
@@ -187,7 +187,7 @@ function YAx({
   return (
     <YAxis
       tickFormatter={(v) => `${v}${unit}`}
-      tick={{ fill: "#A08F7A", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+      tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
       axisLine={false}
       tickLine={false}
       width={44}
@@ -198,7 +198,7 @@ function YAx({
 
 function Grid() {
   return (
-    <CartesianGrid vertical={false} stroke="#332919" strokeDasharray="3 3" />
+    <CartesianGrid vertical={false} stroke="#1A2640" strokeDasharray="3 3" />
   );
 }
 
@@ -288,11 +288,11 @@ function SpreadChart({ data }: { data: FredSeries[] }) {
           formatter={(v: any) => [`${v.toFixed(2)}%`, "Spread"]}
           labelFormatter={tickDate}
         />
-        <ReferenceLine y={0} stroke="#A08F7A" strokeWidth={1} />
+        <ReferenceLine y={0} stroke="#64748B" strokeWidth={1} />
         <Area
           type="monotone"
           dataKey="pos"
-          stroke="#7A9B4E"
+          stroke="#22C55E"
           fill="rgba(34,197,94,0.10)"
           strokeWidth={1.5}
           dot={false}
@@ -302,7 +302,7 @@ function SpreadChart({ data }: { data: FredSeries[] }) {
         <Area
           type="monotone"
           dataKey="neg"
-          stroke="#C25B4E"
+          stroke="#EF4444"
           fill="rgba(239,68,68,0.15)"
           strokeWidth={1.5}
           dot={false}
@@ -319,16 +319,16 @@ const MARKET_META: Record<
   string,
   { label: string; color: string }
 > = {
-  SPY: { label: "S&P 500", color: "#7A9B4E" },
-  QQQ: { label: "Nasdaq", color: "#C1683C" },
+  SPY: { label: "S&P 500", color: "#22C55E" },
+  QQQ: { label: "Nasdaq", color: "#3B82F6" },
   GLD: { label: "Gold", color: "#C9A84C" },
-  USO: { label: "Crude Oil", color: "#C97B3D" },
-  BTCUSD: { label: "Bitcoin", color: "#C9A84C" },
-  UUP: { label: "USD Index", color: "#9A7B6E" },
+  USO: { label: "Crude Oil", color: "#F97316" },
+  BTCUSD: { label: "Bitcoin", color: "#F59E0B" },
+  UUP: { label: "USD Index", color: "#8B5CF6" },
 };
 
 function MarketCard({ q }: { q: MarketQuote }) {
-  const meta = MARKET_META[q.symbol] ?? { label: q.symbol, color: "#A08F7A" };
+  const meta = MARKET_META[q.symbol] ?? { label: q.symbol, color: "#64748B" };
   const up = q.changesPercentage >= 0;
   return (
     <div
@@ -628,7 +628,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="gs10"
-                stroke="#C1683C"
+                stroke="#3B82F6"
                 strokeWidth={1.5}
                 dot={false}
                 isAnimationActive={false}
@@ -637,7 +637,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="gs2"
-                stroke="#9A7B6E"
+                stroke="#8B5CF6"
                 strokeWidth={1.5}
                 strokeDasharray="4 3"
                 dot={false}
@@ -689,7 +689,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="cpi"
-                stroke="#C25B4E"
+                stroke="#EF4444"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -698,7 +698,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="pce"
-                stroke="#C97B3D"
+                stroke="#F97316"
                 strokeWidth={1.5}
                 strokeDasharray="4 3"
                 dot={false}
@@ -737,7 +737,7 @@ export default function MacroPage() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#9A7B6E"
+                stroke="#A78BFA"
                 fill="rgba(167,139,250,0.08)"
                 strokeWidth={2}
                 dot={false}
@@ -774,7 +774,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#C97B3D"
+                stroke="#F97316"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -800,7 +800,7 @@ export default function MacroPage() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#7A9B4E"
+                stroke="#22C55E"
                 fill="rgba(34,197,94,0.07)"
                 strokeWidth={2}
                 dot={false}
@@ -827,7 +827,7 @@ export default function MacroPage() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#9A7B6E"
+                stroke="#A78BFA"
                 fill="rgba(167,139,250,0.08)"
                 strokeWidth={2}
                 dot={false}
@@ -884,11 +884,11 @@ export default function MacroPage() {
               />
               <ReferenceLine
                 y={30}
-                stroke="#C25B4E"
+                stroke="#EF4444"
                 strokeDasharray="4 3"
                 label={{
                   value: "Fear",
-                  fill: "#C25B4E",
+                  fill: "#EF4444",
                   fontSize: 9,
                   fontFamily: "IBM Plex Mono",
                 }}
@@ -896,7 +896,7 @@ export default function MacroPage() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#C25B4E"
+                stroke="#EF4444"
                 fill="rgba(239,68,68,0.08)"
                 strokeWidth={2}
                 dot={false}
@@ -926,7 +926,7 @@ export default function MacroPage() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#9A7B6E"
+                stroke="#A78BFA"
                 fill="rgba(167,139,250,0.09)"
                 strokeWidth={2}
                 dot={false}
@@ -951,7 +951,7 @@ export default function MacroPage() {
                   <Grid />
                   <XAxis
                     dataKey="label"
-                    tick={{ fill: "#A08F7A", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -1071,7 +1071,7 @@ export default function MacroPage() {
                       const d = new Date(parseInt(v) * 1000);
                       return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
                     }}
-                    tick={{ fill: "#A08F7A", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
                     axisLine={false}
                     tickLine={false}
                     interval="preserveStartEnd"
@@ -1079,7 +1079,7 @@ export default function MacroPage() {
                   <YAxis
                     domain={[0, 100]}
                     tickFormatter={(v) => String(v)}
-                    tick={{ fill: "#A08F7A", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
                     axisLine={false}
                     tickLine={false}
                     width={44}
@@ -1092,8 +1092,8 @@ export default function MacroPage() {
                       return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
                     }}
                   />
-                  <ReferenceLine y={25} stroke="#C25B4E" strokeDasharray="4 3" label={{ value: "Fear", fill: "#C25B4E", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
-                  <ReferenceLine y={75} stroke="#7A9B4E" strokeDasharray="4 3" label={{ value: "Greed", fill: "#7A9B4E", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
+                  <ReferenceLine y={25} stroke="#EF4444" strokeDasharray="4 3" label={{ value: "Fear", fill: "#EF4444", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
+                  <ReferenceLine y={75} stroke="#22C55E" strokeDasharray="4 3" label={{ value: "Greed", fill: "#22C55E", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
                   <Area
                     type="monotone"
                     dataKey="value"

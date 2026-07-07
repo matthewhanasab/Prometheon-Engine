@@ -146,7 +146,7 @@ export default function CoveredCallsPage() {
             background: "var(--accent-gold)",
             border: "none",
             borderRadius: 4,
-            color: "#17120E",
+            color: "#0A0F1E",
             fontFamily: "Inter, sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,

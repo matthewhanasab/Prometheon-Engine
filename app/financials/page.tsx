@@ -277,7 +277,7 @@ export default function FinancialsPage() {
             <label key={p} style={{
               padding: "9px 16px", cursor: "pointer",
               background: period === p ? "var(--accent-gold)" : "var(--bg-elevated)",
-              color: period === p ? "#17120E" : "var(--text-secondary)",
+              color: period === p ? "#0A0F1E" : "var(--text-secondary)",
               fontFamily: "'Inter',sans-serif", fontSize: "0.72rem", fontWeight: period === p ? 700 : 400,
               textTransform: "capitalize", letterSpacing: "0.05em", transition: "all 0.15s",
             }}>
@@ -290,7 +290,7 @@ export default function FinancialsPage() {
         <button
           type="submit"
           style={{
-            background: "var(--accent-gold)", color: "#17120E", border: "none", borderRadius: 4,
+            background: "var(--accent-gold)", color: "#0A0F1E", border: "none", borderRadius: 4,
             padding: "9px 22px", fontFamily: "'Inter',sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}

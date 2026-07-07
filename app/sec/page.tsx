@@ -23,14 +23,14 @@ interface Insider {
 const FORM_COLORS: Record<string, { bg: string; color: string }> = {
   "10-K": { bg: "rgba(201,168,76,0.15)",  color: "#C9A84C" },
   "10-Q": { bg: "rgba(59,130,246,0.15)",  color: "#60A5FA" },
-  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "#B3A28C" },
-  "4":    { bg: "rgba(34,197,94,0.15)",   color: "#7A9B4E" },
+  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "#94A3B8" },
+  "4":    { bg: "rgba(34,197,94,0.15)",   color: "#22C55E" },
   "S-1":  { bg: "rgba(168,85,247,0.15)",  color: "#C084FC" },
   "DEF 14A": { bg: "rgba(249,115,22,0.15)", color: "#FB923C" },
 };
 
 function formBadge(form: string) {
-  const style = FORM_COLORS[form] ?? { bg: "rgba(160,143,122,0.12)", color: "var(--text-secondary)" };
+  const style = FORM_COLORS[form] ?? { bg: "rgba(100,116,139,0.12)", color: "var(--text-secondary)" };
   return (
     <span style={{
       display: "inline-block",
@@ -153,7 +153,7 @@ export default function SecFilingsPage() {
             background: "var(--accent-gold)",
             border: "none",
             borderRadius: 4,
-            color: "#17120E",
+            color: "#0A0F1E",
             fontFamily: "Inter, sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,
