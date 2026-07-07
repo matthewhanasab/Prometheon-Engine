@@ -128,6 +128,104 @@ function Grid({ cols = 5, children }: { cols?: number; children: React.ReactNode
   );
 }
 
+// ── Empty preview (shown before a ticker is loaded) ──────────────────────────
+function EmptyPreview() {
+  const D = "—";
+  const hint: React.CSSProperties = {
+    fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem",
+    color: "var(--text-muted)", padding: "14px 0 4px",
+  };
+  return (
+    <div>
+      {/* Company header placeholder */}
+      <div style={{ borderBottom:"1px solid var(--border)", paddingBottom:"1.5rem", marginBottom:"1.5rem" }}>
+        <div style={{ fontFamily:"'IBM Plex Serif', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-muted)", marginBottom:10 }}>Company Name</div>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12 }}>
+          {["Ticker","Exchange","Sector","Industry"].map(v => (
+            <span key={v} style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-muted)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:2, padding:"2px 8px" }}>{v}</span>
+          ))}
+        </div>
+        <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:"2.4rem", fontWeight:600, color:"var(--text-muted)", letterSpacing:"-0.02em" }}>$—.——</span>
+      </div>
+
+      <Grid cols={5}>
+        <MCard label="52-Wk High" value={D} />
+        <MCard label="52-Wk Low" value={D} />
+        <MCard label="52-Wk Position" value={D} />
+        <MCard label="Beta" value={D} />
+        <MCard label="Analyst Target" value={D} />
+      </Grid>
+
+      <SectionLabel>Price Chart</SectionLabel>
+      <div style={{ height: 500, border: "1px dashed var(--border-active)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, background: "var(--bg-surface)" }}>
+        <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", color: "var(--text-secondary)" }}>Interactive price chart</div>
+        <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Candles · volume · drawing tools · indicators</div>
+      </div>
+
+      <SectionLabel>Mandatory Metrics</SectionLabel>
+      <Grid cols={5}>
+        <MCard label="TTM P/E Ratio" value={D} />
+        <MCard label="Forward P/E" value={D} />
+        <MCard label="Fwd EPS Growth" value={D} />
+        <MCard label="Revenue Growth" value={D} />
+        <MCard label="Total Revenue" value={D} />
+      </Grid>
+      <div style={{ height:8 }} />
+      <Grid cols={5}>
+        <MCard label="Gross Margin" value={D} />
+        <MCard label="Operating Margin" value={D} />
+        <MCard label="Net Margin" value={D} />
+        <MCard label="Price / Sales" value={D} />
+        <MCard label="EPS (TTM)" value={D} />
+      </Grid>
+
+      <SectionLabel>Advanced Metrics</SectionLabel>
+      <Grid cols={5}>
+        <MCard label="PEG Ratio" value={D} />
+        <MCard label="Return on Equity" value={D} />
+        <MCard label="Price / Book" value={D} />
+        <MCard label="Price / FCF" value={D} />
+        <MCard label="FCF Yield" value={D} />
+      </Grid>
+      <div style={{ height:8 }} />
+      <Grid cols={5}>
+        <MCard label="Dividend Yield" value={D} />
+        <MCard label="Debt / Equity" value={D} />
+        <MCard label="Current Ratio" value={D} />
+        <MCard label="Net Debt / Cash" value={D} />
+        <MCard label="Operating CF" value={D} />
+      </Grid>
+
+      <SectionLabel>CAPM · Risk-Adjusted Return</SectionLabel>
+      <Grid cols={5}>
+        <MCard label="Risk-Free Rate (10Y)" value={D} />
+        <MCard label="Beta (vs Market)" value={D} />
+        <MCard label="Equity Risk Premium" value={D} />
+        <MCard label="CAPM Expected Return" value={D} />
+        <MCard label="Actual 1Y Return" value={D} />
+      </Grid>
+
+      <SectionLabel>Analyst Recommendations</SectionLabel>
+      <div style={hint}>Buy / hold / sell consensus across analysts, updated monthly.</div>
+
+      <SectionLabel>Earnings History</SectionLabel>
+      <div style={hint}>EPS estimates vs. actuals for recent quarters — beats and misses.</div>
+
+      <SectionLabel>Insider Activity — SEC Form 4</SectionLabel>
+      <div style={hint}>Recent purchases and sales by executives and directors.</div>
+
+      <SectionLabel>Institutional Holders</SectionLabel>
+      <div style={hint}>Top 10 funds holding the stock and how their positions changed.</div>
+
+      <SectionLabel>About</SectionLabel>
+      <div style={hint}>Company profile and business summary.</div>
+
+      <SectionLabel>Recent News</SectionLabel>
+      <div style={hint}>Latest headlines from the past two weeks.</div>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 function ResearchInner() {
   const searchParams = useSearchParams();
@@ -205,12 +303,7 @@ function ResearchInner() {
       {loading && <div style={{ color:"var(--text-secondary)", fontSize:"0.85rem", padding:"40px 0" }}>Loading {input}…</div>}
       {error   && <div style={{ color:"var(--negative)", fontSize:"0.85rem" }}>{error}</div>}
 
-      {!loading && !data && !error && (
-        <div style={{ marginTop:"5rem", textAlign:"center", color:"var(--text-muted)" }}>
-          <div style={{ fontFamily:"'IBM Plex Serif', Georgia, serif", fontSize:"1.1rem", color:"var(--text-secondary)", marginBottom:8 }}>Enter a ticker to begin</div>
-          <div style={{ fontSize:"0.70rem", letterSpacing:"0.1em", textTransform:"uppercase" }}>Prometheon Engine</div>
-        </div>
-      )}
+      {!loading && !data && !error && <EmptyPreview />}
 
       {s && (
         <>
