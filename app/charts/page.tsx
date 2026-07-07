@@ -62,7 +62,7 @@ const TOOLTIP_STYLE = {
     border: "1px solid #2E4A6E",
     borderRadius: 4,
     fontFamily: "IBM Plex Mono, monospace",
-    fontSize: 11,
+    fontSize: 13,
     color: "#F1F5F9",
   },
 };
@@ -84,8 +84,8 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   letterSpacing: "0.01em",
 };
 
-const X_TICK = { fill: "#64748B", fontSize: 9 };
-const Y_TICK = { fill: "#64748B", fontSize: 9 };
+const X_TICK = { fill: "#94A3B8", fontSize: 12 };
+const Y_TICK = { fill: "#94A3B8", fontSize: 12 };
 
 // ─── TTM toggle ──────────────────────────────────────────────────────────────
 
@@ -134,7 +134,7 @@ function QoQLabel(props: {
       x={x + width / 2}
       y={y - 4}
       fill={color}
-      fontSize={7}
+      fontSize={10}
       textAnchor="middle"
       fontFamily="IBM Plex Mono, monospace"
     >
