@@ -72,23 +72,11 @@ body:has(.landing) .main-content { padding: 0 !important; }
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-@keyframes igniteBar {
-  from { width: 0%; }
-  to   { width: 100%; }
-}
 .launch-overlay {
   position: fixed; inset: 0; z-index: 999;
   background: var(--bg-primary);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  animation: launchOverlayIn 0.25s ease forwards;
-}
-.launch-bar-track {
-  width: 200px; height: 2px; background: var(--bg-elevated);
-  margin-top: 2rem; border-radius: 2px; overflow: hidden;
-}
-.launch-bar {
-  height: 100%; background: var(--accent-gold);
-  animation: igniteBar 0.9s ease-in-out forwards;
+  animation: launchOverlayIn 0.4s ease forwards;
 }
 
 @media (max-width: 767px) {

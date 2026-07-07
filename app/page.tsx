@@ -14,7 +14,7 @@ function LaunchButton({ children }: { children: React.ReactNode }) {
     if (launching) return;
     setLaunching(true);
     router.prefetch("/research");
-    setTimeout(() => router.push("/research"), 1000);
+    setTimeout(() => router.push("/research"), 450);
   }
 
   return (
@@ -27,14 +27,7 @@ function LaunchButton({ children }: { children: React.ReactNode }) {
         {children}
       </button>
 
-      {launching && (
-        <div className="launch-overlay">
-          <div className="fade-up">
-            <Image src="/logo_icon.png" alt="" width={90} height={105} style={{ objectFit: "contain" }} priority />
-          </div>
-          <div className="launch-bar-track"><div className="launch-bar" /></div>
-        </div>
-      )}
+      {launching && <div className="launch-overlay" />}
     </>
   );
 }
