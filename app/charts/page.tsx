@@ -62,7 +62,7 @@ const TOOLTIP_STYLE = {
     border: "1px solid #2E4A6E",
     borderRadius: 4,
     fontFamily: "IBM Plex Mono, monospace",
-    fontSize: 13,
+    fontSize: 15,
     color: "#F1F5F9",
   },
 };
@@ -84,8 +84,8 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   letterSpacing: "0.01em",
 };
 
-const X_TICK = { fill: "#94A3B8", fontSize: 12 };
-const Y_TICK = { fill: "#94A3B8", fontSize: 12 };
+const X_TICK = { fill: "#94A3B8", fontSize: 16 };
+const Y_TICK = { fill: "#94A3B8", fontSize: 16 };
 
 // ─── TTM toggle ──────────────────────────────────────────────────────────────
 
@@ -134,7 +134,7 @@ function QoQLabel(props: {
       x={x + width / 2}
       y={y - 4}
       fill={color}
-      fontSize={10}
+      fontSize={13}
       textAnchor="middle"
       fontFamily="IBM Plex Mono, monospace"
     >
@@ -514,7 +514,7 @@ export default function ChartsPage() {
               <BarChart data={revenueData} margin={{ top: 20, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any, name: any) => [fmtVal(v), name === "forecast" ? "Est. Revenue" : "Revenue"]}
@@ -539,7 +539,7 @@ export default function ChartsPage() {
               <BarChart data={ocfData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtVal(v), "Operating CF"]}
@@ -557,7 +557,7 @@ export default function ChartsPage() {
               <BarChart data={opIncData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtVal(v), "Operating Income"]}
@@ -581,7 +581,7 @@ export default function ChartsPage() {
               <LineChart data={marginData} margin={{ top: 14, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={pctTick} tick={Y_TICK} axisLine={false} tickLine={false} width={44} />
+                <YAxis tickFormatter={pctTick} tick={Y_TICK} axisLine={false} tickLine={false} width={64} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any, name: any) => [
@@ -627,7 +627,7 @@ export default function ChartsPage() {
                   tick={Y_TICK}
                   axisLine={false}
                   tickLine={false}
-                  width={44}
+                  width={64}
                 />
                 <Tooltip
                   {...TOOLTIP_STYLE}
@@ -654,7 +654,7 @@ export default function ChartsPage() {
               <BarChart data={fcfData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtVal(v), "Free Cash Flow"]}
@@ -697,7 +697,7 @@ export default function ChartsPage() {
                   <BarChart data={prodChartData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
                     <CartesianGrid vertical={false} stroke="#1E2D45" />
                     <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                    <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                    <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                     <Tooltip
                       {...TOOLTIP_STYLE}
                       formatter={(v: any, name: any) => [fmtVal(v), name]}
@@ -721,7 +721,7 @@ export default function ChartsPage() {
                   <BarChart data={geoChartData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
                     <CartesianGrid vertical={false} stroke="#1E2D45" />
                     <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                    <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                    <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                     <Tooltip
                       {...TOOLTIP_STYLE}
                       formatter={(v: any, name: any) => [fmtVal(v), name]}
@@ -743,7 +743,7 @@ export default function ChartsPage() {
               <LineChart data={balData} margin={{ top: 14, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="#1E2D45" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
+                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any, name: any) => [
