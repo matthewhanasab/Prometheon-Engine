@@ -117,11 +117,11 @@ export default function CoveredCallsPage() {
     <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem", fontWeight: 700, margin: 0 }}>
+        <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
           Covered Calls
         </h1>
         <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", margin: "0.25rem 0 0" }}>
+        <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.25rem 0 0" }}>
           Select stocks with high implied volatility and calculate potential premium income
         </p>
       </div>
@@ -134,7 +134,7 @@ export default function CoveredCallsPage() {
             value={inputTicker}
             onChange={e => setInputTicker(e.target.value.toUpperCase())}
             onKeyDown={e => e.key === "Enter" && loadTicker()}
-            placeholder="e.g. AAPL"
+            placeholder="Ticker"
             style={{ ...inputStyle, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.04em" }}
           />
         </div>
@@ -142,13 +142,16 @@ export default function CoveredCallsPage() {
           onClick={loadTicker}
           disabled={loading}
           style={{
-            padding: "0.5rem 1.2rem",
+            padding: "10px 22px",
             background: "var(--accent-gold)",
             border: "none",
-            borderRadius: 6,
+            borderRadius: 4,
             color: "#0A0F1E",
+            fontFamily: "Inter, sans-serif",
+            fontSize: "0.72rem",
             fontWeight: 700,
-            fontSize: "0.875rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
             cursor: "pointer",
             opacity: loading ? 0.7 : 1,
           }}

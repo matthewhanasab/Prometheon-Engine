@@ -197,7 +197,7 @@ function ResearchInner() {
 
       {/* Search */}
       <form onSubmit={e => { e.preventDefault(); load(input); }} style={{ display:"flex", gap:10, marginBottom:"2rem", maxWidth:380 }}>
-        <input value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder="Enter ticker (e.g. AAPL)"
+        <input value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
           style={{ flex:1, background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:4, padding:"10px 14px", color:"var(--text-primary)", fontFamily:"'IBM Plex Mono',monospace", fontSize:"0.85rem", outline:"none" }} />
         <button type="submit" style={{ background:"var(--accent-gold)", color:"#0A0F1E", border:"none", borderRadius:4, padding:"10px 22px", fontFamily:"'Inter',sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
       </form>

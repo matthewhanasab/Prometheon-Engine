@@ -117,10 +117,10 @@ export default function SecFilingsPage() {
     <div style={{ fontFamily: "Inter, sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem", fontWeight: 700, margin: 0 }}>
+        <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
           SEC Filings
         </h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", margin: "0.25rem 0 0" }}>
+        <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.25rem 0 0" }}>
           EDGAR · Real-time regulatory filings
         </p>
       </div>
@@ -131,7 +131,7 @@ export default function SecFilingsPage() {
           value={inputTicker}
           onChange={e => setInputTicker(e.target.value.toUpperCase())}
           onKeyDown={e => e.key === "Enter" && loadTicker()}
-          placeholder="Ticker symbol…"
+          placeholder="Ticker"
           style={{
             width: 200,
             padding: "0.5rem 0.75rem",
@@ -149,13 +149,16 @@ export default function SecFilingsPage() {
           onClick={loadTicker}
           disabled={loading}
           style={{
-            padding: "0.5rem 1.2rem",
+            padding: "10px 22px",
             background: "var(--accent-gold)",
             border: "none",
-            borderRadius: 6,
+            borderRadius: 4,
             color: "#0A0F1E",
+            fontFamily: "Inter, sans-serif",
+            fontSize: "0.72rem",
             fontWeight: 700,
-            fontSize: "0.875rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
             cursor: "pointer",
             opacity: loading ? 0.7 : 1,
           }}

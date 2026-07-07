@@ -447,7 +447,7 @@ export default function ProjectionsPage() {
 
   return (
     <div style={{ padding: "2rem", margin: "0 auto" }}>
-      <h1 style={{ ...HEADING, fontSize: "2rem", margin: "0 0 0.5rem" }}>Projections</h1>
+      <h1 style={{ ...HEADING, fontSize: "1.75rem", margin: "0 0 0.5rem" }}>Projections</h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "2rem" }} />
 
       {/* Search */}
@@ -456,7 +456,7 @@ export default function ProjectionsPage() {
           value={inputVal}
           onChange={e => setInputVal(e.target.value)}
           onKeyDown={e => e.key === "Enter" && loadStock()}
-          placeholder="Enter ticker symbol..."
+          placeholder="Ticker"
           style={{
             background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6,
             color: "var(--text-primary)", padding: "9px 14px", fontSize: 14, outline: "none",
@@ -467,8 +467,8 @@ export default function ProjectionsPage() {
           onClick={loadStock}
           disabled={loading}
           style={{
-            background: "var(--accent-gold)", color: "#000", border: "none", borderRadius: 6,
-            padding: "9px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif",
+            background: "var(--accent-gold)", color: "#0A0F1E", border: "none", borderRadius: 4,
+            padding: "10px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "Inter, sans-serif",
           }}
         >
           {loading ? "Loading..." : "Load"}

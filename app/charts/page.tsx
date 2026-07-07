@@ -378,15 +378,16 @@ export default function ChartsPage() {
       {/* Header */}
       <h1
         style={{
-          fontFamily: "'Playfair Display', serif",
-          fontSize: "2rem",
-          fontWeight: 700,
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontSize: "1.75rem",
+          fontWeight: 500,
+          letterSpacing: "-0.02em",
           margin: "0 0 0.2rem",
         }}
       >
         Financial Charts
       </h1>
-      <p style={{ color: "var(--text-secondary)", fontSize: "0.8rem", margin: "0 0 0.75rem" }}>
+      <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0 0 0.75rem" }}>
         Revenue · OCF · Operating Income · Margins · EPS · FCF · Shares · PE Ratio
       </p>
 
@@ -405,7 +406,7 @@ export default function ChartsPage() {
           value={inputTicker}
           onChange={(e) => setInputTicker(e.target.value.toUpperCase())}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder="Ticker symbol…"
+          placeholder="Ticker"
           style={{
             width: 180,
             padding: "0.5rem 0.75rem",
@@ -423,13 +424,16 @@ export default function ChartsPage() {
           onClick={handleSubmit}
           disabled={loading}
           style={{
-            padding: "0.5rem 1.1rem",
+            padding: "10px 22px",
             background: "var(--accent-gold)",
             border: "none",
-            borderRadius: 6,
+            borderRadius: 4,
             color: "#0A0F1E",
+            fontFamily: "Inter, sans-serif",
+            fontSize: "0.72rem",
             fontWeight: 700,
-            fontSize: "0.875rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
             cursor: loading ? "not-allowed" : "pointer",
             opacity: loading ? 0.7 : 1,
           }}
@@ -544,7 +548,7 @@ export default function ChartsPage() {
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtVal(v), "Operating CF"]}
                 />
-                <Bar dataKey="value" fill="#ffd600" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="value" fill="#5B8DEF" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -566,7 +570,7 @@ export default function ChartsPage() {
                   {opIncData.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={(entry.value as number) < 0 ? "#EF4444" : "#76ff03"}
+                      fill={(entry.value as number) < 0 ? "#EF4444" : "#22C55E"}
                     />
                   ))}
                 </Bar>
@@ -596,18 +600,18 @@ export default function ChartsPage() {
                 <Line
                   type="monotone"
                   dataKey="gross"
-                  stroke="#f000b8"
+                  stroke="#C9A84C"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#f000b8" }}
+                  dot={{ r: 3, fill: "#C9A84C" }}
                   activeDot={{ r: 4 }}
                   isAnimationActive={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="net"
-                  stroke="#00d4e0"
+                  stroke="#5B8DEF"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#00d4e0" }}
+                  dot={{ r: 3, fill: "#5B8DEF" }}
                   activeDot={{ r: 4 }}
                   isAnimationActive={false}
                 />
@@ -637,11 +641,11 @@ export default function ChartsPage() {
                   {epsData.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={(entry.value as number) < 0 ? "#EF4444" : "#00e676"}
+                      fill={(entry.value as number) < 0 ? "#EF4444" : "#22C55E"}
                     />
                   ))}
                 </Bar>
-                <Bar dataKey="forecast" stackId="eps" fill="#00e676" fillOpacity={0.3} stroke="#00e676" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="forecast" stackId="eps" fill="#22C55E" fillOpacity={0.3} stroke="#22C55E" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -663,7 +667,7 @@ export default function ChartsPage() {
                   {fcfData.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={(entry.value as number) < 0 ? "#EF4444" : "#00d4e0"}
+                      fill={(entry.value as number) < 0 ? "#EF4444" : "#14B8A6"}
                     />
                   ))}
                 </Bar>
@@ -683,7 +687,7 @@ export default function ChartsPage() {
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtShares(v), "Shares Outstanding"]}
                 />
-                <Bar dataKey="value" fill="#76ff03" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="value" fill="#64748B" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -144,7 +144,7 @@ export default function CalculatorPage() {
 
   return (
     <div style={{ padding: "2rem", margin: "0 auto" }}>
-      <h1 style={{ ...HEADING, fontSize: "2rem", margin: "0 0 0.5rem" }}>Compound Calculator</h1>
+      <h1 style={{ ...HEADING, fontSize: "1.75rem", margin: "0 0 0.5rem" }}>Compound Calculator</h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "2rem" }} />
 
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
