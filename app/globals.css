@@ -58,16 +58,6 @@ body:has(.landing) .main-content { padding: 0 !important; }
 }
 .ticker-track:hover { animation-play-state: paused; }
 
-@keyframes logoGlow {
-  0%, 100% { filter: drop-shadow(0 0 18px rgba(91, 155, 213, 0.25)); }
-  50%      { filter: drop-shadow(0 0 42px rgba(91, 155, 213, 0.55)); }
-}
-.logo-glow { animation: logoGlow 4.5s ease-in-out infinite; }
-/* fade-up + logo-glow on the same element: run both (animation shorthand overrides otherwise) */
-.fade-up.logo-glow {
-  opacity: 0;
-  animation: fadeUp 0.9s ease forwards, logoGlow 4.5s ease-in-out 1s infinite;
-}
 
 .feature-card {
   transition: transform 0.2s ease, border-color 0.2s ease;

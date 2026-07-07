@@ -224,7 +224,7 @@ export default function LandingPage() {
       <section style={{ position: "relative", minHeight: "88vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
         <Constellation />
 
-        <div className="fade-up logo-glow" style={{ position: "relative" }}>
+        <div className="fade-up" style={{ position: "relative" }}>
           <Image src="/logo_transparent.png" alt="Prometheon Engine" width={560} height={180} priority
             style={{ objectFit: "contain", maxWidth: "88vw", height: "auto" }} />
         </div>
