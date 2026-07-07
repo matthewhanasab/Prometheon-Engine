@@ -169,6 +169,38 @@ function TickerTape() {
   );
 }
 
+// ── Live scaled preview of an app page ────────────────────────────────────────
+function LivePreview({ href }: { href: string }) {
+  return (
+    <div style={{
+      position: "relative", height: 280, overflow: "hidden", borderRadius: 6,
+      border: "1px solid rgba(212,180,94,0.45)", background: "var(--bg-primary)",
+      boxShadow: "0 0 24px rgba(212,180,94,0.08)",
+    }}>
+      <iframe
+        src={href}
+        loading="lazy"
+        scrolling="no"
+        style={{
+          width: 1500, height: 1500, border: "none",
+          transform: "scale(0.335)", transformOrigin: "top left",
+          pointerEvents: "none",
+        }}
+      />
+      <div style={{ position: "absolute", inset: 0 }} />
+    </div>
+  );
+}
+
+const SHOWCASE = [
+  { href: "/research",   title: "Stock Research",    desc: "Type a ticker, get the full picture — valuation, growth, quality, analyst consensus, insiders, and institutions on one page." },
+  { href: "/macro",      title: "Macro Dashboard",   desc: "Rates, inflation, the yield curve, and fear & greed — know the market backdrop before you buy anything." },
+  { href: "/earnings",   title: "Earnings Calendar", desc: "Who reports this week, before the bell and after the close. Click any ticker to research it instantly." },
+  { href: "/screener",   title: "Screener",          desc: "Filter the entire market by sector, size, valuation, and profitability — then jump straight into research." },
+  { href: "/charts",     title: "Financial Charts",  desc: "Quarterly revenue, margins, EPS, and cash flow — with analyst forecasts drawn right on the chart." },
+  { href: "/calculator", title: "Compound Calculator", desc: "See what consistent investing does over decades, across low, base, and high return scenarios." },
+];
+
 // ── Feature grid ──────────────────────────────────────────────────────────────
 const FEATURES = [
   { href: "/research",      title: "Stock Research",       desc: "40+ metrics, analyst consensus, insider and institutional activity — one page per ticker." },
@@ -230,6 +262,48 @@ export default function LandingPage() {
 
       {/* ── Live ticker ── */}
       <TickerTape />
+
+      {/* ── How it works ── */}
+      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "4.5rem 1.5rem 1rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(480px, 100%), 1fr))", gap: 18 }}>
+
+          {/* Gold header card */}
+          <div style={{
+            background: "linear-gradient(120deg, #E8CB7A 0%, var(--accent-gold) 55%, #A8842E 100%)",
+            borderRadius: 6, padding: "2.6rem 2.4rem", display: "flex",
+            flexDirection: "column", justifyContent: "center", alignItems: "flex-start", gap: 20,
+          }}>
+            <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "#131C2E", margin: 0, letterSpacing: "-0.02em" }}>
+              How it works
+            </h2>
+            <p style={{ color: "#2A3550", fontSize: "0.88rem", lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
+              These aren&apos;t mockups — every panel below is the live application, rendered in
+              miniature. Click any card to open the real thing.
+            </p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <LaunchButton>Launch the Engine</LaunchButton>
+            </div>
+          </div>
+
+          {/* Live preview cards */}
+          {SHOWCASE.map((s) => (
+            <Link key={s.href} href={s.href} className="feature-card" style={{
+              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6,
+              padding: "1.4rem", textDecoration: "none", display: "flex", flexDirection: "column", gap: 14,
+            }}>
+              <div>
+                <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
+                  {s.title}
+                </div>
+                <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                  {s.desc}
+                </div>
+              </div>
+              <LivePreview href={s.href} />
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* ── Features ── */}
       <section style={{ maxWidth: 1200, margin: "0 auto", padding: "4.5rem 1.5rem 3rem" }}>
