@@ -45,11 +45,12 @@ function fmtShares(v: number | null): string {
   return v.toFixed(0);
 }
 
-function rollingTTM(arr: number[]): number[] {
+function rollingTTM(arr: number[]): (number | null)[] {
   // arr is chronological (oldest first). TTM[i] = sum of [i-3..i]
   return arr.map((_, i) => {
-    if (i < 3) return NaN;
-    return arr[i] + arr[i - 1] + arr[i - 2] + arr[i - 3];
+    if (i < 3) return null;
+    const sum = arr[i] + arr[i - 1] + arr[i - 2] + arr[i - 3];
+    return isFinite(sum) ? sum : null;
   });
 }
 
