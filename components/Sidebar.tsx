@@ -33,6 +33,9 @@ export default function Sidebar() {
   // Close sidebar on nav on mobile
   const handleNav = () => { if (isMobile) setOpen(false); };
 
+  // Landing page is full-bleed — no sidebar
+  if (pathname === "/") return null;
+
   return (
     <>
       {/* Mobile hamburger button */}
