@@ -88,7 +88,6 @@ function SummaryCard({ label, result, color, accentBg }: { label: string; result
 
 export default function CalculatorPage() {
   const [inputs, setInputs] = useState<Inputs>({ principal: 30000, monthly: 1500, years: 15, baseRate: 15.0, variance: 5.0 });
-  const [results, setResults] = useState<Results | null>(null);
 
   const lowRate = inputs.baseRate - inputs.variance;
   const highRate = inputs.baseRate + inputs.variance;
@@ -97,39 +96,32 @@ export default function CalculatorPage() {
     setInputs(prev => ({ ...prev, [field]: val }));
   }
 
-  function calculate() {
-    const { principal, monthly, years, baseRate, variance } = inputs;
-    setResults({
-      low: calcGrowth(principal, monthly, years, baseRate - variance),
-      base: calcGrowth(principal, monthly, years, baseRate),
-      high: calcGrowth(principal, monthly, years, baseRate + variance),
-      inputs: { ...inputs },
-    });
-  }
+  // Results update live as assumptions change
+  const results: Results = {
+    low:  calcGrowth(inputs.principal, inputs.monthly, inputs.years, inputs.baseRate - inputs.variance),
+    base: calcGrowth(inputs.principal, inputs.monthly, inputs.years, inputs.baseRate),
+    high: calcGrowth(inputs.principal, inputs.monthly, inputs.years, inputs.baseRate + inputs.variance),
+    inputs: { ...inputs },
+  };
 
   function reset() {
     setInputs({ principal: 30000, monthly: 1500, years: 15, baseRate: 15.0, variance: 5.0 });
-    setResults(null);
   }
 
-  const chartData = results
-    ? Array.from({ length: results.inputs.years }, (_, i) => ({
-        year: i + 1,
-        Low: results.low.yearly[i],
-        Base: results.base.yearly[i],
-        High: results.high.yearly[i],
-      }))
-    : [];
+  const chartData = Array.from({ length: results.inputs.years }, (_, i) => ({
+    year: i + 1,
+    Low: results.low.yearly[i],
+    Base: results.base.yearly[i],
+    High: results.high.yearly[i],
+  }));
 
-  const tableData = results
-    ? Array.from({ length: results.inputs.years }, (_, i) => ({
-        year: i + 1,
-        contributed: results.inputs.principal + results.inputs.monthly * 12 * (i + 1),
-        low: results.low.yearly[i],
-        base: results.base.yearly[i],
-        high: results.high.yearly[i],
-      }))
-    : [];
+  const tableData = Array.from({ length: results.inputs.years }, (_, i) => ({
+    year: i + 1,
+    contributed: results.inputs.principal + results.inputs.monthly * 12 * (i + 1),
+    low: results.low.yearly[i],
+    base: results.base.yearly[i],
+    high: results.high.yearly[i],
+  }));
 
   const inputStyle: React.CSSProperties = {
     background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 6,
@@ -181,20 +173,19 @@ export default function CalculatorPage() {
 
             <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
               <button
-                onClick={calculate}
-                style={{ flex: 1, background: "var(--accent-gold)", color: "#000", border: "none", borderRadius: 6, padding: "10px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif" }}
-              >Calculate</button>
-              <button
                 onClick={reset}
-                style={{ background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif" }}
-              >Reset</button>
+                style={{ flex: 1, background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif" }}
+              >Reset to Defaults</button>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+              Projections update live as you edit.
             </div>
           </div>
         </div>
 
         {/* Results Panel */}
         <div style={{ flex: 1, minWidth: 300 }}>
-          {results ? (
+          {(
             <>
               <div style={{ display: "flex", gap: 14, marginBottom: 22, flexWrap: "wrap" }}>
                 <SummaryCard label="LOW PROJECTION"  result={results.low}  color="var(--negative)"    accentBg="#7F1D1D" />
@@ -227,10 +218,6 @@ export default function CalculatorPage() {
                 </ResponsiveContainer>
               </div>
             </>
-          ) : (
-            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "48px 24px", textAlign: "center", color: "var(--text-secondary)", fontSize: 14 }}>
-              Enter your assumptions and click <strong style={{ color: "var(--accent-gold)" }}>Calculate</strong> to see projections.
-            </div>
           )}
         </div>
       </div>
