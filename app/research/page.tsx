@@ -208,7 +208,7 @@ function ResearchInner() {
       {!loading && !data && !error && (
         <div style={{ marginTop:"5rem", textAlign:"center", color:"var(--text-muted)" }}>
           <div style={{ fontFamily:"'Playfair Display',Georgia,serif", fontSize:"1.1rem", color:"var(--text-secondary)", marginBottom:8 }}>Enter a ticker to begin</div>
-          <div style={{ fontSize:"0.70rem", letterSpacing:"0.1em", textTransform:"uppercase" }}>Powered by Financial Modeling Prep</div>
+          <div style={{ fontSize:"0.70rem", letterSpacing:"0.1em", textTransform:"uppercase" }}>Prometheon Engine</div>
         </div>
       )}
 
@@ -422,7 +422,7 @@ function ResearchInner() {
                   e.epsLow != null && e.epsHigh != null ? `$${e.epsLow.toFixed(2)} – $${e.epsHigh.toFixed(2)}` : "—",
                   e.numAnalysts ?? "—",
                 ])} />
-              <div style={{ fontSize:"0.65rem", color:"var(--text-muted)", marginTop:6 }}>Consensus EPS &amp; revenue estimates · Financial Modeling Prep · Not financial advice.</div>
+              <div style={{ fontSize:"0.65rem", color:"var(--text-muted)", marginTop:6 }}>Consensus EPS &amp; revenue estimates · Not financial advice.</div>
             </>
           )}
 
@@ -477,7 +477,7 @@ function ResearchInner() {
                     : "—",
                 ])}
               />
-              <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: 6 }}>Top 10 institutional holders · Financial Modeling Prep · Not financial advice.</div>
+              <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: 6 }}>Top 10 institutional holders · Not financial advice.</div>
             </>
           )}
 

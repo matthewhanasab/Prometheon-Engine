@@ -262,7 +262,7 @@ export default function FinancialsPage() {
         <input
           value={input}
           onChange={e => setInput(e.target.value.toUpperCase())}
-          placeholder="Ticker (e.g. AAPL)"
+          placeholder="Ticker"
           required
           style={{
             width: 160, background: "var(--bg-elevated)", border: "1px solid var(--border)",
@@ -304,7 +304,7 @@ export default function FinancialsPage() {
       {!loading && !data && !error && (
         <div style={{ marginTop: "5rem", textAlign: "center", color: "var(--text-muted)" }}>
           <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: "1.1rem", color: "var(--text-secondary)", marginBottom: 8 }}>Enter a ticker to view financials</div>
-          <div style={{ fontSize: "0.70rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>Powered by Financial Modeling Prep</div>
+          <div style={{ fontSize: "0.70rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>Prometheon Engine</div>
         </div>
       )}
 
@@ -356,7 +356,7 @@ export default function FinancialsPage() {
           )}
 
           <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: 10 }}>
-            YoY % change shown left of each value · Green = improved · Red = worsened · Source: Financial Modeling Prep
+            YoY % change shown left of each value · Green = improved · Red = worsened
           </div>
         </>
       )}

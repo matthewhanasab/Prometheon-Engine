@@ -175,6 +175,12 @@ interface Profile {
   industry?: string;
 }
 
+interface EstimateRow {
+  date: string;
+  revenueAvg?: number;
+  epsAvg?: number;
+}
+
 interface ChartsData {
   income: IncomeRow[];
   cashflow: CashflowRow[];
@@ -182,6 +188,7 @@ interface ChartsData {
   profile: Profile;
   productSegments: Record<string, number>[];
   geoSegments: Record<string, number>[];
+  estimates: EstimateRow[];
 }
 
 // ─── page ────────────────────────────────────────────────────────────────────
@@ -229,6 +236,16 @@ export default function ChartsPage() {
   const balance         = data?.balance         ?? [];
   const productSegments = data?.productSegments ?? [];
   const geoSegments     = data?.geoSegments     ?? [];
+  const estimates       = data?.estimates       ?? [];
+
+  // Future analyst estimates (quarters after the last reported one), oldest first
+  const lastReported = income.length > 0 ? income[income.length - 1].date : null;
+  const futureEst = lastReported
+    ? [...estimates]
+        .filter((e) => e.date > lastReported)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 6)
+    : [];
 
   const labels        = income.map((r) => qLabel(r.date));
   const cfLabels      = cashflow.map((r) => qLabel(r.date));
@@ -274,7 +291,17 @@ export default function ChartsPage() {
     return lbls.map((label, i) => ({ label, value: vals[i] }));
   }
 
-  const revenueData   = toBarData(labels, revenueVals);
+  // Revenue + EPS charts get forecast bars appended (quarterly view only —
+  // estimates are per-quarter so they don't line up with TTM sums)
+  const revenueData: { label: string; value: number | null; forecast?: number | null }[] =
+    toBarData(labels, revenueVals);
+  if (!ttmRevenue) {
+    futureEst.forEach((e) => {
+      if (e.revenueAvg != null) {
+        revenueData.push({ label: `${qLabel(e.date)}E`, value: null, forecast: e.revenueAvg });
+      }
+    });
+  }
   const ocfData       = toBarData(cfLabels, ocfVals);
   const opIncData     = toBarData(labels, opIncVals);
   const marginData    = labels.map((label, i) => ({
@@ -282,7 +309,13 @@ export default function ChartsPage() {
     gross: grossMargin[i],
     net:   netMargin[i],
   }));
-  const epsData       = toBarData(labels, epsVals);
+  const epsData: { label: string; value: number | null; forecast?: number | null }[] =
+    toBarData(labels, epsVals);
+  futureEst.forEach((e) => {
+    if (e.epsAvg != null) {
+      epsData.push({ label: `${qLabel(e.date)}E`, value: null, forecast: e.epsAvg });
+    }
+  });
   const fcfData       = toBarData(cfLabels, fcfVals);
   const sharesData    = toBarData(labels, sharesVals);
   const balData       = balLabels.map((label, i) => ({
@@ -483,15 +516,16 @@ export default function ChartsPage() {
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={60} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: any) => [fmtVal(v), "Revenue"]}
+                  formatter={(v: any, name: any) => [fmtVal(v), name === "forecast" ? "Est. Revenue" : "Revenue"]}
                 />
-                <Bar dataKey="value" fill="#C9A84C" radius={[2, 2, 0, 0]} isAnimationActive={false}
+                <Bar dataKey="value" stackId="rev" fill="#C9A84C" radius={[2, 2, 0, 0]} isAnimationActive={false}
                   label={
                     <QoQLabel
                       values={revenueData.map((d) => d.value as number)}
                     />
                   }
                 />
+                <Bar dataKey="forecast" stackId="rev" fill="#C9A84C" fillOpacity={0.3} stroke="#C9A84C" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -596,9 +630,9 @@ export default function ChartsPage() {
                 />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: any) => [`$${v.toFixed(2)}`, "EPS (Diluted)"]}
+                  formatter={(v: any, name: any) => [`$${v.toFixed(2)}`, name === "forecast" ? "Est. EPS" : "EPS (Diluted)"]}
                 />
-                <Bar dataKey="value" radius={[2, 2, 0, 0]} isAnimationActive={false}>
+                <Bar dataKey="value" stackId="eps" radius={[2, 2, 0, 0]} isAnimationActive={false}>
                   {epsData.map((entry, i) => (
                     <Cell
                       key={i}
@@ -606,6 +640,7 @@ export default function ChartsPage() {
                     />
                   ))}
                 </Bar>
+                <Bar dataKey="forecast" stackId="eps" fill="#00e676" fillOpacity={0.3} stroke="#00e676" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -360,7 +360,7 @@ export default function ScreenerPage() {
             </table>
           </div>
           <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginTop: 8, fontFamily: "Inter, sans-serif" }}>
-            Financial Modeling Prep · Click a ticker to open Research · Not financial advice
+            Click a ticker to open Research · Not financial advice
           </div>
         </>
       )}

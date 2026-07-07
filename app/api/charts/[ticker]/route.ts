@@ -22,13 +22,14 @@ export async function GET(
   const t = ticker.toUpperCase();
 
   try {
-    const [income, cashflow, balance, profile, productSegsRaw, geoSegsRaw] = await Promise.all([
+    const [income, cashflow, balance, profile, productSegsRaw, geoSegsRaw, estimates] = await Promise.all([
       fmpGet("/income-statement", { symbol: t, period: "quarterly", limit: "20" }),
       fmpGet("/cash-flow-statement", { symbol: t, period: "quarterly", limit: "20" }),
       fmpGet("/balance-sheet-statement", { symbol: t, period: "quarterly", limit: "20" }),
       fmpGet("/profile", { symbol: t }),
       fmpGet("/revenue-product-segmentation", { symbol: t }),
       fmpGet("/revenue-geographic-segmentation", { symbol: t }),
+      fmpGet("/analyst-estimates", { symbol: t, period: "quarter", limit: "16" }),
     ]);
 
     return NextResponse.json({
@@ -38,6 +39,7 @@ export async function GET(
       profile:         Array.isArray(profile) ? profile[0] : (profile ?? {}),
       productSegments: Array.isArray(productSegsRaw) ? productSegsRaw : [],
       geoSegments:     Array.isArray(geoSegsRaw)     ? geoSegsRaw     : [],
+      estimates:       Array.isArray(estimates)      ? estimates      : [],
     });
   } catch (e) {
     console.error(e);
