@@ -6,29 +6,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 // ── Launch button with ignition animation ────────────────────────────────────
-function LaunchButton({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [launching, setLaunching] = useState(false);
-
-  function launch() {
-    if (launching) return;
-    setLaunching(true);
-    router.prefetch("/research");
-    setTimeout(() => router.push("/research"), 450);
-  }
-
+function LaunchButton({ children, onLaunch }: { children: React.ReactNode; onLaunch: () => void }) {
   return (
-    <>
-      <button onClick={launch} style={{
-        background: "var(--accent-gold)", color: "#131C2E", border: "none", cursor: "pointer",
-        padding: "14px 34px", borderRadius: 4, fontSize: "0.78rem", fontWeight: 700,
-        textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'IBM Plex Sans', sans-serif",
-      }}>
-        {children}
-      </button>
-
-      {launching && <div className="launch-overlay" />}
-    </>
+    <button onClick={onLaunch} style={{
+      background: "var(--accent-gold)", color: "#131C2E", border: "none", cursor: "pointer",
+      padding: "14px 34px", borderRadius: 4, fontSize: "0.78rem", fontWeight: 700,
+      textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'IBM Plex Sans', sans-serif",
+    }}>
+      {children}
+    </button>
   );
 }
 
@@ -202,8 +188,21 @@ const FEATURES = [
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
+  const router = useRouter();
+  const [leaving, setLeaving] = useState(false);
+
+  function launch() {
+    if (leaving) return;
+    setLeaving(true);
+    router.prefetch("/research");
+    setTimeout(() => router.push("/research"), 500);
+  }
+
   return (
-    <div className="landing" style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
+    <div className="landing" style={{
+      fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)",
+      opacity: leaving ? 0 : 1, transition: "opacity 0.5s ease",
+    }}>
 
       {/* ── Hero ── */}
       <section style={{ position: "relative", minHeight: "88vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
@@ -224,7 +223,7 @@ export default function LandingPage() {
         </p>
 
         <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
-          <LaunchButton>Launch the Engine</LaunchButton>
+          <LaunchButton onLaunch={launch}>Launch the Engine</LaunchButton>
           <Link href="/screener" style={{
             background: "transparent", color: "var(--text-primary)", textDecoration: "none",
             border: "1px solid var(--border-active)", padding: "14px 34px", borderRadius: 4,
@@ -266,7 +265,7 @@ export default function LandingPage() {
               miniature. Click any card to open the real thing.
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <LaunchButton>Launch the Engine</LaunchButton>
+              <LaunchButton onLaunch={launch}>Launch the Engine</LaunchButton>
             </div>
           </div>
 
@@ -322,7 +321,7 @@ export default function LandingPage() {
         <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", color: "var(--text-primary)", marginBottom: "1.4rem" }}>
           Stop tab-hopping. Start researching.
         </div>
-        <LaunchButton>Launch the Engine</LaunchButton>
+        <LaunchButton onLaunch={launch}>Launch the Engine</LaunchButton>
       </section>
 
       {/* ── Footer ── */}

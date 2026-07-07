@@ -67,17 +67,6 @@ body:has(.landing) .main-content { padding: 0 !important; }
   border-color: var(--accent-gold) !important;
 }
 
-/* ── Engine launch animation ── */
-@keyframes launchOverlayIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.launch-overlay {
-  position: fixed; inset: 0; z-index: 999;
-  background: var(--bg-primary);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  animation: launchOverlayIn 0.4s ease forwards;
-}
 
 @media (max-width: 767px) {
   html { font-size: clamp(14px, 4vw, 16px); }
