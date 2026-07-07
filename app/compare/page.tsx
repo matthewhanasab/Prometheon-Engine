@@ -26,7 +26,7 @@ function fmtLarge(n: number | null | undefined) {
   return `$${n.toLocaleString()}`;
 }
 
-const COLORS = ["#3B82F6", "#C9A84C", "#22C55E", "#A78BFA"];
+const COLORS = ["#C1683C", "#C9A84C", "#7A9B4E", "#9A7B6E"];
 
 // â”€â”€ Metric config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type MetricDef = {
@@ -237,7 +237,7 @@ export default function ComparePage() {
         <button
           type="submit"
           style={{
-            background: "var(--accent-gold)", color: "#0A0F1E", border: "none", borderRadius: 4,
+            background: "var(--accent-gold)", color: "#17120E", border: "none", borderRadius: 4,
             padding: "9px 22px", fontFamily: "'Inter',sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
@@ -321,7 +321,7 @@ export default function ComparePage() {
                 <PolarGrid stroke="var(--border)" />
                 <PolarAngleAxis
                   dataKey="subject"
-                  tick={{ fill: "#94A3B8", fontSize: 11, fontFamily: "IBM Plex Mono" }}
+                  tick={{ fill: "#B3A28C", fontSize: 11, fontFamily: "IBM Plex Mono" }}
                 />
                 {stocks.map((s, i) => (
                   <Radar
@@ -338,7 +338,7 @@ export default function ComparePage() {
                   wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12 }}
                 />
                 <Tooltip
-                  contentStyle={{ background: "#1C2333", border: "1px solid #2E4A6E", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12, color: "#F1F5F9" }}
+                  contentStyle={{ background: "#2B221A", border: "1px solid #57432F", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12, color: "#F2EAD9" }}
                   formatter={(v: any) => [`${v}/100`]}
                 />
               </RadarChart>

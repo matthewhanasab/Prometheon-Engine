@@ -233,7 +233,7 @@ export default function ScreenerPage() {
             disabled={loading}
             style={{
               background: "var(--accent-gold)",
-              color: "#0A0F1E",
+              color: "#17120E",
               border: "none",
               borderRadius: 4,
               padding: "10px 28px",

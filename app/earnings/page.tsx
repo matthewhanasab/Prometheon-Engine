@@ -40,7 +40,7 @@ interface EarningsEntry {
 function EarningsChip({ entry, side }: { entry: EarningsEntry; side: "bmo" | "amc" | "other" }) {
   const hasBeat = entry.epsActual != null && entry.epsEstimate != null;
   const beat = hasBeat ? entry.epsActual! >= entry.epsEstimate! : null;
-  const borderColor = side === "bmo" ? "#3B82F6" : side === "amc" ? "var(--negative)" : "var(--border)";
+  const borderColor = side === "bmo" ? "#C1683C" : side === "amc" ? "var(--negative)" : "var(--border)";
 
   return (
     <a href={`/research?ticker=${entry.symbol}`} style={{ textDecoration: "none" }}>
@@ -161,7 +161,7 @@ export default function EarningsCalendarPage() {
               fontSize: "0.78rem",
               fontWeight: 600,
               background: filter === f ? "var(--accent-gold)" : "transparent",
-              color: filter === f ? "#0A0F1E" : "var(--text-secondary)",
+              color: filter === f ? "#17120E" : "var(--text-secondary)",
               border: "none",
               cursor: "pointer",
               letterSpacing: "0.01em",
@@ -209,7 +209,7 @@ export default function EarningsCalendarPage() {
                       </div>
                     </div>
                     {today && (
-                      <span style={{ background: "var(--accent-gold)", color: "#0A0F1E", fontSize: "0.62rem", fontWeight: 800, padding: "0.12rem 0.4rem", borderRadius: 4, letterSpacing: "0.06em" }}>
+                      <span style={{ background: "var(--accent-gold)", color: "#17120E", fontSize: "0.62rem", fontWeight: 800, padding: "0.12rem 0.4rem", borderRadius: 4, letterSpacing: "0.06em" }}>
                         TODAY
                       </span>
                     )}
@@ -218,7 +218,7 @@ export default function EarningsCalendarPage() {
                   {/* Tickers */}
                   <div style={{ padding: "0.5rem 0.5rem 0.6rem" }}>
                     {isEmpty ? (
-                      <p style={{ color: "var(--text-muted, #4B5563)", fontSize: "0.75rem", textAlign: "center", padding: "1rem 0", margin: 0 }}>
+                      <p style={{ color: "var(--text-muted, #6E5F4E)", fontSize: "0.75rem", textAlign: "center", padding: "1rem 0", margin: 0 }}>
                         No reports
                       </p>
                     ) : (

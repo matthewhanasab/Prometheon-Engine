@@ -199,7 +199,7 @@ function ResearchInner() {
       <form onSubmit={e => { e.preventDefault(); load(input); }} style={{ display:"flex", gap:10, marginBottom:"2rem", maxWidth:380 }}>
         <input value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
           style={{ flex:1, background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:4, padding:"10px 14px", color:"var(--text-primary)", fontFamily:"'IBM Plex Mono',monospace", fontSize:"0.85rem", outline:"none" }} />
-        <button type="submit" style={{ background:"var(--accent-gold)", color:"#0A0F1E", border:"none", borderRadius:4, padding:"10px 22px", fontFamily:"'Inter',sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
+        <button type="submit" style={{ background:"var(--accent-gold)", color:"#17120E", border:"none", borderRadius:4, padding:"10px 22px", fontFamily:"'Inter',sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
       </form>
 
       {loading && <div style={{ color:"var(--text-secondary)", fontSize:"0.85rem", padding:"40px 0" }}>Loading {input}…</div>}
@@ -330,13 +330,13 @@ function ResearchInner() {
                           { name:"CAPM Expected", val: capmRet * 100 },
                           { name:"Actual 1Y",    val: ret1Y },
                         ]} margin={{ top:8, right:8, left:0, bottom:0 }}>
-                          <XAxis dataKey="name" tick={{ fill:"#94A3B8", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
-                          <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"#64748B", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={48} />
-                          <Tooltip formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"#1C2333", border:"1px solid #2E4A6E", borderRadius:4, fontFamily:"IBM Plex Mono", fontSize:12, color:"#F1F5F9" }} />
+                          <XAxis dataKey="name" tick={{ fill:"#B3A28C", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
+                          <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"#A08F7A", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={48} />
+                          <Tooltip formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"#2B221A", border:"1px solid #57432F", borderRadius:4, fontFamily:"IBM Plex Mono", fontSize:12, color:"#F2EAD9" }} />
                           <Bar dataKey="val" radius={[2,2,0,0]}>
-                            <Cell fill="#2E4A6E" />
+                            <Cell fill="#57432F" />
                             <Cell fill="#C9A84C" />
-                            <Cell fill={ret1Y >= capmRet * 100 ? "#22C55E" : "#EF4444"} />
+                            <Cell fill={ret1Y >= capmRet * 100 ? "#7A9B4E" : "#C25B4E"} />
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
@@ -362,9 +362,9 @@ function ResearchInner() {
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:4, padding:"12px 8px 4px", marginBottom:12 }}>
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={earnings.filter((e: any) => e.surprise != null).map((e: any) => ({ name: (e.date ?? "").slice(0,10), val: e.surprise }))} margin={{ top:4, right:8, left:0, bottom:0 }}>
-                    <XAxis dataKey="name" tick={{ fill:"#64748B", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
-                    <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#64748B", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={40} />
-                    <Tooltip formatter={(v: any) => [`${v.toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"#1C2333", border:"1px solid #2E4A6E", borderRadius:4, fontFamily:"IBM Plex Mono", fontSize:11, color:"#F1F5F9" }} />
+                    <XAxis dataKey="name" tick={{ fill:"#A08F7A", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#A08F7A", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={40} />
+                    <Tooltip formatter={(v: any) => [`${v.toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"#2B221A", border:"1px solid #57432F", borderRadius:4, fontFamily:"IBM Plex Mono", fontSize:11, color:"#F2EAD9" }} />
                     <Bar dataKey="val" radius={[2,2,0,0]}>
                       {earnings.filter((e: any) => e.surprise != null).map((e: any, i: number) => (
                         <Cell key={i} fill={e.surprise >= 0 ? "#059669" : "#dc2626"} />
@@ -415,7 +415,7 @@ function ResearchInner() {
               <Table
                 headers={["Fiscal Year","Revenue Est.","Rev Range","EPS Est.","EPS Range","Analysts"]}
                 rows={futureEsts.map((e: any) => [
-                  { value:`FY ${e.date.slice(0,4)}`, color:"#3B82F6", bold:true },
+                  { value:`FY ${e.date.slice(0,4)}`, color:"#C1683C", bold:true },
                   e.revenueAvg  != null ? fmtLarge(e.revenueAvg)  : "—",
                   e.revenueLow != null && e.revenueHigh != null ? `${fmtLarge(e.revenueLow)} – ${fmtLarge(e.revenueHigh)}` : "—",
                   e.epsAvg != null ? { value:`$${e.epsAvg.toFixed(2)}`, color: e.epsAvg >= 0 ? "var(--positive)" : "var(--negative)", bold:true } : "—",

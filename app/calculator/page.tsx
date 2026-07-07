@@ -197,9 +197,9 @@ export default function CalculatorPage() {
           {results ? (
             <>
               <div style={{ display: "flex", gap: 14, marginBottom: 22, flexWrap: "wrap" }}>
-                <SummaryCard label="LOW PROJECTION"  result={results.low}  color="var(--negative)"    accentBg="#7F1D1D" />
-                <SummaryCard label="BASE PROJECTION" result={results.base} color="var(--accent-gold)" accentBg="#78350F" />
-                <SummaryCard label="HIGH PROJECTION" result={results.high} color="var(--positive)"    accentBg="#14532D" />
+                <SummaryCard label="LOW PROJECTION"  result={results.low}  color="var(--negative)"    accentBg="#6E3229" />
+                <SummaryCard label="BASE PROJECTION" result={results.base} color="var(--accent-gold)" accentBg="#6B4E1F" />
+                <SummaryCard label="HIGH PROJECTION" result={results.high} color="var(--positive)"    accentBg="#42522B" />
               </div>
               <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "16px 18px" }}>
                 <ResponsiveContainer width="100%" height={300}>

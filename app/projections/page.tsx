@@ -60,9 +60,9 @@ interface ScenarioDefaults {
 }
 
 const SCENARIO_DEFAULTS: Record<ScenarioKey, ScenarioDefaults> = {
-  bull: { revGrowth: 15, niGrowth: 20, peLow: 25, peHigh: 45, color: "#22C55E", headerBg: "#166534", label: "BULL" },
-  base: { revGrowth: 10, niGrowth: 12, peLow: 18, peHigh: 28, color: "#3B82F6", headerBg: "#1D4ED8", label: "BASE" },
-  bear: { revGrowth: 3,  niGrowth: 3,  peLow: 10, peHigh: 16, color: "#EF4444", headerBg: "#991B1B", label: "BEAR" },
+  bull: { revGrowth: 15, niGrowth: 20, peLow: 25, peHigh: 45, color: "#7A9B4E", headerBg: "#166534", label: "BULL" },
+  base: { revGrowth: 10, niGrowth: 12, peLow: 18, peHigh: 28, color: "#C1683C", headerBg: "#1D4ED8", label: "BASE" },
+  bear: { revGrowth: 3,  niGrowth: 3,  peLow: 10, peHigh: 16, color: "#C25B4E", headerBg: "#991B1B", label: "BEAR" },
 };
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -355,16 +355,16 @@ function CombinedChart({ stock, assumptions }: { stock: StockData; assumptions: 
         <AreaChart data={data} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
           <defs>
             <linearGradient id="bullFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22C55E" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#22C55E" stopOpacity={0.02} />
+              <stop offset="5%" stopColor="#7A9B4E" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="#7A9B4E" stopOpacity={0.02} />
             </linearGradient>
             <linearGradient id="baseFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.02} />
+              <stop offset="5%" stopColor="#C1683C" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="#C1683C" stopOpacity={0.02} />
             </linearGradient>
             <linearGradient id="bearFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#EF4444" stopOpacity={0.02} />
+              <stop offset="5%" stopColor="#C25B4E" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="#C25B4E" stopOpacity={0.02} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
@@ -378,12 +378,12 @@ function CombinedChart({ stock, assumptions }: { stock: StockData; assumptions: 
           />
           <Legend wrapperStyle={{ fontSize: 12, fontFamily: "IBM Plex Mono", paddingTop: 12 }} />
           <ReferenceLine y={stock.price} stroke="var(--accent-gold)" strokeDasharray="6 3" label={{ value: `Current $${stock.price.toFixed(2)}`, fill: "var(--accent-gold)", fontSize: 11, fontFamily: "IBM Plex Mono" }} />
-          <Area type="monotone" dataKey="bullHigh" stroke="#22C55E" strokeWidth={2} fill="url(#bullFill)" name="Bull High" dot={false} />
-          <Area type="monotone" dataKey="bullLow"  stroke="#22C55E" strokeWidth={1.5} fill="transparent" strokeDasharray="4 2" name="Bull Low" dot={false} />
-          <Area type="monotone" dataKey="baseHigh" stroke="#3B82F6" strokeWidth={2} fill="url(#baseFill)" name="Base High" dot={false} />
-          <Area type="monotone" dataKey="baseLow"  stroke="#3B82F6" strokeWidth={1.5} fill="transparent" strokeDasharray="4 2" name="Base Low" dot={false} />
-          <Area type="monotone" dataKey="bearHigh" stroke="#EF4444" strokeWidth={2} fill="url(#bearFill)" name="Bear High" dot={false} />
-          <Area type="monotone" dataKey="bearLow"  stroke="#EF4444" strokeWidth={1.5} fill="transparent" strokeDasharray="4 2" name="Bear Low" dot={false} />
+          <Area type="monotone" dataKey="bullHigh" stroke="#7A9B4E" strokeWidth={2} fill="url(#bullFill)" name="Bull High" dot={false} />
+          <Area type="monotone" dataKey="bullLow"  stroke="#7A9B4E" strokeWidth={1.5} fill="transparent" strokeDasharray="4 2" name="Bull Low" dot={false} />
+          <Area type="monotone" dataKey="baseHigh" stroke="#C1683C" strokeWidth={2} fill="url(#baseFill)" name="Base High" dot={false} />
+          <Area type="monotone" dataKey="baseLow"  stroke="#C1683C" strokeWidth={1.5} fill="transparent" strokeDasharray="4 2" name="Base Low" dot={false} />
+          <Area type="monotone" dataKey="bearHigh" stroke="#C25B4E" strokeWidth={2} fill="url(#bearFill)" name="Bear High" dot={false} />
+          <Area type="monotone" dataKey="bearLow"  stroke="#C25B4E" strokeWidth={1.5} fill="transparent" strokeDasharray="4 2" name="Bear Low" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -467,7 +467,7 @@ export default function ProjectionsPage() {
           onClick={loadStock}
           disabled={loading}
           style={{
-            background: "var(--accent-gold)", color: "#0A0F1E", border: "none", borderRadius: 4,
+            background: "var(--accent-gold)", color: "#17120E", border: "none", borderRadius: 4,
             padding: "10px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "Inter, sans-serif",
           }}
         >
