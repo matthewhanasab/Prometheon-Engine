@@ -133,6 +133,7 @@ export default function EarningsCalendarPage() {
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem", fontWeight: 700, margin: 0 }}>
           Earnings Calendar
         </h1>
+        <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
         <p style={{ color: "var(--text-secondary)", marginTop: "0.25rem", fontSize: "0.875rem", margin: "0.25rem 0 0" }}>
           Upcoming earnings reports · Before market open &amp; after close
         </p>

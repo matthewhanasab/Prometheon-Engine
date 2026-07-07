@@ -120,6 +120,7 @@ export default function CoveredCallsPage() {
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem", fontWeight: 700, margin: 0 }}>
           Covered Calls
         </h1>
+        <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
         <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", margin: "0.25rem 0 0" }}>
           Select stocks with high implied volatility and calculate potential premium income
         </p>
