@@ -58,6 +58,8 @@ function rollingTTM(arr: number[]): (number | null)[] {
 
 const TOOLTIP_STYLE = {
   cursor: { fill: "rgba(76, 97, 144, 0.18)" },
+  labelStyle: { color: "#F1F5F9" },
+  itemStyle: { color: "#F1F5F9" },
   contentStyle: {
     background: "#283552",
     border: "1px solid #4C6190",
