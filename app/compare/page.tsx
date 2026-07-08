@@ -3,8 +3,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CompareChart from "@/components/CompareChart";
 import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Legend, Tooltip,
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -109,28 +108,64 @@ const RADAR_DIMS: { label: string; calc: (s: any) => number }[] = [
   { label: "EPS Growth", calc: s => score((s.epsGrowth ?? null) != null ? s.epsGrowth * 100 : null, 0, 30) },
 ];
 
-function buildRadarData(stocks: any[]) {
-  return RADAR_DIMS.map(dim => {
-    const entry: Record<string, number | string> = { subject: dim.label };
-    stocks.forEach((s) => { entry[s.ticker] = dim.calc(s); });
-    return entry;
-  });
+// Score -> cell color: red (weak) -> gold (middling) -> green (strong)
+function scoreColor(score: number): { bg: string; fg: string } {
+  if (score >= 70) return { bg: "rgba(46, 213, 115, 0.16)", fg: "#2ED573" };
+  if (score >= 40) return { bg: "rgba(212, 180, 94, 0.14)", fg: "#D4B45E" };
+  return { bg: "rgba(240, 86, 74, 0.13)", fg: "#F0564A" };
 }
 
-// 1Y performance: % change from each stock's first close
-function buildPerfData(stocks: any[]) {
-  const rows = new Map<string, Record<string, number | string>>();
-  for (const s of stocks) {
-    const hist = (s.priceHistory ?? []) as { date: string; price: number }[];
-    if (hist.length < 2) continue;
-    const base = hist[0].price;
-    if (!base) continue;
-    for (const pt of hist) {
-      if (!rows.has(pt.date)) rows.set(pt.date, { date: pt.date });
-      rows.get(pt.date)![s.ticker] = ((pt.price / base) - 1) * 100;
-    }
-  }
-  return Array.from(rows.values()).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+function StrengthHeatmap({ stocks }: { stocks: any[] }) {
+  const rows = RADAR_DIMS.map(dim => ({
+    label: dim.label,
+    scores: stocks.map(s => dim.calc(s)),
+  }));
+  const overall = stocks.map((_, i) =>
+    Math.round(rows.reduce((sum, r) => sum + r.scores[i], 0) / rows.length)
+  );
+  return (
+    <div style={{ overflowX: "auto" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.82rem" }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left", padding: "8px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)" }}>Dimension</th>
+            {stocks.map((s, i) => (
+              <th key={s.ticker} style={{ textAlign: "center", padding: "8px 14px", fontWeight: 700, color: COLORS[i], borderBottom: "1px solid var(--border)" }}>{s.ticker}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(row => (
+            <tr key={row.label}>
+              <td style={{ padding: "7px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-primary)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>{row.label}</td>
+              {row.scores.map((sc, i) => {
+                const c = scoreColor(sc);
+                return (
+                  <td key={i} style={{ padding: "4px 8px", borderBottom: "1px solid var(--border)", textAlign: "center" }}>
+                    <div style={{ background: c.bg, color: c.fg, borderRadius: 3, padding: "5px 0", fontWeight: 600, minWidth: 64 }}>{sc}</div>
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+          <tr>
+            <td style={{ padding: "9px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", fontWeight: 700, color: "var(--accent-gold)", whiteSpace: "nowrap" }}>Overall</td>
+            {overall.map((sc, i) => {
+              const c = scoreColor(sc);
+              return (
+                <td key={i} style={{ padding: "6px 8px", textAlign: "center" }}>
+                  <div style={{ background: c.bg, color: c.fg, border: `1px solid ${c.fg}55`, borderRadius: 3, padding: "6px 0", fontWeight: 700, minWidth: 64, fontSize: "0.9rem" }}>{sc}</div>
+                </td>
+              );
+            })}
+          </tr>
+        </tbody>
+      </table>
+      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 10, padding: "0 4px" }}>
+        Scored 0-100 against fixed benchmarks (e.g. 30%+ net margin = 100, P/E of 10 = 100, P/E of 50+ = 0). Green 70+, gold 40-69, red below 40.
+      </div>
+    </div>
+  );
 }
 
 function GroupedBars({ title, data, stocks, unit }: {
@@ -289,8 +324,6 @@ function CompareInner() {
     }
   }
 
-  const radarData = stocks.length >= 2 ? buildRadarData(stocks) : [];
-  const perfData  = stocks.length >= 2 ? buildPerfData(stocks) : [];
 
   // Category scorecard: who wins the most metrics per section
   const scorecard = SECTIONS.filter(sec => sec.title !== "OTHER").map(sec => {
@@ -360,7 +393,7 @@ function CompareInner() {
           <EmptyHint title="1-Year Performance Race" desc="Both stocks&apos; percentage returns overlaid on one chart." />
           <EmptyHint title="Category Scorecard" desc="Who wins Valuation, Growth, Profitability, and Health — metric by metric." />
           <EmptyHint title="Metric Comparison Table" desc="Valuation, growth, profitability, and balance-sheet health — best value starred in each row." />
-          <EmptyHint title="Multi-Dimensional Radar" desc="All companies plotted on one normalized radar across eight dimensions." />
+          <EmptyHint title="Strength Heatmap" desc="Eight dimensions scored 0-100 against fixed benchmarks, color-coded per company." />
         </>
       )}
 
@@ -456,39 +489,12 @@ function CompareInner() {
             <GroupedBars title="Valuation Multiples — lower is cheaper" data={valuationBars} stocks={stocks} unit="x" />
           </div>
 
-          {/* Radar chart */}
+          {/* Strength heatmap */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px" }}>
             <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
-              Multi-Dimensional Scorecard — 0-100 vs Absolute Benchmarks
+              Strength Heatmap — 0-100 vs Fixed Benchmarks
             </div>
-            <ResponsiveContainer width="100%" height={380}>
-              <RadarChart data={radarData} margin={{ top: 10, right: 40, bottom: 10, left: 40 }}>
-                <PolarGrid stroke="var(--border)" />
-                <PolarAngleAxis
-                  dataKey="subject"
-                  tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono" }}
-                />
-                {stocks.map((s, i) => (
-                  <Radar
-                    key={s.ticker}
-                    name={s.ticker}
-                    dataKey={s.ticker}
-                    stroke={COLORS[i]}
-                    fill={COLORS[i]}
-                    fillOpacity={0.10}
-                    strokeWidth={2}
-                  />
-                ))}
-                <Legend
-                  wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12 }}
-                />
-                <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
-                  contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12, color: "#F1F5F9" }}
-                  formatter={(v: any) => [`${v}/100`]}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+            <StrengthHeatmap stocks={stocks} />
           </div>
         </>
       )}
