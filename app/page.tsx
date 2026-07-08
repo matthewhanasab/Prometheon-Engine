@@ -210,7 +210,7 @@ export default function LandingPage() {
     }}>
 
       {/* ── Hero ── */}
-      <section style={{ position: "relative", minHeight: "88vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
+      <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
         <Constellation />
 
         <div className="fade-up" style={{ position: "relative" }}>
@@ -218,24 +218,12 @@ export default function LandingPage() {
             style={{ objectFit: "contain", maxWidth: "88vw", height: "auto" }} />
         </div>
 
-        <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 0.8rem", maxWidth: 760 }}>
+        <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 2.4rem", maxWidth: 760 }}>
           Every number that matters. One engine.
         </h1>
 
-        <p className="fade-up fade-d2" style={{ position: "relative", fontSize: "0.95rem", color: "var(--text-secondary)", maxWidth: 560, lineHeight: 1.7, margin: "0 0 2.2rem" }}>
-          Ten tabs, ten websites, ten logins — just to research one stock.
-          Prometheon pulls valuation, financials, charts, macro, and filings into a single dark-room terminal.
-        </p>
-
         <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
           <LaunchButton onLaunch={launch}>Launch the Engine</LaunchButton>
-          <Link href="/screener" style={{
-            background: "transparent", color: "var(--text-primary)", textDecoration: "none",
-            border: "1px solid var(--border-active)", padding: "14px 34px", borderRadius: 4,
-            fontSize: "0.78rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em",
-          }}>
-            Try the Screener
-          </Link>
         </div>
 
         {/* Stat chips */}
