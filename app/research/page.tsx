@@ -280,9 +280,10 @@ function ResearchInner() {
   const totalInsiderVal = insiders.reduce((acc: number, t: any) => acc + (t.value ?? 0), 0);
 
   const now = new Date().getFullYear();
-  const futureEsts = (s?.estimates ?? []).filter((e: any) =>
-    e.date && parseInt(e.date.slice(0,4)) >= now
-  ).slice(0, 5);
+  const futureEsts = (s?.estimates ?? [])
+    .filter((e: any) => e.date && parseInt(e.date.slice(0,4)) >= now)
+    .sort((a: any, b: any) => a.date.localeCompare(b.date))
+    .slice(0, 5);
 
   return (
     <div style={{ paddingBottom: "4rem" }}>
