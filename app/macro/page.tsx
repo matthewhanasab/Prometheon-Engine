@@ -284,6 +284,7 @@ function SpreadChart({ data }: { data: FredSeries[] }) {
         <XAx />
         <YAx unit="%" />
         <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
           {...ttStyle}
           formatter={(v: any) => [`${v.toFixed(2)}%`, "Spread"]}
           labelFormatter={tickDate}
@@ -605,6 +606,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                 {...ttStyle}
                 formatter={(v: any, name: any) => [
                   `${fmt(v)}%`,
@@ -668,6 +670,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                 {...ttStyle}
                 formatter={(v: any, name: any) => [
                   `${fmt(v)}%`,
@@ -719,6 +722,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                 {...ttStyle}
                 formatter={(v: any) => [`${fmt(v)}%`, "10Y Breakeven"]}
                 labelFormatter={tickDate}
@@ -767,6 +771,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                 {...ttStyle}
                 formatter={(v: any) => [`${fmt(v)}%`, "Unemployment"]}
                 labelFormatter={tickDate}
@@ -793,6 +798,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                 {...ttStyle}
                 formatter={(v: any) => [fmtK(v), "Init. Claims"]}
                 labelFormatter={tickDate}
@@ -820,6 +826,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "Sentiment"]}
                 labelFormatter={tickDate}
@@ -867,6 +874,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "VIX"]}
                 labelFormatter={tickDate}
@@ -919,6 +927,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "Sentiment"]}
                 labelFormatter={tickDate}
@@ -957,6 +966,7 @@ export default function MacroPage() {
                   />
                   <YAx unit="%" />
                   <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                     {...ttStyle}
                     formatter={(v: any) => [`${fmt(v)}%`, "Yield"]}
                   />
@@ -1085,6 +1095,7 @@ export default function MacroPage() {
                     width={44}
                   />
                   <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                     {...ttStyle}
                     formatter={(v: any) => [String(v), "Fear & Greed"]}
                     labelFormatter={(l: any) => {

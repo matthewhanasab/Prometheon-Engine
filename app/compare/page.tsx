@@ -338,6 +338,7 @@ export default function ComparePage() {
                   wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12 }}
                 />
                 <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                   contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12, color: "#F1F5F9" }}
                   formatter={(v: any) => [`${v}/100`]}
                 />

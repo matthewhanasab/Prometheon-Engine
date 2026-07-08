@@ -46,6 +46,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
             width={60}
           />
           <Tooltip
+                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
             contentStyle={{
               background: "#283552",
               border: "1px solid #4C6190",

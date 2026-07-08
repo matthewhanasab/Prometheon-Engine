@@ -57,6 +57,7 @@ function rollingTTM(arr: number[]): (number | null)[] {
 // ─── shared chart style ──────────────────────────────────────────────────────
 
 const TOOLTIP_STYLE = {
+  cursor: { fill: "rgba(76, 97, 144, 0.18)" },
   contentStyle: {
     background: "#283552",
     border: "1px solid #4C6190",
