@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ReferenceLine, Area, AreaChart, ResponsiveContainer
@@ -390,7 +391,19 @@ function CombinedChart({ stock, assumptions }: { stock: StockData; assumptions: 
   );
 }
 
-export default function ProjectionsPage() {
+function EmptyHint({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div style={{ marginBottom: "1.25rem" }}>
+      <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
+      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
+        <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
+      </div>
+    </div>
+  );
+}
+
+function ProjectionsInner() {
+  const searchParams = useSearchParams();
   const [ticker, setTicker] = useState("");
   const [inputVal, setInputVal] = useState("");
   const [stock, setStock] = useState<StockData | null>(null);
@@ -403,8 +416,14 @@ export default function ProjectionsPage() {
     bear: defaultAssumptions("bear"),
   });
 
-  async function loadStock() {
-    const t = inputVal.trim().toUpperCase();
+  useEffect(() => {
+    const q = searchParams.get("ticker");
+    if (q) { setInputVal(q.toUpperCase()); loadStock(q.toUpperCase()); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function loadStock(symArg?: string) {
+    const t = (symArg ?? inputVal).trim().toUpperCase();
     if (!t) return;
     setLoading(true);
     setError(null);
@@ -464,7 +483,7 @@ export default function ProjectionsPage() {
           }}
         />
         <button
-          onClick={loadStock}
+          onClick={() => loadStock()}
           disabled={loading}
           style={{
             background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
@@ -475,6 +494,14 @@ export default function ProjectionsPage() {
         </button>
         {error && <span style={{ color: "var(--negative)", fontSize: 13 }}>{error}</span>}
       </div>
+
+      {!stock && !loading && !error && (
+        <>
+          <EmptyHint title="Base Year Snapshot" desc="Current price, revenue, net income, margins, EPS, and shares outstanding — the starting point for every scenario." />
+          <EmptyHint title="Bull / Base / Bear Scenarios" desc="Five-year projections with editable revenue growth, net income growth, and P/E ranges per scenario." />
+          <EmptyHint title="Price Targets & CAGR" desc="Implied share price range and compound annual return for every scenario and year." />
+        </>
+      )}
 
       {stock && (
         <>
@@ -514,3 +541,6 @@ export default function ProjectionsPage() {
   );
 }
 
+export default function ProjectionsPage() {
+  return <Suspense fallback={null}><ProjectionsInner /></Suspense>;
+}

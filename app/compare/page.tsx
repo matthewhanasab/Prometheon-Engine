@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Legend, Tooltip,
 } from "recharts";
@@ -172,7 +173,19 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
 }
 
 // â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export default function ComparePage() {
+function EmptyHint({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div style={{ marginBottom: "1.25rem" }}>
+      <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
+      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
+        <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
+      </div>
+    </div>
+  );
+}
+
+function CompareInner() {
+  const searchParams = useSearchParams();
   const [tickers, setTickers] = useState(["AAPL", "MSFT", "", ""]);
   const [stocks, setStocks]   = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -180,6 +193,31 @@ export default function ComparePage() {
 
   function setTicker(i: number, v: string) {
     setTickers(prev => { const n = [...prev]; n[i] = v; return n; });
+  }
+
+  useEffect(() => {
+    const q = searchParams.get("t");
+    if (q) {
+      const list = q.split(",").map(s => s.trim().toUpperCase()).filter(Boolean).slice(0, 4);
+      if (list.length >= 2) {
+        setTickers([list[0] ?? "", list[1] ?? "", list[2] ?? "", list[3] ?? ""]);
+        runCompare(list);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function runCompare(active: string[]) {
+    setLoading(true); setError(null); setStocks([]);
+    try {
+      const res = await fetch(`/api/compare?t=${active.join(",")}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setStocks(data);
+    } catch {
+      setError("Failed to load comparison data. Check tickers and try again.");
+    } finally { setLoading(false); }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -247,10 +285,11 @@ export default function ComparePage() {
       {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
 
       {!loading && stocks.length === 0 && !error && (
-        <div style={{ marginTop: "5rem", textAlign: "center", color: "var(--text-muted)" }}>
-          <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.1rem", color: "var(--text-secondary)", marginBottom: 8 }}>Enter 2–4 tickers to compare</div>
-          <div style={{ fontSize: "0.70rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>Prometheon Engine</div>
-        </div>
+        <>
+          <EmptyHint title="Side-by-Side Overview" desc="Price, market cap, and daily move for each ticker, color-coded per company." />
+          <EmptyHint title="Metric Comparison Table" desc="Valuation, growth, profitability, and balance-sheet health — best value starred in each row." />
+          <EmptyHint title="Multi-Dimensional Radar" desc="All companies plotted on one normalized radar across eight dimensions." />
+        </>
       )}
 
       {stocks.length >= 2 && (
@@ -351,3 +390,6 @@ export default function ComparePage() {
   );
 }
 
+export default function ComparePage() {
+  return <Suspense fallback={null}><CompareInner /></Suspense>;
+}

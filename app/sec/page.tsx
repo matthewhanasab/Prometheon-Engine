@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface Filing {
   date: string;
@@ -82,7 +83,19 @@ const tdStyle: React.CSSProperties = {
   verticalAlign: "middle",
 };
 
-export default function SecFilingsPage() {
+function EmptyHint({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div style={{ marginBottom: "1.25rem" }}>
+      <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
+      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
+        <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
+      </div>
+    </div>
+  );
+}
+
+function SecInner() {
+  const searchParams = useSearchParams();
   const [inputTicker, setInputTicker] = useState("");
   const [activeTicker, setActiveTicker] = useState<string | null>(null);
   const [filings, setFilings]   = useState<Filing[]>([]);
@@ -93,8 +106,14 @@ export default function SecFilingsPage() {
 
   const INSIDER_PAGE_SIZE = 15;
 
-  function loadTicker() {
-    const sym = inputTicker.trim().toUpperCase();
+  useEffect(() => {
+    const t = searchParams.get("ticker");
+    if (t) { setInputTicker(t.toUpperCase()); loadTicker(t.toUpperCase()); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function loadTicker(symArg?: string) {
+    const sym = (symArg ?? inputTicker).trim().toUpperCase();
     if (!sym) return;
     setLoading(true);
     setError(null);
@@ -147,7 +166,7 @@ export default function SecFilingsPage() {
           }}
         />
         <button
-          onClick={loadTicker}
+          onClick={() => loadTicker()}
           disabled={loading}
           style={{
             padding: "10px 22px",
@@ -179,6 +198,13 @@ export default function SecFilingsPage() {
         <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-secondary)" }}>
           Loading SEC filings from EDGAR…
         </div>
+      )}
+
+      {!loading && !activeTicker && !error && (
+        <>
+          <EmptyHint title="Recent Filings" desc="The last 30 EDGAR filings — 10-Ks, 10-Qs, 8-Ks, and more — each linked to the original document." />
+          <EmptyHint title="Insider Transactions" desc="Form 4 buys and sells by executives and directors, with share counts and dollar values." />
+        </>
       )}
 
       {!loading && activeTicker && (
@@ -328,4 +354,8 @@ export default function SecFilingsPage() {
       )}
     </div>
   );
+}
+
+export default function SecFilingsPage() {
+  return <Suspense fallback={null}><SecInner /></Suspense>;
 }

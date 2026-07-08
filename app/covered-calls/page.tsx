@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface StockData {
   price?: number;
@@ -67,7 +68,8 @@ const labelStyle: React.CSSProperties = {
   display: "block",
 };
 
-export default function CoveredCallsPage() {
+function CoveredCallsInner() {
+  const searchParams = useSearchParams();
   const [inputTicker, setInputTicker] = useState("");
   const [activeTicker, setActiveTicker] = useState<string | null>(null);
   const [stockData, setStockData] = useState<StockData | null>(null);
@@ -78,8 +80,14 @@ export default function CoveredCallsPage() {
   const [dteInput, setDteInput] = useState("30");
   const [ivInput, setIvInput] = useState("30");
 
-  function loadTicker() {
-    const sym = inputTicker.trim().toUpperCase();
+  useEffect(() => {
+    const t = searchParams.get("ticker");
+    if (t) { setInputTicker(t.toUpperCase()); loadTicker(t.toUpperCase()); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function loadTicker(symArg?: string) {
+    const sym = (symArg ?? inputTicker).trim().toUpperCase();
     if (!sym) return;
     setLoading(true);
     setError(null);
@@ -139,7 +147,7 @@ export default function CoveredCallsPage() {
           />
         </div>
         <button
-          onClick={loadTicker}
+          onClick={() => loadTicker()}
           disabled={loading}
           style={{
             padding: "10px 22px",
@@ -314,3 +322,6 @@ export default function CoveredCallsPage() {
   );
 }
 
+export default function CoveredCallsPage() {
+  return <Suspense fallback={null}><CoveredCallsInner /></Suspense>;
+}

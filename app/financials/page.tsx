@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function fmtLarge(n: number | null | undefined): string {
@@ -206,7 +207,8 @@ function FinancialsTable({ rows, data, isQuarterly }: {
 }
 
 // â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export default function FinancialsPage() {
+function FinancialsInner() {
+  const searchParams = useSearchParams();
   const [input, setInput]     = useState("");
   const [period, setPeriod]   = useState<"annual" | "quarterly">("annual");
   const [activeTab, setActiveTab] = useState<"income" | "balance" | "cashflow">("income");
@@ -234,6 +236,12 @@ export default function FinancialsPage() {
     e.preventDefault();
     fetchData(input, period);
   }
+
+  useEffect(() => {
+    const t = searchParams.get("ticker");
+    if (t) { setInput(t.toUpperCase()); fetchData(t.toUpperCase(), period); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function switchPeriod(p: "annual" | "quarterly") {
     setPeriod(p);
@@ -364,3 +372,6 @@ export default function FinancialsPage() {
   );
 }
 
+export default function FinancialsPage() {
+  return <Suspense fallback={null}><FinancialsInner /></Suspense>;
+}
