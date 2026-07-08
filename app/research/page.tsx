@@ -425,7 +425,7 @@ function ResearchInner() {
                           { name:"Actual 1Y",    val: ret1Y },
                         ]} margin={{ top:8, right:8, left:0, bottom:0 }}>
                           <XAxis dataKey="name" tick={{ fill:"#A9B8D0", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
-                          <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"#64748B", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={48} />
+                          <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"#F1F5F9", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={48} />
                           <Tooltip cursor={{ fill: "rgba(76, 97, 144, 0.18)" }} formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"#283552", border:"1px solid #4C6190", borderRadius:4, fontFamily:"IBM Plex Mono", fontSize:12, color:"#F1F5F9" }} />
                           <Bar dataKey="val" radius={[2,2,0,0]}>
                             <Cell fill="#4C6190" />
@@ -456,8 +456,8 @@ function ResearchInner() {
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:4, padding:"12px 8px 4px", marginBottom:12 }}>
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={earnings.filter((e: any) => e.surprise != null).map((e: any) => ({ name: (e.date ?? "").slice(0,10), val: e.surprise }))} margin={{ top:4, right:8, left:0, bottom:0 }}>
-                    <XAxis dataKey="name" tick={{ fill:"#64748B", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
-                    <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#64748B", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={40} />
+                    <XAxis dataKey="name" tick={{ fill:"#F1F5F9", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#F1F5F9", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={40} />
                     <Tooltip cursor={{ fill: "rgba(76, 97, 144, 0.18)" }} formatter={(v: any) => [`${v.toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"#283552", border:"1px solid #4C6190", borderRadius:4, fontFamily:"IBM Plex Mono", fontSize:11, color:"#F1F5F9" }} />
                     <Bar dataKey="val" radius={[2,2,0,0]}>
                       {earnings.filter((e: any) => e.surprise != null).map((e: any, i: number) => (
