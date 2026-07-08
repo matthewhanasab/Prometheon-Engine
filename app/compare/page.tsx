@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import CompareChart from "@/components/CompareChart";
 import {
-  ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend,
 } from "recharts";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -107,6 +106,22 @@ const RADAR_DIMS: { label: string; calc: (s: any) => number }[] = [
   { label: "Low Debt",   calc: s => score(s.debtEquity ?? null, 0, 2, true) },
   { label: "EPS Growth", calc: s => score((s.epsGrowth ?? null) != null ? s.epsGrowth * 100 : null, 0, 30) },
 ];
+
+// 1Y performance: % change from each stock's first close
+function buildPerfData(stocks: any[]) {
+  const rows = new Map<string, Record<string, number | string>>();
+  for (const s of stocks) {
+    const hist = (s.priceHistory ?? []) as { date: string; price: number }[];
+    if (hist.length < 2) continue;
+    const base = hist[0].price;
+    if (!base) continue;
+    for (const pt of hist) {
+      if (!rows.has(pt.date)) rows.set(pt.date, { date: pt.date });
+      rows.get(pt.date)![s.ticker] = ((pt.price / base) - 1) * 100;
+    }
+  }
+  return Array.from(rows.values()).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
 
 // Score -> cell color: red (weak) -> gold (middling) -> green (strong)
 function scoreColor(score: number): { bg: string; fg: string } {
@@ -325,6 +340,8 @@ function CompareInner() {
   }
 
 
+  const perfData = stocks.length >= 2 ? buildPerfData(stocks) : [];
+
   // Category scorecard: who wins the most metrics per section
   const scorecard = SECTIONS.filter(sec => sec.title !== "OTHER").map(sec => {
     const wins = stocks.map(() => 0);
@@ -406,13 +423,31 @@ function CompareInner() {
             ))}
           </div>
 
-          {/* 1Y performance race - TradingView overlay */}
-          <div style={{ marginBottom: "2rem" }}>
-            <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 12 }}>
-              Performance Comparison — All Tickers, One Scale
+          {/* 1Y performance race */}
+          {perfData.length > 10 && (
+            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px", marginBottom: "2rem" }}>
+              <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
+                1-Year Performance — % Return
+              </div>
+              <ResponsiveContainer width="100%" height={340}>
+                <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false}
+                    tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
+                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} width={56} />
+                  <Tooltip
+                    labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
+                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 }}
+                    formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
+                  />
+                  <Legend wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 13 }} />
+                  {stocks.map((s, i) => (
+                    <Line key={s.ticker} type="monotone" dataKey={s.ticker} stroke={COLORS[i]} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-            <CompareChart tickers={stocks.map((s) => s.ticker)} />
-          </div>
+          )}
 
           {/* Category scorecard */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: "2rem" }}>
