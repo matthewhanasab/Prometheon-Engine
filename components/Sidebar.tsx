@@ -100,7 +100,7 @@ export default function Sidebar() {
       }}>
         {/* Logo */}
         <div style={{ padding: "0 1.5rem 2rem", textAlign: "center" }}>
-          <Link href="/research" onClick={handleNav} style={{ display: "inline-block", lineHeight: 0 }}>
+          <Link href="/" onClick={handleNav} style={{ display: "inline-block", lineHeight: 0 }}>
             <Image
               src="/logo_transparent.png"
               alt="Prometheon Engine"
