@@ -219,7 +219,7 @@ export default function LandingPage() {
         </div>
 
         <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 2.4rem", maxWidth: 760 }}>
-          Every number that matters. One engine.
+          Every number that matters. One software.
         </h1>
 
         <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
