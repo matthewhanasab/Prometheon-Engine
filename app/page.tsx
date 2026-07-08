@@ -164,12 +164,17 @@ function LivePreview({ href }: { href: string }) {
 }
 
 const SHOWCASE = [
-  { href: "/research",   title: "Stock Research",    desc: "Type a ticker, get the full picture — valuation, growth, quality, analyst consensus, insiders, and institutions on one page." },
-  { href: "/macro",      title: "Macro Dashboard",   desc: "Rates, inflation, the yield curve, and fear & greed — know the market backdrop before you buy anything." },
-  { href: "/earnings",   title: "Earnings Calendar", desc: "Who reports this week, before the bell and after the close. Click any ticker to research it instantly." },
-  { href: "/screener",   title: "Screener",          desc: "Filter the entire market by sector, size, valuation, and profitability — then jump straight into research." },
-  { href: "/charts",     title: "Financial Charts",  desc: "Quarterly revenue, margins, EPS, and cash flow — with analyst forecasts drawn right on the chart." },
-  { href: "/calculator", title: "Compound Calculator", desc: "See what consistent investing does over decades, across low, base, and high return scenarios." },
+  { href: "/research",      title: "Stock Research",       desc: "Type a ticker, get the full picture — valuation, growth, quality, analyst consensus, insiders, and institutions on one page." },
+  { href: "/macro",         title: "Macro Dashboard",      desc: "Rates, inflation, the yield curve, and fear & greed — know the market backdrop before you buy anything." },
+  { href: "/earnings",      title: "Earnings Calendar",    desc: "Who reports this week, before the bell and after the close. Click any ticker to research it instantly." },
+  { href: "/screener",      title: "Screener",             desc: "Filter the entire market by sector, size, valuation, and profitability — then jump straight into research." },
+  { href: "/charts",        title: "Financial Charts",     desc: "Quarterly revenue, margins, EPS, and cash flow — with analyst forecasts drawn right on the chart." },
+  { href: "/compare",       title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, profitability, and health — with a radar chart." },
+  { href: "/financials",    title: "Financial Statements", desc: "Income statement, balance sheet, and cash flow — annual and quarterly, with YoY change highlighting." },
+  { href: "/projections",   title: "Projections",          desc: "Bull, base, and bear five-year scenarios with editable growth and multiple assumptions." },
+  { href: "/covered-calls", title: "Covered Calls",        desc: "Estimate option premium income with a strike-by-strike comparison table." },
+  { href: "/calculator",    title: "Compound Calculator",  desc: "See what consistent investing does over decades, across low, base, and high return scenarios." },
+  { href: "/sec",           title: "SEC Filings",          desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR, one click from the source." },
 ];
 
 // ── Feature grid ──────────────────────────────────────────────────────────────
