@@ -36,6 +36,9 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
       save_image: false,
       calendar: false,
       hide_volume: true,
+      extended_hours: false,
+      session: "regular",
+      disabled_features: ["pre_post_market_price_line", "show_exchange_logos"],
       support_host: "https://www.tradingview.com",
     });
     container.appendChild(script);
