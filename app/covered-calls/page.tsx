@@ -127,6 +127,28 @@ function Metric({ label, value, sub, tone }: { label: string; value: string; sub
   );
 }
 
+// Arrow-key navigation: right-arrow at the end of a field jumps to the next one,
+// left-arrow at the start jumps back.
+function navKeys(e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) {
+  const el = e.currentTarget;
+  const fields = Array.from(document.querySelectorAll<HTMLElement>("[data-nav]"))
+    .sort((a, b) => Number(a.dataset.nav) - Number(b.dataset.nav));
+  const idx = fields.indexOf(el as HTMLElement);
+  if (idx < 0) return;
+
+  const isInput = el instanceof HTMLInputElement;
+  const caret = isInput ? (el as HTMLInputElement).selectionStart : null;
+  const len = isInput ? (el as HTMLInputElement).value.length : 0;
+
+  if (e.key === "ArrowRight" && (!isInput || caret === len)) {
+    const next = fields[idx + 1];
+    if (next) { e.preventDefault(); next.focus(); if (next instanceof HTMLInputElement) next.select(); }
+  } else if (e.key === "ArrowLeft" && (!isInput || caret === 0)) {
+    const prev = fields[idx - 1];
+    if (prev) { e.preventDefault(); prev.focus(); if (prev instanceof HTMLInputElement) prev.select(); }
+  }
+}
+
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 function CoveredCallsInner() {
@@ -246,30 +268,30 @@ function CoveredCallsInner() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "14px 18px", marginBottom: 14 }}>
           <div>
             <label style={labelStyle}>Ticker</label>
-            <input value={inputTicker} onChange={e => setInputTicker(e.target.value.toUpperCase())}
-              onKeyDown={e => e.key === "Enter" && load()} placeholder="Ticker" style={inputStyle} />
+            <input data-nav={0} value={inputTicker} onChange={e => setInputTicker(e.target.value.toUpperCase())}
+              onKeyDown={e => { if (e.key === "Enter") load(); navKeys(e); }} placeholder="Ticker" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Shares Owned</label>
-            <input type="number" min={100} step={100} value={shares} onChange={e => setShares(e.target.value)} style={inputStyle} />
+            <input data-nav={1} inputMode="numeric" value={shares} onChange={e => setShares(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Cost Basis / Share ($)</label>
-            <input type="number" placeholder="optional" value={costBasis} onChange={e => setCostBasis(e.target.value)} style={inputStyle} />
+            <input data-nav={2} inputMode="decimal" placeholder="optional" value={costBasis} onChange={e => setCostBasis(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Target Expiration</label>
-            <select value={dte} onChange={e => setDte(Number(e.target.value))} style={{ ...inputStyle, cursor: "pointer" }}>
+            <select data-nav={3} value={dte} onChange={e => setDte(Number(e.target.value))} style={{ ...inputStyle, cursor: "pointer" }}>
               {DTE_OPTIONS.map(d => <option key={d} value={d}>{d} days</option>)}
             </select>
           </div>
           <div>
             <label style={labelStyle}>Delta Min</label>
-            <input type="number" step={0.05} min={0.05} max={0.7} value={deltaMin} onChange={e => setDeltaMin(e.target.value)} style={inputStyle} />
+            <input data-nav={4} inputMode="decimal" value={deltaMin} onChange={e => setDeltaMin(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Delta Max</label>
-            <input type="number" step={0.05} min={0.05} max={0.7} value={deltaMax} onChange={e => setDeltaMax(e.target.value)} style={inputStyle} />
+            <input data-nav={5} inputMode="decimal" value={deltaMax} onChange={e => setDeltaMax(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
         </div>
 
