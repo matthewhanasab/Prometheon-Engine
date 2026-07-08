@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFullStockData } from "@/lib/fmp";
+import { getFullStockData, getPriceHistory } from "@/lib/fmp";
 
 export async function GET(req: NextRequest) {
   const t = req.nextUrl.searchParams.get("t") ?? "";
@@ -8,7 +8,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Provide at least 2 tickers via ?t=AAPL,MSFT" }, { status: 400 });
   }
   try {
-    const stocks = await Promise.all(tickers.map(ticker => getFullStockData(ticker)));
+    const stocks = await Promise.all(
+      tickers.map(async (ticker) => {
+        const [stock, priceHistory] = await Promise.all([
+          getFullStockData(ticker),
+          getPriceHistory(ticker, 365).catch(() => []),
+        ]);
+        return { ...stock, priceHistory };
+      })
+    );
     return NextResponse.json(stocks);
   } catch (e) {
     console.error(e);

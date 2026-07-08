@@ -3,6 +3,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Legend, Tooltip,
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -86,38 +87,77 @@ const SECTIONS: { title: string; metrics: MetricDef[] }[] = [
 ];
 
 // â”€â”€ Radar normalization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function normalize(values: (number | null)[], lowerIsBetter: boolean): number[] {
-  const valid = values.filter((v): v is number => v != null && isFinite(v));
-  if (valid.length === 0) return values.map(() => 50);
-  const mn = Math.min(...valid);
-  const mx = Math.max(...valid);
-  if (mn === mx) return values.map(() => 50);
-  return values.map(v => {
-    if (v == null || !isFinite(v)) return 0;
-    const norm = (v - mn) / (mx - mn); // 0–1, higher = larger value
-    return Math.round((lowerIsBetter ? 1 - norm : norm) * 100);
-  });
+// Score a value against absolute benchmarks (0-100). With min/max normalization
+// two stocks always come out 100 vs 0 - benchmarks keep the shape meaningful.
+function score(v: number | null, lo: number, hi: number, invert = false): number {
+  if (v == null || !isFinite(v)) return 0;
+  let n = (v - lo) / (hi - lo);
+  n = Math.max(0, Math.min(1, n));
+  if (invert) n = 1 - n;
+  return Math.round(n * 100);
 }
 
-const RADAR_DIMS: { label: string; key: (s: any) => number | null; lowerIsBetter?: boolean }[] = [
-  { label: "Rev Growth",  key: s => s.revenueGrowth, lowerIsBetter: false },
-  { label: "Net Margin",  key: s => s.netMargin,     lowerIsBetter: false },
-  { label: "ROE",         key: s => s.roe,           lowerIsBetter: false },
-  { label: "FCF Yield",   key: s => s.fcfYield,      lowerIsBetter: false },
-  { label: "Value(PE)",   key: s => s.peRatio,       lowerIsBetter: true  },
-  { label: "Value(PS)",   key: s => s.ps,            lowerIsBetter: true  },
-  { label: "Low Debt",    key: s => s.debtEquity,    lowerIsBetter: true  },
-  { label: "EPS Growth",  key: s => s.epsGrowth,     lowerIsBetter: false },
+const RADAR_DIMS: { label: string; calc: (s: any) => number }[] = [
+  { label: "Rev Growth", calc: s => score((s.revenueGrowth ?? null) != null ? s.revenueGrowth * 100 : null, 0, 30) },
+  { label: "Net Margin", calc: s => score((s.netMargin ?? null) != null ? s.netMargin * 100 : null, 0, 30) },
+  { label: "ROE",        calc: s => score((s.roe ?? null) != null ? s.roe * 100 : null, 0, 40) },
+  { label: "FCF Yield",  calc: s => score(s.fcfYield ?? null, 0, 6) },
+  { label: "Value (P/E)", calc: s => score(s.peRatio ?? null, 10, 50, true) },
+  { label: "Value (P/S)", calc: s => score(s.ps ?? null, 2, 20, true) },
+  { label: "Low Debt",   calc: s => score(s.debtEquity ?? null, 0, 2, true) },
+  { label: "EPS Growth", calc: s => score((s.epsGrowth ?? null) != null ? s.epsGrowth * 100 : null, 0, 30) },
 ];
 
 function buildRadarData(stocks: any[]) {
   return RADAR_DIMS.map(dim => {
-    const rawVals = stocks.map(s => dim.key(s));
-    const normed  = normalize(rawVals, dim.lowerIsBetter ?? false);
     const entry: Record<string, number | string> = { subject: dim.label };
-    stocks.forEach((s, i) => { entry[s.ticker] = normed[i]; });
+    stocks.forEach((s) => { entry[s.ticker] = dim.calc(s); });
     return entry;
   });
+}
+
+// 1Y performance: % change from each stock's first close
+function buildPerfData(stocks: any[]) {
+  const rows = new Map<string, Record<string, number | string>>();
+  for (const s of stocks) {
+    const hist = (s.priceHistory ?? []) as { date: string; price: number }[];
+    if (hist.length < 2) continue;
+    const base = hist[0].price;
+    if (!base) continue;
+    for (const pt of hist) {
+      if (!rows.has(pt.date)) rows.set(pt.date, { date: pt.date });
+      rows.get(pt.date)![s.ticker] = ((pt.price / base) - 1) * 100;
+    }
+  }
+  return Array.from(rows.values()).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
+
+function GroupedBars({ title, data, stocks, unit }: {
+  title: string; data: Record<string, number | string | null>[]; stocks: any[]; unit: string;
+}) {
+  return (
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "16px 14px", flex: 1, minWidth: 300 }}>
+      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 12 }}>
+        {title}
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+          <XAxis dataKey="name" tick={{ fill: "#F1F5F9", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v) => `${v}${unit}`} tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} width={52} />
+          <Tooltip
+            cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+            labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
+            contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 }}
+            formatter={(v: any) => [`${Number(v).toFixed(1)}${unit}`]}
+          />
+          {stocks.map((s, i) => (
+            <Bar key={s.ticker} dataKey={s.ticker} fill={COLORS[i]} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
 // â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -249,6 +289,35 @@ function CompareInner() {
   }
 
   const radarData = stocks.length >= 2 ? buildRadarData(stocks) : [];
+  const perfData  = stocks.length >= 2 ? buildPerfData(stocks) : [];
+
+  // Category scorecard: who wins the most metrics per section
+  const scorecard = SECTIONS.filter(sec => sec.title !== "OTHER").map(sec => {
+    const wins = stocks.map(() => 0);
+    sec.metrics.forEach(m => { const b = bestIdx(m); if (b >= 0) wins[b]++; });
+    const top = Math.max(...wins);
+    const winnerIdx = wins.indexOf(top);
+    const tied = wins.filter(w => w === top).length > 1;
+    return { title: sec.title, wins, winnerIdx: tied ? -1 : winnerIdx, total: sec.metrics.length };
+  });
+
+  // Grouped-bar datasets (values in display units)
+  const pct = (v: number | null | undefined) => (v == null ? null : v * 100);
+  const marginBars = [
+    { name: "Gross",     ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.grossMargin)])) },
+    { name: "Operating", ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.opMargin)])) },
+    { name: "Net",       ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.netMargin)])) },
+    { name: "ROE",       ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.roe)])) },
+  ];
+  const growthBars = [
+    { name: "Revenue", ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.revenueGrowth)])) },
+    { name: "EPS",     ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.epsGrowth)])) },
+  ];
+  const valuationBars = [
+    { name: "P/E",   ...Object.fromEntries(stocks.map(s => [s.ticker, s.peRatio ?? null])) },
+    { name: "P/S",   ...Object.fromEntries(stocks.map(s => [s.ticker, s.ps ?? null])) },
+    { name: "P/FCF", ...Object.fromEntries(stocks.map(s => [s.ticker, s.pFcf ?? null])) },
+  ];
 
   return (
     <div style={{ paddingBottom: "4rem" }}>
@@ -287,6 +356,8 @@ function CompareInner() {
       {!loading && stocks.length === 0 && !error && (
         <>
           <EmptyHint title="Side-by-Side Overview" desc="Price, market cap, and daily move for each ticker, color-coded per company." />
+          <EmptyHint title="1-Year Performance Race" desc="Both stocks&apos; percentage returns overlaid on one chart." />
+          <EmptyHint title="Category Scorecard" desc="Who wins Valuation, Growth, Profitability, and Health — metric by metric." />
           <EmptyHint title="Metric Comparison Table" desc="Valuation, growth, profitability, and balance-sheet health — best value starred in each row." />
           <EmptyHint title="Multi-Dimensional Radar" desc="All companies plotted on one normalized radar across eight dimensions." />
         </>
@@ -298,6 +369,51 @@ function CompareInner() {
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: "2rem" }}>
             {stocks.map((s, i) => (
               <OverviewCard key={s.ticker} stock={s} color={COLORS[i]} />
+            ))}
+          </div>
+
+          {/* 1Y performance race */}
+          {perfData.length > 10 && (
+            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px", marginBottom: "2rem" }}>
+              <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
+                1-Year Performance — % Return
+              </div>
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false}
+                    tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={60} />
+                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} width={52} />
+                  <Tooltip
+                    labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
+                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 }}
+                    formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
+                  />
+                  <Legend wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12 }} />
+                  {stocks.map((s, i) => (
+                    <Line key={s.ticker} type="monotone" dataKey={s.ticker} stroke={COLORS[i]} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Category scorecard */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: "2rem" }}>
+            {scorecard.map(card => (
+              <div key={card.title} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--border)"}`, borderRadius: 4, padding: "14px 16px" }}>
+                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 8 }}>
+                  {card.title} Winner
+                </div>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "1.3rem", fontWeight: 700, color: card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--text-secondary)" }}>
+                  {card.winnerIdx >= 0 ? stocks[card.winnerIdx].ticker : "Tie"}
+                </div>
+                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: 6 }}>
+                  {card.winnerIdx >= 0
+                    ? `Wins ${card.wins[card.winnerIdx]} of ${card.total} metrics`
+                    : `Even split across ${card.total} metrics`}
+                </div>
+              </div>
             ))}
           </div>
 
@@ -350,10 +466,17 @@ function CompareInner() {
             </table>
           </div>
 
+          {/* Grouped bar comparisons */}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: "2rem" }}>
+            <GroupedBars title="Profitability — %" data={marginBars} stocks={stocks} unit="%" />
+            <GroupedBars title="Growth — % (TTM vs Fwd)" data={growthBars} stocks={stocks} unit="%" />
+            <GroupedBars title="Valuation Multiples — lower is cheaper" data={valuationBars} stocks={stocks} unit="x" />
+          </div>
+
           {/* Radar chart */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px" }}>
             <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
-              Multi-Dimensional Comparison — Normalized 0–100
+              Multi-Dimensional Scorecard — 0-100 vs Absolute Benchmarks
             </div>
             <ResponsiveContainer width="100%" height={380}>
               <RadarChart data={radarData} margin={{ top: 10, right: 40, bottom: 10, left: 40 }}>
