@@ -36,7 +36,7 @@ export async function getFullStockData(ticker: string) {
     get(`/profile`,                { symbol: t }),
     get(`/quote`,                  { symbol: t }),
     get(`/key-metrics-ttm`,        { symbol: t }),
-    get(`/analyst-estimates`,      { symbol: t, period: "annual", limit: "6" }),
+    get(`/analyst-estimates`,      { symbol: t, period: "annual", limit: "10" }),
     get(`/grades`,                 { symbol: t, limit: "50" }),
     get(`/income-statement`,       { symbol: t, limit: "2" }),
     get(`/balance-sheet-statement`,{ symbol: t, limit: "1" }),
@@ -110,7 +110,12 @@ export async function getFullStockData(ticker: string) {
   const peRatio      = eyield && eyield > 0 ? 1 / eyield : (q.pe ?? null);
 
   // ── Forward estimates ──
-  const est0     = estimates?.[0] ?? {};
+  // FMP returns annual estimates furthest-year-first; pick the NEAREST upcoming fiscal year
+  const today = new Date().toISOString().slice(0, 10);
+  const futureEsts = (Array.isArray(estimates) ? estimates : [])
+    .filter((e: any) => e?.date >= today)
+    .sort((a: any, b: any) => a.date.localeCompare(b.date));
+  const est0     = futureEsts[0] ?? {};
   const fwdEps   = est0.epsAvg    ?? null;
   const fwdPE    = price && fwdEps && fwdEps > 0 ? price / fwdEps : null;
   const fwdRevenue = est0.revenueAvg ?? null;
