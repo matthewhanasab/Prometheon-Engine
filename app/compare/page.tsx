@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import CompareChart from "@/components/CompareChart";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Legend, Tooltip,
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -372,31 +373,13 @@ function CompareInner() {
             ))}
           </div>
 
-          {/* 1Y performance race */}
-          {perfData.length > 10 && (
-            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px", marginBottom: "2rem" }}>
-              <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
-                1-Year Performance — % Return
-              </div>
-              <ResponsiveContainer width="100%" height={320}>
-                <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false}
-                    tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={60} />
-                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} width={52} />
-                  <Tooltip
-                    labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
-                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 }}
-                    formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
-                  />
-                  <Legend wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12 }} />
-                  {stocks.map((s, i) => (
-                    <Line key={s.ticker} type="monotone" dataKey={s.ticker} stroke={COLORS[i]} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
+          {/* 1Y performance race - TradingView overlay */}
+          <div style={{ marginBottom: "2rem" }}>
+            <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 12 }}>
+              Performance Comparison — All Tickers, One Scale
             </div>
-          )}
+            <CompareChart tickers={stocks.map((s) => s.ticker)} />
+          </div>
 
           {/* Category scorecard */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: "2rem" }}>
