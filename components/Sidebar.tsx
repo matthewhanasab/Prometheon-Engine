@@ -11,10 +11,13 @@ const NAV = [
   { href: "/charts",        label: "Charts" },
   { href: "/financials",    label: "Financials" },
   { href: "/covered-calls", label: "Covered Calls" },
+  { href: "/dividends",     label: "Dividends" },
   { href: "/projections",   label: "Projections" },
   { href: "/earnings",      label: "Earnings" },
+  { href: "/congress",      label: "Congress Trades" },
   { href: "/calculator",    label: "Compound Calculator" },
   { href: "/macro",         label: "Macro Dashboard" },
+  { href: "/movers",        label: "Market Movers" },
   { href: "/screener",      label: "Screener" },
   { href: "/sec",           label: "SEC Filings" },
 ];

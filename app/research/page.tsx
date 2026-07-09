@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import TradingViewChart from "@/components/TradingViewChart";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -196,6 +197,13 @@ function EmptyPreview() {
         <MCard label="Operating CF" value={D} />
       </Grid>
 
+      <SectionLabel>Quality &amp; Fair Value</SectionLabel>
+      <Grid cols={3}>
+        <MCard label="Piotroski F-Score" value={D} />
+        <MCard label="Altman Z-Score" value={D} />
+        <MCard label="DCF Fair Value" value={D} />
+      </Grid>
+
       <SectionLabel>CAPM · Risk-Adjusted Return</SectionLabel>
       <Grid cols={5}>
         <MCard label="Risk-Free Rate (10Y)" value={D} />
@@ -207,6 +215,12 @@ function EmptyPreview() {
 
       <SectionLabel>Analyst Recommendations</SectionLabel>
       <div style={hint}>Buy / hold / sell consensus across analysts, updated monthly.</div>
+
+      <SectionLabel>Analyst Grade Changes</SectionLabel>
+      <div style={hint}>Recent upgrades and downgrades from major research firms.</div>
+
+      <SectionLabel>Peers</SectionLabel>
+      <div style={hint}>Closest comparable companies with live prices — one click to research or compare.</div>
 
       <SectionLabel>Earnings History</SectionLabel>
       <div style={hint}>EPS estimates vs. actuals for recent quarters — beats and misses.</div>
@@ -259,6 +273,10 @@ function ResearchInner() {
   const insiders      = data?.insiders      ?? [];
   const institutional = data?.institutional ?? [];
   const rf            = data?.rf            ?? 0.043;
+  const scores        = data?.scores        ?? null;
+  const dcf           = data?.dcf           ?? null;
+  const grades        = data?.grades        ?? [];
+  const peers         = data?.peers         ?? [];
   const ret1Y    = data?.return1Y ?? null;
 
   // CAPM
@@ -316,6 +334,30 @@ function ResearchInner() {
                 <span key={v} style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-secondary)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:2, padding:"2px 8px" }}>{v}</span>
               ))}
             </div>
+            {peers.length > 0 && (
+              <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12, alignItems:"center" }}>
+                <span style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.58rem", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-muted)", marginRight:2 }}>Peers</span>
+                {peers.slice(0, 8).map((p: any) => (
+                  <Link key={p.symbol} href={`/research?ticker=${p.symbol}`} style={{
+                    fontFamily:"'IBM Plex Mono',monospace", fontSize:"0.68rem", fontWeight:600,
+                    color:"var(--text-primary)", background:"var(--bg-elevated)",
+                    border:"1px solid var(--border)", borderRadius:3, padding:"3px 9px",
+                    textDecoration:"none", whiteSpace:"nowrap",
+                  }}>
+                    <span style={{ color:"var(--accent-gold)" }}>{p.symbol}</span>
+                    {p.price != null && <span style={{ color:"var(--text-secondary)", marginLeft:6 }}>${Number(p.price).toFixed(2)}</span>}
+                  </Link>
+                ))}
+                <Link href={`/compare?t=${[s.ticker, ...peers.slice(0, 3).map((p: any) => p.symbol)].join(",")}`} style={{
+                  fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.68rem", fontWeight:600,
+                  color:"var(--accent-gold)", background:"transparent",
+                  border:"1px solid var(--accent-gold)", borderRadius:3, padding:"3px 9px",
+                  textDecoration:"none", whiteSpace:"nowrap",
+                }}>
+                  Compare all →
+                </Link>
+              </div>
+            )}
             <div style={{ display:"flex", alignItems:"baseline", gap:16, flexWrap:"wrap" }}>
               <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:"2.4rem", fontWeight:600, color:"var(--text-primary)", letterSpacing:"-0.02em" }}>${fmt(s.price)}</span>
               <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:"1rem", fontWeight:500, color: pctColor(s.change) }}>
@@ -392,6 +434,33 @@ function ResearchInner() {
               sub={s.operatingCF != null ? (s.operatingCF > 0 ? "Positive cash flow" : "Negative cash flow") : "No data"}
               tone={s.operatingCF != null ? (s.operatingCF > 0 ? "good" : "bad") : "default"} />
           </Grid>
+
+          {/* ── Quality & Fair Value ── */}
+          {(scores || dcf != null) && (
+            <>
+              <SectionLabel>Quality &amp; Fair Value</SectionLabel>
+              <Grid cols={3}>
+                {(() => {
+                  const f = scores?.piotroskiScore ?? null;
+                  const t: any = f == null ? "default" : f >= 7 ? "good" : f >= 4 ? "neutral" : "bad";
+                  return <MCard label="Piotroski F-Score" value={f != null ? `${f} / 9` : "N/A"}
+                    sub={f == null ? "No data" : f >= 7 ? "Strong fundamentals across 9 checks" : f >= 4 ? "Mixed fundamental signals" : "Weak fundamentals — caution"} tone={t} />;
+                })()}
+                {(() => {
+                  const z = scores?.altmanZScore ?? null;
+                  const t: any = z == null ? "default" : z > 3 ? "good" : z >= 1.8 ? "neutral" : "bad";
+                  return <MCard label="Altman Z-Score" value={z != null ? Number(z).toFixed(1) : "N/A"}
+                    sub={z == null ? "No data" : z > 3 ? "Safe zone — low bankruptcy risk" : z >= 1.8 ? "Grey zone" : "Distress zone"} tone={t} />;
+                })()}
+                {(() => {
+                  const t: any = dcf == null || s.price == null ? "default" : dcf > s.price ? "good" : dcf > s.price * 0.85 ? "neutral" : "bad";
+                  const gap = dcf != null && s.price ? ((dcf - s.price) / s.price) * 100 : null;
+                  return <MCard label="DCF Fair Value" value={dcf != null ? `$${Number(dcf).toFixed(2)}` : "N/A"}
+                    sub={gap != null ? `${gap >= 0 ? "+" : ""}${gap.toFixed(1)}% vs price` : "No data"} tone={t} />;
+                })()}
+              </Grid>
+            </>
+          )}
 
           {/* ── CAPM ── */}
           {beta != null && (
@@ -499,6 +568,30 @@ function ResearchInner() {
                     tone={skew > 15 ? "good" : skew < -15 ? "bad" : "neutral"} />;
                 })()}
               </Grid>
+            </>
+          )}
+
+          {/* ── Analyst Grade Changes ── */}
+          {grades.length > 0 && (
+            <>
+              <SectionLabel>Analyst Grade Changes</SectionLabel>
+              <Table
+                headers={["Date","Firm","Change"]}
+                rows={grades.map((g: any) => {
+                  const action = (g.action ?? "").toLowerCase();
+                  const color = action.includes("upgrade") ? "var(--positive)"
+                    : action.includes("downgrade") ? "var(--negative)"
+                    : "var(--text-secondary)";
+                  const change = g.previousGrade && g.previousGrade !== g.newGrade
+                    ? `${g.previousGrade} → ${g.newGrade}`
+                    : (g.newGrade ?? "—");
+                  return [
+                    (g.date ?? "").slice(0, 10),
+                    { value: g.gradingCompany ?? "—", color: "var(--text-primary)", bold: true },
+                    { value: change, color, bold: true },
+                  ];
+                })} />
+              <div style={{ fontSize:"0.65rem", color:"var(--text-muted)", marginTop:6 }}>Most recent rating actions · Green = upgrade · Red = downgrade.</div>
             </>
           )}
 

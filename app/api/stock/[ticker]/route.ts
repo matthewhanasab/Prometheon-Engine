@@ -33,13 +33,84 @@ async function getInstitutionalHolders(ticker: string) {
   } catch { return []; }
 }
 
+async function getFinancialScores(ticker: string) {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/financial-scores?symbol=${ticker}&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) return null;
+    return {
+      piotroskiScore: row.piotroskiScore ?? null,
+      altmanZScore: row.altmanZScore ?? null,
+    };
+  } catch { return null; }
+}
+
+async function getDCF(ticker: string): Promise<number | null> {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/discounted-cash-flow?symbol=${ticker}&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const row = Array.isArray(data) ? data[0] : data;
+    return row?.dcf ?? null;
+  } catch { return null; }
+}
+
+async function getGrades(ticker: string) {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/grades?symbol=${ticker}&limit=8&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data.slice(0, 8) : [];
+  } catch { return []; }
+}
+
+async function getGradesConsensus(ticker: string) {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/grades-consensus?symbol=${ticker}&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (Array.isArray(data) ? data[0] : data) ?? null;
+  } catch { return null; }
+}
+
+async function getPeers(ticker: string) {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/stock-peers?symbol=${ticker}&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data.slice(0, 8) : [];
+  } catch { return []; }
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
   const { ticker } = await params;
   try {
-    const [stock, price, earnings, recs, news, insiders, rf, priceTarget, institutional] = await Promise.all([
+    const [stock, price, earnings, recs, news, insiders, rf, priceTarget, institutional, scores, dcf, grades, gradesConsensus, peers] = await Promise.all([
       getFullStockData(ticker),
       getPriceHistory(ticker, 365),
       getEarnings(ticker),
@@ -49,6 +120,11 @@ export async function GET(
       get10YTreasury(),
       getPriceTargetConsensus(ticker),
       getInstitutionalHolders(ticker),
+      getFinancialScores(ticker),
+      getDCF(ticker),
+      getGrades(ticker),
+      getGradesConsensus(ticker),
+      getPeers(ticker),
     ]);
 
     // Compute 1Y return from price history
@@ -59,7 +135,7 @@ export async function GET(
 
     // Merge Finnhub price target into stock object
     if (priceTarget && !stock.analystTarget) (stock as any).analystTarget = priceTarget;
-    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional });
+    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
