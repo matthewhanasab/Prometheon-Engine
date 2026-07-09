@@ -107,6 +107,22 @@ function EmptyHint({ title, sub }: { title: string; sub: string }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
+// Lower bound of a disclosure range like "$1,001 - $15,000" -> 1001
+function amountLowerBound(amount: string | null): number {
+  if (!amount) return 0;
+  const m = amount.replace(/,/g, "").match(/\$([0-9]+)/);
+  return m ? parseInt(m[1]) : 0;
+}
+
+const AMOUNT_OPTIONS = [
+  { key: 0,        label: "Any" },
+  { key: 15001,    label: "$15K+" },
+  { key: 50001,    label: "$50K+" },
+  { key: 100001,   label: "$100K+" },
+  { key: 250001,   label: "$250K+" },
+  { key: 1000001,  label: "$1M+" },
+];
+
 function CongressInner() {
   const searchParams = useSearchParams();
   const [mode, setMode] = useState<"latest" | "ticker">("latest");
@@ -114,6 +130,7 @@ function CongressInner() {
   const [searched, setSearched] = useState("");
   const [chamber, setChamber] = useState<"all" | "senate" | "house">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "purchases" | "sales">("all");
+  const [minAmount, setMinAmount] = useState(0);
   const [trades, setTrades] = useState<CongressTrade[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -158,6 +175,7 @@ function CongressInner() {
     if (chamber !== "all" && t.chamber !== chamber) return false;
     if (typeFilter === "purchases" && !isPurchase(t.type)) return false;
     if (typeFilter === "sales" && !isSale(t.type)) return false;
+    if (minAmount > 0 && amountLowerBound(t.amount) < minAmount) return false;
     return true;
   });
 
@@ -220,6 +238,12 @@ function CongressInner() {
           <ToggleGroup
             options={[{ key: "all" as const, label: "All" }, { key: "purchases" as const, label: "Purchases" }, { key: "sales" as const, label: "Sales" }]}
             value={typeFilter} onChange={setTypeFilter} />
+        </div>
+        <div>
+          <label style={LABEL_STYLE}>Min Amount</label>
+          <ToggleGroup
+            options={AMOUNT_OPTIONS.map(o => ({ key: o.key as any, label: o.label }))}
+            value={minAmount as any} onChange={(v: any) => setMinAmount(Number(v))} />
         </div>
       </div>
 
