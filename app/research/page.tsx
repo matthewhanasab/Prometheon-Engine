@@ -123,7 +123,7 @@ function MCard({ label, value, sub, tone = "default" }: {
 
 function Grid({ cols = 5, children }: { cols?: number; children: React.ReactNode }) {
   return (
-    <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap:10, marginBottom:"0.5rem" }}>
+    <div style={{ display:"grid", gridTemplateColumns:`repeat(auto-fit, minmax(min(160px, 45vw), 1fr))`, gap:10, marginBottom:"0.5rem" }}>
       {children}
     </div>
   );

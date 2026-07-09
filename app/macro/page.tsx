@@ -577,7 +577,7 @@ export default function MacroPage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4,1fr)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
           gap: 8,
           marginBottom: "0.5rem",
         }}
@@ -595,7 +595,7 @@ export default function MacroPage() {
 
       {/* 2. Interest Rates */}
       <SL>Interest Rates</SL>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
         <ChartCard height={chartH + 40} title="Policy Rate vs Treasury Yields">
           <ResponsiveContainer width="100%" height={chartH}>
             <LineChart
@@ -659,7 +659,7 @@ export default function MacroPage() {
 
       {/* 3. Inflation */}
       <SL>Inflation</SL>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
         <ChartCard height={chartH + 40} title="CPI & PCE — Year-over-Year">
           <ResponsiveContainer width="100%" height={chartH}>
             <LineChart
@@ -757,7 +757,7 @@ export default function MacroPage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
           gap: 12,
         }}
       >
@@ -863,7 +863,7 @@ export default function MacroPage() {
 
       {/* 6. Recession Watch */}
       <SL>Recession Watch</SL>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
         <ChartCard height={chartH + 40} title="VIX — Market Fear Index">
           <ResponsiveContainer width="100%" height={chartH}>
             <AreaChart
@@ -950,7 +950,7 @@ export default function MacroPage() {
       {yieldCurve.length > 0 && (
         <>
           <SL>Yield Curve — Current Treasury Rates</SL>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
             <ChartCard height={chartH + 40} title="Yield Curve (% by Maturity)">
               <ResponsiveContainer width="100%" height={chartH}>
                 <LineChart
