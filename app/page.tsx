@@ -164,6 +164,7 @@ function LivePreview({ href }: { href: string }) {
 }
 
 const SHOWCASE = [
+  { href: "/portfolio",     title: "My Portfolio",         desc: "Track your real positions — live P/L, allocation, dividend income, and a benchmark race against the S&P 500." },
   { href: "/research?ticker=AAPL", title: "Stock Research",       desc: "Type a ticker, get the full picture — valuation, growth, quality, analyst consensus, insiders, and institutions on one page." },
   { href: "/macro",         title: "Macro Dashboard",      desc: "Rates, inflation, the yield curve, and fear & greed — know the market backdrop before you buy anything." },
   { href: "/earnings",      title: "Earnings Calendar",    desc: "Who reports this week, before the bell and after the close. Click any ticker to research it instantly." },

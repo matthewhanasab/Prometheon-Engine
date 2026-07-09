@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 
 const NAV = [
   { href: "/research",      label: "Stock Research" },
+  { href: "/portfolio",     label: "My Portfolio" },
   { href: "/compare",       label: "Compare Stocks" },
   { href: "/charts",        label: "Charts" },
   { href: "/financials",    label: "Financials" },
