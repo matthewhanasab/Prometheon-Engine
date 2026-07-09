@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -29,6 +30,14 @@ interface HoldingData {
 }
 
 const STORAGE_KEY = "prometheon_portfolio_v1";
+
+const DEMO_POSITIONS: Position[] = [
+  { ticker: "AAPL", shares: 25, avgCost: 180 },
+  { ticker: "NVDA", shares: 12, avgCost: 92 },
+  { ticker: "MSFT", shares: 10, avgCost: 310 },
+  { ticker: "COST", shares: 4, avgCost: 680 },
+  { ticker: "SOFI", shares: 300, avgCost: 8.5 },
+];
 
 const PIE_COLORS = [
   "#D4B45E", "#5B8DEF", "#2ED573", "#A78BFA", "#F0564A",
@@ -132,7 +141,9 @@ function Stat({ label, value, sub, subColor }: { label: string; value: string; s
 
 // ─── page ─────────────────────────────────────────────────────────────────────
 
-export default function PortfolioPage() {
+function PortfolioInner() {
+  const searchParams = useSearchParams();
+  const isDemo = searchParams.get("demo") === "1";
   const [positions, setPositions] = useState<Position[]>([]);
   const [holdings, setHoldings] = useState<HoldingData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -144,8 +155,13 @@ export default function PortfolioPage() {
   const [fShares, setFShares] = useState("");
   const [fCost, setFCost] = useState("");
 
-  // Load saved portfolio on mount
+  // Load saved portfolio on mount (or the demo portfolio when ?demo=1)
   useEffect(() => {
+    if (isDemo) {
+      setPositions(DEMO_POSITIONS);
+      refresh(DEMO_POSITIONS);
+      return;
+    }
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -161,6 +177,7 @@ export default function PortfolioPage() {
 
   function persist(next: Position[]) {
     setPositions(next);
+    if (isDemo) return; // demo mode never writes to storage
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
   }
 
@@ -528,4 +545,8 @@ export default function PortfolioPage() {
       )}
     </div>
   );
+}
+
+export default function PortfolioPage() {
+  return <Suspense fallback={null}><PortfolioInner /></Suspense>;
 }

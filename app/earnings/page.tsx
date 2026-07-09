@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 const POPULAR = new Set(["AAPL","MSFT","NVDA","AMZN","GOOGL","META","TSLA","AVGO","BRK-B","JPM","V","MA","UNH","XOM","LLY","JNJ","PG","HD","MRK","ABBV","CVX","KO","PEP","COST","WMT","BAC","MCD","TMO","ORCL","CRM","ADBE","NFLX","AMD","INTC","QCOM","TXN","AMAT","INTU","CSCO","IBM","GS","MS","BLK","AXP","SPGI","LMT","RTX","CAT","HON","UPS","DE","GE","NEE","DUK","SO","SLB","COP","EOG","SHW","APD","LIN","FCX","NEM","AMT","EQIX","PLD","SPG","MDT","ABT","SYK","BSX","ISRG","GILD","REGN","VRTX","BMY","PFE","AMGN","SBUX","NKE","TGT","LOW","BKNG","GM","F","CMG","MO","PM","CL","GIS","KMB","NOW","WDAY","SNOW","PLTR","PANW","CRWD","ZS","DDOG","SHOP","TTD"]);
 
@@ -79,8 +80,16 @@ const navBtn: React.CSSProperties = {
   fontWeight: 500,
 };
 
-export default function EarningsCalendarPage() {
-  const [weekOffset, setWeekOffset] = useState(0);
+function EarningsInner() {
+  const searchParams = useSearchParams();
+  const [weekOffset, setWeekOffset] = useState(() => {
+    const w = searchParams.get("week");
+    if (!w) return 0;
+    const target = new Date(w + "T00:00:00");
+    if (isNaN(target.getTime())) return 0;
+    const thisMonday = getMondayOfWeek(0);
+    return Math.round((target.getTime() - thisMonday.getTime()) / (7 * 86400000));
+  });
   const [filter, setFilter] = useState<"popular" | "all">("popular");
   const [data, setData] = useState<EarningsEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -262,4 +271,8 @@ export default function EarningsCalendarPage() {
       )}
     </div>
   );
+}
+
+export default function EarningsCalendarPage() {
+  return <Suspense fallback={null}><EarningsInner /></Suspense>;
 }
