@@ -5,30 +5,8 @@ import { useSearchParams } from "next/navigation";
 
 const POPULAR = new Set(["AAPL","MSFT","NVDA","AMZN","GOOGL","META","TSLA","AVGO","BRK-B","JPM","V","MA","UNH","XOM","LLY","JNJ","PG","HD","MRK","ABBV","CVX","KO","PEP","COST","WMT","BAC","MCD","TMO","ORCL","CRM","ADBE","NFLX","AMD","INTC","QCOM","TXN","AMAT","INTU","CSCO","IBM","GS","MS","BLK","AXP","SPGI","LMT","RTX","CAT","HON","UPS","DE","GE","NEE","DUK","SO","SLB","COP","EOG","SHW","APD","LIN","FCX","NEM","AMT","EQIX","PLD","SPG","MDT","ABT","SYK","BSX","ISRG","GILD","REGN","VRTX","BMY","PFE","AMGN","SBUX","NKE","TGT","LOW","BKNG","GM","F","CMG","MO","PM","CL","GIS","KMB","NOW","WDAY","SNOW","PLTR","PANW","CRWD","ZS","DDOG","SHOP","TTD"]);
 
-const DAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
-
-function getMondayOfWeek(offset: number): Date {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diff + offset * 7);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
-}
-
-function toYMD(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-function formatWeekLabel(monday: Date): string {
-  return monday.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-}
-
-function isToday(d: Date): boolean {
-  const now = new Date();
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
-}
+const DAY_HEADERS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const MAX_CHIPS = 9;
 
 interface EarningsEntry {
   symbol: string;
@@ -38,33 +16,68 @@ interface EarningsEntry {
   epsEstimate?: number | null;
 }
 
-function EarningsChip({ entry, side }: { entry: EarningsEntry; side: "bmo" | "amc" | "other" }) {
-  const hasBeat = entry.epsActual != null && entry.epsEstimate != null;
-  const beat = hasBeat ? entry.epsActual! >= entry.epsEstimate! : null;
-  const borderColor = side === "bmo" ? "#3B82F6" : side === "amc" ? "var(--negative)" : "var(--border)";
+function toYMD(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
+function isToday(d: Date): boolean {
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+}
+
+// All weekdays of the month, grouped into calendar weeks (Mon-Fri)
+function monthWeeks(year: number, month: number): (Date | null)[][] {
+  const weeks: (Date | null)[][] = [];
+  let week: (Date | null)[] = [];
+  const first = new Date(year, month, 1);
+  // pad to Monday
+  let dow = first.getDay(); // 0 sun ... 6 sat
+  if (dow === 0) dow = 7;   // treat sunday as end of prior week
+  for (let i = 1; i < dow && i <= 5; i++) week.push(null);
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = new Date(year, month, day);
+    const w = d.getDay();
+    if (w === 0 || w === 6) continue; // skip weekends
+    week.push(d);
+    if (w === 5) { weeks.push(week); week = []; }
+  }
+  if (week.length > 0) {
+    while (week.length < 5) week.push(null);
+    weeks.push(week);
+  }
+  // pad first week trailing
+  if (weeks[0] && weeks[0].length < 5) {
+    while (weeks[0].length < 5) weeks[0].push(null);
+  }
+  return weeks;
+}
+
+function Chip({ entry, side }: { entry: EarningsEntry; side: "bmo" | "amc" | "other" }) {
+  const borderColor = side === "bmo" ? "#5B8DEF" : side === "amc" ? "var(--negative)" : "var(--border-active)";
   return (
     <a href={`/research?ticker=${entry.symbol}`} style={{ textDecoration: "none" }}>
-      <div style={{
+      <span style={{
+        display: "inline-block",
         background: "var(--bg-elevated)",
-        border: `1px solid var(--border)`,
+        border: "1px solid var(--border)",
         borderLeft: `3px solid ${borderColor}`,
-        borderRadius: 5,
-        padding: "0.3rem 0.45rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
+        borderRadius: 3,
+        padding: "0.15rem 0.4rem",
+        fontWeight: 700,
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: "0.68rem",
+        letterSpacing: "0.02em",
+        color: "var(--text-primary)",
         cursor: "pointer",
+        whiteSpace: "nowrap",
       }}>
-        <span style={{ fontWeight: 700, fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.73rem", letterSpacing: "0.02em", color: "var(--text-primary)" }}>
-          {entry.symbol}
-        </span>
-        {hasBeat && (
-          <span style={{ color: beat ? "var(--positive)" : "var(--negative)", fontWeight: 700, fontSize: "0.75rem" }}>
-            {beat ? "▲" : "▼"}
-          </span>
-        )}
-      </div>
+        {entry.symbol}
+      </span>
     </a>
   );
 }
@@ -73,70 +86,80 @@ const navBtn: React.CSSProperties = {
   padding: "0.4rem 0.8rem",
   background: "var(--bg-elevated)",
   border: "1px solid var(--border)",
-  borderRadius: 6,
+  borderRadius: 4,
   color: "var(--text-primary)",
   cursor: "pointer",
   fontSize: "0.82rem",
   fontWeight: 500,
+  fontFamily: "'IBM Plex Sans', sans-serif",
 };
 
 function EarningsInner() {
   const searchParams = useSearchParams();
-  const [weekOffset, setWeekOffset] = useState(() => {
+
+  // initial month: from ?week=YYYY-MM-DD if present, else current month
+  const init = (() => {
     const w = searchParams.get("week");
-    if (!w) return 0;
-    const target = new Date(w + "T00:00:00");
-    if (isNaN(target.getTime())) return 0;
-    const thisMonday = getMondayOfWeek(0);
-    return Math.round((target.getTime() - thisMonday.getTime()) / (7 * 86400000));
-  });
+    if (w) {
+      const d = new Date(w + "T00:00:00");
+      if (!isNaN(d.getTime())) return { y: d.getFullYear(), m: d.getMonth() };
+    }
+    const now = new Date();
+    return { y: now.getFullYear(), m: now.getMonth() };
+  })();
+
+  const [year, setYear] = useState(init.y);
+  const [month, setMonth] = useState(init.m);
   const [filter, setFilter] = useState<"popular" | "all">("popular");
   const [data, setData] = useState<EarningsEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  const monday = getMondayOfWeek(weekOffset);
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
+  const monthLabel = new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    const from = toYMD(monday);
-    const to   = toYMD(friday);
+    setExpanded(new Set());
+    const from = toYMD(new Date(year, month, 1));
+    const to = toYMD(new Date(year, month + 1, 0));
     fetch(`/api/earnings-calendar?from=${from}&to=${to}`)
       .then(r => r.json())
       .then(d => { setData(d.earnings ?? []); setLoading(false); })
       .catch(() => { setError("Failed to load earnings data."); setLoading(false); });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekOffset]);
+  }, [year, month]);
 
-  const days: Date[] = Array.from({ length: 5 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d;
-  });
+  function shiftMonth(delta: number) {
+    const d = new Date(year, month + delta, 1);
+    setYear(d.getFullYear());
+    setMonth(d.getMonth());
+  }
+
+  const now = new Date();
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
 
   const filtered = filter === "popular"
     ? data.filter(e => POPULAR.has(e.symbol?.toUpperCase()))
     : data;
 
-  type Bucket = { bmo: EarningsEntry[]; amc: EarningsEntry[]; other: EarningsEntry[] };
-  const byDay: Record<string, Bucket> = {};
-  for (const day of days) byDay[toYMD(day)] = { bmo: [], amc: [], other: [] };
+  const byDay = new Map<string, EarningsEntry[]>();
   for (const e of filtered) {
-    const b = byDay[e.date];
-    if (!b) continue;
-    if (e.hour === "bmo") b.bmo.push(e);
-    else if (e.hour === "amc") b.amc.push(e);
-    else b.other.push(e);
+    if (!e.date) continue;
+    if (!byDay.has(e.date)) byDay.set(e.date, []);
+    byDay.get(e.date)!.push(e);
   }
+  // bmo first, then amc, then other; alphabetical inside
+  const hourOrder = (h: string) => (h === "bmo" ? 0 : h === "amc" ? 1 : 2);
+  byDay.forEach(list => list.sort((a, b) => hourOrder(a.hour) - hourOrder(b.hour) || a.symbol.localeCompare(b.symbol)));
 
-  const totalBmo = filtered.filter(e => e.hour === "bmo").length;
-  const totalAmc = filtered.filter(e => e.hour === "amc").length;
+  const weeks = monthWeeks(year, month);
+  const totalCount = filtered.length;
+  const bmoCount = filtered.filter(e => e.hour === "bmo").length;
+  const amcCount = filtered.filter(e => e.hour === "amc").length;
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
@@ -144,26 +167,27 @@ function EarningsInner() {
         </h1>
         <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
         <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.25rem 0 0" }}>
-          Upcoming earnings reports · Before market open &amp; after close
+          Full-month view · Blue edge = before open · Red edge = after close · Click a ticker to research it
         </p>
       </div>
 
       {/* Controls */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1.25rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-          <button onClick={() => setWeekOffset(w => w - 1)} style={navBtn}>← Prev Week</button>
-          <span style={{ fontWeight: 600, fontSize: "0.9rem", minWidth: 210, textAlign: "center" }}>
-            Week of {formatWeekLabel(monday)}
+          <button onClick={() => shiftMonth(-1)} style={navBtn}>← {new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "short" })}</button>
+          <span style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontWeight: 600, fontSize: "1.2rem", minWidth: 200, textAlign: "center" }}>
+            {monthLabel}
           </span>
-          <button onClick={() => setWeekOffset(w => w + 1)} style={navBtn}>Next Week →</button>
-          {weekOffset !== 0 && (
-            <button onClick={() => setWeekOffset(0)} style={{ ...navBtn, color: "var(--accent-gold)", borderColor: "var(--accent-gold)" }}>
-              This Week
+          <button onClick={() => shiftMonth(1)} style={navBtn}>{new Date(year, month + 1, 1).toLocaleDateString("en-US", { month: "short" })} →</button>
+          {!isCurrentMonth && (
+            <button onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); }}
+              style={{ ...navBtn, color: "var(--accent-gold)", borderColor: "var(--accent-gold)" }}>
+              This Month
             </button>
           )}
         </div>
 
-        <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden" }}>
+        <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 4, overflow: "hidden" }}>
           {(["popular", "all"] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: "0.4rem 0.9rem",
@@ -173,7 +197,7 @@ function EarningsInner() {
               color: filter === f ? "#131C2E" : "var(--text-secondary)",
               border: "none",
               cursor: "pointer",
-              letterSpacing: "0.01em",
+              fontFamily: "'IBM Plex Sans', sans-serif",
             }}>
               {f === "popular" ? "S&P 500 + Nasdaq 100" : "All Stocks"}
             </button>
@@ -181,94 +205,80 @@ function EarningsInner() {
         </div>
       </div>
 
-      {loading && <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-secondary)" }}>Loading earnings data…</div>}
-      {error   && <div style={{ textAlign: "center", padding: "2rem", color: "var(--negative)" }}>{error}</div>}
+      {error && <div style={{ textAlign: "center", padding: "2rem", color: "var(--negative)" }}>{error}</div>}
 
-      {!loading && !error && (
-        <>
-          {/* 5-column grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.65rem" }}>
-            {days.map((day, di) => {
-              const key = toYMD(day);
-              const b   = byDay[key];
-              const today = isToday(day);
-              const isEmpty = b.bmo.length + b.amc.length + b.other.length === 0;
+      {/* Month grid */}
+      <div style={{ opacity: loading ? 0.45 : 1, transition: "opacity 0.15s ease" }}>
+        {/* Day headers */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 8 }}>
+          {DAY_HEADERS.map(h => (
+            <div key={h} style={{ textAlign: "center", fontSize: "0.62rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>
+              {h}
+            </div>
+          ))}
+        </div>
 
+        {weeks.map((week, wi) => (
+          <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 8 }}>
+            {week.map((d, di) => {
+              if (!d) return <div key={di} style={{ background: "transparent", border: "1px dashed var(--border)", borderRadius: 4, opacity: 0.3, minHeight: 110 }} />;
+              const ymd = toYMD(d);
+              const entries = byDay.get(ymd) ?? [];
+              const today = isToday(d);
+              const isOpen = expanded.has(ymd);
+              const shown = isOpen ? entries : entries.slice(0, MAX_CHIPS);
+              const hidden = entries.length - shown.length;
               return (
-                <div key={key} style={{
+                <div key={di} style={{
                   background: "var(--bg-surface)",
-                  border: `1px solid ${today ? "var(--accent-gold)" : "var(--border)"}`,
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  minHeight: 180,
+                  border: today ? "1px solid var(--accent-gold)" : "1px solid var(--border)",
+                  borderRadius: 4,
+                  padding: "8px 9px",
+                  minHeight: 110,
                 }}>
-                  {/* Day header */}
-                  <div style={{
-                    padding: "0.55rem 0.7rem",
-                    borderBottom: "1px solid var(--border)",
-                    background: today ? "rgba(212,180,94,0.1)" : "var(--bg-elevated)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: "0.82rem" }}>{DAY_NAMES[di]}</div>
-                      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
-                        {day.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
+                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.85rem", fontWeight: 700, color: today ? "var(--accent-gold)" : "var(--text-primary)" }}>
+                      {d.getDate()}
+                    </span>
+                    {today && <span style={{ fontSize: "0.55rem", fontWeight: 700, letterSpacing: "0.12em", color: "var(--accent-gold)", textTransform: "uppercase" }}>Today</span>}
+                    {entries.length > 0 && !today && (
+                      <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontFamily: "'IBM Plex Mono', monospace" }}>{entries.length}</span>
+                    )}
+                  </div>
+                  {entries.length === 0 ? (
+                    <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", textAlign: "center", paddingTop: 18 }}>—</div>
+                  ) : (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {shown.map(e => (
+                        <Chip key={e.symbol + e.hour} entry={e} side={e.hour === "bmo" ? "bmo" : e.hour === "amc" ? "amc" : "other"} />
+                      ))}
+                      {hidden > 0 && (
+                        <button onClick={() => setExpanded(prev => new Set(prev).add(ymd))} style={{
+                          background: "transparent", border: "1px solid var(--border-active)", borderRadius: 3,
+                          color: "var(--accent-gold)", fontSize: "0.65rem", padding: "0.15rem 0.4rem", cursor: "pointer",
+                          fontFamily: "'IBM Plex Mono', monospace",
+                        }}>
+                          +{hidden}
+                        </button>
+                      )}
                     </div>
-                    {today && (
-                      <span style={{ background: "var(--accent-gold)", color: "#131C2E", fontSize: "0.62rem", fontWeight: 800, padding: "0.12rem 0.4rem", borderRadius: 4, letterSpacing: "0.06em" }}>
-                        TODAY
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Tickers */}
-                  <div style={{ padding: "0.5rem 0.5rem 0.6rem" }}>
-                    {isEmpty ? (
-                      <p style={{ color: "var(--text-muted, #4B5563)", fontSize: "0.75rem", textAlign: "center", padding: "1rem 0", margin: 0 }}>
-                        No reports
-                      </p>
-                    ) : (
-                      <>
-                        {(b.bmo.length > 0 || b.other.length > 0) && (
-                          <div style={{ marginBottom: "0.5rem" }}>
-                            <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--positive)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "0.3rem" }}>
-                              Before Open · {b.bmo.length + b.other.length}
-                            </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                              {[...b.bmo, ...b.other].map((e, i) => <EarningsChip key={i} entry={e} side="bmo" />)}
-                            </div>
-                          </div>
-                        )}
-                        {b.amc.length > 0 && (
-                          <div>
-                            <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--negative)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "0.3rem" }}>
-                              After Close · {b.amc.length}
-                            </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                              {b.amc.map((e, i) => <EarningsChip key={i} entry={e} side="amc" />)}
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
+                  )}
                 </div>
               );
             })}
           </div>
+        ))}
+      </div>
 
-          {/* Footer */}
-          <div style={{ marginTop: "1rem", padding: "0.65rem 1rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: "0.8rem", color: "var(--text-secondary)", display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
-            <span><strong style={{ color: "var(--text-primary)" }}>{filtered.length}</strong> companies this week</span>
-            <span style={{ color: "var(--positive)" }}>▲ {totalBmo} before open</span>
-            <span style={{ color: "var(--negative)" }}>▼ {totalAmc} after close</span>
-            {filter === "popular" && <span style={{ marginLeft: "auto", fontSize: "0.75rem" }}>Filtered: S&P 500 + Nasdaq 100</span>}
-          </div>
-        </>
-      )}
+      {/* Summary strip */}
+      <div style={{ marginTop: "0.5rem", padding: "0.65rem 1rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, fontSize: "0.8rem", color: "var(--text-secondary)", display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
+        <span><strong style={{ color: "var(--text-primary)" }}>{totalCount}</strong> reports in {monthLabel}</span>
+        <span style={{ color: "#5B8DEF" }}>▲ {bmoCount} before open</span>
+        <span style={{ color: "var(--negative)" }}>▼ {amcCount} after close</span>
+        <span style={{ marginLeft: "auto", fontSize: "0.7rem", color: "var(--text-muted)" }}>
+          Filtered: {filter === "popular" ? "S&P 500 + Nasdaq 100" : "All stocks"}
+        </span>
+      </div>
     </div>
   );
 }
