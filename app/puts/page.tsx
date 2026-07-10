@@ -202,8 +202,8 @@ function PutsInner() {
 
       let score: number;
       if (strategy === "maxYield") score = annYield;
-      else if (strategy === "safest") score = (1 - absDelta) * 10 + Math.abs(theta) * 100;
-      else score = annYield * 0.5 + Math.abs(theta) * 100 * 0.3 + (1 - absDelta) * 10 * 0.2;
+      else if (strategy === "safest") score = probProfit + annYield * 0.01; // rank by prob of profit, yield as tiebreak
+      else score = annYield * (probProfit / 100); // expected yield: income weighted by odds of keeping it
 
       return {
         strike: K, otmPct: ((K - S) / S) * 100, premium, delta, theta, gamma, vega,
