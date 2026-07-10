@@ -40,7 +40,7 @@ function daysBetween(a: string | null, b: string | null): number | null {
 }
 
 const LABEL_STYLE: React.CSSProperties = {
-  fontFamily: "'IBM Plex Sans', sans-serif",
+  fontFamily: "'Public Sans', sans-serif",
   fontSize: "0.58rem",
   fontWeight: 600,
   textTransform: "uppercase",
@@ -64,7 +64,7 @@ function ToggleGroup<T extends string>({ options, value, onChange }: {
           color: value === o.key ? "#131C2E" : "var(--text-secondary)",
           border: "none",
           cursor: "pointer",
-          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontFamily: "'Public Sans', sans-serif",
           whiteSpace: "nowrap",
         }}>
           {o.label}
@@ -79,7 +79,7 @@ function ChamberBadge({ chamber }: { chamber: "senate" | "house" }) {
   return (
     <span style={{
       display: "inline-block",
-      fontFamily: "'IBM Plex Mono', monospace",
+      fontFamily: "'Spline Sans Mono', monospace",
       fontSize: "0.62rem",
       fontWeight: 700,
       color: isS ? "#5B8DEF" : "#14B8A6",
@@ -100,8 +100,8 @@ function EmptyHint({ title, sub }: { title: string; sub: string }) {
       border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)",
       padding: "28px 20px", textAlign: "center",
     }}>
-      <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "0.95rem", color: "var(--text-secondary)", marginBottom: 6 }}>{title}</div>
-      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{sub}</div>
+      <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.95rem", color: "var(--text-secondary)", marginBottom: 6 }}>{title}</div>
+      <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{sub}</div>
     </div>
   );
 }
@@ -194,7 +194,7 @@ function CongressInner() {
   const nSales = filtered.filter((t) => isSale(t.type)).length;
 
   const th: React.CSSProperties = {
-    textAlign: "left", padding: "10px 12px", fontFamily: "'IBM Plex Sans', sans-serif",
+    textAlign: "left", padding: "10px 12px", fontFamily: "'Public Sans', sans-serif",
     fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em",
     color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
   };
@@ -204,9 +204,9 @@ function CongressInner() {
   };
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
       {/* Header */}
-      <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
+      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
         Congress Trading
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.45, maxWidth: 200, marginBottom: "0.9rem" }} />
@@ -228,12 +228,12 @@ function CongressInner() {
             <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
               style={{
                 width: 130, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 4,
-                padding: "8px 12px", color: "var(--text-primary)", fontFamily: "'IBM Plex Mono', monospace",
+                padding: "8px 12px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace",
                 fontSize: "0.8rem", outline: "none",
               }} />
             <button type="submit" style={{
               background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
-              padding: "8px 18px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem",
+              padding: "8px 18px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Search</button>
           </form>
@@ -244,12 +244,12 @@ function CongressInner() {
             <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder="e.g. Pelosi"
               style={{
                 width: 180, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 4,
-                padding: "8px 12px", color: "var(--text-primary)", fontFamily: "'IBM Plex Sans', sans-serif",
+                padding: "8px 12px", color: "var(--text-primary)", fontFamily: "'Public Sans', sans-serif",
                 fontSize: "0.8rem", outline: "none",
               }} />
             <button type="submit" style={{
               background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
-              padding: "8px 18px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem",
+              padding: "8px 18px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Search</button>
           </form>
@@ -275,7 +275,7 @@ function CongressInner() {
       </div>
 
       {loading && (
-        <div style={{ color: "var(--text-secondary)", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
+        <div style={{ color: "var(--text-secondary)", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
           Loading disclosures…
         </div>
       )}
@@ -315,14 +315,14 @@ function CongressInner() {
             border: "1px solid var(--border)", borderRadius: 4, fontSize: "0.78rem",
             color: "var(--text-secondary)", display: "flex", gap: "1.5rem", flexWrap: "wrap",
           }}>
-            <span><strong style={{ color: "var(--text-primary)", fontFamily: "'IBM Plex Mono', monospace" }}>{filtered.length}</strong> trades shown</span>
+            <span><strong style={{ color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace" }}>{filtered.length}</strong> trades shown</span>
             <span style={{ color: "var(--positive)" }}>{nPurch} purchases</span>
             <span style={{ color: "var(--negative)" }}>{nSales} sales</span>
-            {searched && <span style={{ marginLeft: "auto", fontFamily: "'IBM Plex Mono', monospace", color: "var(--accent-gold)" }}>{searched}</span>}
+            {searched && <span style={{ marginLeft: "auto", fontFamily: "'Spline Sans Mono', monospace", color: "var(--accent-gold)" }}>{searched}</span>}
           </div>
 
           <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.76rem" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.76rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
                   <th style={th}>Politician</th>
@@ -345,11 +345,11 @@ function CongressInner() {
                   const office = rawOffice && rawOffice.trim().toLowerCase() !== fullName ? rawOffice : "—";
                   return (
                     <tr key={i} style={{ background: i % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
-                      <td style={{ ...td, color: "var(--text-primary)", fontWeight: 600, fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.8rem" }}>
+                      <td style={{ ...td, color: "var(--text-primary)", fontWeight: 600, fontFamily: "'Public Sans', sans-serif", fontSize: "0.8rem" }}>
                         {t.firstName} {t.lastName}
                         <ChamberBadge chamber={t.chamber} />
                       </td>
-                      <td style={{ ...td, fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <td style={{ ...td, fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis" }}>
                         {office}
                       </td>
                       <td style={td}>

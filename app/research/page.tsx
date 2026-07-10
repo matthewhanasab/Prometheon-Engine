@@ -78,7 +78,7 @@ function AboutSection({ description }: { description: string }) {
       <SectionLabel>About</SectionLabel>
       <div style={{ maxWidth: 760 }}>
         <p style={{
-          fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.82rem",
+          fontFamily: "'Public Sans', sans-serif", fontSize: "0.82rem",
           color: "var(--text-secondary)", lineHeight: 1.7, margin: "0 0 0.4rem",
           display: "-webkit-box", WebkitBoxOrient: "vertical",
           WebkitLineClamp: expanded ? "unset" : 2,
@@ -87,7 +87,7 @@ function AboutSection({ description }: { description: string }) {
         <button onClick={() => setExpanded(e => !e)} style={{
           background: "none", border: "none", padding: 0,
           color: "var(--accent-gold)", fontSize: "0.75rem",
-          fontFamily: "'IBM Plex Sans', sans-serif", cursor: "pointer",
+          fontFamily: "'Public Sans', sans-serif", cursor: "pointer",
           fontWeight: 500,
         }}>{expanded ? "Show less" : "Show more"}</button>
       </div>
@@ -98,7 +98,7 @@ function AboutSection({ description }: { description: string }) {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
+      fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
       textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)",
       borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem",
       marginBottom: "1rem", marginTop: "2rem",
@@ -114,9 +114,9 @@ function MCard({ label, value, sub, tone = "default" }: {
   const subColor = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "neutral" ? "var(--accent-gold)" : "var(--text-secondary)";
   return (
     <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderTop:`2px solid ${top}`, borderRadius:4, padding:"16px 14px 12px" }}>
-      <div style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.58rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-secondary)", marginBottom:8 }}>{label}</div>
-      <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:"1.25rem", fontWeight:600, color:"var(--text-primary)", lineHeight:1.2 }}>{value}</div>
-      {sub && <div style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.65rem", color: subColor, marginTop:6 }}>{sub}</div>}
+      <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.58rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-secondary)", marginBottom:8 }}>{label}</div>
+      <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.25rem", fontWeight:600, color:"var(--text-primary)", lineHeight:1.2 }}>{value}</div>
+      {sub && <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.65rem", color: subColor, marginTop:6 }}>{sub}</div>}
     </div>
   );
 }
@@ -133,20 +133,20 @@ function Grid({ cols = 5, children }: { cols?: number; children: React.ReactNode
 function EmptyPreview() {
   const D = "—";
   const hint: React.CSSProperties = {
-    fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem",
+    fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem",
     color: "var(--text-muted)", padding: "14px 0 4px",
   };
   return (
     <div>
       {/* Company header placeholder */}
       <div style={{ borderBottom:"1px solid var(--border)", paddingBottom:"1.5rem", marginBottom:"1.5rem" }}>
-        <div style={{ fontFamily:"'IBM Plex Serif', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-muted)", marginBottom:10 }}>Company Name</div>
+        <div style={{ fontFamily:"'Space Grotesk', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-muted)", marginBottom:10 }}>Company Name</div>
         <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12 }}>
           {["Ticker","Exchange","Sector","Industry"].map(v => (
-            <span key={v} style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-muted)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:2, padding:"2px 8px" }}>{v}</span>
+            <span key={v} style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-muted)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:2, padding:"2px 8px" }}>{v}</span>
           ))}
         </div>
-        <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:"2.4rem", fontWeight:600, color:"var(--text-muted)", letterSpacing:"-0.02em" }}>$—.——</span>
+        <span style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"2.4rem", fontWeight:600, color:"var(--text-muted)", letterSpacing:"-0.02em" }}>$—.——</span>
       </div>
 
       <Grid cols={5}>
@@ -159,8 +159,8 @@ function EmptyPreview() {
 
       <SectionLabel>Price Chart</SectionLabel>
       <div style={{ height: 500, border: "1px dashed var(--border-active)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, background: "var(--bg-surface)" }}>
-        <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", color: "var(--text-secondary)" }}>Interactive price chart</div>
-        <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Candles · volume · drawing tools · indicators</div>
+        <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1rem", color: "var(--text-secondary)" }}>Interactive price chart</div>
+        <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Candles · volume · drawing tools · indicators</div>
       </div>
 
       <SectionLabel>Mandatory Metrics</SectionLabel>
@@ -306,17 +306,17 @@ function ResearchInner() {
   return (
     <div style={{ paddingBottom: "4rem" }}>
       {/* Header */}
-      <h1 style={{ fontFamily:"'IBM Plex Serif', Georgia, serif", fontSize:"1.75rem", fontWeight:500, color:"var(--text-primary)", letterSpacing:"-0.02em", marginBottom:"0.4rem" }}>Stock Research</h1>
+      <h1 style={{ fontFamily:"'Space Grotesk', Georgia, serif", fontSize:"1.75rem", fontWeight:500, color:"var(--text-primary)", letterSpacing:"-0.02em", marginBottom:"0.4rem" }}>Stock Research</h1>
       <div style={{ height:1, background:"linear-gradient(to right,var(--accent-gold),transparent)", opacity:0.4, maxWidth:200, marginBottom:"1.5rem" }} />
-      <div style={{ fontSize:"0.82rem", color:"var(--text-secondary)", marginBottom:"1.5rem", fontFamily:"'IBM Plex Sans', sans-serif" }}>
+      <div style={{ fontSize:"0.82rem", color:"var(--text-secondary)", marginBottom:"1.5rem", fontFamily:"'Public Sans', sans-serif" }}>
         Type in a ticker below to get started — everything on this page fills in automatically.
       </div>
 
       {/* Search */}
       <form onSubmit={e => { e.preventDefault(); load(input); }} style={{ display:"flex", gap:10, marginBottom:"2rem", maxWidth:380 }}>
         <input value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
-          style={{ flex:1, background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:4, padding:"10px 14px", color:"var(--text-primary)", fontFamily:"'IBM Plex Mono',monospace", fontSize:"0.85rem", outline:"none" }} />
-        <button type="submit" style={{ background:"var(--accent-gold)", color:"#131C2E", border:"none", borderRadius:4, padding:"10px 22px", fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
+          style={{ flex:1, background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:4, padding:"10px 14px", color:"var(--text-primary)", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.85rem", outline:"none" }} />
+        <button type="submit" style={{ background:"var(--accent-gold)", color:"#131C2E", border:"none", borderRadius:4, padding:"10px 22px", fontFamily:"'Public Sans', sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
       </form>
 
       {loading && <div style={{ color:"var(--text-secondary)", fontSize:"0.85rem", padding:"40px 0" }}>Loading {input}…</div>}
@@ -328,18 +328,18 @@ function ResearchInner() {
         <>
           {/* ── Company Header ── */}
           <div style={{ borderBottom:"1px solid var(--border)", paddingBottom:"1.5rem", marginBottom:"1.5rem" }}>
-            <div style={{ fontFamily:"'IBM Plex Serif', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-primary)", marginBottom:10 }}>{s.name}</div>
+            <div style={{ fontFamily:"'Space Grotesk', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-primary)", marginBottom:10 }}>{s.name}</div>
             <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12 }}>
               {[s.ticker, s.exchange, s.sector, s.industry].filter(Boolean).map((v: string) => (
-                <span key={v} style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-secondary)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:2, padding:"2px 8px" }}>{v}</span>
+                <span key={v} style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-secondary)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:2, padding:"2px 8px" }}>{v}</span>
               ))}
             </div>
             {peers.length > 0 && (
               <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12, alignItems:"center" }}>
-                <span style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.58rem", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-muted)", marginRight:2 }}>Peers</span>
+                <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.58rem", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-muted)", marginRight:2 }}>Peers</span>
                 {peers.slice(0, 8).map((p: any) => (
                   <Link key={p.symbol} href={`/research?ticker=${p.symbol}`} style={{
-                    fontFamily:"'IBM Plex Mono',monospace", fontSize:"0.68rem", fontWeight:600,
+                    fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.68rem", fontWeight:600,
                     color:"var(--text-primary)", background:"var(--bg-elevated)",
                     border:"1px solid var(--border)", borderRadius:3, padding:"3px 9px",
                     textDecoration:"none", whiteSpace:"nowrap",
@@ -349,7 +349,7 @@ function ResearchInner() {
                   </Link>
                 ))}
                 <Link href={`/compare?t=${[s.ticker, ...peers.slice(0, 3).map((p: any) => p.symbol)].join(",")}`} style={{
-                  fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.68rem", fontWeight:600,
+                  fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", fontWeight:600,
                   color:"var(--accent-gold)", background:"transparent",
                   border:"1px solid var(--accent-gold)", borderRadius:3, padding:"3px 9px",
                   textDecoration:"none", whiteSpace:"nowrap",
@@ -359,11 +359,11 @@ function ResearchInner() {
               </div>
             )}
             <div style={{ display:"flex", alignItems:"baseline", gap:16, flexWrap:"wrap" }}>
-              <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:"2.4rem", fontWeight:600, color:"var(--text-primary)", letterSpacing:"-0.02em" }}>${fmt(s.price)}</span>
-              <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:"1rem", fontWeight:500, color: pctColor(s.change) }}>
+              <span style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"2.4rem", fontWeight:600, color:"var(--text-primary)", letterSpacing:"-0.02em" }}>${fmt(s.price)}</span>
+              <span style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1rem", fontWeight:500, color: pctColor(s.change) }}>
                 {(s.change ?? 0) >= 0 ? "▲" : "▼"} ${Math.abs(s.change ?? 0).toFixed(2)} ({s.changePct != null ? `${s.changePct >= 0 ? "+" : ""}${s.changePct.toFixed(2)}%` : "N/A"})
               </span>
-              <span style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.78rem", color:"var(--text-secondary)" }}>Mkt cap: {fmtLarge(s.mktCap)}</span>
+              <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.78rem", color:"var(--text-secondary)" }}>Mkt cap: {fmtLarge(s.mktCap)}</span>
             </div>
           </div>
 
@@ -493,9 +493,9 @@ function ResearchInner() {
                           { name:"CAPM Expected", val: capmRet * 100 },
                           { name:"Actual 1Y",    val: ret1Y },
                         ]} margin={{ top:8, right:8, left:0, bottom:0 }}>
-                          <XAxis dataKey="name" tick={{ fill:"#A9B8D0", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
-                          <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"#F1F5F9", fontSize:10, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={48} />
-                          <Tooltip labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }} cursor={{ fill: "rgba(76, 97, 144, 0.18)" }} formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"#283552", border:"1px solid #4C6190", borderRadius:4, fontFamily:"IBM Plex Mono", fontSize:12, color:"#F1F5F9" }} />
+                          <XAxis dataKey="name" tick={{ fill:"#A9B8D0", fontSize:10, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
+                          <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"#F1F5F9", fontSize:10, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={48} />
+                          <Tooltip labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }} cursor={{ fill: "rgba(76, 97, 144, 0.18)" }} formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"#283552", border:"1px solid #4C6190", borderRadius:4, fontFamily:"Spline Sans Mono", fontSize:12, color:"#F1F5F9" }} />
                           <Bar dataKey="val" radius={[2,2,0,0]}>
                             <Cell fill="#4C6190" />
                             <Cell fill="#D4B45E" />
@@ -505,7 +505,7 @@ function ResearchInner() {
                       </ResponsiveContainer>
                     </div>
                   </div>
-                  <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:"0.72rem", color:"var(--text-secondary)", background:"#0d1425", border:"1px solid var(--border)", borderRadius:4, padding:"10px 14px", marginTop:10 }}>
+                  <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.72rem", color:"var(--text-secondary)", background:"#0d1425", border:"1px solid var(--border)", borderRadius:4, padding:"10px 14px", marginTop:10 }}>
                     E(R) = Rf + β × (Rm − Rf) = {(rf*100).toFixed(2)}% + {fmt(beta)} × (10% − {(rf*100).toFixed(2)}%) ={" "}
                     <span style={{ color:"var(--accent-gold)", fontWeight:600 }}>{(capmRet*100).toFixed(2)}%</span>
                     &nbsp;&nbsp;|&nbsp;&nbsp;1Y Actual:{" "}
@@ -525,9 +525,9 @@ function ResearchInner() {
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:4, padding:"12px 8px 4px", marginBottom:12 }}>
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={earnings.filter((e: any) => e.surprise != null).map((e: any) => ({ name: (e.date ?? "").slice(0,10), val: e.surprise }))} margin={{ top:4, right:8, left:0, bottom:0 }}>
-                    <XAxis dataKey="name" tick={{ fill:"#F1F5F9", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} />
-                    <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#F1F5F9", fontSize:9, fontFamily:"IBM Plex Mono" }} axisLine={false} tickLine={false} width={40} />
-                    <Tooltip labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }} cursor={{ fill: "rgba(76, 97, 144, 0.18)" }} formatter={(v: any) => [`${v.toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"#283552", border:"1px solid #4C6190", borderRadius:4, fontFamily:"IBM Plex Mono", fontSize:11, color:"#F1F5F9" }} />
+                    <XAxis dataKey="name" tick={{ fill:"#F1F5F9", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#F1F5F9", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={40} />
+                    <Tooltip labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }} cursor={{ fill: "rgba(76, 97, 144, 0.18)" }} formatter={(v: any) => [`${v.toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"#283552", border:"1px solid #4C6190", borderRadius:4, fontFamily:"Spline Sans Mono", fontSize:11, color:"#F1F5F9" }} />
                     <Bar dataKey="val" radius={[2,2,0,0]}>
                       {earnings.filter((e: any) => e.surprise != null).map((e: any, i: number) => (
                         <Cell key={i} fill={e.surprise >= 0 ? "#059669" : "#dc2626"} />
@@ -681,13 +681,13 @@ function ResearchInner() {
                 return (
                   <div key={i} style={{ padding:"12px 0", borderBottom:"1px solid var(--border)" }}>
                     <a href={article.url} target="_blank" rel="noopener noreferrer"
-                      style={{ fontFamily:"'IBM Plex Sans', sans-serif", color:"var(--text-primary)", fontWeight:500, fontSize:"0.85rem", textDecoration:"none", lineHeight:1.45 }}>
+                      style={{ fontFamily:"'Public Sans', sans-serif", color:"var(--text-primary)", fontWeight:500, fontSize:"0.85rem", textDecoration:"none", lineHeight:1.45 }}>
                       {article.headline}
                     </a>
-                    <div style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.68rem", color:"var(--border-active)", marginTop:4 }}>
+                    <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", color:"var(--border-active)", marginTop:4 }}>
                       {article.source} · {date}
                     </div>
-                    {summary && <div style={{ fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.75rem", color:"var(--text-secondary)", marginTop:4 }}>{summary}</div>}
+                    {summary && <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.75rem", color:"var(--text-secondary)", marginTop:4 }}>{summary}</div>}
                   </div>
                 );
               })}
@@ -713,11 +713,11 @@ type CellVal = string | number | { value: string; color?: string; bold?: boolean
 function Table({ headers, rows }: { headers: string[]; rows: CellVal[][] }) {
   return (
     <div style={{ overflowX:"auto", border:"1px solid var(--border)", borderRadius:4 }}>
-      <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"'IBM Plex Mono',monospace", fontSize:"0.78rem" }}>
+      <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.78rem" }}>
         <thead>
           <tr style={{ background:"var(--bg-primary)" }}>
             {headers.map((h, i) => (
-              <th key={i} style={{ textAlign: i === 0 ? "left" : "right", padding:"8px 14px", fontFamily:"'IBM Plex Sans', sans-serif", fontSize:"0.58rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-secondary)", borderBottom:"1px solid var(--border)", whiteSpace:"nowrap" }}>{h}</th>
+              <th key={i} style={{ textAlign: i === 0 ? "left" : "right", padding:"8px 14px", fontFamily:"'Public Sans', sans-serif", fontSize:"0.58rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-secondary)", borderBottom:"1px solid var(--border)", whiteSpace:"nowrap" }}>{h}</th>
             ))}
           </tr>
         </thead>

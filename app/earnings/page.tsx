@@ -69,7 +69,7 @@ function Chip({ entry, side }: { entry: EarningsEntry; side: "bmo" | "amc" | "ot
         borderRadius: 3,
         padding: "0.15rem 0.4rem",
         fontWeight: 700,
-        fontFamily: "'IBM Plex Mono', monospace",
+        fontFamily: "'Spline Sans Mono', monospace",
         fontSize: "0.68rem",
         letterSpacing: "0.02em",
         color: "var(--text-primary)",
@@ -91,7 +91,7 @@ const navBtn: React.CSSProperties = {
   cursor: "pointer",
   fontSize: "0.82rem",
   fontWeight: 500,
-  fontFamily: "'IBM Plex Sans', sans-serif",
+  fontFamily: "'Public Sans', sans-serif",
 };
 
 function EarningsInner() {
@@ -159,10 +159,10 @@ function EarningsInner() {
   const amcCount = filtered.filter(e => e.hour === "amc").length;
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
+        <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
           Earnings Calendar
         </h1>
         <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
@@ -175,7 +175,7 @@ function EarningsInner() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1.25rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
           <button onClick={() => shiftMonth(-1)} style={navBtn}>← {new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "short" })}</button>
-          <span style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontWeight: 600, fontSize: "1.2rem", minWidth: 200, textAlign: "center" }}>
+          <span style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontWeight: 600, fontSize: "1.2rem", minWidth: 200, textAlign: "center" }}>
             {monthLabel}
           </span>
           <button onClick={() => shiftMonth(1)} style={navBtn}>{new Date(year, month + 1, 1).toLocaleDateString("en-US", { month: "short" })} →</button>
@@ -197,7 +197,7 @@ function EarningsInner() {
               color: filter === f ? "#131C2E" : "var(--text-secondary)",
               border: "none",
               cursor: "pointer",
-              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontFamily: "'Public Sans', sans-serif",
             }}>
               {f === "popular" ? "S&P 500 + Nasdaq 100" : "All Stocks"}
             </button>
@@ -237,12 +237,12 @@ function EarningsInner() {
                   minHeight: 110,
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
-                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.85rem", fontWeight: 700, color: today ? "var(--accent-gold)" : "var(--text-primary)" }}>
+                    <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.85rem", fontWeight: 700, color: today ? "var(--accent-gold)" : "var(--text-primary)" }}>
                       {d.getDate()}
                     </span>
                     {today && <span style={{ fontSize: "0.55rem", fontWeight: 700, letterSpacing: "0.12em", color: "var(--accent-gold)", textTransform: "uppercase" }}>Today</span>}
                     {entries.length > 0 && !today && (
-                      <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontFamily: "'IBM Plex Mono', monospace" }}>{entries.length}</span>
+                      <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontFamily: "'Spline Sans Mono', monospace" }}>{entries.length}</span>
                     )}
                   </div>
                   {entries.length === 0 ? (
@@ -256,7 +256,7 @@ function EarningsInner() {
                         <button onClick={() => setExpanded(prev => new Set(prev).add(ymd))} style={{
                           background: "transparent", border: "1px solid var(--border-active)", borderRadius: 3,
                           color: "var(--accent-gold)", fontSize: "0.65rem", padding: "0.15rem 0.4rem", cursor: "pointer",
-                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontFamily: "'Spline Sans Mono', monospace",
                         }}>
                           +{hidden}
                         </button>

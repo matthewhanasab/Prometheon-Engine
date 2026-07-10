@@ -41,7 +41,7 @@ function formBadge(form: string) {
       fontSize: "0.72rem",
       padding: "0.18rem 0.55rem",
       borderRadius: 4,
-      fontFamily: "'IBM Plex Mono', monospace",
+      fontFamily: "'Spline Sans Mono', monospace",
       letterSpacing: "0.04em",
       whiteSpace: "nowrap",
     }}>
@@ -86,9 +86,9 @@ const tdStyle: React.CSSProperties = {
 function EmptyHint({ title, desc }: { title: string; desc: string }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
-      <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
+      <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
       <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
-        <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
+        <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
       </div>
     </div>
   );
@@ -133,10 +133,10 @@ function SecInner() {
   const totalInsiderPages = Math.ceil(insiders.length / INSIDER_PAGE_SIZE);
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
+        <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
           SEC Filings
         </h1>
         <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
@@ -160,7 +160,7 @@ function SecInner() {
             borderRadius: 6,
             color: "var(--text-primary)",
             fontSize: "0.875rem",
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily: "'Spline Sans Mono', monospace",
             outline: "none",
             letterSpacing: "0.04em",
           }}
@@ -174,7 +174,7 @@ function SecInner() {
             border: "none",
             borderRadius: 4,
             color: "#131C2E",
-            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,
             textTransform: "uppercase",
@@ -186,7 +186,7 @@ function SecInner() {
           {loading ? "Loading…" : "Load"}
         </button>
         {activeTicker && !loading && (
-          <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: 700, fontSize: "1.1rem", color: "var(--accent-gold)", marginLeft: "0.5rem" }}>
+          <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontWeight: 700, fontSize: "1.1rem", color: "var(--accent-gold)", marginLeft: "0.5rem" }}>
             {activeTicker}
           </span>
         )}
@@ -213,7 +213,7 @@ function SecInner() {
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", marginBottom: "1.75rem" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Recent Filings</h2>
+                <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Recent Filings</h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: "0.76rem", margin: "0.15rem 0 0" }}>Last 30 filings from EDGAR</p>
               </div>
               <span style={{ color: "var(--text-secondary)", fontSize: "0.78rem" }}>{filings.length} filings</span>
@@ -234,7 +234,7 @@ function SecInner() {
                   <tbody>
                     {filings.map((f, i) => (
                       <tr key={i} style={{ transition: "background 0.1s" }} onMouseEnter={e => (e.currentTarget.style.background = "rgba(30,45,69,0.4)")} onMouseLeave={e => (e.currentTarget.style.background = "")}>
-                        <td style={{ ...tdStyle, fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                        <td style={{ ...tdStyle, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                           {f.date}
                         </td>
                         <td style={{ ...tdStyle, whiteSpace: "nowrap" }}>
@@ -267,7 +267,7 @@ function SecInner() {
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Insider Transactions</h2>
+                <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Insider Transactions</h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: "0.76rem", margin: "0.15rem 0 0" }}>Form 4 filings · Recent insider buying &amp; selling</p>
               </div>
               <span style={{ color: "var(--text-secondary)", fontSize: "0.78rem" }}>{insiders.length} transactions</span>
@@ -288,7 +288,7 @@ function SecInner() {
                     <tbody>
                       {insiderSlice.map((ins, i) => (
                         <tr key={i} onMouseEnter={e => (e.currentTarget.style.background = "rgba(30,45,69,0.4)")} onMouseLeave={e => (e.currentTarget.style.background = "")}>
-                          <td style={{ ...tdStyle, fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                          <td style={{ ...tdStyle, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                             {ins.date}
                           </td>
                           <td style={{ ...tdStyle, fontWeight: 600, whiteSpace: "nowrap" }}>{ins.name}</td>
@@ -307,16 +307,16 @@ function SecInner() {
                               {ins.type}
                             </span>
                           </td>
-                          <td style={{ ...tdStyle, fontFamily: "'IBM Plex Mono', monospace", textAlign: "right" }}>
+                          <td style={{ ...tdStyle, fontFamily: "'Spline Sans Mono', monospace", textAlign: "right" }}>
                             {fmtShares(ins.shares)}
                           </td>
-                          <td style={{ ...tdStyle, fontFamily: "'IBM Plex Mono', monospace", textAlign: "right" }}>
+                          <td style={{ ...tdStyle, fontFamily: "'Spline Sans Mono', monospace", textAlign: "right" }}>
                             {ins.price != null ? `$${ins.price.toFixed(2)}` : "—"}
                           </td>
-                          <td style={{ ...tdStyle, fontFamily: "'IBM Plex Mono', monospace", textAlign: "right", color: ins.type === "BUY" ? "var(--positive)" : ins.type === "SELL" ? "var(--negative)" : "inherit" }}>
+                          <td style={{ ...tdStyle, fontFamily: "'Spline Sans Mono', monospace", textAlign: "right", color: ins.type === "BUY" ? "var(--positive)" : ins.type === "SELL" ? "var(--negative)" : "inherit" }}>
                             {fmtNum(ins.value)}
                           </td>
-                          <td style={{ ...tdStyle, fontFamily: "'IBM Plex Mono', monospace", textAlign: "right", color: "var(--text-secondary)" }}>
+                          <td style={{ ...tdStyle, fontFamily: "'Spline Sans Mono', monospace", textAlign: "right", color: "var(--text-secondary)" }}>
                             {ins.owned != null ? fmtShares(ins.owned) : "—"}
                           </td>
                         </tr>

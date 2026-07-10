@@ -95,7 +95,7 @@ function SL({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontFamily: "'IBM Plex Sans', sans-serif",
+        fontFamily: "'Public Sans', sans-serif",
         fontSize: "0.58rem",
         fontWeight: 600,
         textTransform: "uppercase",
@@ -134,7 +134,7 @@ function ChartCard({
       {title && (
         <div
           style={{
-            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.65rem",
             fontWeight: 600,
             color: "var(--text-secondary)",
@@ -157,7 +157,7 @@ const ttStyle = {
     background: "#35456A",
     border: "1px solid #4C6190",
     borderRadius: 4,
-    fontFamily: "IBM Plex Mono, monospace",
+    fontFamily: "Spline Sans Mono, monospace",
     fontSize: 11,
     color: "#F1F5F9",
   },
@@ -169,7 +169,7 @@ function XAx() {
     <XAxis
       dataKey="date"
       tickFormatter={tickDate}
-      tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+      tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
       axisLine={false}
       tickLine={false}
       interval="preserveStartEnd"
@@ -187,7 +187,7 @@ function YAx({
   return (
     <YAxis
       tickFormatter={(v) => `${v}${unit}`}
-      tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+      tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
       axisLine={false}
       tickLine={false}
       width={44}
@@ -234,7 +234,7 @@ function MCard({
     >
       <div
         style={{
-          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontFamily: "'Public Sans', sans-serif",
           fontSize: "0.6rem",
           fontWeight: 600,
           textTransform: "uppercase",
@@ -246,7 +246,7 @@ function MCard({
       </div>
       <div
         style={{
-          fontFamily: "'IBM Plex Serif', Georgia, serif",
+          fontFamily: "'Space Grotesk', Georgia, serif",
           fontSize: "1.5rem",
           fontWeight: 500,
           color: "var(--text-primary)",
@@ -258,7 +258,7 @@ function MCard({
       {sub && (
         <div
           style={{
-            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.65rem",
             color: subColor,
           }}
@@ -348,7 +348,7 @@ function MarketCard({ q }: { q: MarketQuote }) {
     >
       <div
         style={{
-          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontFamily: "'Public Sans', sans-serif",
           fontSize: "0.58rem",
           fontWeight: 600,
           textTransform: "uppercase",
@@ -360,7 +360,7 @@ function MarketCard({ q }: { q: MarketQuote }) {
       </div>
       <div
         style={{
-          fontFamily: "'IBM Plex Serif', Georgia, serif",
+          fontFamily: "'Space Grotesk', Georgia, serif",
           fontSize: "1.35rem",
           fontWeight: 500,
           color: "var(--text-primary)",
@@ -373,7 +373,7 @@ function MarketCard({ q }: { q: MarketQuote }) {
       </div>
       <div
         style={{
-          fontFamily: "IBM Plex Mono, monospace",
+          fontFamily: "Spline Sans Mono, monospace",
           fontSize: "0.72rem",
           color: up ? "var(--positive)" : "var(--negative)",
         }}
@@ -409,7 +409,7 @@ export default function MacroPage() {
       <div
         style={{
           color: "var(--text-secondary)",
-          fontFamily: "IBM Plex Mono, monospace",
+          fontFamily: "Spline Sans Mono, monospace",
           fontSize: "0.8rem",
           padding: "3rem 0",
           textAlign: "center",
@@ -539,11 +539,11 @@ export default function MacroPage() {
   const chartH = 230;
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif" }}>
       {/* Header */}
       <h1
         style={{
-          fontFamily: "'IBM Plex Serif', Georgia, serif",
+          fontFamily: "'Space Grotesk', Georgia, serif",
           fontSize: "1.75rem",
           fontWeight: 500,
           color: "var(--text-primary)",
@@ -686,7 +686,7 @@ export default function MacroPage() {
                   value: "2%",
                   fill: "#D4B45E",
                   fontSize: 9,
-                  fontFamily: "IBM Plex Mono",
+                  fontFamily: "Spline Sans Mono",
                 }}
               />
               <Line
@@ -735,7 +735,7 @@ export default function MacroPage() {
                   value: "2%",
                   fill: "#D4B45E",
                   fontSize: 9,
-                  fontFamily: "IBM Plex Mono",
+                  fontFamily: "Spline Sans Mono",
                 }}
               />
               <Area
@@ -887,7 +887,7 @@ export default function MacroPage() {
                   value: "Caution",
                   fill: "#D4B45E",
                   fontSize: 9,
-                  fontFamily: "IBM Plex Mono",
+                  fontFamily: "Spline Sans Mono",
                 }}
               />
               <ReferenceLine
@@ -898,7 +898,7 @@ export default function MacroPage() {
                   value: "Fear",
                   fill: "#EF4444",
                   fontSize: 9,
-                  fontFamily: "IBM Plex Mono",
+                  fontFamily: "Spline Sans Mono",
                 }}
               />
               <Area
@@ -960,7 +960,7 @@ export default function MacroPage() {
                   <Grid />
                   <XAxis
                     dataKey="label"
-                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -999,8 +999,8 @@ export default function MacroPage() {
                       minWidth: 64,
                     }}
                   >
-                    <div style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.6rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{p.label}</div>
-                    <div style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.95rem", fontWeight: 600, color: "var(--accent-gold)" }}>{fmt(p.value)}%</div>
+                    <div style={{ fontFamily: "Spline Sans Mono, monospace", fontSize: "0.6rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{p.label}</div>
+                    <div style={{ fontFamily: "Spline Sans Mono, monospace", fontSize: "0.95rem", fontWeight: 600, color: "var(--accent-gold)" }}>{fmt(p.value)}%</div>
                   </div>
                 ))}
               </div>
@@ -1027,10 +1027,10 @@ export default function MacroPage() {
                 minWidth: 160,
               }}
             >
-              <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>Fear &amp; Greed</div>
+              <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>Fear &amp; Greed</div>
               <div
                 style={{
-                  fontFamily: "'IBM Plex Serif', Georgia, serif",
+                  fontFamily: "'Space Grotesk', Georgia, serif",
                   fontSize: "3.5rem",
                   fontWeight: 500,
                   letterSpacing: "-0.03em",
@@ -1044,7 +1044,7 @@ export default function MacroPage() {
               >
                 {fearGreed.value ?? "—"}
               </div>
-              <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+              <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                 {fearGreed.classification ?? ""}
               </div>
               <div style={{ width: "100%", height: 6, background: "var(--bg-elevated)", borderRadius: 3, marginTop: 4 }}>
@@ -1062,7 +1062,7 @@ export default function MacroPage() {
                   }}
                 />
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", width: "100%", fontSize: "0.58rem", color: "var(--text-secondary)", fontFamily: "IBM Plex Mono, monospace" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", width: "100%", fontSize: "0.58rem", color: "var(--text-secondary)", fontFamily: "Spline Sans Mono, monospace" }}>
                 <span>Fear</span>
                 <span>Greed</span>
               </div>
@@ -1081,7 +1081,7 @@ export default function MacroPage() {
                       const d = new Date(parseInt(v) * 1000);
                       return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
                     }}
-                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                     interval="preserveStartEnd"
@@ -1089,7 +1089,7 @@ export default function MacroPage() {
                   <YAxis
                     domain={[0, 100]}
                     tickFormatter={(v) => String(v)}
-                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "IBM Plex Mono" }}
+                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                     width={44}
@@ -1103,8 +1103,8 @@ export default function MacroPage() {
                       return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
                     }}
                   />
-                  <ReferenceLine y={25} stroke="#EF4444" strokeDasharray="4 3" label={{ value: "Fear", fill: "#EF4444", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
-                  <ReferenceLine y={75} stroke="#22C55E" strokeDasharray="4 3" label={{ value: "Greed", fill: "#22C55E", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
+                  <ReferenceLine y={25} stroke="#EF4444" strokeDasharray="4 3" label={{ value: "Fear", fill: "#EF4444", fontSize: 9, fontFamily: "Spline Sans Mono" }} />
+                  <ReferenceLine y={75} stroke="#22C55E" strokeDasharray="4 3" label={{ value: "Greed", fill: "#22C55E", fontSize: 9, fontFamily: "Spline Sans Mono" }} />
                   <Area
                     type="monotone"
                     dataKey="value"
@@ -1129,7 +1129,7 @@ export default function MacroPage() {
           borderTop: "1px solid var(--border)",
           fontSize: "0.62rem",
           color: "var(--text-secondary)",
-          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontFamily: "'Public Sans', sans-serif",
           textAlign: "center",
         }}
       >

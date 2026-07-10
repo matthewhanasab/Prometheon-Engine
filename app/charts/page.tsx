@@ -65,7 +65,7 @@ const TOOLTIP_STYLE = {
     background: "#283552",
     border: "1px solid #4C6190",
     borderRadius: 4,
-    fontFamily: "IBM Plex Mono, monospace",
+    fontFamily: "Spline Sans Mono, monospace",
     fontSize: 15,
     color: "#F1F5F9",
   },
@@ -79,7 +79,7 @@ const CARD_STYLE: React.CSSProperties = {
 };
 
 const SECTION_LABEL_STYLE: React.CSSProperties = {
-  fontFamily: "'IBM Plex Serif', Georgia, serif",
+  fontFamily: "'Space Grotesk', Georgia, serif",
   fontSize: "1.05rem",
   fontWeight: 600,
   color: "var(--text-primary)",
@@ -109,7 +109,7 @@ function TtmToggle({ isTtm, onChange }: { isTtm: boolean; onChange: (v: boolean)
               borderRadius: 3,
               padding: "3px 10px",
               fontSize: "0.68rem",
-              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontFamily: "'Public Sans', sans-serif",
               cursor: "pointer",
             }}
           >
@@ -140,7 +140,7 @@ function QoQLabel(props: {
       fill={color}
       fontSize={13}
       textAnchor="middle"
-      fontFamily="IBM Plex Mono, monospace"
+      fontFamily="Spline Sans Mono, monospace"
     >
       {label}
     </text>
@@ -218,7 +218,7 @@ function ChartsEmpty() {
             border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)",
             padding: "34px 20px", textAlign: "center", marginBottom: 4,
           }}>
-            <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
+            <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
           </div>
         </div>
       ))}
@@ -415,11 +415,11 @@ function ChartsInner() {
   const profile = data?.profile;
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <h1
         style={{
-          fontFamily: "'IBM Plex Serif', Georgia, serif",
+          fontFamily: "'Space Grotesk', Georgia, serif",
           fontSize: "1.75rem",
           fontWeight: 500,
           letterSpacing: "-0.02em",
@@ -456,7 +456,7 @@ function ChartsInner() {
             borderRadius: 6,
             color: "var(--text-primary)",
             fontSize: "0.875rem",
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily: "'Spline Sans Mono', monospace",
             outline: "none",
             letterSpacing: "0.04em",
           }}
@@ -470,7 +470,7 @@ function ChartsInner() {
             border: "none",
             borderRadius: 4,
             color: "#131C2E",
-            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,
             textTransform: "uppercase",
@@ -502,7 +502,7 @@ function ChartsInner() {
         >
           <span
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily: "'Spline Sans Mono', monospace",
               fontSize: "1.3rem",
               fontWeight: 700,
               color: "var(--accent-gold)",
@@ -524,7 +524,7 @@ function ChartsInner() {
                 padding: "2px 8px",
                 fontSize: "0.7rem",
                 color: "var(--accent-gold)",
-                fontFamily: "'IBM Plex Sans', sans-serif",
+                fontFamily: "'Public Sans', sans-serif",
               }}
             >
               {profile.sector}
@@ -539,7 +539,7 @@ function ChartsInner() {
                 padding: "2px 8px",
                 fontSize: "0.7rem",
                 color: "var(--text-secondary)",
-                fontFamily: "'IBM Plex Sans', sans-serif",
+                fontFamily: "'Public Sans', sans-serif",
               }}
             >
               {profile.industry}
@@ -637,7 +637,7 @@ function ChartsInner() {
                   ]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }}
+                  wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "#64748B" }}
                   formatter={(v) => (v === "gross" ? "Gross Margin" : "Net Margin")}
                 />
                 <Line
@@ -749,7 +749,7 @@ function ChartsInner() {
                       {...TOOLTIP_STYLE}
                       formatter={(v: any, name: any) => [fmtVal(v), name]}
                     />
-                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }} />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "#64748B" }} />
                     {prodKeys.map((key, i) => (
                       <Bar key={key} dataKey={key} stackId="a" fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]} isAnimationActive={false} />
                     ))}
@@ -773,7 +773,7 @@ function ChartsInner() {
                       {...TOOLTIP_STYLE}
                       formatter={(v: any, name: any) => [fmtVal(v), name]}
                     />
-                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }} />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "#64748B" }} />
                     {geoKeys.map((key, i) => (
                       <Bar key={key} dataKey={key} stackId="a" fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]} isAnimationActive={false} />
                     ))}
@@ -799,7 +799,7 @@ function ChartsInner() {
                   ]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace", color: "#64748B" }}
+                  wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "#64748B" }}
                   formatter={(v) => (v === "assets" ? "Current Assets" : "Current Liabilities")}
                 />
                 <Line

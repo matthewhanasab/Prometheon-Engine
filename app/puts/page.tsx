@@ -62,7 +62,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 4,
   color: "var(--text-primary)",
   fontSize: "0.85rem",
-  fontFamily: "'IBM Plex Mono', monospace",
+  fontFamily: "'Spline Sans Mono', monospace",
   outline: "none",
   width: "100%",
 };
@@ -75,7 +75,7 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: "0.12em",
   marginBottom: "0.35rem",
   display: "block",
-  fontFamily: "'IBM Plex Sans', sans-serif",
+  fontFamily: "'Public Sans', sans-serif",
 };
 
 const cardStyle: React.CSSProperties = {
@@ -90,8 +90,8 @@ function Metric({ label, value, sub, tone }: { label: string; value: string; sub
   return (
     <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "12px 14px" }}>
       <div style={labelStyle}>{label}</div>
-      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)" }}>{value}</div>
-      {sub && <div style={{ fontSize: "0.65rem", color: subColor, marginTop: 4, fontFamily: "'IBM Plex Sans', sans-serif" }}>{sub}</div>}
+      <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)" }}>{value}</div>
+      {sub && <div style={{ fontSize: "0.65rem", color: subColor, marginTop: 4, fontFamily: "'Public Sans', sans-serif" }}>{sub}</div>}
     </div>
   );
 }
@@ -231,10 +231,10 @@ function PutsInner() {
     : [];
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
+        <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
           Cash-Secured Puts Screener
         </h1>
         <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
@@ -282,7 +282,7 @@ function PutsInner() {
               {([["balanced", "Balanced"], ["maxYield", "Max Yield"], ["safest", "Safest"]] as [Strategy, string][]).map(([key, label]) => (
                 <button key={key} onClick={() => setStrategy(key)} style={{
                   padding: "0.5rem 1rem", fontSize: "0.72rem", fontWeight: 600, border: "none", cursor: "pointer",
-                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontFamily: "'Public Sans', sans-serif",
                   background: strategy === key ? "var(--accent-gold)" : "transparent",
                   color: strategy === key ? "#131C2E" : "var(--text-secondary)",
                 }}>
@@ -293,7 +293,7 @@ function PutsInner() {
           </div>
           <button onClick={() => load()} disabled={loading} style={{
             padding: "10px 28px", background: "var(--accent-gold)", border: "none", borderRadius: 4,
-            color: "#131C2E", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
+            color: "#131C2E", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", opacity: loading ? 0.7 : 1,
           }}>
             {loading ? "Screening…" : "Screen Options"}
@@ -341,7 +341,7 @@ function PutsInner() {
           {best && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-gold)", borderRadius: 4, padding: "16px 20px", marginBottom: "1.5rem" }}>
               <div style={{ ...labelStyle, color: "var(--accent-gold)" }}>⭐ Best Pick — {strategy === "maxYield" ? "Max Yield" : strategy === "safest" ? "Safest" : "Balanced"}</div>
-              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "1.3rem", fontWeight: 700, marginBottom: 6 }}>
+              <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.3rem", fontWeight: 700, marginBottom: 6 }}>
                 Sell the ${best.strike} put · collect ~${Math.round(best.premiumIncome).toLocaleString()} upfront
               </div>
               <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
@@ -356,13 +356,13 @@ function PutsInner() {
           {/* Contracts table */}
           {rows.length > 0 ? (
             <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4, marginBottom: "1.5rem" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-primary)" }}>
                     {["Rank", "Strike", "OTM %", "Est. Premium", "Delta", "Theta $/day", "Gamma", "Vega", "Ann. Yield", "Prob. Profit", "Breakeven", "Discount if Assigned", "Premium Income", "Capital Required", ...(basis > 0 ? ["New Avg Cost"] : [])].map((h, i) => (
                       <th key={h} style={{
                         textAlign: i === 0 ? "left" : "right", padding: "9px 12px",
-                        fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500,
+                        fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500,
                         textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)",
                         borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
                       }}>{h}</th>
@@ -414,21 +414,21 @@ function PutsInner() {
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={payoffData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="px" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="px" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(v: any) => `$${v}`} minTickGap={50} />
-                  <YAxis tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false}
+                  <YAxis tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(v: any) => `$${v.toLocaleString()}`} width={80} />
                   <Tooltip
                     labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
-                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 }}
+                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                     formatter={(v: any) => [`$${Number(v).toLocaleString()}`, "P&L"]}
                     labelFormatter={(l: any) => `Stock at $${l}`}
                   />
                   <ReferenceLine y={0} stroke="var(--border-active)" />
                   <ReferenceLine x={best.breakeven} stroke="var(--accent-gold)" strokeDasharray="4 3"
-                    label={{ value: `B/E $${fmt(best.breakeven)}`, fill: "#D4B45E", fontSize: 11, fontFamily: "IBM Plex Mono", position: "insideTopLeft" }} />
+                    label={{ value: `B/E $${fmt(best.breakeven)}`, fill: "#D4B45E", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopLeft" }} />
                   <ReferenceLine x={best.strike} stroke="#A9B8D0" strokeDasharray="2 4"
-                    label={{ value: `Strike $${best.strike}`, fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono", position: "insideTopRight" }} />
+                    label={{ value: `Strike $${best.strike}`, fill: "#A9B8D0", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopRight" }} />
                   <Area type="monotone" dataKey="pnl" stroke="#A78BFA" strokeWidth={2} fill="#A78BFA" fillOpacity={0.12} isAnimationActive={false} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -444,19 +444,19 @@ function PutsInner() {
       {/* Education cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
         <div style={cardStyle}>
-          <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>What is a Cash-Secured Put?</div>
+          <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>What is a Cash-Secured Put?</div>
           <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>
             A cash-secured put is an options strategy where you sell (write) a put option while setting aside enough cash to buy 100 shares at the strike price. You collect the option premium upfront as income. If the stock closes below the strike at expiration, you are assigned and buy the shares — using the cash you already reserved.
           </p>
         </div>
         <div style={cardStyle}>
-          <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>When to Use</div>
+          <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>When to Use</div>
           <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>
             Best when you want to own a stock but at a cheaper price than today&apos;s — you get paid to wait for your entry. Also attractive in sideways-to-mildly-bullish markets where the premium is likely to expire worthless. Elevated implied volatility means richer premiums for the same strikes.
           </p>
         </div>
         <div style={cardStyle}>
-          <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>Risk / Reward</div>
+          <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>Risk / Reward</div>
           <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>
             You are obligated to buy at the strike if the stock drops below it — even if it falls far further. The premium is yours regardless, which lowers your effective purchase price. The trade-off: if the stock rips higher, your only gain is the premium — an opportunity cost versus simply buying the shares today.
           </p>

@@ -27,7 +27,7 @@ function sectorTint(chg: number): string {
 
 function MoverTable({ title, rows }: { title: string; rows: Mover[] }) {
   const th: React.CSSProperties = {
-    textAlign: "right", padding: "8px 10px", fontFamily: "'IBM Plex Sans', sans-serif",
+    textAlign: "right", padding: "8px 10px", fontFamily: "'Public Sans', sans-serif",
     fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em",
     color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
   };
@@ -38,12 +38,12 @@ function MoverTable({ title, rows }: { title: string; rows: Mover[] }) {
   return (
     <div style={{ flex: 1, minWidth: 300 }}>
       <div style={{
-        fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
+        fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
         textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)",
         borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.75rem",
       }}>{title}</div>
       <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.74rem" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.74rem" }}>
           <thead>
             <tr style={{ background: "var(--bg-primary)" }}>
               <th style={{ ...th, textAlign: "left" }}>Ticker</th>
@@ -60,7 +60,7 @@ function MoverTable({ title, rows }: { title: string; rows: Mover[] }) {
                     {r.symbol}
                   </Link>
                 </td>
-                <td style={{ ...td, textAlign: "left", fontFamily: "'IBM Plex Sans', sans-serif", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis" }}>
+                <td style={{ ...td, textAlign: "left", fontFamily: "'Public Sans', sans-serif", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis" }}>
                   {r.name}
                 </td>
                 <td style={{ ...td, color: "var(--text-primary)" }}>${r.price != null ? r.price.toFixed(2) : "—"}</td>
@@ -91,9 +91,9 @@ export default function MoversPage() {
   const sectors = data?.sectors ?? [];
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
       {/* Header */}
-      <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
+      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
         Market Movers
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.45, maxWidth: 200, marginBottom: "0.9rem" }} />
@@ -102,7 +102,7 @@ export default function MoversPage() {
       </div>
 
       {loading && (
-        <div style={{ color: "var(--text-secondary)", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
+        <div style={{ color: "var(--text-secondary)", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
           Loading market data…
         </div>
       )}
@@ -114,7 +114,7 @@ export default function MoversPage() {
           {sectors.length > 0 && (
             <>
               <div style={{
-                fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
+                fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
                 textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)",
                 borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "1rem",
               }}>
@@ -132,7 +132,7 @@ export default function MoversPage() {
                       {s.sector}
                     </div>
                     <div style={{
-                      fontFamily: "'IBM Plex Mono', monospace", fontSize: "1.05rem", fontWeight: 600,
+                      fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.05rem", fontWeight: 600,
                       color: s.averageChange >= 0 ? "var(--positive)" : "var(--negative)",
                     }}>
                       {s.averageChange >= 0 ? "+" : ""}{s.averageChange.toFixed(2)}%

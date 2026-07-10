@@ -57,14 +57,14 @@ const INPUT_STYLE: React.CSSProperties = {
   borderRadius: 4,
   padding: "8px 12px",
   color: "var(--text-primary)",
-  fontFamily: "'IBM Plex Mono', monospace",
+  fontFamily: "'Spline Sans Mono', monospace",
   fontSize: "0.8rem",
   outline: "none",
   width: "100%",
 };
 
 const LABEL_STYLE: React.CSSProperties = {
-  fontFamily: "'IBM Plex Sans', sans-serif",
+  fontFamily: "'Public Sans', sans-serif",
   fontSize: "0.58rem",
   fontWeight: 600,
   textTransform: "uppercase",
@@ -178,11 +178,11 @@ export default function ScreenerPage() {
   const cellR: React.CSSProperties = { padding: "10px 12px", borderBottom: "1px solid var(--border)", color: "var(--text-secondary)", textAlign: "right", whiteSpace: "nowrap" };
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)" }}>
       {/* Header */}
       <h1
         style={{
-          fontFamily: "'IBM Plex Serif', Georgia, serif",
+          fontFamily: "'Space Grotesk', Georgia, serif",
           fontSize: "1.75rem",
           fontWeight: 500,
           color: "var(--text-primary)",
@@ -261,7 +261,7 @@ export default function ScreenerPage() {
                 border: "none",
                 borderRadius: 4,
                 padding: "10px 24px",
-                fontFamily: "'IBM Plex Sans', sans-serif",
+                fontFamily: "'Public Sans', sans-serif",
                 fontSize: "0.72rem",
                 fontWeight: 700,
                 textTransform: "uppercase",
@@ -280,7 +280,7 @@ export default function ScreenerPage() {
                 border: "1px solid var(--border)",
                 borderRadius: 4,
                 padding: "10px 14px",
-                fontFamily: "'IBM Plex Sans', sans-serif",
+                fontFamily: "'Public Sans', sans-serif",
                 fontSize: "0.72rem",
                 cursor: "pointer",
               }}
@@ -293,7 +293,7 @@ export default function ScreenerPage() {
 
       {/* Results */}
       {loading && (
-        <div style={{ color: "var(--text-secondary)", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
+        <div style={{ color: "var(--text-secondary)", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
           Screening stocks…
         </div>
       )}
@@ -320,7 +320,7 @@ export default function ScreenerPage() {
             {results.length} result{results.length !== 1 ? "s" : ""}
           </div>
           <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
                   {["Ticker", "Company", "Sector", "Mkt Cap", "Price", "P/E", "P/S", "P/B", "D/E", "Net Mgn", "Div Yld", "Beta"].map((h, i) => (
@@ -329,7 +329,7 @@ export default function ScreenerPage() {
                       style={{
                         textAlign: i === 0 ? "left" : "right",
                         padding: "10px 12px",
-                        fontFamily: "'IBM Plex Sans', sans-serif",
+                        fontFamily: "'Public Sans', sans-serif",
                         fontSize: "0.58rem",
                         fontWeight: 500,
                         textTransform: "uppercase",
@@ -351,7 +351,7 @@ export default function ScreenerPage() {
                       <Link
                         href={`/research?ticker=${r.symbol}`}
                         style={{
-                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontFamily: "'Spline Sans Mono', monospace",
                           fontWeight: 700,
                           color: "var(--accent-gold)",
                           textDecoration: "none",

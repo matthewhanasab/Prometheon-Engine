@@ -23,7 +23,7 @@ export default function MetricCard({ label, value, sub, tone = "default" }: Metr
       padding: "18px 16px 14px",
     }}>
       <div style={{
-        fontFamily: "'IBM Plex Sans', sans-serif",
+        fontFamily: "'Public Sans', sans-serif",
         fontSize: "0.60rem",
         fontWeight: 500,
         textTransform: "uppercase",
@@ -32,7 +32,7 @@ export default function MetricCard({ label, value, sub, tone = "default" }: Metr
         marginBottom: 8,
       }}>{label}</div>
       <div style={{
-        fontFamily: "'IBM Plex Mono', monospace",
+        fontFamily: "'Spline Sans Mono', monospace",
         fontSize: "1.35rem",
         fontWeight: 600,
         color: "var(--text-primary)",
@@ -40,7 +40,7 @@ export default function MetricCard({ label, value, sub, tone = "default" }: Metr
       }}>{value}</div>
       {sub && (
         <div style={{
-          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontFamily: "'Public Sans', sans-serif",
           fontSize: "0.68rem",
           color: colors.sub,
           marginTop: 6,

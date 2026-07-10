@@ -7,14 +7,14 @@ import {
 } from "recharts";
 
 const HEADING: React.CSSProperties = {
-  fontFamily: "'IBM Plex Serif', Georgia, serif",
+  fontFamily: "'Space Grotesk', Georgia, serif",
   fontWeight: 500,
   letterSpacing: "-0.02em",
   color: "var(--text-primary)",
 };
 
 const MONO: React.CSSProperties = {
-  fontFamily: "'IBM Plex Mono', monospace",
+  fontFamily: "'Spline Sans Mono', monospace",
 };
 
 function fmtDollar(n: number): string {
@@ -67,7 +67,7 @@ function SummaryCard({ label, result, color, accentBg }: { label: string; result
   return (
     <div style={{ background: "var(--bg-elevated)", border: `1px solid ${color}40`, borderRadius: 10, overflow: "hidden", flex: 1, minWidth: 180 }}>
       <div style={{ background: accentBg, padding: "8px 14px" }}>
-        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#fff", fontFamily: "'IBM Plex Sans', sans-serif" }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#fff", fontFamily: "'Public Sans', sans-serif" }}>{label}</span>
       </div>
       <div style={{ padding: "14px 16px" }}>
         <div style={{ ...HEADING, fontSize: "1.6rem", color, marginBottom: 8 }}>{fmtDollar(result.final)}</div>
@@ -126,11 +126,11 @@ export default function CalculatorPage() {
   const inputStyle: React.CSSProperties = {
     background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 6,
     color: "var(--text-primary)", padding: "8px 10px", fontSize: 14,
-    fontFamily: "'IBM Plex Mono', monospace", outline: "none", width: "100%",
+    fontFamily: "'Spline Sans Mono', monospace", outline: "none", width: "100%",
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, color: "var(--text-secondary)", fontFamily: "'IBM Plex Sans', sans-serif",
+    fontSize: 12, color: "var(--text-secondary)", fontFamily: "'Public Sans', sans-serif",
     marginBottom: 4, display: "block", letterSpacing: "0.03em",
   };
 
@@ -174,10 +174,10 @@ export default function CalculatorPage() {
             <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
               <button
                 onClick={reset}
-                style={{ flex: 1, background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif" }}
+                style={{ flex: 1, background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "'Public Sans', sans-serif" }}
               >Reset to Defaults</button>
             </div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'Public Sans', sans-serif" }}>
               Projections update live as you edit.
             </div>
           </div>
@@ -202,15 +202,15 @@ export default function CalculatorPage() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
-                    <XAxis dataKey="year" stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 11, fontFamily: "IBM Plex Mono" }} />
-                    <YAxis stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 11, fontFamily: "IBM Plex Mono" }} tickFormatter={v => fmtDollar(v)} width={75} />
+                    <XAxis dataKey="year" stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 11, fontFamily: "Spline Sans Mono" }} />
+                    <YAxis stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 11, fontFamily: "Spline Sans Mono" }} tickFormatter={v => fmtDollar(v)} width={75} />
                     <Tooltip
-                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, fontFamily: "IBM Plex Mono" }}
+                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, fontFamily: "Spline Sans Mono" }}
                       labelStyle={{ color: "var(--accent-gold)" }}
                       formatter={(v: any) => fmtDollar(v)}
                       labelFormatter={(l) => `Year ${l}`}
                     />
-                    <Legend wrapperStyle={{ fontSize: 12, fontFamily: "IBM Plex Mono", paddingTop: 8 }} />
+                    <Legend wrapperStyle={{ fontSize: 12, fontFamily: "Spline Sans Mono", paddingTop: 8 }} />
                     <Area type="monotone" dataKey="High" stroke="var(--positive)"    strokeWidth={2} fill="url(#bandFill)" dot={false} />
                     <Line type="monotone" dataKey="Base" stroke="var(--accent-gold)" strokeWidth={2} strokeDasharray="5 3" dot={false} />
                     <Line type="monotone" dataKey="Low"  stroke="var(--negative)"    strokeWidth={2} dot={false} />
@@ -225,7 +225,7 @@ export default function CalculatorPage() {
       {results && (
         <>
           {/* Insight box */}
-          <div style={{ marginTop: 28, background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: "3px solid var(--accent-gold)", borderRadius: 8, padding: "14px 18px", fontSize: 14, color: "var(--text-primary)", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+          <div style={{ marginTop: 28, background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: "3px solid var(--accent-gold)", borderRadius: 8, padding: "14px 18px", fontSize: 14, color: "var(--text-primary)", fontFamily: "'Public Sans', sans-serif" }}>
             <strong style={{ color: "var(--accent-gold)" }}>Insight: </strong>
             The difference between the high ({(results.inputs.baseRate + results.inputs.variance).toFixed(1)}%) and low ({(results.inputs.baseRate - results.inputs.variance).toFixed(1)}%) return scenarios over {results.inputs.years} years is{" "}
             <span style={{ ...MONO, color: "var(--positive)", fontWeight: 600 }}>{fmtDollar(results.high.final - results.low.final)}</span>

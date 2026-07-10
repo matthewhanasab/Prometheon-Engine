@@ -32,7 +32,7 @@ function toYMD(d: Date): string {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
+      fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
       textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)",
       borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem",
       marginBottom: "1rem", marginTop: "2rem",
@@ -48,9 +48,9 @@ function MCard({ label, value, sub, tone = "default" }: {
   const subColor = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "neutral" ? "var(--accent-gold)" : "var(--text-secondary)";
   return (
     <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${top}`, borderRadius: 4, padding: "16px 14px 12px" }}>
-      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 8 }}>{label}</div>
-      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "1.25rem", fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.2 }}>{value}</div>
-      {sub && <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.65rem", color: subColor, marginTop: 6 }}>{sub}</div>}
+      <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 8 }}>{label}</div>
+      <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.25rem", fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.2 }}>{value}</div>
+      {sub && <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.65rem", color: subColor, marginTop: 6 }}>{sub}</div>}
     </div>
   );
 }
@@ -61,8 +61,8 @@ function EmptyHint({ title, sub }: { title: string; sub: string }) {
       border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)",
       padding: "28px 20px", textAlign: "center",
     }}>
-      <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "0.95rem", color: "var(--text-secondary)", marginBottom: 6 }}>{title}</div>
-      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{sub}</div>
+      <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.95rem", color: "var(--text-secondary)", marginBottom: 6 }}>{title}</div>
+      <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{sub}</div>
     </div>
   );
 }
@@ -76,11 +76,11 @@ const navBtn: React.CSSProperties = {
   cursor: "pointer",
   fontSize: "0.82rem",
   fontWeight: 500,
-  fontFamily: "'IBM Plex Sans', sans-serif",
+  fontFamily: "'Public Sans', sans-serif",
 };
 
 const th: React.CSSProperties = {
-  textAlign: "right", padding: "8px 14px", fontFamily: "'IBM Plex Sans', sans-serif",
+  textAlign: "right", padding: "8px 14px", fontFamily: "'Public Sans', sans-serif",
   fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em",
   color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
 };
@@ -201,9 +201,9 @@ function DividendsInner() {
   })();
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
       {/* Header */}
-      <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
+      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
         Dividend Hub
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.45, maxWidth: 200, marginBottom: "0.9rem" }} />
@@ -218,7 +218,7 @@ function DividendsInner() {
             padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 600,
             background: mode === k ? "var(--accent-gold)" : "transparent",
             color: mode === k ? "#131C2E" : "var(--text-secondary)",
-            border: "none", cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif",
+            border: "none", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
           }}>
             {label}
           </button>
@@ -233,12 +233,12 @@ function DividendsInner() {
             <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
               style={{
                 flex: 1, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 4,
-                padding: "10px 14px", color: "var(--text-primary)", fontFamily: "'IBM Plex Mono', monospace",
+                padding: "10px 14px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace",
                 fontSize: "0.85rem", outline: "none",
               }} />
             <button type="submit" style={{
               background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
-              padding: "10px 22px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem",
+              padding: "10px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Analyze</button>
           </form>
@@ -289,14 +289,14 @@ function DividendsInner() {
                   <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "12px 8px 4px" }}>
                     <ResponsiveContainer width="100%" height={240}>
                       <BarChart data={annual} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                        <XAxis dataKey="year" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} />
-                        <YAxis tickFormatter={(v: any) => `$${Number(v).toFixed(2)}`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} width={56} />
+                        <XAxis dataKey="year" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
+                        <YAxis tickFormatter={(v: any) => `$${Number(v).toFixed(2)}`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
                         <Tooltip
                           labelStyle={{ color: "#F1F5F9" }}
                           itemStyle={{ color: "#F1F5F9" }}
                           cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
                           formatter={(v: any) => [`$${Number(v).toFixed(4)}`, "Dividend/share"]}
-                          contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 }}
+                          contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                         />
                         <Bar dataKey="total" fill="#D4B45E" radius={[2, 2, 0, 0]} />
                       </BarChart>
@@ -311,7 +311,7 @@ function DividendsInner() {
               {/* Last 12 payments */}
               <SectionLabel>Last 12 Payments</SectionLabel>
               <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4 }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
                   <thead>
                     <tr style={{ background: "var(--bg-primary)" }}>
                       <th style={{ ...th, textAlign: "left" }}>Ex-Date</th>
@@ -344,7 +344,7 @@ function DividendsInner() {
           {/* Month picker */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
             <button onClick={() => shiftMonth(-1)} style={navBtn}>← {new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "short" })}</button>
-            <span style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontWeight: 600, fontSize: "1.2rem", minWidth: 200, textAlign: "center" }}>
+            <span style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontWeight: 600, fontSize: "1.2rem", minWidth: 200, textAlign: "center" }}>
               {new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
             </span>
             <button onClick={() => shiftMonth(1)} style={navBtn}>{new Date(year, month + 1, 1).toLocaleDateString("en-US", { month: "short" })} →</button>
@@ -357,7 +357,7 @@ function DividendsInner() {
           </div>
 
           {calLoading && (
-            <div style={{ color: "var(--text-secondary)", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
+            <div style={{ color: "var(--text-secondary)", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
               Loading calendar…
             </div>
           )}
@@ -374,7 +374,7 @@ function DividendsInner() {
           {!calLoading && calRows.length > 0 && (
             <>
               <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4 }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
                   <thead>
                     <tr style={{ background: "var(--bg-primary)" }}>
                       <th style={{ ...th, textAlign: "left" }}>Ticker</th>
@@ -392,7 +392,7 @@ function DividendsInner() {
                             {r.symbol}
                           </Link>
                           {POPULAR.has(r.symbol.toUpperCase()) && (
-                            <span style={{ marginLeft: 8, fontSize: "0.58rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+                            <span style={{ marginLeft: 8, fontSize: "0.58rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'Public Sans', sans-serif" }}>
                               Large cap
                             </span>
                           )}

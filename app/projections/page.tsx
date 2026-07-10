@@ -8,14 +8,14 @@ import {
 } from "recharts";
 
 const HEADING: React.CSSProperties = {
-  fontFamily: "'IBM Plex Serif', Georgia, serif",
+  fontFamily: "'Space Grotesk', Georgia, serif",
   fontWeight: 500,
   letterSpacing: "-0.02em",
   color: "var(--text-primary)",
 };
 
 const MONO: React.CSSProperties = {
-  fontFamily: "'IBM Plex Mono', monospace",
+  fontFamily: "'Spline Sans Mono', monospace",
 };
 
 function fmt(n: number | null | undefined, decimals = 2): string {
@@ -228,7 +228,7 @@ function AssumptionInputs({
                       color: "var(--text-primary)",
                       padding: "4px 6px",
                       fontSize: 13,
-                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontFamily: "'Spline Sans Mono', monospace",
                       outline: "none",
                     }}
                   />
@@ -369,16 +369,16 @@ function CombinedChart({ stock, assumptions }: { stock: StockData; assumptions: 
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
-          <XAxis dataKey="year" stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 12, fontFamily: "IBM Plex Mono" }} />
-          <YAxis stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 12, fontFamily: "IBM Plex Mono" }} tickFormatter={v => `$${v.toFixed(0)}`} />
+          <XAxis dataKey="year" stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 12, fontFamily: "Spline Sans Mono" }} />
+          <YAxis stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 12, fontFamily: "Spline Sans Mono" }} tickFormatter={v => `$${v.toFixed(0)}`} />
           <Tooltip
-            contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, fontFamily: "IBM Plex Mono" }}
+            contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, fontFamily: "Spline Sans Mono" }}
             labelStyle={{ color: "var(--accent-gold)" }}
             itemStyle={{ color: "var(--text-primary)" }}
             formatter={(v: any) => `$${v.toFixed(2)}`}
           />
-          <Legend wrapperStyle={{ fontSize: 12, fontFamily: "IBM Plex Mono", paddingTop: 12 }} />
-          <ReferenceLine y={stock.price} stroke="var(--accent-gold)" strokeDasharray="6 3" label={{ value: `Current $${stock.price.toFixed(2)}`, fill: "var(--accent-gold)", fontSize: 11, fontFamily: "IBM Plex Mono" }} />
+          <Legend wrapperStyle={{ fontSize: 12, fontFamily: "Spline Sans Mono", paddingTop: 12 }} />
+          <ReferenceLine y={stock.price} stroke="var(--accent-gold)" strokeDasharray="6 3" label={{ value: `Current $${stock.price.toFixed(2)}`, fill: "var(--accent-gold)", fontSize: 11, fontFamily: "Spline Sans Mono" }} />
           <Area type="monotone" dataKey="bullHigh" stroke="#22C55E" strokeWidth={2} fill="url(#bullFill)" name="Bull High" dot={false} />
           <Area type="monotone" dataKey="bullLow"  stroke="#22C55E" strokeWidth={1.5} fill="transparent" strokeDasharray="4 2" name="Bull Low" dot={false} />
           <Area type="monotone" dataKey="baseHigh" stroke="#3B82F6" strokeWidth={2} fill="url(#baseFill)" name="Base High" dot={false} />
@@ -394,9 +394,9 @@ function CombinedChart({ stock, assumptions }: { stock: StockData; assumptions: 
 function EmptyHint({ title, desc }: { title: string; desc: string }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
-      <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
+      <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
       <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
-        <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
+        <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
       </div>
     </div>
   );
@@ -479,7 +479,7 @@ function ProjectionsInner() {
           style={{
             background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6,
             color: "var(--text-primary)", padding: "9px 14px", fontSize: 14, outline: "none",
-            width: 200, fontFamily: "'IBM Plex Sans', sans-serif",
+            width: 200, fontFamily: "'Public Sans', sans-serif",
           }}
         />
         <button
@@ -487,7 +487,7 @@ function ProjectionsInner() {
           disabled={loading}
           style={{
             background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
-            padding: "10px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif",
+            padding: "10px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
           }}
         >
           {loading ? "Loading..." : "Load"}

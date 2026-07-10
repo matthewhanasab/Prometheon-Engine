@@ -32,7 +32,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
               const d = new Date(v);
               return d.toLocaleString("en-US", { month: "short", year: "2-digit" });
             }}
-            tick={{ fill: "#64748B", fontSize: 10, fontFamily: "IBM Plex Mono" }}
+            tick={{ fill: "#64748B", fontSize: 10, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
             interval={Math.floor(data.length / 6)}
@@ -40,7 +40,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
           <YAxis
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v}`}
-            tick={{ fill: "#64748B", fontSize: 10, fontFamily: "IBM Plex Mono" }}
+            tick={{ fill: "#64748B", fontSize: 10, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
             width={60}
@@ -51,7 +51,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
               background: "#283552",
               border: "1px solid #4C6190",
               borderRadius: 4,
-              fontFamily: "IBM Plex Mono",
+              fontFamily: "Spline Sans Mono",
               fontSize: 12,
               color: "#F1F5F9",
             }}

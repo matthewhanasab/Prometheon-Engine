@@ -117,7 +117,7 @@ function FinancialsTable({ rows, data, isQuarterly }: {
         <thead>
           <tr style={{ background: "var(--bg-primary)" }}>
             <th style={{
-              textAlign: "left", padding: "9px 16px", fontFamily: "'IBM Plex Sans', sans-serif",
+              textAlign: "left", padding: "9px 16px", fontFamily: "'Public Sans', sans-serif",
               fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase",
               letterSpacing: "0.12em", color: "var(--text-secondary)",
               borderBottom: "1px solid var(--border)", minWidth: 180, position: "sticky", left: 0,
@@ -126,7 +126,7 @@ function FinancialsTable({ rows, data, isQuarterly }: {
             {periods.map((p, i) => (
               <th key={i} style={{
                 textAlign: "right", padding: "9px 14px",
-                fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.72rem", fontWeight: 600,
+                fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.72rem", fontWeight: 600,
                 color: "var(--accent-gold)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
               }}>{p}</th>
             ))}
@@ -141,7 +141,7 @@ function FinancialsTable({ rows, data, isQuarterly }: {
                   <td
                     colSpan={periods.length + 1}
                     style={{
-                      padding: "6px 16px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem",
+                      padding: "6px 16px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem",
                       fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em",
                       color: "var(--text-secondary)", borderBottom: "1px solid var(--border)",
                     }}
@@ -156,7 +156,7 @@ function FinancialsTable({ rows, data, isQuarterly }: {
             return (
               <tr key={row.label} style={{ background: bgEven }}>
                 <td style={{
-                  padding: "8px 16px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem",
+                  padding: "8px 16px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem",
                   color: "var(--text-primary)", fontWeight: row.bold ? 600 : undefined,
                   borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
                   position: "sticky", left: 0, background: bgEven,
@@ -179,14 +179,14 @@ function FinancialsTable({ rows, data, isQuarterly }: {
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
                         {change != null && ci < values.length - 1 && (
                           <span style={{
-                            fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.65rem",
+                            fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.65rem",
                             color: changeColor, minWidth: 52, textAlign: "right",
                           }}>
                             {change >= 0 ? "+" : ""}{change.toFixed(1)}%
                           </span>
                         )}
                         <span style={{
-                          fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.80rem",
+                          fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.80rem",
                           color: row.bold ? "var(--text-primary)" : "var(--text-secondary)",
                           fontWeight: row.bold ? 600 : undefined,
                           paddingRight: 14, minWidth: 90, textAlign: "right", display: "block",
@@ -257,11 +257,11 @@ function FinancialsInner() {
   return (
     <div style={{ paddingBottom: "4rem" }}>
       {/* Header */}
-      <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
+      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
         Financials
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
-      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'Public Sans', sans-serif" }}>
         Income statement · Balance sheet · Cash flow — annual &amp; quarterly
       </div>
 
@@ -275,7 +275,7 @@ function FinancialsInner() {
           style={{
             width: 160, background: "var(--bg-elevated)", border: "1px solid var(--border)",
             borderRadius: 4, padding: "9px 14px", color: "var(--text-primary)",
-            fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.85rem", outline: "none",
+            fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.85rem", outline: "none",
           }}
         />
 
@@ -286,7 +286,7 @@ function FinancialsInner() {
               padding: "9px 16px", cursor: "pointer",
               background: period === p ? "var(--accent-gold)" : "var(--bg-elevated)",
               color: period === p ? "#131C2E" : "var(--text-secondary)",
-              fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem", fontWeight: period === p ? 700 : 400,
+              fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: period === p ? 700 : 400,
               textTransform: "capitalize", letterSpacing: "0.05em", transition: "all 0.15s",
             }}>
               <input type="radio" name="period" value={p} checked={period === p} onChange={() => switchPeriod(p)} style={{ display: "none" }} />
@@ -299,19 +299,19 @@ function FinancialsInner() {
           type="submit"
           style={{
             background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
-            padding: "9px 22px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem",
+            padding: "9px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
         >Load</button>
 
-        {loading && <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading {input}...</span>}
+        {loading && <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading {input}...</span>}
       </form>
 
       {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
 
       {!loading && !data && !error && (
         <div style={{ marginTop: "5rem", textAlign: "center", color: "var(--text-muted)" }}>
-          <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.1rem", color: "var(--text-secondary)", marginBottom: 8 }}>Enter a ticker to view financials</div>
+          <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.1rem", color: "var(--text-secondary)", marginBottom: 8 }}>Enter a ticker to view financials</div>
           <div style={{ fontSize: "0.70rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>Prometheon Engine</div>
         </div>
       )}
@@ -320,11 +320,11 @@ function FinancialsInner() {
         <>
           {/* Company name + period */}
           <div style={{ marginBottom: "1.25rem" }}>
-            <span style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.3rem", color: "var(--text-primary)", marginRight: 12 }}>
+            <span style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.3rem", color: "var(--text-primary)", marginRight: 12 }}>
               {data.name ?? loadedTicker}
             </span>
             <span style={{
-              fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.68rem", fontWeight: 600,
+              fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.68rem", fontWeight: 600,
               background: "rgba(212,180,94,0.15)", color: "var(--accent-gold)",
               border: "1px solid rgba(212,180,94,0.3)", borderRadius: 3, padding: "2px 8px",
             }}>
@@ -339,7 +339,7 @@ function FinancialsInner() {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 style={{
-                  padding: "10px 22px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem",
+                  padding: "10px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
                   fontWeight: activeTab === tab.key ? 600 : 400,
                   textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
                   border: "none", borderBottom: activeTab === tab.key ? "2px solid var(--accent-gold)" : "2px solid transparent",

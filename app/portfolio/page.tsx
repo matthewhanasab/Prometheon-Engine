@@ -90,7 +90,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 4,
   color: "var(--text-primary)",
   fontSize: "0.85rem",
-  fontFamily: "'IBM Plex Mono', monospace",
+  fontFamily: "'Spline Sans Mono', monospace",
   outline: "none",
   width: "100%",
 };
@@ -103,11 +103,11 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: "0.12em",
   marginBottom: "0.35rem",
   display: "block",
-  fontFamily: "'IBM Plex Sans', sans-serif",
+  fontFamily: "'Public Sans', sans-serif",
 };
 
 const sectionLabel: React.CSSProperties = {
-  fontFamily: "'IBM Plex Sans', sans-serif",
+  fontFamily: "'Public Sans', sans-serif",
   fontSize: "0.60rem",
   fontWeight: 600,
   textTransform: "uppercase",
@@ -126,15 +126,15 @@ const cardStyle: React.CSSProperties = {
 const CHART_TOOLTIP = {
   labelStyle: { color: "#F1F5F9" },
   itemStyle: { color: "#F1F5F9" },
-  contentStyle: { background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 },
+  contentStyle: { background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 },
 };
 
 function Stat({ label, value, sub, subColor }: { label: string; value: string; sub?: string; subColor?: string }) {
   return (
     <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "14px 16px" }}>
       <div style={labelStyle}>{label}</div>
-      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "1.35rem", fontWeight: 700, color: "var(--text-primary)" }}>{value}</div>
-      {sub && <div style={{ fontSize: "0.7rem", color: subColor ?? "var(--text-secondary)", marginTop: 4, fontFamily: "'IBM Plex Mono', monospace" }}>{sub}</div>}
+      <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.35rem", fontWeight: 700, color: "var(--text-primary)" }}>{value}</div>
+      {sub && <div style={{ fontSize: "0.7rem", color: subColor ?? "var(--text-secondary)", marginTop: 4, fontFamily: "'Spline Sans Mono', monospace" }}>{sub}</div>}
     </div>
   );
 }
@@ -338,9 +338,9 @@ function PortfolioInner() {
   const hasData = loadedOnce && rows.length > 0 && totalValue > 0;
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
       {/* Header */}
-      <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
+      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
         My Portfolio
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
@@ -369,14 +369,14 @@ function PortfolioInner() {
           <button onClick={addPosition} style={{
             padding: "10px 24px", background: "var(--accent-gold)", border: "none", borderRadius: 4,
             color: "#131C2E", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
-            letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif",
+            letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
           }}>
             Add Position
           </button>
           {positions.length > 0 && (
             <button onClick={() => refresh(positions)} disabled={loading} style={{
               padding: "10px 18px", background: "transparent", border: "1px solid var(--border)", borderRadius: 4,
-              color: "var(--text-secondary)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "'IBM Plex Sans', sans-serif",
+              color: "var(--text-secondary)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
             }}>
               {loading ? "Refreshing…" : "Refresh Prices"}
             </button>
@@ -397,7 +397,7 @@ function PortfolioInner() {
             ["Allocation", "Weight by position and by sector — spot concentration at a glance."],
             ["Smart Insights", "Automatic flags: concentration risk, high beta, upcoming earnings."]].map(([title, desc]) => (
             <div key={title} style={{ marginBottom: "1.25rem" }}>
-              <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, marginBottom: "0.5rem" }}>{title}</div>
+              <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, marginBottom: "0.5rem" }}>{title}</div>
               <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "30px 20px", textAlign: "center" }}>
                 <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
               </div>
@@ -407,7 +407,7 @@ function PortfolioInner() {
       )}
 
       {loading && !loadedOnce && positions.length > 0 && (
-        <div style={{ color: "var(--text-secondary)", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
+        <div style={{ color: "var(--text-secondary)", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
           Pricing your portfolio…
         </div>
       )}
@@ -451,11 +451,11 @@ function PortfolioInner() {
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
-                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} width={56} />
+                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
                   <Tooltip {...CHART_TOOLTIP} formatter={(v: any) => [`${Number(v).toFixed(1)}%`]} />
-                  <Legend wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 13 }} />
+                  <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
                   <Line type="monotone" dataKey="Portfolio" stroke="#D4B45E" strokeWidth={2.5} dot={false} isAnimationActive={false} />
                   <Line type="monotone" dataKey="S&P 500" stroke="#5B8DEF" strokeWidth={2} strokeDasharray="5 3" dot={false} isAnimationActive={false} />
                 </LineChart>
@@ -481,7 +481,7 @@ function PortfolioInner() {
                     </Pie>
                     <Tooltip {...CHART_TOOLTIP}
                       formatter={(v: any, name: any) => [`$${Number(v).toLocaleString()} · ${((Number(v) / totalValue) * 100).toFixed(1)}%`, name]} />
-                    <Legend wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12 }} />
+                    <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 12 }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -490,13 +490,13 @@ function PortfolioInner() {
 
           {/* Holdings table */}
           <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4, marginBottom: "0.5rem" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
                   {["Ticker", "Shares", "Avg Cost", "Price", "Day", "Mkt Value", "Weight", "P/L $", "P/L %", ""].map((h, i) => (
                     <th key={h || "actions"} style={{
                       textAlign: i === 0 ? "left" : "right", padding: "9px 12px",
-                      fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500,
+                      fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500,
                       textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)",
                       borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
                     }}>{h}</th>

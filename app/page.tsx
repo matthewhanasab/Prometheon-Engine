@@ -11,7 +11,7 @@ function LaunchButton({ children, onLaunch }: { children: React.ReactNode; onLau
     <button onClick={onLaunch} style={{
       background: "var(--accent-gold)", color: "#131C2E", border: "none", cursor: "pointer",
       padding: "14px 34px", borderRadius: 4, fontSize: "0.78rem", fontWeight: 700,
-      textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'IBM Plex Sans', sans-serif",
+      textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Public Sans', sans-serif",
     }}>
       {children}
     </button>
@@ -125,7 +125,7 @@ function TickerTape() {
     <div style={{ overflow: "hidden", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", background: "var(--bg-surface)", padding: "10px 0" }}>
       <div className="ticker-track">
         {items.map((q, i) => (
-          <span key={i} style={{ display: "inline-flex", gap: 10, alignItems: "baseline", padding: "0 2rem", whiteSpace: "nowrap", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
+          <span key={i} style={{ display: "inline-flex", gap: 10, alignItems: "baseline", padding: "0 2rem", whiteSpace: "nowrap", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
             <span style={{ color: "var(--accent-gold)", fontWeight: 600 }}>{q.symbol}</span>
             <span style={{ color: "var(--text-primary)" }}>${q.price.toFixed(2)}</span>
             {q.changePct != null && (
@@ -216,7 +216,7 @@ export default function LandingPage() {
 
   return (
     <div className="landing" style={{
-      fontFamily: "'IBM Plex Sans', sans-serif", color: "var(--text-primary)",
+      fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)",
       opacity: leaving ? 0 : 1, transition: "opacity 0.5s ease",
     }}>
 
@@ -229,7 +229,7 @@ export default function LandingPage() {
             style={{ objectFit: "contain", maxWidth: "88vw", height: "auto" }} />
         </div>
 
-        <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 2.4rem", maxWidth: 760 }}>
+        <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 2.4rem", maxWidth: 760 }}>
           Every number that matters. One software.
         </h1>
 
@@ -241,7 +241,7 @@ export default function LandingPage() {
         <div className="fade-up fade-d4" style={{ position: "relative", display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: "3rem" }}>
           {[["10", "Research Tools"], ["40+", "Metrics per Stock"], ["Live", "Market Data"]].map(([num, label]) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 4, padding: "8px 18px" }}>
-              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: 700, color: "var(--accent-gold)", fontSize: "0.95rem" }}>{num}</span>
+              <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontWeight: 700, color: "var(--accent-gold)", fontSize: "0.95rem" }}>{num}</span>
               <span style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", fontWeight: 600 }}>{label}</span>
             </div>
           ))}
@@ -261,7 +261,7 @@ export default function LandingPage() {
             borderRadius: 6, padding: "2.6rem 2.4rem", display: "flex",
             flexDirection: "column", justifyContent: "center", alignItems: "flex-start", gap: 20,
           }}>
-            <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "#131C2E", margin: 0, letterSpacing: "-0.02em" }}>
+            <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "#131C2E", margin: 0, letterSpacing: "-0.02em" }}>
               How it works
             </h2>
             <p style={{ color: "#2A3550", fontSize: "0.88rem", lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
@@ -280,7 +280,7 @@ export default function LandingPage() {
               padding: "1.4rem", textDecoration: "none", display: "flex", flexDirection: "column", gap: 14,
             }}>
               <div>
-                <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
+                <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
                   {s.title}
                 </div>
                 <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
@@ -295,7 +295,7 @@ export default function LandingPage() {
 
       {/* ── Features ── */}
       <section style={{ maxWidth: 1200, margin: "0 auto", padding: "4.5rem 1.5rem 3rem" }}>
-        <h2 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.4rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem", textAlign: "center" }}>
+        <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.4rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem", textAlign: "center" }}>
           The full research stack
         </h2>
         <div style={{ height: 1, background: "linear-gradient(to right, transparent, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 260, margin: "0 auto 2.6rem" }} />
@@ -306,13 +306,13 @@ export default function LandingPage() {
               background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4,
               padding: "20px 20px 18px", textDecoration: "none", display: "block",
             }}>
-              <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "0.98rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
+              <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.98rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
                 {f.title}
               </div>
               <div style={{ fontSize: "0.76rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
                 {f.desc}
               </div>
-              <div style={{ marginTop: 12, fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.68rem", color: "var(--accent-gold)" }}>
+              <div style={{ marginTop: 12, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.68rem", color: "var(--accent-gold)" }}>
                 Open →
               </div>
             </Link>
@@ -322,7 +322,7 @@ export default function LandingPage() {
 
       {/* ── Closing CTA ── */}
       <section style={{ textAlign: "center", padding: "3rem 1.5rem 5rem" }}>
-        <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.15rem", color: "var(--text-primary)", marginBottom: "1.4rem" }}>
+        <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", color: "var(--text-primary)", marginBottom: "1.4rem" }}>
           Stop tab-hopping. Start researching.
         </div>
         <LaunchButton onLaunch={launch}>Launch the Engine</LaunchButton>

@@ -26,9 +26,9 @@ Chart series palette (muted, no neon): gold `#D4B45E`, steel blue `#5B8DEF`, gre
 
 ### Typography (three fonts, three jobs)
 
-- **IBM Plex Serif** — page titles and section headings only. 1.75rem / weight 500 / letterSpacing -0.02em for h1.
-- **IBM Plex Sans** — UI labels, body copy, buttons.
-- **IBM Plex Mono** — every number: prices, tickers, table figures, chart ticks. Numbers are never set in Inter.
+- **Space Grotesk** — page titles and section headings only. 1.75rem / weight 500 / letterSpacing -0.02em for h1.
+- **Public Sans** — UI labels, body copy, buttons.
+- **Spline Sans Mono** — every number: prices, tickers, table figures, chart ticks. Numbers are never set in the sans font.
 
 ### Recurring patterns (match these exactly)
 

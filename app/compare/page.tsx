@@ -140,10 +140,10 @@ function StrengthHeatmap({ stocks }: { stocks: any[] }) {
   );
   return (
     <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.82rem" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.82rem" }}>
         <thead>
           <tr>
-            <th style={{ textAlign: "left", padding: "8px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)" }}>Dimension</th>
+            <th style={{ textAlign: "left", padding: "8px 14px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)" }}>Dimension</th>
             {stocks.map((s, i) => (
               <th key={s.ticker} style={{ textAlign: "center", padding: "8px 14px", fontWeight: 700, color: COLORS[i], borderBottom: "1px solid var(--border)" }}>{s.ticker}</th>
             ))}
@@ -152,7 +152,7 @@ function StrengthHeatmap({ stocks }: { stocks: any[] }) {
         <tbody>
           {rows.map(row => (
             <tr key={row.label}>
-              <td style={{ padding: "7px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-primary)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>{row.label}</td>
+              <td style={{ padding: "7px 14px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-primary)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>{row.label}</td>
               {row.scores.map((sc, i) => {
                 const c = scoreColor(sc);
                 return (
@@ -164,7 +164,7 @@ function StrengthHeatmap({ stocks }: { stocks: any[] }) {
             </tr>
           ))}
           <tr>
-            <td style={{ padding: "9px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", fontWeight: 700, color: "var(--accent-gold)", whiteSpace: "nowrap" }}>Overall</td>
+            <td style={{ padding: "9px 14px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", fontWeight: 700, color: "var(--accent-gold)", whiteSpace: "nowrap" }}>Overall</td>
             {overall.map((sc, i) => {
               const c = scoreColor(sc);
               return (
@@ -176,7 +176,7 @@ function StrengthHeatmap({ stocks }: { stocks: any[] }) {
           </tr>
         </tbody>
       </table>
-      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 10, padding: "0 4px" }}>
+      <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 10, padding: "0 4px" }}>
         Scored 0-100 against fixed benchmarks (e.g. 30%+ net margin = 100, P/E of 10 = 100, P/E of 50+ = 0). Green 70+, gold 40-69, red below 40.
       </div>
     </div>
@@ -188,18 +188,18 @@ function GroupedBars({ title, data, stocks, unit }: {
 }) {
   return (
     <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "16px 14px", flex: 1, minWidth: 300 }}>
-      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 12 }}>
+      <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 12 }}>
         {title}
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-          <XAxis dataKey="name" tick={{ fill: "#F1F5F9", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={(v) => `${v}${unit}`} tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} width={52} />
+          <XAxis dataKey="name" tick={{ fill: "#F1F5F9", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v) => `${v}${unit}`} tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={52} />
           <Tooltip
             cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
             labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
-            contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 }}
+            contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 }}
             formatter={(v: any) => [`${Number(v).toFixed(1)}${unit}`]}
           />
           {stocks.map((s, i) => (
@@ -224,7 +224,7 @@ function TickerInput({ value, onChange, placeholder, required }: {
       style={{
         width: 100,
         background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 4,
-        padding: "9px 12px", color: "var(--text-primary)", fontFamily: "'IBM Plex Mono',monospace",
+        padding: "9px 12px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono',monospace",
         fontSize: "0.82rem", outline: "none", textTransform: "uppercase",
       }}
     />
@@ -241,22 +241,22 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <span style={{
-          fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.72rem", fontWeight: 700,
+          fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.72rem", fontWeight: 700,
           background: `${color}22`, color, border: `1px solid ${color}55`,
           borderRadius: 3, padding: "2px 7px",
         }}>{stock.ticker}</span>
         {stock.sector && (
-          <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stock.sector}</span>
+          <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stock.sector}</span>
         )}
       </div>
-      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.82rem", fontWeight: 500, color: "var(--text-primary)", marginBottom: 8, lineHeight: 1.3 }}>{stock.name}</div>
-      <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "1.4rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
+      <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.82rem", fontWeight: 500, color: "var(--text-primary)", marginBottom: 8, lineHeight: 1.3 }}>{stock.name}</div>
+      <div style={{ fontFamily: "'Spline Sans Mono',monospace", fontSize: "1.4rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
         ${fmt(stock.price)}
       </div>
-      <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.78rem", color: chg == null ? "var(--text-secondary)" : chg >= 0 ? "var(--positive)" : "var(--negative)", marginBottom: 8 }}>
+      <div style={{ fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.78rem", color: chg == null ? "var(--text-secondary)" : chg >= 0 ? "var(--positive)" : "var(--negative)", marginBottom: 8 }}>
         {chg != null ? `${chg >= 0 ? "+" : "-"}${Math.abs(chg).toFixed(2)}%` : "N/A"}
       </div>
-      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.68rem", color: "var(--text-secondary)" }}>
+      <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.68rem", color: "var(--text-secondary)" }}>
         Mkt Cap: {fmtLarge(stock.mktCap)}
       </div>
     </div>
@@ -267,9 +267,9 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
 function EmptyHint({ title, desc }: { title: string; desc: string }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
-      <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
+      <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
       <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
-        <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
+        <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
       </div>
     </div>
   );
@@ -373,11 +373,11 @@ function CompareInner() {
   return (
     <div style={{ paddingBottom: "4rem" }}>
       {/* Header */}
-      <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
+      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
         Compare Stocks
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
-      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem", fontFamily: "'Public Sans', sans-serif" }}>
         Side-by-side valuation · growth · profitability · health
       </div>
 
@@ -396,11 +396,11 @@ function CompareInner() {
           type="submit"
           style={{
             background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
-            padding: "9px 22px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.72rem",
+            padding: "9px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
         >Compare</button>
-        {loading && <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading…</span>}
+        {loading && <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading…</span>}
       </form>
       {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
 
@@ -426,21 +426,21 @@ function CompareInner() {
           {/* 1Y performance race */}
           {perfData.length > 10 && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px", marginBottom: "2rem" }}>
-              <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
                 1-Year Performance — % Return
               </div>
               <ResponsiveContainer width="100%" height={340}>
                 <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
-                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} width={56} />
+                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
                   <Tooltip
                     labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
-                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "IBM Plex Mono", fontSize: 12 }}
+                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                     formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
                   />
-                  <Legend wrapperStyle={{ fontFamily: "IBM Plex Mono", fontSize: 13 }} />
+                  <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
                   {stocks.map((s, i) => (
                     <Line key={s.ticker} type="monotone" dataKey={s.ticker} stroke={COLORS[i]} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
                   ))}
@@ -453,13 +453,13 @@ function CompareInner() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: "2rem" }}>
             {scorecard.map(card => (
               <div key={card.title} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--border)"}`, borderRadius: 4, padding: "14px 16px" }}>
-                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 8 }}>
+                <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 8 }}>
                   {card.title} Winner
                 </div>
-                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "1.3rem", fontWeight: 700, color: card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--text-secondary)" }}>
+                <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.3rem", fontWeight: 700, color: card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--text-secondary)" }}>
                   {card.winnerIdx >= 0 ? stocks[card.winnerIdx].ticker : "Tie"}
                 </div>
-                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: 6 }}>
+                <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: 6 }}>
                   {card.winnerIdx >= 0
                     ? `Wins ${card.wins[card.winnerIdx]} of ${card.total} metrics`
                     : `Even split across ${card.total} metrics`}
@@ -470,12 +470,12 @@ function CompareInner() {
 
           {/* Metrics table */}
           <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4, marginBottom: "2rem" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.80rem" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.80rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
-                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 140 }}>Metric</th>
+                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 140 }}>Metric</th>
                   {stocks.map((s, i) => (
-                    <th key={s.ticker} style={{ textAlign: "right", padding: "9px 14px", fontFamily: "'IBM Plex Mono',monospace", fontSize: "0.78rem", fontWeight: 700, color: COLORS[i], borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
+                    <th key={s.ticker} style={{ textAlign: "right", padding: "9px 14px", fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.78rem", fontWeight: 700, color: COLORS[i], borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
                       {s.ticker}
                     </th>
                   ))}
@@ -485,7 +485,7 @@ function CompareInner() {
                 {SECTIONS.map(section => (
                   <React.Fragment key={section.title}>
                     <tr style={{ background: "var(--bg-elevated)" }}>
-                      <td colSpan={stocks.length + 1} style={{ padding: "6px 14px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)" }}>
+                      <td colSpan={stocks.length + 1} style={{ padding: "6px 14px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)" }}>
                         {section.title}
                       </td>
                     </tr>
@@ -493,7 +493,7 @@ function CompareInner() {
                       const best = bestIdx(metric);
                       return (
                         <tr key={metric.label} style={{ background: mi % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
-                          <td style={{ padding: "8px 14px", color: "var(--text-primary)", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.78rem", borderBottom: "1px solid var(--border)" }}>
+                          <td style={{ padding: "8px 14px", color: "var(--text-primary)", fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", borderBottom: "1px solid var(--border)" }}>
                             {metric.label}
                           </td>
                           {stocks.map((s, si) => {
@@ -526,7 +526,7 @@ function CompareInner() {
 
           {/* Strength heatmap */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px" }}>
-            <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
+            <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
               Strength Heatmap — 0-100 vs Fixed Benchmarks
             </div>
             <StrengthHeatmap stocks={stocks} />
