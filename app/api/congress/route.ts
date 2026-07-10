@@ -16,12 +16,19 @@ async function fetchJson(url: string, revalidate: number): Promise<any[]> {
 export async function GET(req: NextRequest) {
   const key = process.env.FMP_KEY ?? "";
   const ticker = req.nextUrl.searchParams.get("ticker");
+  const name = req.nextUrl.searchParams.get("name");
 
   try {
     let senate: any[] = [];
     let house: any[] = [];
 
-    if (ticker) {
+    if (name) {
+      const q = encodeURIComponent(name.trim());
+      [senate, house] = await Promise.all([
+        fetchJson(`${FMP_BASE}/senate-trades-by-name?name=${q}&apikey=${key}`, 3600),
+        fetchJson(`${FMP_BASE}/house-trades-by-name?name=${q}&apikey=${key}`, 3600),
+      ]);
+    } else if (ticker) {
       const sym = ticker.trim().toUpperCase();
       [senate, house] = await Promise.all([
         fetchJson(`${FMP_BASE}/senate-trades?symbol=${sym}&apikey=${key}`, 3600),

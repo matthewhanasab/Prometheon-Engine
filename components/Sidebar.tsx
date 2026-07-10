@@ -16,6 +16,7 @@ const NAV = [
   { href: "/projections",   label: "Projections" },
   { href: "/earnings",      label: "Earnings" },
   { href: "/congress",      label: "Congress Trades" },
+  { href: "/insider",       label: "Insider Trading" },
   { href: "/calculator",    label: "Compound Calculator" },
   { href: "/macro",         label: "Macro Dashboard" },
   { href: "/movers",        label: "Market Movers" },

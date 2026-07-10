@@ -178,6 +178,7 @@ const SHOWCASE = [
   { href: "/calculator",    title: "Compound Calculator",  desc: "See what consistent investing does over decades, across low, base, and high return scenarios." },
   { href: "/sec?ticker=AAPL", title: "SEC Filings",          desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR, one click from the source." },
   { href: "/congress",      title: "Congress Trades",      desc: "Every stock trade disclosed by U.S. Senators and Representatives — who bought, who sold, and how late they told you." },
+  { href: "/insider",       title: "Insider Trading",      desc: "SEC Form 4 filings in real time — when a CEO buys their own stock with their own money, you'll see it here first." },
   { href: "/movers",        title: "Market Movers",        desc: "Today's biggest gainers, losers, and most active names, plus a sector heatmap of where the money is rotating." },
   { href: "/dividends?ticker=KO", title: "Dividend Hub",         desc: "Payment history, yield, growth streaks, and 5-year dividend CAGR — plus the full ex-dividend calendar." },
 ];
@@ -196,6 +197,7 @@ const FEATURES = [
   { href: "/macro",         title: "Macro Dashboard",      desc: "Rates, inflation, yield curve, fear and greed — the full market backdrop." },
   { href: "/sec?ticker=AAPL", title: "SEC Filings",          desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR." },
   { href: "/congress",      title: "Congress Trades",      desc: "Senate and House stock disclosures — trades, amounts, and disclosure lag." },
+  { href: "/insider",       title: "Insider Trading",      desc: "Form 4 filings — executive and director buys, sales, and awards, valued and flagged." },
   { href: "/movers",        title: "Market Movers",        desc: "Top gainers, losers, most active, and a live sector heatmap." },
   { href: "/dividends?ticker=KO", title: "Dividend Hub",         desc: "Dividend history, yield, growth, and the ex-dividend calendar." },
 ];
