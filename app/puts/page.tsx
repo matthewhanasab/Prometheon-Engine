@@ -45,7 +45,7 @@ interface PutRow {
   discountIfAssigned: number;
   capitalRequired: number;
   premiumIncome: number;
-  hitsEntry: boolean;
+  newAvgCost: number | null;
   score: number;
 }
 
@@ -128,8 +128,8 @@ function PutsInner() {
   const [error, setError] = useState<string | null>(null);
 
   // Position + strategy inputs
-  const [contractsInput, setContractsInput] = useState("1");
-  const [targetEntry, setTargetEntry] = useState("");
+  const [shares, setShares] = useState("100");
+  const [costBasis, setCostBasis] = useState("");
   const [dte, setDte] = useState(30);
   const [strategy, setStrategy] = useState<Strategy>("balanced");
   const [deltaMin, setDeltaMin] = useState("0.15");
@@ -160,8 +160,9 @@ function PutsInner() {
   const S = data?.price ?? 0;
   const iv = data?.hv21 ?? 0.3;
   const rfr = data?.rfr ?? 0.045;
-  const contracts = Math.max(1, parseInt(contractsInput) || 1);
-  const entry = parseFloat(targetEntry) || 0;
+  const numShares = Math.max(100, parseInt(shares) || 100);
+  const contracts = Math.floor(numShares / 100);
+  const basis = parseFloat(costBasis) || 0;
   const dMin = parseFloat(deltaMin) || 0.05;
   const dMax = parseFloat(deltaMax) || 0.7;
   const T = dte / 365;
@@ -195,7 +196,9 @@ function PutsInner() {
       const discountIfAssigned = ((K - premium) - S) / S * 100;
       const capitalRequired = K * 100 * contracts;
       const premiumIncome = premium * 100 * contracts;
-      const hitsEntry = entry > 0 && breakeven <= entry;
+      const newAvgCost = basis > 0
+        ? (numShares * basis + (K - premium) * 100 * contracts) / (numShares + 100 * contracts)
+        : null;
 
       let score: number;
       if (strategy === "maxYield") score = annYield;
@@ -204,13 +207,13 @@ function PutsInner() {
 
       return {
         strike: K, otmPct: ((K - S) / S) * 100, premium, delta, theta, gamma, vega,
-        annYield, probProfit, breakeven, discountIfAssigned, capitalRequired, premiumIncome, hitsEntry, score,
+        annYield, probProfit, breakeven, discountIfAssigned, capitalRequired, premiumIncome, newAvgCost, score,
       };
     }).filter((r): r is PutRow => r !== null)
       .sort((a, b) => b.score - a.score);
   }
 
-  const best = rows.find(r => r.hitsEntry) ?? rows[0] ?? null;
+  const best = rows[0] ?? null;
 
   // ATM strike approximation for capital-per-contract card
   const atmInc = S < 25 ? 0.5 : S < 100 ? 2.5 : S < 250 ? 5 : 10;
@@ -249,12 +252,12 @@ function PutsInner() {
               onKeyDown={e => { if (e.key === "Enter") load(); navKeys(e); }} placeholder="Ticker" style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Contracts</label>
-            <input data-nav={1} inputMode="numeric" value={contractsInput} onChange={e => setContractsInput(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
+            <label style={labelStyle}>Shares Owned</label>
+            <input data-nav={1} inputMode="numeric" value={shares} onChange={e => setShares(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Target Entry Price ($)</label>
-            <input data-nav={2} inputMode="decimal" placeholder="optional" value={targetEntry} onChange={e => setTargetEntry(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
+            <label style={labelStyle}>Cost Basis / Share ($)</label>
+            <input data-nav={2} inputMode="decimal" placeholder="optional" value={costBasis} onChange={e => setCostBasis(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Target Expiration</label>
@@ -296,7 +299,7 @@ function PutsInner() {
             {loading ? "Screening…" : "Screen Options"}
           </button>
           <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>
-            Strategy, deltas, contracts &amp; entry price re-rank instantly — no reload needed.
+            Strategy, deltas, shares &amp; basis re-rank instantly — no reload needed. Contracts = shares ÷ 100.
           </span>
         </div>
       </div>
@@ -331,7 +334,7 @@ function PutsInner() {
             <Metric label="Expiry Target" value={expiryDate.toISOString().slice(0, 10)} sub={`${dte} days out`} />
             <Metric label="Next Earnings" value={data.nextEarnings ?? "—"}
               sub={earningsBeforeExpiry ? "Before expiry" : "After expiry"} tone={earningsBeforeExpiry ? "bad" : "good"} />
-            <Metric label="Capital per Contract" value={`$${Math.round(atmStrike * 100).toLocaleString()}`} sub={`~ATM $${atmStrike} strike × 100 sh`} />
+            <Metric label="Position" value={`${numShares.toLocaleString()} sh`} sub={`${contracts} contract${contracts !== 1 ? "s" : ""}${basis > 0 ? ` · basis $${fmt(basis)}` : ""}`} />
           </div>
 
           {/* Best pick */}
@@ -343,9 +346,7 @@ function PutsInner() {
               </div>
               <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
                 {best.probProfit.toFixed(0)}% chance of keeping the premium · if assigned you buy at an effective ${fmt(best.breakeven)} ({Math.abs(best.discountIfAssigned).toFixed(1)}% below today) · ${Math.round(best.capitalRequired).toLocaleString()} capital secured
-                {entry > 0 ? (best.hitsEntry
-                  ? ` · ✓ effective entry hits your $${fmt(entry)} target`
-                  : ` · effective entry sits above your $${fmt(entry)} target`) : ""}
+                {best.newAvgCost != null ? ` · if assigned your average cost ${best.newAvgCost < basis ? "drops" : "moves"} from $${fmt(basis)} to $${fmt(best.newAvgCost)}` : ""}
                 {earningsBeforeExpiry ? " · ⚠ earnings before expiry" : ""}
                 {` · delta ${best.delta.toFixed(2)} · theta -$${Math.abs(best.theta).toFixed(2)}/day per share`}
               </div>
@@ -358,7 +359,7 @@ function PutsInner() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-primary)" }}>
-                    {["Rank", "Strike", "OTM %", "Est. Premium", "Delta", "Theta $/day", "Gamma", "Vega", "Ann. Yield", "Prob. Profit", "Breakeven", "Discount if Assigned", "Premium Income", "Capital Required"].map((h, i) => (
+                    {["Rank", "Strike", "OTM %", "Est. Premium", "Delta", "Theta $/day", "Gamma", "Vega", "Ann. Yield", "Prob. Profit", "Breakeven", "Discount if Assigned", "Premium Income", "Capital Required", ...(basis > 0 ? ["New Avg Cost"] : [])].map((h, i) => (
                       <th key={h} style={{
                         textAlign: i === 0 ? "left" : "right", padding: "9px 12px",
                         fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500,
@@ -375,7 +376,6 @@ function PutsInner() {
                       <tr key={r.strike} style={{ background: i === 0 ? "rgba(212,180,94,0.06)" : i % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
                         <td style={{ ...cell, textAlign: "left", color: i === 0 ? "var(--accent-gold)" : "var(--text-secondary)", fontWeight: i === 0 ? 700 : 400 }}>
                           {i === 0 ? "⭐ Best" : `#${i + 1}`}
-                          {r.hitsEntry && <span style={{ color: "var(--accent-gold)", marginLeft: 6, fontSize: "0.68rem" }}>✓ hits your entry</span>}
                         </td>
                         <td style={{ ...cell, color: "var(--text-primary)", fontWeight: 600 }}>${r.strike}</td>
                         <td style={cell}>{r.otmPct.toFixed(1)}%</td>
@@ -390,6 +390,11 @@ function PutsInner() {
                         <td style={{ ...cell, color: "var(--positive)" }}>{r.discountIfAssigned.toFixed(1)}%</td>
                         <td style={{ ...cell, color: "var(--accent-gold)" }}>${Math.round(r.premiumIncome).toLocaleString()}</td>
                         <td style={cell}>${Math.round(r.capitalRequired).toLocaleString()}</td>
+                        {basis > 0 && (
+                          <td style={{ ...cell, color: r.newAvgCost != null && r.newAvgCost < basis ? "var(--positive)" : "var(--text-secondary)" }}>
+                            {r.newAvgCost != null ? `$${fmt(r.newAvgCost)}` : "—"}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
