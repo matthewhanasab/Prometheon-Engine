@@ -5,10 +5,9 @@ import { useSearchParams } from "next/navigation";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
-
 import {
-  callPrice, callDelta, callTheta, gamma as bsGamma, vega as bsVega, callRho,
-  probITMCall, expectedMove,
+  putPrice, putDelta, putTheta, gamma as bsGamma, vega as bsVega,
+  probITMPut, expectedMove,
 } from "@/lib/blackscholes";
 
 // ─── formatting ───────────────────────────────────────────────────────────────
@@ -32,7 +31,7 @@ interface CCData {
   nextEarnings: string | null;
 }
 
-interface ContractRow {
+interface PutRow {
   strike: number;
   otmPct: number;
   premium: number;
@@ -40,14 +39,13 @@ interface ContractRow {
   theta: number;
   gamma: number;
   vega: number;
-  rho: number;
-  probITM: number;
   annYield: number;
   probProfit: number;
-  maxProfit: number;
   breakeven: number;
-  netIfAssigned: number | null;
-  roiOnBasis: number | null;
+  discountIfAssigned: number;
+  capitalRequired: number;
+  premiumIncome: number;
+  hitsEntry: boolean;
   score: number;
 }
 
@@ -122,7 +120,7 @@ function navKeys(e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) {
 
 // ─── page ─────────────────────────────────────────────────────────────────────
 
-function CoveredCallsInner() {
+function PutsInner() {
   const searchParams = useSearchParams();
   const [inputTicker, setInputTicker] = useState("");
   const [data, setData] = useState<CCData | null>(null);
@@ -130,8 +128,8 @@ function CoveredCallsInner() {
   const [error, setError] = useState<string | null>(null);
 
   // Position + strategy inputs
-  const [shares, setShares] = useState("100");
-  const [costBasis, setCostBasis] = useState("");
+  const [contractsInput, setContractsInput] = useState("1");
+  const [targetEntry, setTargetEntry] = useState("");
   const [dte, setDte] = useState(30);
   const [strategy, setStrategy] = useState<Strategy>("balanced");
   const [deltaMin, setDeltaMin] = useState("0.15");
@@ -162,9 +160,8 @@ function CoveredCallsInner() {
   const S = data?.price ?? 0;
   const iv = data?.hv21 ?? 0.3;
   const rfr = data?.rfr ?? 0.045;
-  const numShares = Math.max(100, parseInt(shares) || 100);
-  const contracts = Math.floor(numShares / 100);
-  const basis = parseFloat(costBasis) || 0;
+  const contracts = Math.max(1, parseInt(contractsInput) || 1);
+  const entry = parseFloat(targetEntry) || 0;
   const dMin = parseFloat(deltaMin) || 0.05;
   const dMax = parseFloat(deltaMax) || 0.7;
   const T = dte / 365;
@@ -174,53 +171,58 @@ function CoveredCallsInner() {
     new Date(data.nextEarnings) <= expiryDate &&
     new Date(data.nextEarnings) >= new Date());
 
-  let rows: ContractRow[] = [];
+  let rows: PutRow[] = [];
   if (S > 0 && iv > 0) {
-    // Strike grid: just OTM to +30%, sensible increments
+    // Strike grid: just OTM (below spot) down to -30%, sensible increments
     const inc = S < 25 ? 0.5 : S < 100 ? 2.5 : S < 250 ? 5 : 10;
     const strikes: number[] = [];
-    let k = Math.ceil(S / inc) * inc;
-    if (k <= S) k += inc;
-    while (k <= S * 1.3) { strikes.push(k); k += inc; }
+    let k = Math.floor(S / inc) * inc;
+    if (k >= S) k -= inc;
+    while (k >= S * 0.7) { strikes.push(k); k -= inc; }
 
-    rows = strikes.map((K): ContractRow | null => {
-      const premium = callPrice(S, K, T, rfr, iv);
-      const delta = callDelta(S, K, T, rfr, iv);
-      if (delta < dMin || delta > dMax || premium < 0.01) return null;
-      const theta = callTheta(S, K, T, rfr, iv);
+    rows = strikes.map((K): PutRow | null => {
+      const premium = putPrice(S, K, T, rfr, iv);
+      const delta = putDelta(S, K, T, rfr, iv);
+      const absDelta = Math.abs(delta);
+      if (absDelta < dMin || absDelta > dMax || premium < 0.01) return null;
+      const theta = putTheta(S, K, T, rfr, iv);
       const gamma = bsGamma(S, K, T, rfr, iv);
       const vega = bsVega(S, K, T, rfr, iv);
-      const rho = callRho(S, K, T, rfr, iv);
-      const probITM = probITMCall(S, K, T, rfr, iv);
-      const annYield = (premium / S) * (365 / dte) * 100;
+      const probITM = probITMPut(S, K, T, rfr, iv);
+      const annYield = (premium / K) * (365 / dte) * 100;
       const probProfit = (1 - probITM) * 100;
-      const maxProfit = premium * 100 * contracts;
-      const breakeven = S - premium;
-      const netIfAssigned = basis > 0 ? K - basis + premium : null;
-      const roiOnBasis = basis > 0 && netIfAssigned != null ? (netIfAssigned / basis) * 100 : null;
+      const breakeven = K - premium;
+      const discountIfAssigned = ((K - premium) - S) / S * 100;
+      const capitalRequired = K * 100 * contracts;
+      const premiumIncome = premium * 100 * contracts;
+      const hitsEntry = entry > 0 && breakeven <= entry;
 
       let score: number;
       if (strategy === "maxYield") score = annYield;
-      else if (strategy === "safest") score = (1 - delta) * 10 + Math.abs(theta) * 100;
-      else score = annYield * 0.5 + Math.abs(theta) * 100 * 0.3 + (1 - delta) * 10 * 0.2;
+      else if (strategy === "safest") score = (1 - absDelta) * 10 + Math.abs(theta) * 100;
+      else score = annYield * 0.5 + Math.abs(theta) * 100 * 0.3 + (1 - absDelta) * 10 * 0.2;
 
       return {
-        strike: K, otmPct: ((K - S) / S) * 100, premium, delta, theta, gamma, vega, rho, probITM,
-        annYield, probProfit, maxProfit, breakeven, netIfAssigned, roiOnBasis, score,
+        strike: K, otmPct: ((K - S) / S) * 100, premium, delta, theta, gamma, vega,
+        annYield, probProfit, breakeven, discountIfAssigned, capitalRequired, premiumIncome, hitsEntry, score,
       };
-    }).filter((r): r is ContractRow => r !== null)
+    }).filter((r): r is PutRow => r !== null)
       .sort((a, b) => b.score - a.score);
   }
 
-  const best = rows[0] ?? null;
+  const best = rows.find(r => r.hitsEntry) ?? rows[0] ?? null;
+
+  // ATM strike approximation for capital-per-contract card
+  const atmInc = S < 25 ? 0.5 : S < 100 ? 2.5 : S < 250 ? 5 : 10;
+  const atmStrike = Math.round(S / atmInc) * atmInc;
 
   // Payoff curve for best contract
   const payoffData = best && S > 0
     ? Array.from({ length: 80 }, (_, i) => {
-        const px = S * 0.75 + (S * 0.55 * i) / 79;
+        const px = S * 0.65 + (S * 0.5 * i) / 79;
         const pnl = px >= best.strike
-          ? (best.strike - S) * numShares + best.premium * 100 * contracts
-          : (px - S) * numShares + best.premium * 100 * contracts;
+          ? best.premium * 100 * contracts
+          : (px - best.strike + best.premium) * 100 * contracts;
         return { px: Math.round(px * 100) / 100, pnl: Math.round(pnl) };
       })
     : [];
@@ -230,11 +232,11 @@ function CoveredCallsInner() {
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
-          Covered Calls Screener
+          Cash-Secured Puts Screener
         </h1>
         <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
         <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.25rem 0 0" }}>
-          Enter your position — every strike gets scored and ranked for your strategy
+          Get paid to wait for your entry price — every strike scored for premium vs discount
         </p>
       </div>
 
@@ -247,12 +249,12 @@ function CoveredCallsInner() {
               onKeyDown={e => { if (e.key === "Enter") load(); navKeys(e); }} placeholder="Ticker" style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Shares Owned</label>
-            <input data-nav={1} inputMode="numeric" value={shares} onChange={e => setShares(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
+            <label style={labelStyle}>Contracts</label>
+            <input data-nav={1} inputMode="numeric" value={contractsInput} onChange={e => setContractsInput(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Cost Basis / Share ($)</label>
-            <input data-nav={2} inputMode="decimal" placeholder="optional" value={costBasis} onChange={e => setCostBasis(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
+            <label style={labelStyle}>Target Entry Price ($)</label>
+            <input data-nav={2} inputMode="decimal" placeholder="optional" value={targetEntry} onChange={e => setTargetEntry(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Target Expiration</label>
@@ -294,7 +296,7 @@ function CoveredCallsInner() {
             {loading ? "Screening…" : "Screen Options"}
           </button>
           <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>
-            Strategy, deltas, shares &amp; basis re-rank instantly — no reload needed.
+            Strategy, deltas, contracts &amp; entry price re-rank instantly — no reload needed.
           </span>
         </div>
       </div>
@@ -304,7 +306,7 @@ function CoveredCallsInner() {
       {!data && !loading && !error && (
         <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "40px 20px", textAlign: "center", marginBottom: "1.5rem" }}>
           <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-            Ranked contract table · best-pick summary · payoff diagram · earnings-risk flags — enter a ticker above to begin.
+            Ranked strike table · best-pick summary · payoff diagram · earnings-risk flags — enter a ticker above to begin.
           </span>
         </div>
       )}
@@ -314,7 +316,7 @@ function CoveredCallsInner() {
           {/* Earnings warning */}
           {earningsBeforeExpiry && (
             <div style={{ background: "rgba(212,180,94,0.08)", border: "1px solid rgba(212,180,94,0.3)", borderRadius: 4, padding: "10px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--accent-gold)" }}>
-              ⚠ <strong>Earnings {data.nextEarnings}</strong> falls before your {expiryDate.toISOString().slice(0, 10)} expiry — selling calls through earnings carries gap risk.
+              ⚠ <strong>Earnings {data.nextEarnings}</strong> falls before your {expiryDate.toISOString().slice(0, 10)} expiry — selling puts through earnings carries gap risk.
             </div>
           )}
 
@@ -324,36 +326,26 @@ function CoveredCallsInner() {
             <Metric label="Est. IV (21d HV)" value={data.hv21 != null ? `${(data.hv21 * 100).toFixed(1)}%` : "—"}
               sub={data.hvRank != null ? `Vol rank ${data.hvRank.toFixed(0)}/100 ${data.hvRank >= 50 ? "· premium rich" : "· premium thin"}` : undefined}
               tone={data.hvRank != null && data.hvRank >= 50 ? "good" : undefined} />
+            <Metric label="Expected Move" value={S > 0 && iv > 0 ? `±$${fmt(expectedMove(S, iv, T))}` : "—"}
+              sub={S > 0 && iv > 0 ? `±${((expectedMove(S, iv, T) / S) * 100).toFixed(1)}% by expiry (1 std dev)` : undefined} tone="gold" />
             <Metric label="Expiry Target" value={expiryDate.toISOString().slice(0, 10)} sub={`${dte} days out`} />
             <Metric label="Next Earnings" value={data.nextEarnings ?? "—"}
               sub={earningsBeforeExpiry ? "Before expiry" : "After expiry"} tone={earningsBeforeExpiry ? "bad" : "good"} />
-            <Metric label="Position" value={`${numShares.toLocaleString()} sh`} sub={`${contracts} contract${contracts !== 1 ? "s" : ""}${basis > 0 ? ` · basis $${fmt(basis)}` : ""}`} />
-            <Metric label="Risk-Free Rate" value={`${(rfr * 100).toFixed(2)}%`} sub="FRED 3M Treasury" />
+            <Metric label="Capital per Contract" value={`$${Math.round(atmStrike * 100).toLocaleString()}`} sub={`~ATM $${atmStrike} strike × 100 sh`} />
           </div>
-
-          {/* Expected move stats */}
-          {S > 0 && iv > 0 && (() => {
-            const em = expectedMove(S, iv, T);
-            return (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: "1.5rem" }}>
-                <Metric label="Expected Move by Expiry" value={`±$${fmt(em)}`} sub={`±${((em / S) * 100).toFixed(1)}% (1 std dev)`} tone="gold" />
-                <Metric label="ATM IV (est.)" value={`${(iv * 100).toFixed(1)}%`} sub="21-day historical vol" />
-                <Metric label="1SD Range" value={`$${fmt(S - em)} – $${fmt(S + em)}`} sub={`by ${expiryDate.toISOString().slice(0, 10)}`} />
-              </div>
-            );
-          })()}
 
           {/* Best pick */}
           {best && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-gold)", borderRadius: 4, padding: "16px 20px", marginBottom: "1.5rem" }}>
               <div style={{ ...labelStyle, color: "var(--accent-gold)" }}>⭐ Best Pick — {strategy === "maxYield" ? "Max Yield" : strategy === "safest" ? "Safest" : "Balanced"}</div>
               <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "1.3rem", fontWeight: 700, marginBottom: 6 }}>
-                Sell the ${best.strike} call · collect ~${Math.round(best.maxProfit).toLocaleString()} upfront
+                Sell the ${best.strike} put · collect ~${Math.round(best.premiumIncome).toLocaleString()} upfront
               </div>
               <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                {best.probProfit.toFixed(0)}% chance of keeping the full premium · breakeven falls to ${fmt(best.breakeven)} ·
-                upside capped at ${Math.round((best.strike - S) * numShares + best.maxProfit).toLocaleString()} if called away
-                {best.roiOnBasis != null ? ` · ${best.roiOnBasis.toFixed(1)}% return on your cost basis if assigned` : ""}
+                {best.probProfit.toFixed(0)}% chance of keeping the premium · if assigned you buy at an effective ${fmt(best.breakeven)} ({Math.abs(best.discountIfAssigned).toFixed(1)}% below today) · ${Math.round(best.capitalRequired).toLocaleString()} capital secured
+                {entry > 0 ? (best.hitsEntry
+                  ? ` · ✓ effective entry hits your $${fmt(entry)} target`
+                  : ` · effective entry sits above your $${fmt(entry)} target`) : ""}
                 {earningsBeforeExpiry ? " · ⚠ earnings before expiry" : ""}
                 {` · delta ${best.delta.toFixed(2)} · theta -$${Math.abs(best.theta).toFixed(2)}/day per share`}
               </div>
@@ -366,8 +358,8 @@ function CoveredCallsInner() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.78rem" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-primary)" }}>
-                    {["Rank", "Strike", "OTM %", "Est. Premium", "Delta", "Theta $/day", "Gamma", "Vega", "Ann. Yield", "Prob. Profit", "Breakeven", "Max Premium", basis > 0 ? "ROI on Basis" : null].filter(Boolean).map((h, i) => (
-                      <th key={h as string} style={{
+                    {["Rank", "Strike", "OTM %", "Est. Premium", "Delta", "Theta $/day", "Gamma", "Vega", "Ann. Yield", "Prob. Profit", "Breakeven", "Discount if Assigned", "Premium Income", "Capital Required"].map((h, i) => (
+                      <th key={h} style={{
                         textAlign: i === 0 ? "left" : "right", padding: "9px 12px",
                         fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500,
                         textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)",
@@ -383,9 +375,10 @@ function CoveredCallsInner() {
                       <tr key={r.strike} style={{ background: i === 0 ? "rgba(212,180,94,0.06)" : i % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
                         <td style={{ ...cell, textAlign: "left", color: i === 0 ? "var(--accent-gold)" : "var(--text-secondary)", fontWeight: i === 0 ? 700 : 400 }}>
                           {i === 0 ? "⭐ Best" : `#${i + 1}`}
+                          {r.hitsEntry && <span style={{ color: "var(--accent-gold)", marginLeft: 6, fontSize: "0.68rem" }}>✓ hits your entry</span>}
                         </td>
                         <td style={{ ...cell, color: "var(--text-primary)", fontWeight: 600 }}>${r.strike}</td>
-                        <td style={cell}>+{r.otmPct.toFixed(1)}%</td>
+                        <td style={cell}>{r.otmPct.toFixed(1)}%</td>
                         <td style={{ ...cell, color: "var(--text-primary)" }}>${fmt(r.premium)}</td>
                         <td style={cell}>{r.delta.toFixed(3)}</td>
                         <td style={cell}>{r.theta.toFixed(3)}</td>
@@ -394,8 +387,9 @@ function CoveredCallsInner() {
                         <td style={{ ...cell, color: "var(--positive)" }}>{r.annYield.toFixed(1)}%</td>
                         <td style={cell}>{r.probProfit.toFixed(0)}%</td>
                         <td style={cell}>${fmt(r.breakeven)}</td>
-                        <td style={{ ...cell, color: "var(--accent-gold)" }}>${Math.round(r.maxProfit).toLocaleString()}</td>
-                        {basis > 0 && <td style={{ ...cell, color: r.roiOnBasis != null && r.roiOnBasis >= 0 ? "var(--positive)" : "var(--negative)" }}>{r.roiOnBasis != null ? `${r.roiOnBasis.toFixed(1)}%` : "—"}</td>}
+                        <td style={{ ...cell, color: "var(--positive)" }}>{r.discountIfAssigned.toFixed(1)}%</td>
+                        <td style={{ ...cell, color: "var(--accent-gold)" }}>${Math.round(r.premiumIncome).toLocaleString()}</td>
+                        <td style={cell}>${Math.round(r.capitalRequired).toLocaleString()}</td>
                       </tr>
                     );
                   })}
@@ -411,7 +405,7 @@ function CoveredCallsInner() {
           {/* Payoff diagram */}
           {best && payoffData.length > 0 && (
             <div style={{ ...cardStyle, marginBottom: "1.5rem" }}>
-              <div style={labelStyle}>Payoff at Expiration — ${best.strike} Call</div>
+              <div style={labelStyle}>Payoff at Expiration — ${best.strike} Put</div>
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={payoffData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
@@ -430,7 +424,7 @@ function CoveredCallsInner() {
                     label={{ value: `B/E $${fmt(best.breakeven)}`, fill: "#D4B45E", fontSize: 11, fontFamily: "IBM Plex Mono", position: "insideTopLeft" }} />
                   <ReferenceLine x={best.strike} stroke="#A9B8D0" strokeDasharray="2 4"
                     label={{ value: `Strike $${best.strike}`, fill: "#A9B8D0", fontSize: 11, fontFamily: "IBM Plex Mono", position: "insideTopRight" }} />
-                  <Area type="monotone" dataKey="pnl" stroke="#5B8DEF" strokeWidth={2} fill="#5B8DEF" fillOpacity={0.12} isAnimationActive={false} />
+                  <Area type="monotone" dataKey="pnl" stroke="#A78BFA" strokeWidth={2} fill="#A78BFA" fillOpacity={0.12} isAnimationActive={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -445,21 +439,21 @@ function CoveredCallsInner() {
       {/* Education cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
         <div style={cardStyle}>
-          <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>What is a Covered Call?</div>
+          <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>What is a Cash-Secured Put?</div>
           <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>
-            A covered call is an options strategy where you hold shares of a stock and sell (write) call options on the same stock. You collect the option premium upfront as income. The buyer of the call has the right — but not the obligation — to buy your shares at the strike price before expiration.
+            A cash-secured put is an options strategy where you sell (write) a put option while setting aside enough cash to buy 100 shares at the strike price. You collect the option premium upfront as income. If the stock closes below the strike at expiration, you are assigned and buy the shares — using the cash you already reserved.
           </p>
         </div>
         <div style={cardStyle}>
           <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>When to Use</div>
           <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>
-            Best used when you have a neutral to mildly bullish outlook on a stock you already own. Ideal in sideways or slowly rising markets. Higher implied volatility (IV) means larger premiums, making it more attractive to sell calls when IV is elevated.
+            Best when you want to own a stock but at a cheaper price than today&apos;s — you get paid to wait for your entry. Also attractive in sideways-to-mildly-bullish markets where the premium is likely to expire worthless. Elevated implied volatility means richer premiums for the same strikes.
           </p>
         </div>
         <div style={cardStyle}>
           <div style={{ fontFamily: "'IBM Plex Serif', Georgia, serif", fontSize: "1rem", fontWeight: 600, color: "var(--accent-gold)", marginBottom: 8 }}>Risk / Reward</div>
           <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>
-            Your upside is capped at the strike price — if the stock surges above it, you still deliver shares at the strike. The premium provides a buffer against downside, but you still bear the full risk of stock decline. The trade-off: income now vs. potential gains foregone.
+            You are obligated to buy at the strike if the stock drops below it — even if it falls far further. The premium is yours regardless, which lowers your effective purchase price. The trade-off: if the stock rips higher, your only gain is the premium — an opportunity cost versus simply buying the shares today.
           </p>
         </div>
       </div>
@@ -467,6 +461,6 @@ function CoveredCallsInner() {
   );
 }
 
-export default function CoveredCallsPage() {
-  return <Suspense fallback={null}><CoveredCallsInner /></Suspense>;
+export default function PutsPage() {
+  return <Suspense fallback={null}><PutsInner /></Suspense>;
 }
