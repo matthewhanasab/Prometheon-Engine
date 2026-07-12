@@ -144,6 +144,25 @@ function TickerTape() {
 
 // ── Live scaled preview of an app page ────────────────────────────────────────
 function LivePreview({ href }: { href: string }) {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+
+  // Keep the embedded page's theme in lockstep with the parent (same-origin)
+  useEffect(() => {
+    function sync() {
+      try {
+        const doc = frameRef.current?.contentDocument;
+        if (doc?.documentElement) {
+          doc.documentElement.dataset.theme = document.documentElement.dataset.theme || "light";
+        }
+      } catch { /* frame not ready */ }
+    }
+    const obs = new MutationObserver(sync);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    const frame = frameRef.current;
+    frame?.addEventListener("load", sync);
+    return () => { obs.disconnect(); frame?.removeEventListener("load", sync); };
+  }, []);
+
   return (
     <div style={{
       position: "relative", height: 280, overflow: "hidden", borderRadius: 22,
@@ -151,6 +170,7 @@ function LivePreview({ href }: { href: string }) {
       boxShadow: "0 0 24px rgba(var(--accent-rgb), 0.10)",
     }}>
       <iframe
+        ref={frameRef}
         src={href}
         loading="lazy"
         scrolling="no"
