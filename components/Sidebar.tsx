@@ -107,19 +107,11 @@ export default function Sidebar() {
       }}>
         {/* Logo */}
         <div style={{ padding: "0 1.5rem 2rem", textAlign: "center" }}>
-          <Link href="/" onClick={handleNav} style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <Image
-              src="/logo_icon.png"
-              alt="Prometheon Engine"
-              width={38}
-              height={44}
-              style={{ objectFit: "contain" }}
-              priority
-            />
-            <span style={{ textAlign: "left", lineHeight: 1.1 }}>
-              <span style={{ display: "block", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "0.95rem", letterSpacing: "0.02em", color: "var(--text-primary)" }}>PROMETHEON</span>
-              <span style={{ display: "block", fontFamily: "'Public Sans', sans-serif", fontWeight: 400, fontSize: "0.6rem", letterSpacing: "0.42em", color: "var(--text-secondary)" }}>ENGINE</span>
-            </span>
+          <Link href="/" onClick={handleNav} style={{ display: "inline-block", lineHeight: 0 }}>
+            <Image className="logo-on-light" src="/logo_transparent_dark.png" alt="Prometheon Engine"
+              width={180} height={58} style={{ objectFit: "contain" }} priority />
+            <Image className="logo-on-dark" src="/logo_transparent.png" alt="Prometheon Engine"
+              width={180} height={58} style={{ objectFit: "contain" }} priority />
           </Link>
         </div>
 

@@ -31,7 +31,9 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
     containerRef.current.id = id;
 
     const isLight = document.documentElement.dataset.theme !== "dark";
+    let cancelled = false;
     function init() {
+      if (cancelled || !document.getElementById(id)) return;
       const config: Record<string, any> = {
         autosize:            true,
         symbol:              ticker,
@@ -75,7 +77,9 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
     }
 
     return () => {
-      if (widgetRef.current?.remove) widgetRef.current.remove();
+      cancelled = true;
+      try { widgetRef.current?.remove?.(); } catch { /* widget already gone */ }
+      widgetRef.current = null;
     };
   }, [ticker, interval, range, themeTick]);
 

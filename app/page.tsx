@@ -228,16 +228,12 @@ export default function LandingPage() {
       <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
         <Constellation />
 
-        <div className="fade-up" style={{ position: "relative", display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap", justifyContent: "center" }}>
-          <Image src="/logo_icon.png" alt="Prometheon Engine" width={110} height={128} priority
-            style={{ objectFit: "contain" }} />
-          <span style={{ textAlign: "left", lineHeight: 1.05 }}>
-            <span style={{ display: "block", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "clamp(2.2rem, 6vw, 3.6rem)", letterSpacing: "0.02em", color: "var(--text-primary)" }}>PROMETHEON</span>
-            <span style={{ display: "block", fontFamily: "'Public Sans', sans-serif", fontWeight: 300, fontSize: "clamp(0.9rem, 2.2vw, 1.3rem)", letterSpacing: "0.55em", color: "var(--text-secondary)", marginTop: 6 }}>ENGINE</span>
-          </span>
-        </div>
-
-        <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 2.4rem", maxWidth: 760 }}>
+        <div className="fade-up" style={{ position: "relative" }}>
+          <Image className="logo-on-light" src="/logo_transparent_dark.png" alt="Prometheon Engine" width={560} height={180} priority
+            style={{ objectFit: "contain", maxWidth: "88vw", height: "auto" }} />
+          <Image className="logo-on-dark" src="/logo_transparent.png" alt="Prometheon Engine" width={560} height={180} priority
+            style={{ objectFit: "contain", maxWidth: "88vw", height: "auto" }} />
+        </div> <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 2.4rem", maxWidth: 760 }}>
           Every number that matters. One software.
         </h1>
 

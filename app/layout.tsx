@@ -55,6 +55,10 @@ th[style*="border:1px solid var(--border)"] {
   backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none;
 }
 
+.logo-on-dark { display: none; }
+:root[data-theme="dark"] .logo-on-dark { display: inline-block; }
+:root[data-theme="dark"] .logo-on-light { display: none; }
+
 :root[data-theme="dark"] {
   --bg-primary:    #0C1220;
   --bg-surface:    rgba(255, 255, 255, 0.045);

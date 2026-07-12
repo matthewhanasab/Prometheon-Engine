@@ -1,30 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary:    #E9EEF6;
+  --bg-primary:    #E1E2E6;
   --bg-surface:    rgba(255, 255, 255, 0.55);
   --bg-elevated:   rgba(255, 255, 255, 0.75);
-  --border:        rgba(28, 48, 84, 0.10);
+  --border:        rgba(40, 44, 58, 0.12);
   --border-active: rgba(59, 110, 235, 0.40);
   --accent-gold:   #3B6EEB;
   --accent-2:      #38B6D3;
   --accent-rgb:    59, 110, 235;
   --on-accent:     #FFFFFF;
-  --text-primary:  #1B2536;
-  --text-secondary:#5C6B82;
-  --text-muted:    #97A3B6;
+  --text-primary:  #23262F;
+  --text-secondary:#666C7A;
+  --text-muted:    #999EAA;
   --positive:      #189A55;
   --negative:      #D64545;
   --tick:          #7C8BA3;
   --tooltip-bg:    rgba(255, 255, 255, 0.96);
   --tooltip-border:rgba(59, 110, 235, 0.35);
   --cursor-fill:   rgba(59, 110, 235, 0.08);
-  --glow-a:        rgba(120, 160, 230, 0.35);
-  --glow-b:        rgba(160, 190, 240, 0.30);
-  --bg-g1:         #F0F3F9;
-  --bg-g2:         #E7EDF6;
-  --bg-g3:         #DFE7F2;
-  --card-shadow:   0 12px 32px rgba(23, 43, 77, 0.10);
+  --glow-a:        rgba(170, 178, 195, 0.55);
+  --glow-b:        rgba(205, 200, 190, 0.45);
+  --bg-g1:         #E7E7EA;
+  --bg-g2:         #DFE0E4;
+  --bg-g3:         #D6D8DD;
+  --card-shadow:   0 12px 32px rgba(35, 38, 50, 0.12);
 }
 
 * { box-sizing: border-box; }
