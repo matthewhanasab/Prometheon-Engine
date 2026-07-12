@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         fetchJson(`${FMP_BASE}/house-trades-by-name?name=${q}&apikey=${key}`, 3600),
       ]);
     } else if (ticker) {
-      const sym = ticker.trim().toUpperCase();
+      const sym = ticker.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
       [senate, house] = await Promise.all([
         fetchJson(`${FMP_BASE}/senate-trades?symbol=${sym}&apikey=${key}`, 3600),
         fetchJson(`${FMP_BASE}/house-trades?symbol=${sym}&apikey=${key}`, 3600),

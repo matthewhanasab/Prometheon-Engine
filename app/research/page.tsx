@@ -524,10 +524,10 @@ function ResearchInner() {
               <SectionLabel>Earnings History</SectionLabel>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:4, padding:"12px 8px 4px", marginBottom:12 }}>
                 <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={earnings.filter((e: any) => e.surprise != null).map((e: any) => ({ name: (e.date ?? "").slice(0,10), val: e.surprise }))} margin={{ top:4, right:8, left:0, bottom:0 }}>
+                  <BarChart data={earnings.filter((e: any) => e.surprise != null).map((e: any) => ({ name: (e.date ?? "").slice(0,10), val: Math.max(-100, Math.min(100, e.surprise)), actual: e.surprise }))} margin={{ top:4, right:8, left:0, bottom:0 }}>
                     <XAxis dataKey="name" tick={{ fill:"#F1F5F9", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#F1F5F9", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={40} />
-                    <Tooltip labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }} cursor={{ fill: "rgba(76, 97, 144, 0.18)" }} formatter={(v: any) => [`${v.toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"#283552", border:"1px solid #4C6190", borderRadius:4, fontFamily:"Spline Sans Mono", fontSize:11, color:"#F1F5F9" }} />
+                    <Tooltip labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }} cursor={{ fill: "rgba(76, 97, 144, 0.18)" }} formatter={(v: any, _n: any, item: any) => [`${(item?.payload?.actual ?? v).toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"#283552", border:"1px solid #4C6190", borderRadius:4, fontFamily:"Spline Sans Mono", fontSize:11, color:"#F1F5F9" }} />
                     <Bar dataKey="val" radius={[2,2,0,0]}>
                       {earnings.filter((e: any) => e.surprise != null).map((e: any, i: number) => (
                         <Cell key={i} fill={e.surprise >= 0 ? "#059669" : "#dc2626"} />

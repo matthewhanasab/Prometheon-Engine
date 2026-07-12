@@ -3,8 +3,23 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://prometheonengine.com"),
   title: "Prometheon Engine",
-  description: "Professional stock research platform",
+  description: "Every number that matters. One software. Stock research, portfolio tracking, options screeners, congress trades, and more.",
+  openGraph: {
+    title: "Prometheon Engine",
+    description: "Every number that matters. One software.",
+    url: "https://prometheonengine.com",
+    siteName: "Prometheon Engine",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Prometheon Engine" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Prometheon Engine",
+    description: "Every number that matters. One software.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

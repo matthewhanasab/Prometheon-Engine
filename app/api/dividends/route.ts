@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   try {
     if (ticker) {
-      const sym = ticker.trim().toUpperCase();
+      const sym = ticker.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
       const history = await fetchJson(
         `${FMP_BASE}/dividends?symbol=${sym}&limit=40&apikey=${key}`,
         21600
@@ -30,7 +30,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ history });
     }
 
-    if (from && to) {
+    const dateOk = (s: string | null) => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
+    if (dateOk(from) && dateOk(to)) {
       const calendar = await fetchJson(
         `${FMP_BASE}/dividends-calendar?from=${from}&to=${to}&apikey=${key}`,
         21600

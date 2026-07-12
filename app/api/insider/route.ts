@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   try {
     let rows: any[] = [];
     if (symbol) {
-      const sym = symbol.trim().toUpperCase();
+      const sym = symbol.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
       rows = await fetchJson(`${FMP_BASE}/insider-trading/search?symbol=${sym}&limit=100&apikey=${key}`, 3600);
     } else {
       rows = await fetchJson(`${FMP_BASE}/insider-trading/latest?page=0&limit=100&apikey=${key}`, 3600);

@@ -108,7 +108,8 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
-  const { ticker } = await params;
+  const { ticker: rawTicker } = await params;
+  const ticker = rawTicker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   try {
     const [stock, price, earnings, recs, news, insiders, rf, priceTarget, institutional, scores, dcf, grades, gradesConsensus, peers] = await Promise.all([
       getFullStockData(ticker),
