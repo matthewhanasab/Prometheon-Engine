@@ -171,7 +171,7 @@ function MetricCard({ label, value }: { label: string; value: string }) {
     <div style={{
       background: "var(--bg-elevated)",
       border: "1px solid var(--border)",
-      borderRadius: 8,
+      borderRadius: 18,
       padding: "1rem",
       display: "flex",
       flexDirection: "column",
@@ -224,7 +224,7 @@ function AssumptionInputs({
                       width: 75,
                       background: "var(--bg-primary)",
                       border: "1px solid var(--border)",
-                      borderRadius: 4,
+                      borderRadius: 14,
                       color: "var(--text-primary)",
                       padding: "4px 6px",
                       fontSize: 13,
@@ -316,7 +316,7 @@ function ScenarioBlock({
     <div style={{
       background: "var(--bg-surface)",
       border: "1px solid var(--border)",
-      borderRadius: 10,
+      borderRadius: 20,
       overflow: "hidden",
       marginBottom: 24,
     }}>
@@ -372,7 +372,7 @@ function CombinedChart({ stock, assumptions }: { stock: StockData; assumptions: 
           <XAxis dataKey="year" stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 12, fontFamily: "Spline Sans Mono" }} />
           <YAxis stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 12, fontFamily: "Spline Sans Mono" }} tickFormatter={v => `$${v.toFixed(0)}`} />
           <Tooltip
-            contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, fontFamily: "Spline Sans Mono" }}
+            contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 16, fontSize: 12, fontFamily: "Spline Sans Mono" }}
             labelStyle={{ color: "var(--accent-gold)" }}
             itemStyle={{ color: "var(--text-primary)" }}
             formatter={(v: any) => `$${v.toFixed(2)}`}
@@ -395,7 +395,7 @@ function EmptyHint({ title, desc }: { title: string; desc: string }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
       <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
-      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
+      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
         <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
       </div>
     </div>
@@ -477,7 +477,7 @@ function ProjectionsInner() {
           onKeyDown={e => e.key === "Enter" && loadStock()}
           placeholder="Ticker"
           style={{
-            background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6,
+            background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 16,
             color: "var(--text-primary)", padding: "9px 14px", fontSize: 14, outline: "none",
             width: 200, fontFamily: "'Public Sans', sans-serif",
           }}
@@ -486,7 +486,7 @@ function ProjectionsInner() {
           onClick={() => loadStock()}
           disabled={loading}
           style={{
-            background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
+            background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 14,
             padding: "10px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
           }}
         >
@@ -532,7 +532,7 @@ function ProjectionsInner() {
           ))}
 
           {/* Combined Chart */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "20px 24px" }}>
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "20px 24px" }}>
             <CombinedChart stock={stock} assumptions={assumptions} />
           </div>
         </>

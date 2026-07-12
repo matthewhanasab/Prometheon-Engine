@@ -126,7 +126,7 @@ function ChartCard({
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border)",
-        borderRadius: 4,
+        borderRadius: 14,
         padding: "12px 8px 4px",
         height,
       }}
@@ -154,14 +154,14 @@ function ChartCard({
 
 const ttStyle = {
   contentStyle: {
-    background: "#35456A",
-    border: "1px solid #4C6190",
-    borderRadius: 4,
+    background: "rgba(255,255,255,0.09)",
+    border: "1px solid rgba(61, 230, 140, 0.35)",
+    borderRadius: 14,
     fontFamily: "Spline Sans Mono, monospace",
     fontSize: 11,
-    color: "#F1F5F9",
+    color: "#EAF6EE",
   },
-  labelStyle: { color: "#64748B" },
+  labelStyle: { color: "#7E9887" },
 };
 
 function XAx() {
@@ -169,7 +169,7 @@ function XAx() {
     <XAxis
       dataKey="date"
       tickFormatter={tickDate}
-      tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+      tick={{ fill: "#7E9887", fontSize: 9, fontFamily: "Spline Sans Mono" }}
       axisLine={false}
       tickLine={false}
       interval="preserveStartEnd"
@@ -187,7 +187,7 @@ function YAx({
   return (
     <YAxis
       tickFormatter={(v) => `${v}${unit}`}
-      tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+      tick={{ fill: "#7E9887", fontSize: 9, fontFamily: "Spline Sans Mono" }}
       axisLine={false}
       tickLine={false}
       width={44}
@@ -198,7 +198,7 @@ function YAx({
 
 function Grid() {
   return (
-    <CartesianGrid vertical={false} stroke="#2A3854" strokeDasharray="3 3" />
+    <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
   );
 }
 
@@ -225,7 +225,7 @@ function MCard({
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border)",
-        borderRadius: 4,
+        borderRadius: 14,
         padding: "14px 16px",
         display: "flex",
         flexDirection: "column",
@@ -284,12 +284,12 @@ function SpreadChart({ data }: { data: FredSeries[] }) {
         <XAx />
         <YAx unit="%" />
         <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
           {...ttStyle}
           formatter={(v: any) => [`${v.toFixed(2)}%`, "Spread"]}
           labelFormatter={tickDate}
         />
-        <ReferenceLine y={0} stroke="#64748B" strokeWidth={1} />
+        <ReferenceLine y={0} stroke="#7E9887" strokeWidth={1} />
         <Area
           type="monotone"
           dataKey="pos"
@@ -322,14 +322,14 @@ const MARKET_META: Record<
 > = {
   SPY: { label: "S&P 500", color: "#22C55E" },
   QQQ: { label: "Nasdaq", color: "#3B82F6" },
-  GLD: { label: "Gold", color: "#D4B45E" },
+  GLD: { label: "Gold", color: "#3DE68C" },
   USO: { label: "Crude Oil", color: "#F97316" },
   BTCUSD: { label: "Bitcoin", color: "#F59E0B" },
   UUP: { label: "USD Index", color: "#8B5CF6" },
 };
 
 function MarketCard({ q }: { q: MarketQuote }) {
-  const meta = MARKET_META[q.symbol] ?? { label: q.symbol, color: "#64748B" };
+  const meta = MARKET_META[q.symbol] ?? { label: q.symbol, color: "#7E9887" };
   const up = q.changesPercentage >= 0;
   return (
     <div
@@ -337,7 +337,7 @@ function MarketCard({ q }: { q: MarketQuote }) {
         background: "var(--bg-surface)",
         border: "1px solid var(--border)",
         borderTop: `2px solid ${meta.color}`,
-        borderRadius: 4,
+        borderRadius: 14,
         padding: "14px 16px",
         display: "flex",
         flexDirection: "column",
@@ -606,7 +606,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                 {...ttStyle}
                 formatter={(v: any, name: any) => [
                   `${fmt(v)}%`,
@@ -621,7 +621,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="ffr"
-                stroke="#D4B45E"
+                stroke="#3DE68C"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -670,7 +670,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                 {...ttStyle}
                 formatter={(v: any, name: any) => [
                   `${fmt(v)}%`,
@@ -680,11 +680,11 @@ export default function MacroPage() {
               />
               <ReferenceLine
                 y={2}
-                stroke="#D4B45E"
+                stroke="#3DE68C"
                 strokeDasharray="5 3"
                 label={{
                   value: "2%",
-                  fill: "#D4B45E",
+                  fill: "#3DE68C",
                   fontSize: 9,
                   fontFamily: "Spline Sans Mono",
                 }}
@@ -722,18 +722,18 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                 {...ttStyle}
                 formatter={(v: any) => [`${fmt(v)}%`, "10Y Breakeven"]}
                 labelFormatter={tickDate}
               />
               <ReferenceLine
                 y={2}
-                stroke="#D4B45E"
+                stroke="#3DE68C"
                 strokeDasharray="5 3"
                 label={{
                   value: "2%",
-                  fill: "#D4B45E",
+                  fill: "#3DE68C",
                   fontSize: 9,
                   fontFamily: "Spline Sans Mono",
                 }}
@@ -771,7 +771,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                 {...ttStyle}
                 formatter={(v: any) => [`${fmt(v)}%`, "Unemployment"]}
                 labelFormatter={tickDate}
@@ -798,7 +798,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                 {...ttStyle}
                 formatter={(v: any) => [fmtK(v), "Init. Claims"]}
                 labelFormatter={tickDate}
@@ -826,7 +826,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "Sentiment"]}
                 labelFormatter={tickDate}
@@ -874,18 +874,18 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "VIX"]}
                 labelFormatter={tickDate}
               />
               <ReferenceLine
                 y={20}
-                stroke="#D4B45E"
+                stroke="#3DE68C"
                 strokeDasharray="4 3"
                 label={{
                   value: "Caution",
-                  fill: "#D4B45E",
+                  fill: "#3DE68C",
                   fontSize: 9,
                   fontFamily: "Spline Sans Mono",
                 }}
@@ -927,7 +927,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "Sentiment"]}
                 labelFormatter={tickDate}
@@ -960,22 +960,22 @@ export default function MacroPage() {
                   <Grid />
                   <XAxis
                     dataKey="label"
-                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+                    tick={{ fill: "#7E9887", fontSize: 9, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAx unit="%" />
                   <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                     {...ttStyle}
                     formatter={(v: any) => [`${fmt(v)}%`, "Yield"]}
                   />
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#D4B45E"
+                    stroke="#3DE68C"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: "#D4B45E" }}
+                    dot={{ r: 3, fill: "#3DE68C" }}
                     activeDot={{ r: 5 }}
                     isAnimationActive={false}
                   />
@@ -991,7 +991,7 @@ export default function MacroPage() {
                     style={{
                       background: "var(--bg-elevated)",
                       border: "1px solid var(--border)",
-                      borderRadius: 4,
+                      borderRadius: 14,
                       padding: "8px 12px",
                       display: "flex",
                       flexDirection: "column",
@@ -1018,7 +1018,7 @@ export default function MacroPage() {
               style={{
                 background: "var(--bg-surface)",
                 border: "1px solid var(--border)",
-                borderRadius: 4,
+                borderRadius: 14,
                 padding: "24px 32px",
                 display: "flex",
                 flexDirection: "column",
@@ -1047,12 +1047,12 @@ export default function MacroPage() {
               <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                 {fearGreed.classification ?? ""}
               </div>
-              <div style={{ width: "100%", height: 6, background: "var(--bg-elevated)", borderRadius: 3, marginTop: 4 }}>
+              <div style={{ width: "100%", height: 6, background: "var(--bg-elevated)", borderRadius: 20, marginTop: 4 }}>
                 <div
                   style={{
                     width: `${fearGreed.value ?? 50}%`,
                     height: "100%",
-                    borderRadius: 3,
+                    borderRadius: 20,
                     background:
                       fearGreed.value != null && fearGreed.value <= 25
                         ? "var(--negative)"
@@ -1081,7 +1081,7 @@ export default function MacroPage() {
                       const d = new Date(parseInt(v) * 1000);
                       return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
                     }}
-                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+                    tick={{ fill: "#7E9887", fontSize: 9, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                     interval="preserveStartEnd"
@@ -1089,13 +1089,13 @@ export default function MacroPage() {
                   <YAxis
                     domain={[0, 100]}
                     tickFormatter={(v) => String(v)}
-                    tick={{ fill: "#64748B", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+                    tick={{ fill: "#7E9887", fontSize: 9, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                     width={44}
                   />
                   <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                     {...ttStyle}
                     formatter={(v: any) => [String(v), "Fear & Greed"]}
                     labelFormatter={(l: any) => {
@@ -1108,8 +1108,8 @@ export default function MacroPage() {
                   <Area
                     type="monotone"
                     dataKey="value"
-                    stroke="#D4B45E"
-                    fill="rgba(212,180,94,0.08)"
+                    stroke="#3DE68C"
+                    fill="rgba(61,230,140,0.08)"
                     strokeWidth={2}
                     dot={false}
                     isAnimationActive={false}

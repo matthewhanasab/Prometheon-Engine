@@ -14,7 +14,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
     <div style={{
       background: "var(--bg-surface)",
       border: "1px solid var(--border)",
-      borderRadius: 4,
+      borderRadius: 14,
       padding: "1.25rem 1rem 0.75rem",
     }}>
       <ResponsiveContainer width="100%" height={220}>
@@ -25,14 +25,14 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="#35456A" strokeDasharray="3 3" />
+          <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
             tickFormatter={(v) => {
               const d = new Date(v);
               return d.toLocaleString("en-US", { month: "short", year: "2-digit" });
             }}
-            tick={{ fill: "#64748B", fontSize: 10, fontFamily: "Spline Sans Mono" }}
+            tick={{ fill: "#7E9887", fontSize: 10, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
             interval={Math.floor(data.length / 6)}
@@ -40,23 +40,23 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
           <YAxis
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v}`}
-            tick={{ fill: "#64748B", fontSize: 10, fontFamily: "Spline Sans Mono" }}
+            tick={{ fill: "#7E9887", fontSize: 10, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
             width={60}
           />
           <Tooltip
-                  cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
+                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
             contentStyle={{
-              background: "#283552",
-              border: "1px solid #4C6190",
-              borderRadius: 4,
+              background: "rgba(16, 36, 26, 0.95)",
+              border: "1px solid rgba(61, 230, 140, 0.35)",
+              borderRadius: 14,
               fontFamily: "Spline Sans Mono",
               fontSize: 12,
-              color: "#F1F5F9",
+              color: "#EAF6EE",
             }}
             formatter={(v: any) => [fmt(v), "Price"]}
-            labelStyle={{ color: "#64748B", fontSize: 10, marginBottom: 4 }}
+            labelStyle={{ color: "#7E9887", fontSize: 10, marginBottom: 4 }}
           />
           <Area
             type="monotone"

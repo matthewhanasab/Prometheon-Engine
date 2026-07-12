@@ -14,15 +14,15 @@ Professional stock research platform. Next.js 14 App Router, TypeScript, rechart
 
 ### Palette (CSS variables in `app/globals.css` — always use the variables)
 
-- `--bg-primary: #131C2E` — page canvas (medium navy — lighter than near-black so gold buttons and cards have contrast)
-- `--bg-surface: #1C2740` — cards
-- `--bg-elevated: #283552` — inputs, chips, nested surfaces
-- `--border: #35456A` / `--border-active: #4C6190`
-- `--accent-gold: #D4B45E` — THE brand color. Primary buttons, active states, dividers, revenue bars. Use sparingly so it stays special.
-- `--text-primary: #F1F5F9`, `--text-secondary: #8FA0BC`, `--text-muted: #5E6E8C`
-- `--positive: #2ED573`, `--negative: #F0564A` — gains/losses only
+- `--bg-primary: #0A120D` — near-black green canvas with fixed radial green glow gradients on body
+- `--bg-surface: rgba(255,255,255,0.035)` — translucent glass cards
+- `--bg-elevated: rgba(255,255,255,0.065)` — inputs, chips
+- `--border: rgba(255,255,255,0.09)` / `--border-active: rgba(61,230,140,0.35)`
+- `--accent-gold: #3DE68C` — the accent is now NEON GREEN (var name kept for compatibility). Buttons, active states, dividers, primary series.
+- `--text-primary: #EAF6EE`, `--text-secondary: #93AF9E`, `--text-muted: #5C7466`
+- `--positive: #4ADE80`, `--negative: #F87171`
 
-Chart series palette (muted, no neon): gold `#D4B45E`, steel blue `#5B8DEF`, green `#22C55E`, teal `#14B8A6`, slate `#64748B`, red `#EF4444` (negative values only). Forecast/estimate bars: same hue at `fillOpacity 0.3` with dashed stroke.
+Chart series palette: neon green `#3DE68C` (primary), aqua `#5BD1EF`, green `#22C55E`, teal `#14B8A6`, sage `#7E9887`, red `#EF4444` (negative only). Forecast/estimate bars: same hue at `fillOpacity 0.3` with dashed stroke.
 
 ### Typography (three fonts, three jobs)
 
@@ -37,7 +37,7 @@ Chart series palette (muted, no neon): gold `#D4B45E`, steel blue `#5B8DEF`, gre
 - **Primary button**: gold bg, `#0A0F1E` text, uppercase 0.72rem weight 700 letterSpacing 0.1em, padding 10px 22px, radius 4.
 - **Metric cards**: `--bg-surface`, 1px border, 2px colored top border for tone (green good / red bad / gold neutral), radius 4.
 - **Ticker inputs**: IBM Plex Mono, `--bg-elevated`, placeholder "Ticker", auto-uppercase.
-- **Border radius**: 4 for cards/buttons/inputs (6 acceptable for pills; never 10+).
+- **Border radius**: 14-18 for cards/buttons/inputs (glass style); 8-10 for small chips.
 - **Tables**: mono figures right-aligned, uppercase Inter column headers, zebra rows via `--bg-surface`/`--bg-primary`.
 
 ### Hard rules

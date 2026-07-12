@@ -8,7 +8,7 @@ interface MetricCardProps {
 const TONES = {
   good:    { top: "#22C55E", sub: "#22C55E" },
   bad:     { top: "#EF4444", sub: "#EF4444" },
-  neutral: { top: "#D4B45E", sub: "#D4B45E" },
+  neutral: { top: "#3DE68C", sub: "#3DE68C" },
   default: { top: "var(--border)", sub: "var(--text-secondary)" },
 };
 
@@ -19,7 +19,7 @@ export default function MetricCard({ label, value, sub, tone = "default" }: Metr
       background: "var(--bg-surface)",
       border: "1px solid var(--border)",
       borderTop: `2px solid ${colors.top}`,
-      borderRadius: 4,
+      borderRadius: 14,
       padding: "18px 16px 14px",
     }}>
       <div style={{

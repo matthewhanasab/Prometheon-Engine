@@ -22,9 +22,9 @@ interface Insider {
 }
 
 const FORM_COLORS: Record<string, { bg: string; color: string }> = {
-  "10-K": { bg: "rgba(212,180,94,0.15)",  color: "#D4B45E" },
-  "10-Q": { bg: "rgba(59,130,246,0.15)",  color: "#60A5FA" },
-  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "#A9B8D0" },
+  "10-K": { bg: "rgba(61,230,140,0.15)",  color: "#3DE68C" },
+  "10-Q": { bg: "rgba(59,130,246,0.15)",  color: "#5BD1EF" },
+  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "#9CC1AA" },
   "4":    { bg: "rgba(34,197,94,0.15)",   color: "#22C55E" },
   "S-1":  { bg: "rgba(168,85,247,0.15)",  color: "#C084FC" },
   "DEF 14A": { bg: "rgba(249,115,22,0.15)", color: "#FB923C" },
@@ -40,7 +40,7 @@ function formBadge(form: string) {
       fontWeight: 700,
       fontSize: "0.72rem",
       padding: "0.18rem 0.55rem",
-      borderRadius: 4,
+      borderRadius: 14,
       fontFamily: "'Spline Sans Mono', monospace",
       letterSpacing: "0.04em",
       whiteSpace: "nowrap",
@@ -87,7 +87,7 @@ function EmptyHint({ title, desc }: { title: string; desc: string }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
       <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
-      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
+      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
         <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
       </div>
     </div>
@@ -157,7 +157,7 @@ function SecInner() {
             padding: "0.5rem 0.75rem",
             background: "var(--bg-elevated)",
             border: "1px solid var(--border)",
-            borderRadius: 6,
+            borderRadius: 16,
             color: "var(--text-primary)",
             fontSize: "0.875rem",
             fontFamily: "'Spline Sans Mono', monospace",
@@ -172,8 +172,8 @@ function SecInner() {
             padding: "10px 22px",
             background: "var(--accent-gold)",
             border: "none",
-            borderRadius: 4,
-            color: "#131C2E",
+            borderRadius: 14,
+            color: "#04110A",
             fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,
@@ -210,7 +210,7 @@ function SecInner() {
       {!loading && activeTicker && (
         <>
           {/* Recent Filings */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", marginBottom: "1.75rem" }}>
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden", marginBottom: "1.75rem" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Recent Filings</h2>
@@ -264,7 +264,7 @@ function SecInner() {
           </div>
 
           {/* Insider Transactions */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Insider Transactions</h2>
@@ -301,7 +301,7 @@ function SecInner() {
                               fontWeight: 700,
                               fontSize: "0.7rem",
                               padding: "0.15rem 0.5rem",
-                              borderRadius: 4,
+                              borderRadius: 14,
                               letterSpacing: "0.05em",
                             }}>
                               {ins.type}
@@ -331,7 +331,7 @@ function SecInner() {
                     <button
                       onClick={() => setInsiderPage(p => Math.max(0, p - 1))}
                       disabled={insiderPage === 0}
-                      style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 5, color: "var(--text-primary)", cursor: insiderPage === 0 ? "not-allowed" : "pointer", opacity: insiderPage === 0 ? 0.4 : 1, fontSize: "0.8rem" }}
+                      style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, color: "var(--text-primary)", cursor: insiderPage === 0 ? "not-allowed" : "pointer", opacity: insiderPage === 0 ? 0.4 : 1, fontSize: "0.8rem" }}
                     >
                       ← Prev
                     </button>
@@ -341,7 +341,7 @@ function SecInner() {
                     <button
                       onClick={() => setInsiderPage(p => Math.min(totalInsiderPages - 1, p + 1))}
                       disabled={insiderPage === totalInsiderPages - 1}
-                      style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 5, color: "var(--text-primary)", cursor: insiderPage === totalInsiderPages - 1 ? "not-allowed" : "pointer", opacity: insiderPage === totalInsiderPages - 1 ? 0.4 : 1, fontSize: "0.8rem" }}
+                      style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, color: "var(--text-primary)", cursor: insiderPage === totalInsiderPages - 1 ? "not-allowed" : "pointer", opacity: insiderPage === totalInsiderPages - 1 ? 0.4 : 1, fontSize: "0.8rem" }}
                     >
                       Next →
                     </button>

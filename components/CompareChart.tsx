@@ -28,8 +28,8 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
       theme: "dark",
       style: "2",
       locale: "en",
-      backgroundColor: "#131C2E",
-      gridColor: "rgba(53, 69, 106, 0.5)",
+      backgroundColor: "#0A120D",
+      gridColor: "rgba(61, 230, 140, 0.10)",
       hide_side_toolbar: true,
       hide_top_toolbar: false,
       allow_symbol_change: false,
@@ -47,7 +47,7 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
   }, [tickers.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div style={{ border: "1px solid var(--border)", borderRadius: 4, overflow: "hidden", height }}>
+    <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", height }}>
       <div ref={containerRef} className="tradingview-widget-container" style={{ height: "100%", width: "100%" }} />
     </div>
   );

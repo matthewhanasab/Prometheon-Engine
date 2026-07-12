@@ -40,9 +40,9 @@ const DEMO_POSITIONS: Position[] = [
 ];
 
 const PIE_COLORS = [
-  "#D4B45E", "#5B8DEF", "#2ED573", "#A78BFA", "#F0564A",
+  "#3DE68C", "#5BD1EF", "#2ED573", "#A78BFA", "#F0564A",
   "#14B8A6", "#F97316", "#EC4899", "#84CC16", "#8C7A5B",
-  "#60A5FA", "#C97B3D",
+  "#5BD1EF", "#C97B3D",
 ];
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ const inputStyle: React.CSSProperties = {
   padding: "0.5rem 0.75rem",
   background: "var(--bg-elevated)",
   border: "1px solid var(--border)",
-  borderRadius: 4,
+  borderRadius: 14,
   color: "var(--text-primary)",
   fontSize: "0.85rem",
   fontFamily: "'Spline Sans Mono', monospace",
@@ -119,19 +119,19 @@ const sectionLabel: React.CSSProperties = {
 const cardStyle: React.CSSProperties = {
   background: "var(--bg-surface)",
   border: "1px solid var(--border)",
-  borderRadius: 4,
+  borderRadius: 14,
   padding: "16px 18px",
 };
 
 const CHART_TOOLTIP = {
-  labelStyle: { color: "#F1F5F9" },
-  itemStyle: { color: "#F1F5F9" },
-  contentStyle: { background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 },
+  labelStyle: { color: "#EAF6EE" },
+  itemStyle: { color: "#EAF6EE" },
+  contentStyle: { background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 },
 };
 
 function Stat({ label, value, sub, subColor }: { label: string; value: string; sub?: string; subColor?: string }) {
   return (
-    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "14px 16px" }}>
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "14px 16px" }}>
       <div style={labelStyle}>{label}</div>
       <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.35rem", fontWeight: 700, color: "var(--text-primary)" }}>{value}</div>
       {sub && <div style={{ fontSize: "0.7rem", color: subColor ?? "var(--text-secondary)", marginTop: 4, fontFamily: "'Spline Sans Mono', monospace" }}>{sub}</div>}
@@ -367,15 +367,15 @@ function PortfolioInner() {
               onKeyDown={e => { if (e.key === "Enter") addPosition(); navKeys(e); }} placeholder="150.00" style={inputStyle} />
           </div>
           <button onClick={addPosition} style={{
-            padding: "10px 24px", background: "var(--accent-gold)", border: "none", borderRadius: 4,
-            color: "#131C2E", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
+            padding: "10px 24px", background: "var(--accent-gold)", border: "none", borderRadius: 14,
+            color: "#04110A", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
             letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
           }}>
             Add Position
           </button>
           {positions.length > 0 && (
             <button onClick={() => refresh(positions)} disabled={loading} style={{
-              padding: "10px 18px", background: "transparent", border: "1px solid var(--border)", borderRadius: 4,
+              padding: "10px 18px", background: "transparent", border: "1px solid var(--border)", borderRadius: 14,
               color: "var(--text-secondary)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
             }}>
               {loading ? "Refreshing…" : "Refresh Prices"}
@@ -398,7 +398,7 @@ function PortfolioInner() {
             ["Smart Insights", "Automatic flags: concentration risk, high beta, upcoming earnings."]].map(([title, desc]) => (
             <div key={title} style={{ marginBottom: "1.25rem" }}>
               <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, marginBottom: "0.5rem" }}>{title}</div>
-              <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "30px 20px", textAlign: "center" }}>
+              <div style={{ border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)", padding: "30px 20px", textAlign: "center" }}>
                 <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
               </div>
             </div>
@@ -431,11 +431,11 @@ function PortfolioInner() {
           {insights.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: "1.5rem" }}>
               {insights.map((ins, i) => {
-                const c = ins.tone === "warn" ? "var(--accent-gold)" : ins.tone === "good" ? "var(--positive)" : "#5B8DEF";
+                const c = ins.tone === "warn" ? "var(--accent-gold)" : ins.tone === "good" ? "var(--positive)" : "#5BD1EF";
                 return (
                   <div key={i} style={{
                     background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: `3px solid ${c}`,
-                    borderRadius: 4, padding: "10px 16px", fontSize: "0.8rem", color: "var(--text-primary)", lineHeight: 1.55,
+                    borderRadius: 14, padding: "10px 16px", fontSize: "0.8rem", color: "var(--text-primary)", lineHeight: 1.55,
                   }}>
                     {ins.text}
                   </div>
@@ -451,13 +451,13 @@ function PortfolioInner() {
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="date" tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
-                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
+                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
                   <Tooltip {...CHART_TOOLTIP} formatter={(v: any) => [`${Number(v).toFixed(1)}%`]} />
                   <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
-                  <Line type="monotone" dataKey="Portfolio" stroke="#D4B45E" strokeWidth={2.5} dot={false} isAnimationActive={false} />
-                  <Line type="monotone" dataKey="S&P 500" stroke="#5B8DEF" strokeWidth={2} strokeDasharray="5 3" dot={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="Portfolio" stroke="#3DE68C" strokeWidth={2.5} dot={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="S&P 500" stroke="#5BD1EF" strokeWidth={2} strokeDasharray="5 3" dot={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
               <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 6 }}>
@@ -489,7 +489,7 @@ function PortfolioInner() {
           </div>
 
           {/* Holdings table */}
-          <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4, marginBottom: "0.5rem" }}>
+          <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14, marginBottom: "0.5rem" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
@@ -526,7 +526,7 @@ function PortfolioInner() {
                       <td style={{ ...cell, color: plColor(r.plPct) }}>{r.plPct != null ? `${r.plPct >= 0 ? "+" : ""}${r.plPct.toFixed(1)}%` : "—"}</td>
                       <td style={{ ...cell }}>
                         <button onClick={() => removePosition(r.ticker)} title="Remove position" style={{
-                          background: "transparent", border: "1px solid var(--border)", borderRadius: 3,
+                          background: "transparent", border: "1px solid var(--border)", borderRadius: 20,
                           color: "var(--text-muted)", cursor: "pointer", padding: "2px 8px", fontSize: "0.7rem",
                         }}>
                           ✕

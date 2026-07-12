@@ -61,7 +61,7 @@ const inputStyle: React.CSSProperties = {
   padding: "0.5rem 0.75rem",
   background: "var(--bg-elevated)",
   border: "1px solid var(--border)",
-  borderRadius: 4,
+  borderRadius: 14,
   color: "var(--text-primary)",
   fontSize: "0.85rem",
   fontFamily: "'Spline Sans Mono', monospace",
@@ -83,14 +83,14 @@ const labelStyle: React.CSSProperties = {
 const cardStyle: React.CSSProperties = {
   background: "var(--bg-surface)",
   border: "1px solid var(--border)",
-  borderRadius: 4,
+  borderRadius: 14,
   padding: "1.1rem 1.25rem",
 };
 
 function Metric({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "good" | "bad" | "gold" }) {
   const subColor = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "gold" ? "var(--accent-gold)" : "var(--text-secondary)";
   return (
-    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "12px 14px" }}>
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "12px 14px" }}>
       <div style={labelStyle}>{label}</div>
       <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)" }}>{value}</div>
       {sub && <div style={{ fontSize: "0.65rem", color: subColor, marginTop: 4, fontFamily: "'Public Sans', sans-serif" }}>{sub}</div>}
@@ -273,13 +273,13 @@ function CoveredCallsInner() {
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end" }}>
           <div>
             <label style={labelStyle}>Strategy</label>
-            <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 4, overflow: "hidden" }}>
+            <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
               {([["balanced", "Balanced"], ["maxYield", "Max Yield"], ["safest", "Safest"]] as [Strategy, string][]).map(([key, label]) => (
                 <button key={key} onClick={() => setStrategy(key)} style={{
                   padding: "0.5rem 1rem", fontSize: "0.72rem", fontWeight: 600, border: "none", cursor: "pointer",
                   fontFamily: "'Public Sans', sans-serif",
                   background: strategy === key ? "var(--accent-gold)" : "transparent",
-                  color: strategy === key ? "#131C2E" : "var(--text-secondary)",
+                  color: strategy === key ? "#04110A" : "var(--text-secondary)",
                 }}>
                   {label}
                 </button>
@@ -287,8 +287,8 @@ function CoveredCallsInner() {
             </div>
           </div>
           <button onClick={() => load()} disabled={loading} style={{
-            padding: "10px 28px", background: "var(--accent-gold)", border: "none", borderRadius: 4,
-            color: "#131C2E", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
+            padding: "10px 28px", background: "var(--accent-gold)", border: "none", borderRadius: 14,
+            color: "#04110A", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", opacity: loading ? 0.7 : 1,
           }}>
             {loading ? "Screening…" : "Screen Options"}
@@ -302,7 +302,7 @@ function CoveredCallsInner() {
       {error && <div style={{ color: "var(--negative)", marginBottom: "1rem", fontSize: "0.85rem" }}>{error}</div>}
 
       {!data && !loading && !error && (
-        <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "40px 20px", textAlign: "center", marginBottom: "1.5rem" }}>
+        <div style={{ border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)", padding: "40px 20px", textAlign: "center", marginBottom: "1.5rem" }}>
           <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
             Ranked contract table · best-pick summary · payoff diagram · earnings-risk flags — enter a ticker above to begin.
           </span>
@@ -313,7 +313,7 @@ function CoveredCallsInner() {
         <>
           {/* Earnings warning */}
           {earningsBeforeExpiry && (
-            <div style={{ background: "rgba(212,180,94,0.08)", border: "1px solid rgba(212,180,94,0.3)", borderRadius: 4, padding: "10px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--accent-gold)" }}>
+            <div style={{ background: "rgba(61,230,140,0.08)", border: "1px solid rgba(61,230,140,0.3)", borderRadius: 14, padding: "10px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--accent-gold)" }}>
               ⚠ <strong>Earnings {data.nextEarnings}</strong> falls before your {expiryDate.toISOString().slice(0, 10)} expiry — selling calls through earnings carries gap risk.
             </div>
           )}
@@ -345,7 +345,7 @@ function CoveredCallsInner() {
 
           {/* Best pick */}
           {best && (
-            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-gold)", borderRadius: 4, padding: "16px 20px", marginBottom: "1.5rem" }}>
+            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-gold)", borderRadius: 14, padding: "16px 20px", marginBottom: "1.5rem" }}>
               <div style={{ ...labelStyle, color: "var(--accent-gold)" }}>⭐ Best Pick — {strategy === "maxYield" ? "Max Yield" : strategy === "safest" ? "Safest" : "Balanced"}</div>
               <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.3rem", fontWeight: 700, marginBottom: 6 }}>
                 Sell the ${best.strike} call · collect ~${Math.round(best.maxProfit).toLocaleString()} upfront
@@ -362,7 +362,7 @@ function CoveredCallsInner() {
 
           {/* Contracts table */}
           {rows.length > 0 ? (
-            <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4, marginBottom: "1.5rem" }}>
+            <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14, marginBottom: "1.5rem" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-primary)" }}>
@@ -380,7 +380,7 @@ function CoveredCallsInner() {
                   {rows.map((r, i) => {
                     const cell: React.CSSProperties = { padding: "8px 12px", textAlign: "right", borderBottom: "1px solid var(--border)", color: "var(--text-secondary)", whiteSpace: "nowrap" };
                     return (
-                      <tr key={r.strike} style={{ background: i === 0 ? "rgba(212,180,94,0.06)" : i % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
+                      <tr key={r.strike} style={{ background: i === 0 ? "rgba(61,230,140,0.06)" : i % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
                         <td style={{ ...cell, textAlign: "left", color: i === 0 ? "var(--accent-gold)" : "var(--text-secondary)", fontWeight: i === 0 ? 700 : 400 }}>
                           {i === 0 ? "⭐ Best" : `#${i + 1}`}
                         </td>
@@ -415,22 +415,22 @@ function CoveredCallsInner() {
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={payoffData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="px" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="px" tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(v: any) => `$${v}`} minTickGap={50} />
-                  <YAxis tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                  <YAxis tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(v: any) => `$${v.toLocaleString()}`} width={80} />
                   <Tooltip
-                    labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
-                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                    labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }}
+                    contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                     formatter={(v: any) => [`$${Number(v).toLocaleString()}`, "P&L"]}
                     labelFormatter={(l: any) => `Stock at $${l}`}
                   />
                   <ReferenceLine y={0} stroke="var(--border-active)" />
                   <ReferenceLine x={best.breakeven} stroke="var(--accent-gold)" strokeDasharray="4 3"
-                    label={{ value: `B/E $${fmt(best.breakeven)}`, fill: "#D4B45E", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopLeft" }} />
-                  <ReferenceLine x={best.strike} stroke="#A9B8D0" strokeDasharray="2 4"
-                    label={{ value: `Strike $${best.strike}`, fill: "#A9B8D0", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopRight" }} />
-                  <Area type="monotone" dataKey="pnl" stroke="#5B8DEF" strokeWidth={2} fill="#5B8DEF" fillOpacity={0.12} isAnimationActive={false} />
+                    label={{ value: `B/E $${fmt(best.breakeven)}`, fill: "#3DE68C", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopLeft" }} />
+                  <ReferenceLine x={best.strike} stroke="#9CC1AA" strokeDasharray="2 4"
+                    label={{ value: `Strike $${best.strike}`, fill: "#9CC1AA", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopRight" }} />
+                  <Area type="monotone" dataKey="pnl" stroke="#5BD1EF" strokeWidth={2} fill="#5BD1EF" fillOpacity={0.12} isAnimationActive={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

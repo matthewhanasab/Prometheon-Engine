@@ -54,7 +54,7 @@ const MARKET_CAPS = [
 const INPUT_STYLE: React.CSSProperties = {
   background: "var(--bg-elevated)",
   border: "1px solid var(--border)",
-  borderRadius: 4,
+  borderRadius: 14,
   padding: "8px 12px",
   color: "var(--text-primary)",
   fontFamily: "'Spline Sans Mono', monospace",
@@ -210,7 +210,7 @@ export default function ScreenerPage() {
         style={{
           background: "var(--bg-surface)",
           border: "1px solid var(--border)",
-          borderRadius: 4,
+          borderRadius: 14,
           padding: "20px 20px 16px",
           marginBottom: "1.5rem",
         }}
@@ -257,9 +257,9 @@ export default function ScreenerPage() {
               style={{
                 flex: 1,
                 background: "var(--accent-gold)",
-                color: "#131C2E",
+                color: "#04110A",
                 border: "none",
-                borderRadius: 4,
+                borderRadius: 14,
                 padding: "10px 24px",
                 fontFamily: "'Public Sans', sans-serif",
                 fontSize: "0.72rem",
@@ -278,7 +278,7 @@ export default function ScreenerPage() {
                 background: "transparent",
                 color: "var(--text-secondary)",
                 border: "1px solid var(--border)",
-                borderRadius: 4,
+                borderRadius: 14,
                 padding: "10px 14px",
                 fontFamily: "'Public Sans', sans-serif",
                 fontSize: "0.72rem",
@@ -303,7 +303,7 @@ export default function ScreenerPage() {
           style={{
             background: "var(--bg-surface)",
             border: "1px solid var(--border)",
-            borderRadius: 4,
+            borderRadius: 14,
             padding: "48px",
             textAlign: "center",
             color: "var(--text-secondary)",
@@ -319,7 +319,7 @@ export default function ScreenerPage() {
           <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: 8 }}>
             {results.length} result{results.length !== 1 ? "s" : ""}
           </div>
-          <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4 }}>
+          <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>

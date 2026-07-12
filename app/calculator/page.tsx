@@ -65,7 +65,7 @@ interface Results {
 
 function SummaryCard({ label, result, color, accentBg }: { label: string; result: CalcResult; color: string; accentBg: string }) {
   return (
-    <div style={{ background: "var(--bg-elevated)", border: `1px solid ${color}40`, borderRadius: 10, overflow: "hidden", flex: 1, minWidth: 180 }}>
+    <div style={{ background: "var(--bg-elevated)", border: `1px solid ${color}40`, borderRadius: 20, overflow: "hidden", flex: 1, minWidth: 180 }}>
       <div style={{ background: accentBg, padding: "8px 14px" }}>
         <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#fff", fontFamily: "'Public Sans', sans-serif" }}>{label}</span>
       </div>
@@ -124,7 +124,7 @@ export default function CalculatorPage() {
   }));
 
   const inputStyle: React.CSSProperties = {
-    background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 6,
+    background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 16,
     color: "var(--text-primary)", padding: "8px 10px", fontSize: 14,
     fontFamily: "'Spline Sans Mono', monospace", outline: "none", width: "100%",
   };
@@ -141,7 +141,7 @@ export default function CalculatorPage() {
 
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
         {/* Inputs Panel */}
-        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "20px 22px", width: "clamp(280px, 38%, 380px)", flexShrink: 0 }}>
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "20px 22px", width: "clamp(280px, 38%, 380px)", flexShrink: 0 }}>
           <h2 style={{ ...HEADING, fontSize: 16, margin: "0 0 18px" }}>Assumptions</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
@@ -165,7 +165,7 @@ export default function CalculatorPage() {
               <input type="number" value={inputs.variance} step={0.5} onChange={e => handleChange("variance", parseFloat(e.target.value) || 0)} style={inputStyle} />
             </div>
 
-            <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 14px", display: "flex", justifyContent: "space-between", fontSize: 13, ...MONO }}>
+            <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 16, padding: "10px 14px", display: "flex", justifyContent: "space-between", fontSize: 13, ...MONO }}>
               <span style={{ color: "var(--negative)" }}>Low: {lowRate.toFixed(1)}%</span>
               <span style={{ color: "var(--accent-gold)" }}>Base: {inputs.baseRate.toFixed(1)}%</span>
               <span style={{ color: "var(--positive)" }}>High: {highRate.toFixed(1)}%</span>
@@ -174,7 +174,7 @@ export default function CalculatorPage() {
             <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
               <button
                 onClick={reset}
-                style={{ flex: 1, background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "'Public Sans', sans-serif" }}
+                style={{ flex: 1, background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 16, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "'Public Sans', sans-serif" }}
               >Reset to Defaults</button>
             </div>
             <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'Public Sans', sans-serif" }}>
@@ -192,20 +192,20 @@ export default function CalculatorPage() {
                 <SummaryCard label="BASE PROJECTION" result={results.base} color="var(--accent-gold)" accentBg="#78350F" />
                 <SummaryCard label="HIGH PROJECTION" result={results.high} color="var(--positive)"    accentBg="#14532D" />
               </div>
-              <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "16px 18px" }}>
+              <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "16px 18px" }}>
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 8, bottom: 0 }}>
                     <defs>
                       <linearGradient id="bandFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#D4B45E" stopOpacity={0.07} />
-                        <stop offset="95%" stopColor="#D4B45E" stopOpacity={0.01} />
+                        <stop offset="5%" stopColor="#3DE68C" stopOpacity={0.07} />
+                        <stop offset="95%" stopColor="#3DE68C" stopOpacity={0.01} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
                     <XAxis dataKey="year" stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 11, fontFamily: "Spline Sans Mono" }} />
                     <YAxis stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 11, fontFamily: "Spline Sans Mono" }} tickFormatter={v => fmtDollar(v)} width={75} />
                     <Tooltip
-                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, fontFamily: "Spline Sans Mono" }}
+                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 16, fontSize: 12, fontFamily: "Spline Sans Mono" }}
                       labelStyle={{ color: "var(--accent-gold)" }}
                       formatter={(v: any) => fmtDollar(v)}
                       labelFormatter={(l) => `Year ${l}`}
@@ -225,7 +225,7 @@ export default function CalculatorPage() {
       {results && (
         <>
           {/* Insight box */}
-          <div style={{ marginTop: 28, background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: "3px solid var(--accent-gold)", borderRadius: 8, padding: "14px 18px", fontSize: 14, color: "var(--text-primary)", fontFamily: "'Public Sans', sans-serif" }}>
+          <div style={{ marginTop: 28, background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: "3px solid var(--accent-gold)", borderRadius: 18, padding: "14px 18px", fontSize: 14, color: "var(--text-primary)", fontFamily: "'Public Sans', sans-serif" }}>
             <strong style={{ color: "var(--accent-gold)" }}>Insight: </strong>
             The difference between the high ({(results.inputs.baseRate + results.inputs.variance).toFixed(1)}%) and low ({(results.inputs.baseRate - results.inputs.variance).toFixed(1)}%) return scenarios over {results.inputs.years} years is{" "}
             <span style={{ ...MONO, color: "var(--positive)", fontWeight: 600 }}>{fmtDollar(results.high.final - results.low.final)}</span>
@@ -235,7 +235,7 @@ export default function CalculatorPage() {
           {/* Year-by-year table */}
           <div style={{ marginTop: 28 }}>
             <h3 style={{ ...HEADING, fontSize: 16, margin: "0 0 12px" }}>Year-by-Year Breakdown</h3>
-            <div style={{ maxHeight: 400, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8 }}>
+            <div style={{ maxHeight: 400, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 18 }}>
               <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13, ...MONO }}>
                 <thead style={{ position: "sticky", top: 0, background: "var(--bg-elevated)", zIndex: 1 }}>
                   <tr>

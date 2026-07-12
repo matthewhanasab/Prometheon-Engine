@@ -51,7 +51,7 @@ export default function Sidebar() {
           style={{
             position: "fixed", top: 14, left: 14, zIndex: 200,
             background: "var(--bg-elevated)", border: "1px solid var(--border)",
-            borderRadius: 8, width: 42, height: 42, cursor: "pointer",
+            borderRadius: 18, width: 42, height: 42, cursor: "pointer",
             display: "flex", flexDirection: "column", alignItems: "center",
             justifyContent: "center", gap: 5,
           }}

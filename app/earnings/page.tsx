@@ -58,7 +58,7 @@ function monthWeeks(year: number, month: number): (Date | null)[][] {
 }
 
 function Chip({ entry, side }: { entry: EarningsEntry; side: "bmo" | "amc" | "other" }) {
-  const borderColor = side === "bmo" ? "#5B8DEF" : side === "amc" ? "var(--negative)" : "var(--border-active)";
+  const borderColor = side === "bmo" ? "#5BD1EF" : side === "amc" ? "var(--negative)" : "var(--border-active)";
   return (
     <a href={`/research?ticker=${entry.symbol}`} style={{ textDecoration: "none" }}>
       <span style={{
@@ -66,7 +66,7 @@ function Chip({ entry, side }: { entry: EarningsEntry; side: "bmo" | "amc" | "ot
         background: "var(--bg-elevated)",
         border: "1px solid var(--border)",
         borderLeft: `3px solid ${borderColor}`,
-        borderRadius: 3,
+        borderRadius: 20,
         padding: "0.15rem 0.4rem",
         fontWeight: 700,
         fontFamily: "'Spline Sans Mono', monospace",
@@ -86,7 +86,7 @@ const navBtn: React.CSSProperties = {
   padding: "0.4rem 0.8rem",
   background: "var(--bg-elevated)",
   border: "1px solid var(--border)",
-  borderRadius: 4,
+  borderRadius: 14,
   color: "var(--text-primary)",
   cursor: "pointer",
   fontSize: "0.82rem",
@@ -187,14 +187,14 @@ function EarningsInner() {
           )}
         </div>
 
-        <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 4, overflow: "hidden" }}>
+        <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
           {(["popular", "all"] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: "0.4rem 0.9rem",
               fontSize: "0.78rem",
               fontWeight: 600,
               background: filter === f ? "var(--accent-gold)" : "transparent",
-              color: filter === f ? "#131C2E" : "var(--text-secondary)",
+              color: filter === f ? "#04110A" : "var(--text-secondary)",
               border: "none",
               cursor: "pointer",
               fontFamily: "'Public Sans', sans-serif",
@@ -221,7 +221,7 @@ function EarningsInner() {
         {weeks.map((week, wi) => (
           <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 8 }}>
             {week.map((d, di) => {
-              if (!d) return <div key={di} style={{ background: "transparent", border: "1px dashed var(--border)", borderRadius: 4, opacity: 0.3, minHeight: 110 }} />;
+              if (!d) return <div key={di} style={{ background: "transparent", border: "1px dashed var(--border)", borderRadius: 14, opacity: 0.3, minHeight: 110 }} />;
               const ymd = toYMD(d);
               const entries = byDay.get(ymd) ?? [];
               const today = isToday(d);
@@ -232,7 +232,7 @@ function EarningsInner() {
                 <div key={di} style={{
                   background: "var(--bg-surface)",
                   border: today ? "1px solid var(--accent-gold)" : "1px solid var(--border)",
-                  borderRadius: 4,
+                  borderRadius: 14,
                   padding: "8px 9px",
                   minHeight: 110,
                 }}>
@@ -254,7 +254,7 @@ function EarningsInner() {
                       ))}
                       {hidden > 0 && (
                         <button onClick={() => setExpanded(prev => new Set(prev).add(ymd))} style={{
-                          background: "transparent", border: "1px solid var(--border-active)", borderRadius: 3,
+                          background: "transparent", border: "1px solid var(--border-active)", borderRadius: 20,
                           color: "var(--accent-gold)", fontSize: "0.65rem", padding: "0.15rem 0.4rem", cursor: "pointer",
                           fontFamily: "'Spline Sans Mono', monospace",
                         }}>
@@ -271,9 +271,9 @@ function EarningsInner() {
       </div>
 
       {/* Summary strip */}
-      <div style={{ marginTop: "0.5rem", padding: "0.65rem 1rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, fontSize: "0.8rem", color: "var(--text-secondary)", display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
+      <div style={{ marginTop: "0.5rem", padding: "0.65rem 1rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, fontSize: "0.8rem", color: "var(--text-secondary)", display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
         <span><strong style={{ color: "var(--text-primary)" }}>{totalCount}</strong> reports in {monthLabel}</span>
-        <span style={{ color: "#5B8DEF" }}>▲ {bmoCount} before open</span>
+        <span style={{ color: "#5BD1EF" }}>▲ {bmoCount} before open</span>
         <span style={{ color: "var(--negative)" }}>▼ {amcCount} after close</span>
         <span style={{ marginLeft: "auto", fontSize: "0.7rem", color: "var(--text-muted)" }}>
           Filtered: {filter === "popular" ? "S&P 500 + Nasdaq 100" : "All stocks"}

@@ -27,7 +27,7 @@ function fmtLarge(n: number | null | undefined) {
   return `$${n.toLocaleString()}`;
 }
 
-const COLORS = ["#3B82F6", "#D4B45E", "#22C55E", "#A78BFA"];
+const COLORS = ["#3B82F6", "#3DE68C", "#22C55E", "#A78BFA"];
 
 // â”€â”€ Metric config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type MetricDef = {
@@ -126,7 +126,7 @@ function buildPerfData(stocks: any[]) {
 // Score -> cell color: red (weak) -> gold (middling) -> green (strong)
 function scoreColor(score: number): { bg: string; fg: string } {
   if (score >= 70) return { bg: "rgba(46, 213, 115, 0.16)", fg: "#2ED573" };
-  if (score >= 40) return { bg: "rgba(212, 180, 94, 0.14)", fg: "#D4B45E" };
+  if (score >= 40) return { bg: "rgba(61, 230, 140, 0.14)", fg: "#3DE68C" };
   return { bg: "rgba(240, 86, 74, 0.13)", fg: "#F0564A" };
 }
 
@@ -157,7 +157,7 @@ function StrengthHeatmap({ stocks }: { stocks: any[] }) {
                 const c = scoreColor(sc);
                 return (
                   <td key={i} style={{ padding: "4px 8px", borderBottom: "1px solid var(--border)", textAlign: "center" }}>
-                    <div style={{ background: c.bg, color: c.fg, borderRadius: 3, padding: "5px 0", fontWeight: 600, minWidth: 64 }}>{sc}</div>
+                    <div style={{ background: c.bg, color: c.fg, borderRadius: 20, padding: "5px 0", fontWeight: 600, minWidth: 64 }}>{sc}</div>
                   </td>
                 );
               })}
@@ -169,7 +169,7 @@ function StrengthHeatmap({ stocks }: { stocks: any[] }) {
               const c = scoreColor(sc);
               return (
                 <td key={i} style={{ padding: "6px 8px", textAlign: "center" }}>
-                  <div style={{ background: c.bg, color: c.fg, border: `1px solid ${c.fg}55`, borderRadius: 3, padding: "6px 0", fontWeight: 700, minWidth: 64, fontSize: "0.9rem" }}>{sc}</div>
+                  <div style={{ background: c.bg, color: c.fg, border: `1px solid ${c.fg}55`, borderRadius: 20, padding: "6px 0", fontWeight: 700, minWidth: 64, fontSize: "0.9rem" }}>{sc}</div>
                 </td>
               );
             })}
@@ -187,19 +187,19 @@ function GroupedBars({ title, data, stocks, unit }: {
   title: string; data: Record<string, number | string | null>[]; stocks: any[]; unit: string;
 }) {
   return (
-    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "16px 14px", flex: 1, minWidth: 300 }}>
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "16px 14px", flex: 1, minWidth: 300 }}>
       <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 12 }}>
         {title}
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-          <XAxis dataKey="name" tick={{ fill: "#F1F5F9", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={(v) => `${v}${unit}`} tick={{ fill: "#A9B8D0", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={52} />
+          <XAxis dataKey="name" tick={{ fill: "#EAF6EE", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v) => `${v}${unit}`} tick={{ fill: "#9CC1AA", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={52} />
           <Tooltip
-            cursor={{ fill: "rgba(76, 97, 144, 0.18)" }}
-            labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
-            contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+            cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
+            labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }}
+            contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 }}
             formatter={(v: any) => [`${Number(v).toFixed(1)}${unit}`]}
           />
           {stocks.map((s, i) => (
@@ -223,7 +223,7 @@ function TickerInput({ value, onChange, placeholder, required }: {
       required={required}
       style={{
         width: 100,
-        background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 4,
+        background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 14,
         padding: "9px 12px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono',monospace",
         fontSize: "0.82rem", outline: "none", textTransform: "uppercase",
       }}
@@ -237,13 +237,13 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
     <div style={{
       flex: 1, minWidth: 180,
       background: "var(--bg-surface)", border: "1px solid var(--border)",
-      borderTop: `3px solid ${color}`, borderRadius: 4, padding: "14px 16px",
+      borderTop: `3px solid ${color}`, borderRadius: 14, padding: "14px 16px",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <span style={{
           fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.72rem", fontWeight: 700,
           background: `${color}22`, color, border: `1px solid ${color}55`,
-          borderRadius: 3, padding: "2px 7px",
+          borderRadius: 20, padding: "2px 7px",
         }}>{stock.ticker}</span>
         {stock.sector && (
           <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stock.sector}</span>
@@ -268,7 +268,7 @@ function EmptyHint({ title, desc }: { title: string; desc: string }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
       <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
-      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 4, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
+      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
         <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
       </div>
     </div>
@@ -395,7 +395,7 @@ function CompareInner() {
         <button
           type="submit"
           style={{
-            background: "var(--accent-gold)", color: "#131C2E", border: "none", borderRadius: 4,
+            background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 14,
             padding: "9px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
@@ -425,19 +425,19 @@ function CompareInner() {
 
           {/* 1Y performance race */}
           {perfData.length > 10 && (
-            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px", marginBottom: "2rem" }}>
+            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 16px", marginBottom: "2rem" }}>
               <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
                 1-Year Performance — % Return
               </div>
               <ResponsiveContainer width="100%" height={340}>
                 <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="date" tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="date" tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
-                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#A9B8D0", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
+                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
                   <Tooltip
-                    labelStyle={{ color: "#F1F5F9" }} itemStyle={{ color: "#F1F5F9" }}
-                    contentStyle={{ background: "#283552", border: "1px solid #4C6190", borderRadius: 4, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                    labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }}
+                    contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                     formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
                   />
                   <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
@@ -452,7 +452,7 @@ function CompareInner() {
           {/* Category scorecard */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: "2rem" }}>
             {scorecard.map(card => (
-              <div key={card.title} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--border)"}`, borderRadius: 4, padding: "14px 16px" }}>
+              <div key={card.title} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--border)"}`, borderRadius: 14, padding: "14px 16px" }}>
                 <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 8 }}>
                   {card.title} Winner
                 </div>
@@ -469,7 +469,7 @@ function CompareInner() {
           </div>
 
           {/* Metrics table */}
-          <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 4, marginBottom: "2rem" }}>
+          <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14, marginBottom: "2rem" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.80rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
@@ -525,7 +525,7 @@ function CompareInner() {
           </div>
 
           {/* Strength heatmap */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "20px 16px" }}>
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 16px" }}>
             <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
               Strength Heatmap — 0-100 vs Fixed Benchmarks
             </div>

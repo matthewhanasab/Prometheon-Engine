@@ -32,7 +32,7 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
         theme:               "dark",
         style:               "1",
         locale:              "en",
-        toolbar_bg:          "#1C2740",
+        toolbar_bg:          "#0E1912",
         enable_publishing:   false,
         hide_side_toolbar:   false,
         allow_symbol_change: false,
@@ -40,10 +40,10 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
         container_id:        id,
         studies:             [],
         overrides: {
-          "paneProperties.background":                        "#131C2E",
+          "paneProperties.background":                        "#04110A",
           "paneProperties.backgroundType":                    "solid",
-          "paneProperties.vertGridProperties.color":          "#35456A",
-          "paneProperties.horzGridProperties.color":          "#35456A",
+          "paneProperties.vertGridProperties.color":          "#16241B",
+          "paneProperties.horzGridProperties.color":          "#16241B",
           "mainSeriesProperties.candleStyle.upColor":         "#22C55E",
           "mainSeriesProperties.candleStyle.downColor":       "#EF4444",
           "mainSeriesProperties.candleStyle.borderUpColor":   "#22C55E",
@@ -74,7 +74,7 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
   return (
     <div style={{
       border:       "1px solid var(--border)",
-      borderRadius: 4,
+      borderRadius: 14,
       overflow:     "hidden",
       height,
     }}>

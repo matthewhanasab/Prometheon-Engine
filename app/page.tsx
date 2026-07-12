@@ -9,8 +9,8 @@ import { useRouter } from "next/navigation";
 function LaunchButton({ children, onLaunch }: { children: React.ReactNode; onLaunch: () => void }) {
   return (
     <button onClick={onLaunch} style={{
-      background: "var(--accent-gold)", color: "#131C2E", border: "none", cursor: "pointer",
-      padding: "14px 34px", borderRadius: 4, fontSize: "0.78rem", fontWeight: 700,
+      background: "var(--accent-gold)", color: "#04110A", border: "none", cursor: "pointer",
+      padding: "14px 34px", borderRadius: 14, fontSize: "0.78rem", fontWeight: 700,
       textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Public Sans', sans-serif",
     }}>
       {children}
@@ -66,7 +66,7 @@ function Constellation() {
           const d = Math.sqrt(dx * dx + dy * dy);
           if (d < 130) {
             const a = (1 - d / 130) * 0.28;
-            ctx.strokeStyle = `rgba(212, 180, 94, ${a})`;
+            ctx.strokeStyle = `rgba(61, 230, 140, ${a})`;
             ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.moveTo(pts[i].x * w, pts[i].y * h);
@@ -78,7 +78,7 @@ function Constellation() {
 
       // dots
       for (const p of pts) {
-        ctx.fillStyle = "rgba(212, 180, 94, 0.55)";
+        ctx.fillStyle = "rgba(61, 230, 140, 0.55)";
         ctx.beginPath();
         ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2);
         ctx.fill();
@@ -144,9 +144,9 @@ function TickerTape() {
 function LivePreview({ href }: { href: string }) {
   return (
     <div style={{
-      position: "relative", height: 280, overflow: "hidden", borderRadius: 6,
-      border: "1px solid rgba(212,180,94,0.45)", background: "var(--bg-primary)",
-      boxShadow: "0 0 24px rgba(212,180,94,0.08)",
+      position: "relative", height: 280, overflow: "hidden", borderRadius: 16,
+      border: "1px solid rgba(61,230,140,0.45)", background: "var(--bg-primary)",
+      boxShadow: "0 0 24px rgba(61,230,140,0.08)",
     }}>
       <iframe
         src={href}
@@ -240,7 +240,7 @@ export default function LandingPage() {
         {/* Stat chips */}
         <div className="fade-up fade-d4" style={{ position: "relative", display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: "3rem" }}>
           {[["10", "Research Tools"], ["40+", "Metrics per Stock"], ["Live", "Market Data"]].map(([num, label]) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 4, padding: "8px 18px" }}>
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 14, padding: "8px 18px" }}>
               <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontWeight: 700, color: "var(--accent-gold)", fontSize: "0.95rem" }}>{num}</span>
               <span style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", fontWeight: 600 }}>{label}</span>
             </div>
@@ -257,14 +257,14 @@ export default function LandingPage() {
 
           {/* Gold header card */}
           <div style={{
-            background: "linear-gradient(120deg, #E8CB7A 0%, var(--accent-gold) 55%, #A8842E 100%)",
-            borderRadius: 6, padding: "2.6rem 2.4rem", display: "flex",
+            background: "linear-gradient(120deg, #8CF5BE 0%, var(--accent-gold) 55%, #17A45C 100%)",
+            borderRadius: 16, padding: "2.6rem 2.4rem", display: "flex",
             flexDirection: "column", justifyContent: "center", alignItems: "flex-start", gap: 20,
           }}>
-            <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "#131C2E", margin: 0, letterSpacing: "-0.02em" }}>
+            <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "#04110A", margin: 0, letterSpacing: "-0.02em" }}>
               How it works
             </h2>
-            <p style={{ color: "#2A3550", fontSize: "0.88rem", lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
+            <p style={{ color: "#0A3B22", fontSize: "0.88rem", lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
               These aren&apos;t mockups — every panel below is the live application, rendered in
               miniature. Click any card to open the real thing.
             </p>
@@ -276,7 +276,7 @@ export default function LandingPage() {
           {/* Live preview cards */}
           {SHOWCASE.map((s) => (
             <Link key={s.href} href={s.href} className="feature-card" style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6,
+              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 16,
               padding: "1.4rem", textDecoration: "none", display: "flex", flexDirection: "column", gap: 14,
             }}>
               <div>
@@ -303,7 +303,7 @@ export default function LandingPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
           {FEATURES.map((f) => (
             <Link key={f.href} href={f.href} className="feature-card" style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 4,
+              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14,
               padding: "20px 20px 18px", textDecoration: "none", display: "block",
             }}>
               <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.98rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
