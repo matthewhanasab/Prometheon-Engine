@@ -10,7 +10,7 @@ function LaunchButton({ children, onLaunch }: { children: React.ReactNode; onLau
   return (
     <button onClick={onLaunch} style={{
       background: "var(--accent-gold)", color: "#04110A", border: "none", cursor: "pointer",
-      padding: "14px 34px", borderRadius: 14, fontSize: "0.78rem", fontWeight: 700,
+      padding: "14px 34px", borderRadius: 22, fontSize: "0.78rem", fontWeight: 700,
       textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Public Sans', sans-serif",
     }}>
       {children}
@@ -144,7 +144,7 @@ function TickerTape() {
 function LivePreview({ href }: { href: string }) {
   return (
     <div style={{
-      position: "relative", height: 280, overflow: "hidden", borderRadius: 16,
+      position: "relative", height: 280, overflow: "hidden", borderRadius: 22,
       border: "1px solid rgba(61,230,140,0.45)", background: "var(--bg-primary)",
       boxShadow: "0 0 24px rgba(61,230,140,0.08)",
     }}>
@@ -240,7 +240,7 @@ export default function LandingPage() {
         {/* Stat chips */}
         <div className="fade-up fade-d4" style={{ position: "relative", display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: "3rem" }}>
           {[["10", "Research Tools"], ["40+", "Metrics per Stock"], ["Live", "Market Data"]].map(([num, label]) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 14, padding: "8px 18px" }}>
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, padding: "8px 18px" }}>
               <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontWeight: 700, color: "var(--accent-gold)", fontSize: "0.95rem" }}>{num}</span>
               <span style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", fontWeight: 600 }}>{label}</span>
             </div>
@@ -258,7 +258,7 @@ export default function LandingPage() {
           {/* Gold header card */}
           <div style={{
             background: "linear-gradient(120deg, #8CF5BE 0%, var(--accent-gold) 55%, #17A45C 100%)",
-            borderRadius: 16, padding: "2.6rem 2.4rem", display: "flex",
+            borderRadius: 22, padding: "2.6rem 2.4rem", display: "flex",
             flexDirection: "column", justifyContent: "center", alignItems: "flex-start", gap: 20,
           }}>
             <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "#04110A", margin: 0, letterSpacing: "-0.02em" }}>
@@ -276,7 +276,7 @@ export default function LandingPage() {
           {/* Live preview cards */}
           {SHOWCASE.map((s) => (
             <Link key={s.href} href={s.href} className="feature-card" style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 16,
+              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
               padding: "1.4rem", textDecoration: "none", display: "flex", flexDirection: "column", gap: 14,
             }}>
               <div>
@@ -303,7 +303,7 @@ export default function LandingPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
           {FEATURES.map((f) => (
             <Link key={f.href} href={f.href} className="feature-card" style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14,
+              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
               padding: "20px 20px 18px", textDecoration: "none", display: "block",
             }}>
               <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.98rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>

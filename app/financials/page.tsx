@@ -112,7 +112,7 @@ function FinancialsTable({ rows, data, isQuarterly }: {
   const periods = data.map(d => periodLabel(d, isQuarterly));
 
   return (
-    <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14 }}>
+    <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 22 }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
         <thead>
           <tr style={{ background: "var(--bg-primary)" }}>
@@ -274,13 +274,13 @@ function FinancialsInner() {
           required
           style={{
             width: 160, background: "var(--bg-elevated)", border: "1px solid var(--border)",
-            borderRadius: 14, padding: "9px 14px", color: "var(--text-primary)",
+            borderRadius: 22, padding: "9px 14px", color: "var(--text-primary)",
             fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.85rem", outline: "none",
           }}
         />
 
         {/* Period toggle */}
-        <div style={{ display: "flex", gap: 0, border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+        <div style={{ display: "flex", gap: 0, border: "1px solid var(--border)", borderRadius: 22, overflow: "hidden" }}>
           {(["annual", "quarterly"] as const).map(p => (
             <label key={p} style={{
               padding: "9px 16px", cursor: "pointer",
@@ -298,7 +298,7 @@ function FinancialsInner() {
         <button
           type="submit"
           style={{
-            background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 14,
+            background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
             padding: "9px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
@@ -326,7 +326,7 @@ function FinancialsInner() {
             <span style={{
               fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.68rem", fontWeight: 600,
               background: "rgba(61,230,140,0.15)", color: "var(--accent-gold)",
-              border: "1px solid rgba(61,230,140,0.3)", borderRadius: 20, padding: "2px 8px",
+              border: "1px solid rgba(61,230,140,0.3)", borderRadius: 24, padding: "2px 8px",
             }}>
               {period === "annual" ? "Annual · 5 years" : "Quarterly · 8 quarters"}
             </span>

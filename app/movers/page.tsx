@@ -42,7 +42,7 @@ function MoverTable({ title, rows }: { title: string; rows: Mover[] }) {
         textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)",
         borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.75rem",
       }}>{title}</div>
-      <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14 }}>
+      <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 22 }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.74rem" }}>
           <thead>
             <tr style={{ background: "var(--bg-primary)" }}>
@@ -125,7 +125,7 @@ export default function MoversPage() {
                   <div key={s.sector} style={{
                     background: sectorTint(s.averageChange),
                     border: "1px solid var(--border)",
-                    borderRadius: 14,
+                    borderRadius: 22,
                     padding: "12px 14px",
                   }}>
                     <div style={{ fontSize: "0.62rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-secondary)", marginBottom: 6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

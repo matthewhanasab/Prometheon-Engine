@@ -74,7 +74,7 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
   return (
     <div style={{
       border:       "1px solid var(--border)",
-      borderRadius: 14,
+      borderRadius: 22,
       overflow:     "hidden",
       height,
     }}>

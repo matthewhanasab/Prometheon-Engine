@@ -40,7 +40,7 @@ function formBadge(form: string) {
       fontWeight: 700,
       fontSize: "0.72rem",
       padding: "0.18rem 0.55rem",
-      borderRadius: 14,
+      borderRadius: 22,
       fontFamily: "'Spline Sans Mono', monospace",
       letterSpacing: "0.04em",
       whiteSpace: "nowrap",
@@ -87,7 +87,7 @@ function EmptyHint({ title, desc }: { title: string; desc: string }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
       <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
-      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
+      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 22, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
         <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
       </div>
     </div>
@@ -157,7 +157,7 @@ function SecInner() {
             padding: "0.5rem 0.75rem",
             background: "var(--bg-elevated)",
             border: "1px solid var(--border)",
-            borderRadius: 16,
+            borderRadius: 22,
             color: "var(--text-primary)",
             fontSize: "0.875rem",
             fontFamily: "'Spline Sans Mono', monospace",
@@ -172,7 +172,7 @@ function SecInner() {
             padding: "10px 22px",
             background: "var(--accent-gold)",
             border: "none",
-            borderRadius: 14,
+            borderRadius: 22,
             color: "#04110A",
             fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.72rem",
@@ -210,7 +210,7 @@ function SecInner() {
       {!loading && activeTicker && (
         <>
           {/* Recent Filings */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden", marginBottom: "1.75rem" }}>
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 24, overflow: "hidden", marginBottom: "1.75rem" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Recent Filings</h2>
@@ -264,7 +264,7 @@ function SecInner() {
           </div>
 
           {/* Insider Transactions */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 24, overflow: "hidden" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Insider Transactions</h2>
@@ -301,7 +301,7 @@ function SecInner() {
                               fontWeight: 700,
                               fontSize: "0.7rem",
                               padding: "0.15rem 0.5rem",
-                              borderRadius: 14,
+                              borderRadius: 22,
                               letterSpacing: "0.05em",
                             }}>
                               {ins.type}
@@ -331,7 +331,7 @@ function SecInner() {
                     <button
                       onClick={() => setInsiderPage(p => Math.max(0, p - 1))}
                       disabled={insiderPage === 0}
-                      style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, color: "var(--text-primary)", cursor: insiderPage === 0 ? "not-allowed" : "pointer", opacity: insiderPage === 0 ? 0.4 : 1, fontSize: "0.8rem" }}
+                      style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, color: "var(--text-primary)", cursor: insiderPage === 0 ? "not-allowed" : "pointer", opacity: insiderPage === 0 ? 0.4 : 1, fontSize: "0.8rem" }}
                     >
                       ← Prev
                     </button>
@@ -341,7 +341,7 @@ function SecInner() {
                     <button
                       onClick={() => setInsiderPage(p => Math.min(totalInsiderPages - 1, p + 1))}
                       disabled={insiderPage === totalInsiderPages - 1}
-                      style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, color: "var(--text-primary)", cursor: insiderPage === totalInsiderPages - 1 ? "not-allowed" : "pointer", opacity: insiderPage === totalInsiderPages - 1 ? 0.4 : 1, fontSize: "0.8rem" }}
+                      style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, color: "var(--text-primary)", cursor: insiderPage === totalInsiderPages - 1 ? "not-allowed" : "pointer", opacity: insiderPage === totalInsiderPages - 1 ? 0.4 : 1, fontSize: "0.8rem" }}
                     >
                       Next →
                     </button>

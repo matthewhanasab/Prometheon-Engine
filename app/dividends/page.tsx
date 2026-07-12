@@ -47,7 +47,7 @@ function MCard({ label, value, sub, tone = "default" }: {
   const top = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "neutral" ? "var(--accent-gold)" : "var(--border)";
   const subColor = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "neutral" ? "var(--accent-gold)" : "var(--text-secondary)";
   return (
-    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${top}`, borderRadius: 14, padding: "16px 14px 12px" }}>
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${top}`, borderRadius: 22, padding: "16px 14px 12px" }}>
       <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 8 }}>{label}</div>
       <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.25rem", fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.2 }}>{value}</div>
       {sub && <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.65rem", color: subColor, marginTop: 6 }}>{sub}</div>}
@@ -58,7 +58,7 @@ function MCard({ label, value, sub, tone = "default" }: {
 function EmptyHint({ title, sub }: { title: string; sub: string }) {
   return (
     <div style={{
-      border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)",
+      border: "1px dashed var(--border-active)", borderRadius: 22, background: "var(--bg-surface)",
       padding: "28px 20px", textAlign: "center",
     }}>
       <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.95rem", color: "var(--text-secondary)", marginBottom: 6 }}>{title}</div>
@@ -71,7 +71,7 @@ const navBtn: React.CSSProperties = {
   padding: "0.4rem 0.8rem",
   background: "var(--bg-elevated)",
   border: "1px solid var(--border)",
-  borderRadius: 14,
+  borderRadius: 22,
   color: "var(--text-primary)",
   cursor: "pointer",
   fontSize: "0.82rem",
@@ -212,7 +212,7 @@ function DividendsInner() {
       </div>
 
       {/* Mode toggle */}
-      <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", width: "fit-content", marginBottom: "1.5rem" }}>
+      <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 22, overflow: "hidden", width: "fit-content", marginBottom: "1.5rem" }}>
         {([["lookup", "Stock Lookup"], ["calendar", "Ex-Dividend Calendar"]] as const).map(([k, label]) => (
           <button key={k} onClick={() => setMode(k)} style={{
             padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 600,
@@ -232,12 +232,12 @@ function DividendsInner() {
             style={{ display: "flex", gap: 10, marginBottom: "2rem", maxWidth: 380 }}>
             <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
               style={{
-                flex: 1, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 14,
+                flex: 1, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22,
                 padding: "10px 14px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace",
                 fontSize: "0.85rem", outline: "none",
               }} />
             <button type="submit" style={{
-              background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 14,
+              background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
               padding: "10px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Analyze</button>
@@ -257,7 +257,7 @@ function DividendsInner() {
 
           {!loading && ran && history.length === 0 && !error && (
             <div style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14,
+              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
               padding: "48px", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.85rem",
             }}>
               No dividend history found for {searched}. It may not pay a dividend.
@@ -286,7 +286,7 @@ function DividendsInner() {
               {annual.length > 0 && (
                 <>
                   <SectionLabel>Dividend Per Share by Year — {searched}</SectionLabel>
-                  <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "12px 8px 4px" }}>
+                  <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "12px 8px 4px" }}>
                     <ResponsiveContainer width="100%" height={240}>
                       <BarChart data={annual} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                         <XAxis dataKey="year" tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
@@ -296,7 +296,7 @@ function DividendsInner() {
                           itemStyle={{ color: "#EAF6EE" }}
                           cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
                           formatter={(v: any) => [`$${Number(v).toFixed(4)}`, "Dividend/share"]}
-                          contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                          contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                         />
                         <Bar dataKey="total" fill="#3DE68C" radius={[2, 2, 0, 0]} />
                       </BarChart>
@@ -310,7 +310,7 @@ function DividendsInner() {
 
               {/* Last 12 payments */}
               <SectionLabel>Last 12 Payments</SectionLabel>
-              <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14 }}>
+              <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 22 }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
                   <thead>
                     <tr style={{ background: "var(--bg-primary)" }}>
@@ -364,7 +364,7 @@ function DividendsInner() {
 
           {!calLoading && calRows.length === 0 && (
             <div style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14,
+              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
               padding: "48px", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.85rem",
             }}>
               No ex-dividend dates found for this month.
@@ -373,7 +373,7 @@ function DividendsInner() {
 
           {!calLoading && calRows.length > 0 && (
             <>
-              <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14 }}>
+              <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 22 }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
                   <thead>
                     <tr style={{ background: "var(--bg-primary)" }}>

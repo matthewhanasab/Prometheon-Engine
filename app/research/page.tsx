@@ -113,7 +113,7 @@ function MCard({ label, value, sub, tone = "default" }: {
   const top = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "neutral" ? "var(--accent-gold)" : "var(--border)";
   const subColor = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "neutral" ? "var(--accent-gold)" : "var(--text-secondary)";
   return (
-    <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderTop:`2px solid ${top}`, borderRadius:14, padding:"16px 14px 12px" }}>
+    <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderTop:`2px solid ${top}`, borderRadius:22, padding:"16px 14px 12px" }}>
       <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.58rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-secondary)", marginBottom:8 }}>{label}</div>
       <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.25rem", fontWeight:600, color:"var(--text-primary)", lineHeight:1.2 }}>{value}</div>
       {sub && <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.65rem", color: subColor, marginTop:6 }}>{sub}</div>}
@@ -143,7 +143,7 @@ function EmptyPreview() {
         <div style={{ fontFamily:"'Space Grotesk', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-muted)", marginBottom:10 }}>Company Name</div>
         <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12 }}>
           {["Ticker","Exchange","Sector","Industry"].map(v => (
-            <span key={v} style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-muted)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:8, padding:"2px 8px" }}>{v}</span>
+            <span key={v} style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-muted)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:999, padding:"2px 8px" }}>{v}</span>
           ))}
         </div>
         <span style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"2.4rem", fontWeight:600, color:"var(--text-muted)", letterSpacing:"-0.02em" }}>$—.——</span>
@@ -158,7 +158,7 @@ function EmptyPreview() {
       </Grid>
 
       <SectionLabel>Price Chart</SectionLabel>
-      <div style={{ height: 500, border: "1px dashed var(--border-active)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, background: "var(--bg-surface)" }}>
+      <div style={{ height: 500, border: "1px dashed var(--border-active)", borderRadius: 22, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, background: "var(--bg-surface)" }}>
         <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1rem", color: "var(--text-secondary)" }}>Interactive price chart</div>
         <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Candles · volume · drawing tools · indicators</div>
       </div>
@@ -315,8 +315,8 @@ function ResearchInner() {
       {/* Search */}
       <form onSubmit={e => { e.preventDefault(); load(input); }} style={{ display:"flex", gap:10, marginBottom:"2rem", maxWidth:380 }}>
         <input value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
-          style={{ flex:1, background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:14, padding:"10px 14px", color:"var(--text-primary)", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.85rem", outline:"none" }} />
-        <button type="submit" style={{ background:"var(--accent-gold)", color:"#04110A", border:"none", borderRadius:14, padding:"10px 22px", fontFamily:"'Public Sans', sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
+          style={{ flex:1, background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:22, padding:"10px 14px", color:"var(--text-primary)", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.85rem", outline:"none" }} />
+        <button type="submit" style={{ background:"var(--accent-gold)", color:"#04110A", border:"none", borderRadius:22, padding:"10px 22px", fontFamily:"'Public Sans', sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
       </form>
 
       {loading && <div style={{ color:"var(--text-secondary)", fontSize:"0.85rem", padding:"40px 0" }}>Loading {input}…</div>}
@@ -331,7 +331,7 @@ function ResearchInner() {
             <div style={{ fontFamily:"'Space Grotesk', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-primary)", marginBottom:10 }}>{s.name}</div>
             <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12 }}>
               {[s.ticker, s.exchange, s.sector, s.industry].filter(Boolean).map((v: string) => (
-                <span key={v} style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-secondary)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:8, padding:"2px 8px" }}>{v}</span>
+                <span key={v} style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-secondary)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:999, padding:"2px 8px" }}>{v}</span>
               ))}
             </div>
             {peers.length > 0 && (
@@ -341,7 +341,7 @@ function ResearchInner() {
                   <Link key={p.symbol} href={`/research?ticker=${p.symbol}`} style={{
                     fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.68rem", fontWeight:600,
                     color:"var(--text-primary)", background:"var(--bg-elevated)",
-                    border:"1px solid var(--border)", borderRadius:10, padding:"3px 9px",
+                    border:"1px solid var(--border)", borderRadius:999, padding:"3px 9px",
                     textDecoration:"none", whiteSpace:"nowrap",
                   }}>
                     <span style={{ color:"var(--accent-gold)" }}>{p.symbol}</span>
@@ -351,7 +351,7 @@ function ResearchInner() {
                 <Link href={`/compare?t=${[s.ticker, ...peers.slice(0, 3).map((p: any) => p.symbol)].join(",")}`} style={{
                   fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", fontWeight:600,
                   color:"var(--accent-gold)", background:"transparent",
-                  border:"1px solid var(--accent-gold)", borderRadius:10, padding:"3px 9px",
+                  border:"1px solid var(--accent-gold)", borderRadius:999, padding:"3px 9px",
                   textDecoration:"none", whiteSpace:"nowrap",
                 }}>
                   Compare all →
@@ -486,7 +486,7 @@ function ResearchInner() {
                         sub={alpha == null ? undefined : alpha > 0.01 ? "Outperforming risk-adjusted" : alpha < -0.01 ? "Underperforming" : "Matched expectation"}
                         tone={alpha == null ? "default" : alpha > 0.01 ? "good" : alpha < -0.01 ? "bad" : "neutral"} />
                     </div>
-                    <div style={{ flex:1, minWidth:280, background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"12px 8px 4px" }}>
+                    <div style={{ flex:1, minWidth:280, background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"12px 8px 4px" }}>
                       <ResponsiveContainer width="100%" height={140}>
                         <BarChart data={[
                           { name:"Risk-Free",    val: rf * 100 },
@@ -495,7 +495,7 @@ function ResearchInner() {
                         ]} margin={{ top:8, right:8, left:0, bottom:0 }}>
                           <XAxis dataKey="name" tick={{ fill:"#9CC1AA", fontSize:10, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
                           <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"#EAF6EE", fontSize:10, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={48} />
-                          <Tooltip labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }} cursor={{ fill: "rgba(61, 230, 140, 0.10)" }} formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"rgba(16, 36, 26, 0.95)", border:"1px solid rgba(61, 230, 140, 0.35)", borderRadius:14, fontFamily:"Spline Sans Mono", fontSize:12, color:"#EAF6EE" }} />
+                          <Tooltip labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }} cursor={{ fill: "rgba(61, 230, 140, 0.10)" }} formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"rgba(16, 36, 26, 0.95)", border:"1px solid rgba(61, 230, 140, 0.35)", borderRadius:22, fontFamily:"Spline Sans Mono", fontSize:12, color:"#EAF6EE" }} />
                           <Bar dataKey="val" radius={[2,2,0,0]}>
                             <Cell fill="rgba(61, 230, 140, 0.35)" />
                             <Cell fill="#3DE68C" />
@@ -505,7 +505,7 @@ function ResearchInner() {
                       </ResponsiveContainer>
                     </div>
                   </div>
-                  <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.72rem", color:"var(--text-secondary)", background:"#0d1425", border:"1px solid var(--border)", borderRadius:14, padding:"10px 14px", marginTop:10 }}>
+                  <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.72rem", color:"var(--text-secondary)", background:"#0d1425", border:"1px solid var(--border)", borderRadius:22, padding:"10px 14px", marginTop:10 }}>
                     E(R) = Rf + β × (Rm − Rf) = {(rf*100).toFixed(2)}% + {fmt(beta)} × (10% − {(rf*100).toFixed(2)}%) ={" "}
                     <span style={{ color:"var(--accent-gold)", fontWeight:600 }}>{(capmRet*100).toFixed(2)}%</span>
                     &nbsp;&nbsp;|&nbsp;&nbsp;1Y Actual:{" "}
@@ -522,12 +522,12 @@ function ResearchInner() {
           {earnings.length > 0 && (
             <>
               <SectionLabel>Earnings History</SectionLabel>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"12px 8px 4px", marginBottom:12 }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"12px 8px 4px", marginBottom:12 }}>
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={earnings.filter((e: any) => e.surprise != null).map((e: any) => ({ name: (e.date ?? "").slice(0,10), val: Math.max(-100, Math.min(100, e.surprise)), actual: e.surprise }))} margin={{ top:4, right:8, left:0, bottom:0 }}>
                     <XAxis dataKey="name" tick={{ fill:"#EAF6EE", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#EAF6EE", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={40} />
-                    <Tooltip labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }} cursor={{ fill: "rgba(61, 230, 140, 0.10)" }} formatter={(v: any, _n: any, item: any) => [`${(item?.payload?.actual ?? v).toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"rgba(16, 36, 26, 0.95)", border:"1px solid rgba(61, 230, 140, 0.35)", borderRadius:14, fontFamily:"Spline Sans Mono", fontSize:11, color:"#EAF6EE" }} />
+                    <Tooltip labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }} cursor={{ fill: "rgba(61, 230, 140, 0.10)" }} formatter={(v: any, _n: any, item: any) => [`${(item?.payload?.actual ?? v).toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"rgba(16, 36, 26, 0.95)", border:"1px solid rgba(61, 230, 140, 0.35)", borderRadius:22, fontFamily:"Spline Sans Mono", fontSize:11, color:"#EAF6EE" }} />
                     <Bar dataKey="val" radius={[2,2,0,0]}>
                       {earnings.filter((e: any) => e.surprise != null).map((e: any, i: number) => (
                         <Cell key={i} fill={e.surprise >= 0 ? "#059669" : "#dc2626"} />
@@ -712,7 +712,7 @@ type CellVal = string | number | { value: string; color?: string; bold?: boolean
 
 function Table({ headers, rows }: { headers: string[]; rows: CellVal[][] }) {
   return (
-    <div style={{ overflowX:"auto", border:"1px solid var(--border)", borderRadius:14 }}>
+    <div style={{ overflowX:"auto", border:"1px solid var(--border)", borderRadius:22 }}>
       <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.78rem" }}>
         <thead>
           <tr style={{ background:"var(--bg-primary)" }}>
@@ -733,7 +733,7 @@ function Table({ headers, rows }: { headers: string[]; rows: CellVal[][] }) {
                 return (
                   <td key={ci} style={{ textAlign: ci === 0 ? "left" : "right", padding:"8px 14px", borderBottom:"1px solid var(--border)", color: ci === 0 ? "var(--text-primary)" : "var(--text-secondary)", whiteSpace:"nowrap" }}>
                     {badge ? (
-                      <span style={{ background: color === "var(--positive)" ? "rgba(34,197,94,0.12)" : color === "var(--negative)" ? "rgba(239,68,68,0.12)" : "rgba(148,163,184,0.1)", color, padding:"2px 8px", borderRadius:10, fontSize:"0.70rem", fontWeight:600 }}>{val}</span>
+                      <span style={{ background: color === "var(--positive)" ? "rgba(34,197,94,0.12)" : color === "var(--negative)" ? "rgba(239,68,68,0.12)" : "rgba(148,163,184,0.1)", color, padding:"2px 8px", borderRadius:999, fontSize:"0.70rem", fontWeight:600 }}>{val}</span>
                     ) : (
                       <span style={{ color, fontWeight: bold ? 600 : undefined }}>{val}</span>
                     )}

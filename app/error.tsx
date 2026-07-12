@@ -15,7 +15,7 @@ export default function Error({ reset }: { error: Error & { digest?: string }; r
         Usually a temporary data hiccup. Try again — if it keeps happening, the market data source may be having issues.
       </div>
       <button onClick={reset} style={{
-        background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 14,
+        background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
         padding: "10px 26px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
         letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
       }}>

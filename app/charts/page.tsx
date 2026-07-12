@@ -64,7 +64,7 @@ const TOOLTIP_STYLE = {
   contentStyle: {
     background: "rgba(16, 36, 26, 0.95)",
     border: "1px solid rgba(61, 230, 140, 0.35)",
-    borderRadius: 14,
+    borderRadius: 22,
     fontFamily: "Spline Sans Mono, monospace",
     fontSize: 15,
     color: "#EAF6EE",
@@ -74,7 +74,7 @@ const TOOLTIP_STYLE = {
 const CARD_STYLE: React.CSSProperties = {
   background: "var(--bg-surface)",
   border: "1px solid var(--border)",
-  borderRadius: 14,
+  borderRadius: 22,
   padding: "12px 8px 4px",
 };
 
@@ -106,7 +106,7 @@ function TtmToggle({ isTtm, onChange }: { isTtm: boolean; onChange: (v: boolean)
               background: active ? "var(--accent-gold)" : "var(--bg-elevated)",
               color: active ? "#04110A" : "var(--text-secondary)",
               border: "1px solid var(--border)",
-              borderRadius: 20,
+              borderRadius: 24,
               padding: "3px 10px",
               fontSize: "0.68rem",
               fontFamily: "'Public Sans', sans-serif",
@@ -215,7 +215,7 @@ function ChartsEmpty() {
         <div key={title}>
           <div style={SECTION_LABEL_STYLE}>{title}</div>
           <div style={{
-            border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)",
+            border: "1px dashed var(--border-active)", borderRadius: 22, background: "var(--bg-surface)",
             padding: "34px 20px", textAlign: "center", marginBottom: 4,
           }}>
             <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
@@ -453,7 +453,7 @@ function ChartsInner() {
             padding: "0.5rem 0.75rem",
             background: "var(--bg-elevated)",
             border: "1px solid var(--border)",
-            borderRadius: 16,
+            borderRadius: 22,
             color: "var(--text-primary)",
             fontSize: "0.875rem",
             fontFamily: "'Spline Sans Mono', monospace",
@@ -468,7 +468,7 @@ function ChartsInner() {
             padding: "10px 22px",
             background: "var(--accent-gold)",
             border: "none",
-            borderRadius: 14,
+            borderRadius: 22,
             color: "#04110A",
             fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.72rem",
@@ -520,7 +520,7 @@ function ChartsInner() {
               style={{
                 background: "rgba(61,230,140,0.12)",
                 border: "1px solid rgba(61,230,140,0.3)",
-                borderRadius: 20,
+                borderRadius: 24,
                 padding: "2px 8px",
                 fontSize: "0.7rem",
                 color: "var(--accent-gold)",
@@ -535,7 +535,7 @@ function ChartsInner() {
               style={{
                 background: "rgba(100,116,139,0.12)",
                 border: "1px solid var(--border)",
-                borderRadius: 20,
+                borderRadius: 24,
                 padding: "2px 8px",
                 fontSize: "0.7rem",
                 color: "var(--text-secondary)",

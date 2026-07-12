@@ -19,7 +19,7 @@ export default function MetricCard({ label, value, sub, tone = "default" }: Metr
       background: "var(--bg-surface)",
       border: "1px solid var(--border)",
       borderTop: `2px solid ${colors.top}`,
-      borderRadius: 14,
+      borderRadius: 22,
       padding: "18px 16px 14px",
     }}>
       <div style={{

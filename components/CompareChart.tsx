@@ -47,7 +47,7 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
   }, [tickers.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", height }}>
+    <div style={{ border: "1px solid var(--border)", borderRadius: 22, overflow: "hidden", height }}>
       <div ref={containerRef} className="tradingview-widget-container" style={{ height: "100%", width: "100%" }} />
     </div>
   );

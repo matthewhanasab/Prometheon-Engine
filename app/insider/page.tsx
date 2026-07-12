@@ -74,7 +74,7 @@ function ToggleGroup<T extends string>({ options, value, onChange }: {
   options: { key: T; label: string }[]; value: T; onChange: (v: T) => void;
 }) {
   return (
-    <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", width: "fit-content" }}>
+    <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 22, overflow: "hidden", width: "fit-content" }}>
       {options.map((o) => (
         <button key={o.key} onClick={() => onChange(o.key)} style={{
           padding: "0.4rem 0.9rem",
@@ -97,7 +97,7 @@ function ToggleGroup<T extends string>({ options, value, onChange }: {
 function EmptyHint({ title, sub }: { title: string; sub: string }) {
   return (
     <div style={{
-      border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)",
+      border: "1px dashed var(--border-active)", borderRadius: 22, background: "var(--bg-surface)",
       padding: "28px 20px", textAlign: "center",
     }}>
       <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.95rem", color: "var(--text-secondary)", marginBottom: 6 }}>{title}</div>
@@ -207,12 +207,12 @@ function InsiderInner() {
             style={{ display: "flex", gap: 8 }}>
             <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
               style={{
-                width: 130, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 14,
+                width: 130, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22,
                 padding: "8px 12px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace",
                 fontSize: "0.8rem", outline: "none",
               }} />
             <button type="submit" style={{
-              background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 14,
+              background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
               padding: "8px 18px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Search</button>
@@ -255,7 +255,7 @@ function InsiderInner() {
 
       {!loading && !error && ran && filtered.length === 0 && (
         <div style={{
-          background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14,
+          background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
           padding: "48px", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.85rem",
         }}>
           No insider filings found{searched ? ` for ${searched}` : ""} with the selected filters.
@@ -267,7 +267,7 @@ function InsiderInner() {
           {/* Summary strip */}
           <div style={{
             marginBottom: "0.75rem", padding: "0.6rem 1rem", background: "var(--bg-surface)",
-            border: "1px solid var(--border)", borderRadius: 14, fontSize: "0.78rem",
+            border: "1px solid var(--border)", borderRadius: 22, fontSize: "0.78rem",
             color: "var(--text-secondary)", display: "flex", gap: "1.5rem", flexWrap: "wrap",
           }}>
             <span><strong style={{ color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace" }}>{filtered.length}</strong> filings shown</span>
@@ -276,7 +276,7 @@ function InsiderInner() {
             {searched && <span style={{ marginLeft: "auto", fontFamily: "'Spline Sans Mono', monospace", color: "var(--accent-gold)" }}>{searched}</span>}
           </div>
 
-          <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14 }}>
+          <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 22 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.76rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
@@ -317,7 +317,7 @@ function InsiderInner() {
                         <span style={{
                           background: purchase ? "rgba(34,197,94,0.12)" : sale ? "rgba(239,68,68,0.12)" : "rgba(148,163,184,0.1)",
                           color: purchase ? "var(--positive)" : sale ? "var(--negative)" : "var(--text-secondary)",
-                          padding: "2px 8px", borderRadius: 20, fontSize: "0.68rem", fontWeight: 600,
+                          padding: "2px 8px", borderRadius: 24, fontSize: "0.68rem", fontWeight: 600,
                         }}>
                           {t.type ?? "—"}
                         </span>

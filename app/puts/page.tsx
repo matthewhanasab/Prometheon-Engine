@@ -59,7 +59,7 @@ const inputStyle: React.CSSProperties = {
   padding: "0.5rem 0.75rem",
   background: "var(--bg-elevated)",
   border: "1px solid var(--border)",
-  borderRadius: 14,
+  borderRadius: 22,
   color: "var(--text-primary)",
   fontSize: "0.85rem",
   fontFamily: "'Spline Sans Mono', monospace",
@@ -81,14 +81,14 @@ const labelStyle: React.CSSProperties = {
 const cardStyle: React.CSSProperties = {
   background: "var(--bg-surface)",
   border: "1px solid var(--border)",
-  borderRadius: 14,
+  borderRadius: 22,
   padding: "1.1rem 1.25rem",
 };
 
 function Metric({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "good" | "bad" | "gold" }) {
   const subColor = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "gold" ? "var(--accent-gold)" : "var(--text-secondary)";
   return (
-    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "12px 14px" }}>
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "12px 14px" }}>
       <div style={labelStyle}>{label}</div>
       <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)" }}>{value}</div>
       {sub && <div style={{ fontSize: "0.65rem", color: subColor, marginTop: 4, fontFamily: "'Public Sans', sans-serif" }}>{sub}</div>}
@@ -278,7 +278,7 @@ function PutsInner() {
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end" }}>
           <div>
             <label style={labelStyle}>Strategy</label>
-            <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+            <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 22, overflow: "hidden" }}>
               {([["balanced", "Balanced"], ["maxYield", "Max Yield"], ["safest", "Safest"]] as [Strategy, string][]).map(([key, label]) => (
                 <button key={key} onClick={() => setStrategy(key)} style={{
                   padding: "0.5rem 1rem", fontSize: "0.72rem", fontWeight: 600, border: "none", cursor: "pointer",
@@ -292,7 +292,7 @@ function PutsInner() {
             </div>
           </div>
           <button onClick={() => load()} disabled={loading} style={{
-            padding: "10px 28px", background: "var(--accent-gold)", border: "none", borderRadius: 14,
+            padding: "10px 28px", background: "var(--accent-gold)", border: "none", borderRadius: 22,
             color: "#04110A", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", opacity: loading ? 0.7 : 1,
           }}>
@@ -307,7 +307,7 @@ function PutsInner() {
       {error && <div style={{ color: "var(--negative)", marginBottom: "1rem", fontSize: "0.85rem" }}>{error}</div>}
 
       {!data && !loading && !error && (
-        <div style={{ border: "1px dashed var(--border-active)", borderRadius: 14, background: "var(--bg-surface)", padding: "40px 20px", textAlign: "center", marginBottom: "1.5rem" }}>
+        <div style={{ border: "1px dashed var(--border-active)", borderRadius: 22, background: "var(--bg-surface)", padding: "40px 20px", textAlign: "center", marginBottom: "1.5rem" }}>
           <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
             Ranked strike table · best-pick summary · payoff diagram · earnings-risk flags — enter a ticker above to begin.
           </span>
@@ -318,7 +318,7 @@ function PutsInner() {
         <>
           {/* Earnings warning */}
           {earningsBeforeExpiry && (
-            <div style={{ background: "rgba(61,230,140,0.08)", border: "1px solid rgba(61,230,140,0.3)", borderRadius: 14, padding: "10px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--accent-gold)" }}>
+            <div style={{ background: "rgba(61,230,140,0.08)", border: "1px solid rgba(61,230,140,0.3)", borderRadius: 22, padding: "10px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--accent-gold)" }}>
               ⚠ <strong>Earnings {data.nextEarnings}</strong> falls before your {expiryDate.toISOString().slice(0, 10)} expiry — selling puts through earnings carries gap risk.
             </div>
           )}
@@ -339,7 +339,7 @@ function PutsInner() {
 
           {/* Best pick */}
           {best && (
-            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-gold)", borderRadius: 14, padding: "16px 20px", marginBottom: "1.5rem" }}>
+            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-gold)", borderRadius: 22, padding: "16px 20px", marginBottom: "1.5rem" }}>
               <div style={{ ...labelStyle, color: "var(--accent-gold)" }}>⭐ Best Pick — {strategy === "maxYield" ? "Max Yield" : strategy === "safest" ? "Safest" : "Balanced"}</div>
               <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.3rem", fontWeight: 700, marginBottom: 6 }}>
                 Sell the ${best.strike} put · collect ~${Math.round(best.premiumIncome).toLocaleString()} upfront
@@ -355,7 +355,7 @@ function PutsInner() {
 
           {/* Contracts table */}
           {rows.length > 0 ? (
-            <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 14, marginBottom: "1.5rem" }}>
+            <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 22, marginBottom: "1.5rem" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-primary)" }}>
@@ -420,7 +420,7 @@ function PutsInner() {
                     tickFormatter={(v: any) => `$${v.toLocaleString()}`} width={80} />
                   <Tooltip
                     labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }}
-                    contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                    contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                     formatter={(v: any) => [`$${Number(v).toLocaleString()}`, "P&L"]}
                     labelFormatter={(l: any) => `Stock at $${l}`}
                   />

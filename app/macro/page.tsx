@@ -126,7 +126,7 @@ function ChartCard({
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border)",
-        borderRadius: 14,
+        borderRadius: 22,
         padding: "12px 8px 4px",
         height,
       }}
@@ -156,7 +156,7 @@ const ttStyle = {
   contentStyle: {
     background: "rgba(255,255,255,0.09)",
     border: "1px solid rgba(61, 230, 140, 0.35)",
-    borderRadius: 14,
+    borderRadius: 22,
     fontFamily: "Spline Sans Mono, monospace",
     fontSize: 11,
     color: "#EAF6EE",
@@ -225,7 +225,7 @@ function MCard({
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border)",
-        borderRadius: 14,
+        borderRadius: 22,
         padding: "14px 16px",
         display: "flex",
         flexDirection: "column",
@@ -337,7 +337,7 @@ function MarketCard({ q }: { q: MarketQuote }) {
         background: "var(--bg-surface)",
         border: "1px solid var(--border)",
         borderTop: `2px solid ${meta.color}`,
-        borderRadius: 14,
+        borderRadius: 22,
         padding: "14px 16px",
         display: "flex",
         flexDirection: "column",
@@ -991,7 +991,7 @@ export default function MacroPage() {
                     style={{
                       background: "var(--bg-elevated)",
                       border: "1px solid var(--border)",
-                      borderRadius: 14,
+                      borderRadius: 22,
                       padding: "8px 12px",
                       display: "flex",
                       flexDirection: "column",
@@ -1018,7 +1018,7 @@ export default function MacroPage() {
               style={{
                 background: "var(--bg-surface)",
                 border: "1px solid var(--border)",
-                borderRadius: 14,
+                borderRadius: 22,
                 padding: "24px 32px",
                 display: "flex",
                 flexDirection: "column",
@@ -1047,12 +1047,12 @@ export default function MacroPage() {
               <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                 {fearGreed.classification ?? ""}
               </div>
-              <div style={{ width: "100%", height: 6, background: "var(--bg-elevated)", borderRadius: 20, marginTop: 4 }}>
+              <div style={{ width: "100%", height: 6, background: "var(--bg-elevated)", borderRadius: 24, marginTop: 4 }}>
                 <div
                   style={{
                     width: `${fearGreed.value ?? 50}%`,
                     height: "100%",
-                    borderRadius: 20,
+                    borderRadius: 24,
                     background:
                       fearGreed.value != null && fearGreed.value <= 25
                         ? "var(--negative)"

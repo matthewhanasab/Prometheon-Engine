@@ -30,6 +30,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600;700&family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Object-design rules injected directly: the Tailwind pipeline drops these from globals.css */}
+        <style dangerouslySetInnerHTML={{ __html: `
+button { border-radius: 999px !important; text-transform: none !important; letter-spacing: 0.01em !important; }
+input, select { border-radius: 999px !important; padding-left: 1.1rem !important; padding-right: 1.1rem !important; }
+[style*="border:1px solid var(--border)"] {
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+tr[style*="border:1px solid var(--border)"],
+td[style*="border:1px solid var(--border)"],
+th[style*="border:1px solid var(--border)"] {
+  backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none;
+}
+        ` }} />
       </head>
       <body style={{ display: "flex", width: "100%", height: "100%", background: "var(--bg-primary)", margin: 0, overflow: "hidden" }}>
         <Sidebar />

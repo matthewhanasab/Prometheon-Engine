@@ -37,7 +37,7 @@ Chart series palette: neon green `#3DE68C` (primary), aqua `#5BD1EF`, green `#22
 - **Primary button**: gold bg, `#0A0F1E` text, uppercase 0.72rem weight 700 letterSpacing 0.1em, padding 10px 22px, radius 4.
 - **Metric cards**: `--bg-surface`, 1px border, 2px colored top border for tone (green good / red bad / gold neutral), radius 4.
 - **Ticker inputs**: IBM Plex Mono, `--bg-elevated`, placeholder "Ticker", auto-uppercase.
-- **Border radius**: 14-18 for cards/buttons/inputs (glass style); 8-10 for small chips.
+- **Border radius**: 22-24 for cards/panels; buttons, inputs, chips and badges are full pills (999). Cards float: frosted backdrop-blur + soft 0-12-32 shadow (applied globally via CSS). Buttons are sentence case, never uppercase.
 - **Tables**: mono figures right-aligned, uppercase Inter column headers, zebra rows via `--bg-surface`/`--bg-primary`.
 
 ### Hard rules

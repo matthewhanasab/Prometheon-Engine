@@ -14,7 +14,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
     <div style={{
       background: "var(--bg-surface)",
       border: "1px solid var(--border)",
-      borderRadius: 14,
+      borderRadius: 22,
       padding: "1.25rem 1rem 0.75rem",
     }}>
       <ResponsiveContainer width="100%" height={220}>
@@ -50,7 +50,7 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
             contentStyle={{
               background: "rgba(16, 36, 26, 0.95)",
               border: "1px solid rgba(61, 230, 140, 0.35)",
-              borderRadius: 14,
+              borderRadius: 22,
               fontFamily: "Spline Sans Mono",
               fontSize: 12,
               color: "#EAF6EE",
