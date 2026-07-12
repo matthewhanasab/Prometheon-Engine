@@ -45,14 +45,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 button { border-radius: 999px !important; text-transform: none !important; letter-spacing: 0.01em !important; }
 input, select { border-radius: 999px !important; padding-left: 1.1rem !important; padding-right: 1.1rem !important; }
 [style*="border:1px solid var(--border)"] {
-  backdrop-filter: blur(14px) saturate(1.15);
-  -webkit-backdrop-filter: blur(14px) saturate(1.15);
-  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  box-shadow: var(--card-shadow), var(--glass-inset);
+  background-image: var(--glass-sheen) !important;
 }
 tr[style*="border:1px solid var(--border)"],
 td[style*="border:1px solid var(--border)"],
 th[style*="border:1px solid var(--border)"] {
-  backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; background-image: none !important;
 }
 
 .logo-on-dark { display: none; }
@@ -83,7 +84,9 @@ th[style*="border:1px solid var(--border)"] {
   --bg-g1:         #101828;
   --bg-g2:         #0C1220;
   --bg-g3:         #0A0F1B;
-  --card-shadow:   0 12px 32px rgba(0, 0, 0, 0.35);
+  --card-shadow:   0 16px 40px rgba(0, 0, 0, 0.40);
+  --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.10), inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+  --glass-sheen:   linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.015) 55%, rgba(255, 255, 255, 0.04) 100%);
 }
         ` }} />
       </head>

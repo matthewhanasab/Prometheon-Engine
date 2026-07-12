@@ -16,29 +16,43 @@ export default function ThemeToggle({ floating = false }: { floating?: boolean }
     try { localStorage.setItem("theme", next); } catch { /* ignore */ }
   }
 
+  const isDark = theme === "dark";
+
   return (
     <button
       onClick={toggle}
       aria-label="Toggle light/dark mode"
-      title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+      role="switch"
+      aria-checked={isDark}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       style={{
-        ...(floating
-          ? { position: "fixed" as const, top: 18, right: 18, zIndex: 300 }
-          : {}),
-        width: 40,
-        height: 40,
-        display: "flex",
+        ...(floating ? { position: "fixed" as const, top: 18, right: 18, zIndex: 300 } : {}),
+        width: 58,
+        height: 30,
+        padding: 3,
+        display: "inline-flex",
         alignItems: "center",
-        justifyContent: "center",
-        background: "var(--bg-elevated)",
+        background: isDark ? "rgba(107, 156, 255, 0.25)" : "var(--bg-elevated)",
         border: "1px solid var(--border)",
         cursor: "pointer",
-        fontSize: 16,
-        lineHeight: 1,
-        color: "var(--text-primary)",
+        position: floating ? "fixed" : "relative",
+        transition: "background 0.25s ease",
       }}
     >
-      {theme === "light" ? "☾" : "☀"}
+      {/* track icons */}
+      <span style={{ position: "absolute", left: 8, fontSize: 11, opacity: isDark ? 0.35 : 0.9, transition: "opacity 0.25s" }}>☀</span>
+      <span style={{ position: "absolute", right: 8, fontSize: 11, opacity: isDark ? 0.9 : 0.35, transition: "opacity 0.25s" }}>☾</span>
+      {/* knob */}
+      <span style={{
+        width: 24,
+        height: 24,
+        borderRadius: "50%",
+        background: isDark ? "#6B9CFF" : "#FFFFFF",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+        transform: isDark ? "translateX(28px)" : "translateX(0px)",
+        transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s ease",
+        display: "inline-block",
+      }} />
     </button>
   );
 }

@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary:    #E1E2E6;
-  --bg-surface:    rgba(255, 255, 255, 0.55);
-  --bg-elevated:   rgba(255, 255, 255, 0.75);
-  --border:        rgba(40, 44, 58, 0.12);
+  --bg-primary:    #D6D8DD;
+  --bg-surface:    rgba(255, 255, 255, 0.44);
+  --bg-elevated:   rgba(255, 255, 255, 0.62);
+  --border:        rgba(35, 40, 55, 0.14);
   --border-active: rgba(59, 110, 235, 0.40);
   --accent-gold:   #3B6EEB;
   --accent-2:      #38B6D3;
@@ -19,12 +19,14 @@
   --tooltip-bg:    rgba(255, 255, 255, 0.96);
   --tooltip-border:rgba(59, 110, 235, 0.35);
   --cursor-fill:   rgba(59, 110, 235, 0.08);
-  --glow-a:        rgba(170, 178, 195, 0.55);
-  --glow-b:        rgba(205, 200, 190, 0.45);
-  --bg-g1:         #E7E7EA;
-  --bg-g2:         #DFE0E4;
-  --bg-g3:         #D6D8DD;
-  --card-shadow:   0 12px 32px rgba(35, 38, 50, 0.12);
+  --glow-a:        rgba(150, 160, 185, 0.65);
+  --glow-b:        rgba(195, 188, 175, 0.55);
+  --bg-g1:         #DCDDE1;
+  --bg-g2:         #D3D5DA;
+  --bg-g3:         #C9CCD3;
+  --card-shadow:   0 16px 40px rgba(35, 38, 50, 0.16);
+  --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+  --glass-sheen:   linear-gradient(160deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.06) 55%, rgba(255, 255, 255, 0.14) 100%);
 }
 
 * { box-sizing: border-box; }
