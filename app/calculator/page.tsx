@@ -197,8 +197,8 @@ export default function CalculatorPage() {
                   <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 8, bottom: 0 }}>
                     <defs>
                       <linearGradient id="bandFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3DE68C" stopOpacity={0.07} />
-                        <stop offset="95%" stopColor="#3DE68C" stopOpacity={0.01} />
+                        <stop offset="5%" stopColor="var(--accent-gold)" stopOpacity={0.07} />
+                        <stop offset="95%" stopColor="var(--accent-gold)" stopOpacity={0.01} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />

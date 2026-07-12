@@ -61,7 +61,7 @@ function ToggleGroup<T extends string>({ options, value, onChange }: {
           fontSize: "0.72rem",
           fontWeight: 600,
           background: value === o.key ? "var(--accent-gold)" : "transparent",
-          color: value === o.key ? "#04110A" : "var(--text-secondary)",
+          color: value === o.key ? "var(--on-accent)" : "var(--text-secondary)",
           border: "none",
           cursor: "pointer",
           fontFamily: "'Public Sans', sans-serif",
@@ -82,7 +82,7 @@ function ChamberBadge({ chamber }: { chamber: "senate" | "house" }) {
       fontFamily: "'Spline Sans Mono', monospace",
       fontSize: "0.62rem",
       fontWeight: 700,
-      color: isS ? "#5BD1EF" : "#14B8A6",
+      color: isS ? "var(--accent-2)" : "#14B8A6",
       background: isS ? "rgba(91,141,239,0.12)" : "rgba(20,184,166,0.12)",
       border: `1px solid ${isS ? "rgba(91,141,239,0.4)" : "rgba(20,184,166,0.4)"}`,
       borderRadius: 24,
@@ -232,7 +232,7 @@ function CongressInner() {
                 fontSize: "0.8rem", outline: "none",
               }} />
             <button type="submit" style={{
-              background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
+              background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
               padding: "8px 18px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Search</button>
@@ -248,7 +248,7 @@ function CongressInner() {
                 fontSize: "0.8rem", outline: "none",
               }} />
             <button type="submit" style={{
-              background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
+              background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
               padding: "8px 18px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Search</button>

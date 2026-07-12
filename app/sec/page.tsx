@@ -22,9 +22,9 @@ interface Insider {
 }
 
 const FORM_COLORS: Record<string, { bg: string; color: string }> = {
-  "10-K": { bg: "rgba(61,230,140,0.15)",  color: "#3DE68C" },
-  "10-Q": { bg: "rgba(59,130,246,0.15)",  color: "#5BD1EF" },
-  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "#9CC1AA" },
+  "10-K": { bg: "rgba(var(--accent-rgb), 0.15)",  color: "var(--accent-gold)" },
+  "10-Q": { bg: "rgba(59,130,246,0.15)",  color: "var(--accent-2)" },
+  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "var(--tick)" },
   "4":    { bg: "rgba(34,197,94,0.15)",   color: "#22C55E" },
   "S-1":  { bg: "rgba(168,85,247,0.15)",  color: "#C084FC" },
   "DEF 14A": { bg: "rgba(249,115,22,0.15)", color: "#FB923C" },
@@ -173,7 +173,7 @@ function SecInner() {
             background: "var(--accent-gold)",
             border: "none",
             borderRadius: 22,
-            color: "#04110A",
+            color: "var(--on-accent)",
             fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,

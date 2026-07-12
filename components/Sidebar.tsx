@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV = [
   { href: "/research",      label: "Stock Research" },
@@ -106,15 +107,19 @@ export default function Sidebar() {
       }}>
         {/* Logo */}
         <div style={{ padding: "0 1.5rem 2rem", textAlign: "center" }}>
-          <Link href="/" onClick={handleNav} style={{ display: "inline-block", lineHeight: 0 }}>
+          <Link href="/" onClick={handleNav} style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
             <Image
-              src="/logo_transparent.png"
+              src="/logo_icon.png"
               alt="Prometheon Engine"
-              width={180}
-              height={58}
+              width={38}
+              height={44}
               style={{ objectFit: "contain" }}
               priority
             />
+            <span style={{ textAlign: "left", lineHeight: 1.1 }}>
+              <span style={{ display: "block", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "0.95rem", letterSpacing: "0.02em", color: "var(--text-primary)" }}>PROMETHEON</span>
+              <span style={{ display: "block", fontFamily: "'Public Sans', sans-serif", fontWeight: 400, fontSize: "0.6rem", letterSpacing: "0.42em", color: "var(--text-secondary)" }}>ENGINE</span>
+            </span>
           </Link>
         </div>
 
@@ -142,6 +147,10 @@ export default function Sidebar() {
             );
           })}
         </nav>
+
+        <div style={{ padding: "1rem 1.5rem 0", display: "flex", justifyContent: "center" }}>
+          <ThemeToggle />
+        </div>
       </aside>
     </>
   );

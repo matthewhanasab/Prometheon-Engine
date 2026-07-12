@@ -486,7 +486,7 @@ function ProjectionsInner() {
           onClick={() => loadStock()}
           disabled={loading}
           style={{
-            background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
+            background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
             padding: "10px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
           }}
         >

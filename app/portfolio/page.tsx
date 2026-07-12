@@ -40,9 +40,9 @@ const DEMO_POSITIONS: Position[] = [
 ];
 
 const PIE_COLORS = [
-  "#3DE68C", "#5BD1EF", "#2ED573", "#A78BFA", "#F0564A",
+  "var(--accent-gold)", "var(--accent-2)", "#2ED573", "#A78BFA", "#F0564A",
   "#14B8A6", "#F97316", "#EC4899", "#84CC16", "#8C7A5B",
-  "#5BD1EF", "#C97B3D",
+  "var(--accent-2)", "#C97B3D",
 ];
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -124,9 +124,9 @@ const cardStyle: React.CSSProperties = {
 };
 
 const CHART_TOOLTIP = {
-  labelStyle: { color: "#EAF6EE" },
-  itemStyle: { color: "#EAF6EE" },
-  contentStyle: { background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 },
+  labelStyle: { color: "var(--text-primary)" },
+  itemStyle: { color: "var(--text-primary)" },
+  contentStyle: { background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 },
 };
 
 function Stat({ label, value, sub, subColor }: { label: string; value: string; sub?: string; subColor?: string }) {
@@ -368,7 +368,7 @@ function PortfolioInner() {
           </div>
           <button onClick={addPosition} style={{
             padding: "10px 24px", background: "var(--accent-gold)", border: "none", borderRadius: 22,
-            color: "#04110A", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
+            color: "var(--on-accent)", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
             letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
           }}>
             Add Position
@@ -431,7 +431,7 @@ function PortfolioInner() {
           {insights.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: "1.5rem" }}>
               {insights.map((ins, i) => {
-                const c = ins.tone === "warn" ? "var(--accent-gold)" : ins.tone === "good" ? "var(--positive)" : "#5BD1EF";
+                const c = ins.tone === "warn" ? "var(--accent-gold)" : ins.tone === "good" ? "var(--positive)" : "var(--accent-2)";
                 return (
                   <div key={i} style={{
                     background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: `3px solid ${c}`,
@@ -451,13 +451,13 @@ function PortfolioInner() {
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="date" tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
-                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
+                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
                   <Tooltip {...CHART_TOOLTIP} formatter={(v: any) => [`${Number(v).toFixed(1)}%`]} />
                   <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
-                  <Line type="monotone" dataKey="Portfolio" stroke="#3DE68C" strokeWidth={2.5} dot={false} isAnimationActive={false} />
-                  <Line type="monotone" dataKey="S&P 500" stroke="#5BD1EF" strokeWidth={2} strokeDasharray="5 3" dot={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="Portfolio" stroke="var(--accent-gold)" strokeWidth={2.5} dot={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="S&P 500" stroke="var(--accent-2)" strokeWidth={2} strokeDasharray="5 3" dot={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
               <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 6 }}>

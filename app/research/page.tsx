@@ -316,7 +316,7 @@ function ResearchInner() {
       <form onSubmit={e => { e.preventDefault(); load(input); }} style={{ display:"flex", gap:10, marginBottom:"2rem", maxWidth:380 }}>
         <input value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
           style={{ flex:1, background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:22, padding:"10px 14px", color:"var(--text-primary)", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.85rem", outline:"none" }} />
-        <button type="submit" style={{ background:"var(--accent-gold)", color:"#04110A", border:"none", borderRadius:22, padding:"10px 22px", fontFamily:"'Public Sans', sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
+        <button type="submit" style={{ background:"var(--accent-gold)", color:"var(--on-accent)", border:"none", borderRadius:22, padding:"10px 22px", fontFamily:"'Public Sans', sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
       </form>
 
       {loading && <div style={{ color:"var(--text-secondary)", fontSize:"0.85rem", padding:"40px 0" }}>Loading {input}…</div>}
@@ -493,12 +493,12 @@ function ResearchInner() {
                           { name:"CAPM Expected", val: capmRet * 100 },
                           { name:"Actual 1Y",    val: ret1Y },
                         ]} margin={{ top:8, right:8, left:0, bottom:0 }}>
-                          <XAxis dataKey="name" tick={{ fill:"#9CC1AA", fontSize:10, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
-                          <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"#EAF6EE", fontSize:10, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={48} />
-                          <Tooltip labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }} cursor={{ fill: "rgba(61, 230, 140, 0.10)" }} formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"rgba(16, 36, 26, 0.95)", border:"1px solid rgba(61, 230, 140, 0.35)", borderRadius:22, fontFamily:"Spline Sans Mono", fontSize:12, color:"#EAF6EE" }} />
+                          <XAxis dataKey="name" tick={{ fill:"var(--tick)", fontSize:10, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
+                          <YAxis tickFormatter={v => `${v.toFixed(1)}%`} tick={{ fill:"var(--text-primary)", fontSize:10, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={48} />
+                          <Tooltip labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }} cursor={{ fill: "var(--cursor-fill)" }} formatter={(v: any) => [`${v.toFixed(2)}%`]} contentStyle={{ background:"var(--tooltip-bg)", border:"1px solid var(--tooltip-border)", borderRadius:22, fontFamily:"Spline Sans Mono", fontSize:12, color:"var(--text-primary)" }} />
                           <Bar dataKey="val" radius={[2,2,0,0]}>
-                            <Cell fill="rgba(61, 230, 140, 0.35)" />
-                            <Cell fill="#3DE68C" />
+                            <Cell fill="var(--tooltip-border)" />
+                            <Cell fill="var(--accent-gold)" />
                             <Cell fill={ret1Y >= capmRet * 100 ? "#22C55E" : "#EF4444"} />
                           </Bar>
                         </BarChart>
@@ -525,9 +525,9 @@ function ResearchInner() {
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"12px 8px 4px", marginBottom:12 }}>
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={earnings.filter((e: any) => e.surprise != null).map((e: any) => ({ name: (e.date ?? "").slice(0,10), val: Math.max(-100, Math.min(100, e.surprise)), actual: e.surprise }))} margin={{ top:4, right:8, left:0, bottom:0 }}>
-                    <XAxis dataKey="name" tick={{ fill:"#EAF6EE", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
-                    <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"#EAF6EE", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={40} />
-                    <Tooltip labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }} cursor={{ fill: "rgba(61, 230, 140, 0.10)" }} formatter={(v: any, _n: any, item: any) => [`${(item?.payload?.actual ?? v).toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"rgba(16, 36, 26, 0.95)", border:"1px solid rgba(61, 230, 140, 0.35)", borderRadius:22, fontFamily:"Spline Sans Mono", fontSize:11, color:"#EAF6EE" }} />
+                    <XAxis dataKey="name" tick={{ fill:"var(--text-primary)", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={v => `${v.toFixed(0)}%`} tick={{ fill:"var(--text-primary)", fontSize:9, fontFamily:"Spline Sans Mono" }} axisLine={false} tickLine={false} width={40} />
+                    <Tooltip labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }} cursor={{ fill: "var(--cursor-fill)" }} formatter={(v: any, _n: any, item: any) => [`${(item?.payload?.actual ?? v).toFixed(1)}%`, "Surprise"]} contentStyle={{ background:"var(--tooltip-bg)", border:"1px solid var(--tooltip-border)", borderRadius:22, fontFamily:"Spline Sans Mono", fontSize:11, color:"var(--text-primary)" }} />
                     <Bar dataKey="val" radius={[2,2,0,0]}>
                       {earnings.filter((e: any) => e.surprise != null).map((e: any, i: number) => (
                         <Cell key={i} fill={e.surprise >= 0 ? "#059669" : "#dc2626"} />

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window { TradingView: any; }
@@ -14,6 +14,13 @@ interface TradingViewChartProps {
 
 export default function TradingViewChart({ ticker, interval = "D", range, height = 500 }: TradingViewChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [themeTick, setThemeTick] = useState(0);
+
+  useEffect(() => {
+    const obs = new MutationObserver(() => setThemeTick(t => t + 1));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
   const widgetRef    = useRef<any>(null);
 
   useEffect(() => {
@@ -23,16 +30,17 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
     const id = `tv_${ticker}_${Date.now()}`;
     containerRef.current.id = id;
 
+    const isLight = document.documentElement.dataset.theme !== "dark";
     function init() {
       const config: Record<string, any> = {
         autosize:            true,
         symbol:              ticker,
         interval:            interval,
         timezone:            "America/New_York",
-        theme:               "dark",
+        theme:               isLight ? "light" : "dark",
         style:               "1",
         locale:              "en",
-        toolbar_bg:          "#0E1912",
+        toolbar_bg:          isLight ? "#FFFFFF" : "#101828",
         enable_publishing:   false,
         hide_side_toolbar:   false,
         allow_symbol_change: false,
@@ -40,10 +48,10 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
         container_id:        id,
         studies:             [],
         overrides: {
-          "paneProperties.background":                        "#04110A",
+          "paneProperties.background":                        isLight ? "#FFFFFF" : "#0C1220",
           "paneProperties.backgroundType":                    "solid",
-          "paneProperties.vertGridProperties.color":          "#16241B",
-          "paneProperties.horzGridProperties.color":          "#16241B",
+          "paneProperties.vertGridProperties.color":          isLight ? "#E5EAF2" : "#1B2436",
+          "paneProperties.horzGridProperties.color":          isLight ? "#E5EAF2" : "#1B2436",
           "mainSeriesProperties.candleStyle.upColor":         "#22C55E",
           "mainSeriesProperties.candleStyle.downColor":       "#EF4444",
           "mainSeriesProperties.candleStyle.borderUpColor":   "#22C55E",
@@ -69,7 +77,7 @@ export default function TradingViewChart({ ticker, interval = "D", range, height
     return () => {
       if (widgetRef.current?.remove) widgetRef.current.remove();
     };
-  }, [ticker, interval, range]);
+  }, [ticker, interval, range, themeTick]);
 
   return (
     <div style={{

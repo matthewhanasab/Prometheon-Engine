@@ -257,7 +257,7 @@ export default function ScreenerPage() {
               style={{
                 flex: 1,
                 background: "var(--accent-gold)",
-                color: "#04110A",
+                color: "var(--on-accent)",
                 border: "none",
                 borderRadius: 22,
                 padding: "10px 24px",

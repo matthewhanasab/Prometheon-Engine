@@ -27,7 +27,7 @@ function fmtLarge(n: number | null | undefined) {
   return `$${n.toLocaleString()}`;
 }
 
-const COLORS = ["#3B82F6", "#3DE68C", "#22C55E", "#A78BFA"];
+const COLORS = ["#3B82F6", "var(--accent-gold)", "#22C55E", "#A78BFA"];
 
 // â”€â”€ Metric config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type MetricDef = {
@@ -126,7 +126,7 @@ function buildPerfData(stocks: any[]) {
 // Score -> cell color: red (weak) -> gold (middling) -> green (strong)
 function scoreColor(score: number): { bg: string; fg: string } {
   if (score >= 70) return { bg: "rgba(46, 213, 115, 0.16)", fg: "#2ED573" };
-  if (score >= 40) return { bg: "rgba(61, 230, 140, 0.14)", fg: "#3DE68C" };
+  if (score >= 40) return { bg: "rgba(61, 230, 140, 0.14)", fg: "var(--accent-gold)" };
   return { bg: "rgba(240, 86, 74, 0.13)", fg: "#F0564A" };
 }
 
@@ -194,12 +194,12 @@ function GroupedBars({ title, data, stocks, unit }: {
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-          <XAxis dataKey="name" tick={{ fill: "#EAF6EE", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={(v) => `${v}${unit}`} tick={{ fill: "#9CC1AA", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={52} />
+          <XAxis dataKey="name" tick={{ fill: "var(--text-primary)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v) => `${v}${unit}`} tick={{ fill: "var(--tick)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={52} />
           <Tooltip
-            cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
-            labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }}
-            contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+            cursor={{ fill: "var(--cursor-fill)" }}
+            labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
+            contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
             formatter={(v: any) => [`${Number(v).toFixed(1)}${unit}`]}
           />
           {stocks.map((s, i) => (
@@ -395,7 +395,7 @@ function CompareInner() {
         <button
           type="submit"
           style={{
-            background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
+            background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
             padding: "9px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
@@ -432,12 +432,12 @@ function CompareInner() {
               <ResponsiveContainer width="100%" height={340}>
                 <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="date" tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
-                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
+                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
                   <Tooltip
-                    labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }}
-                    contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                    labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
+                    contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                     formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
                   />
                   <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />

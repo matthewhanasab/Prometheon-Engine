@@ -1,9 +1,16 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // TradingView advanced chart with all tickers overlaid on one percentage scale
 export default function CompareChart({ tickers, height = 460 }: { tickers: string[]; height?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [themeTick, setThemeTick] = useState(0);
+
+  useEffect(() => {
+    const obs = new MutationObserver(() => setThemeTick(t => t + 1));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current || tickers.length === 0) return;
@@ -15,6 +22,7 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
     widgetDiv.style.height = "100%";
     container.appendChild(widgetDiv);
 
+    const isLight = document.documentElement.dataset.theme !== "dark";
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.async = true;
@@ -25,11 +33,11 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
       interval: "D",
       range: "12M",
       timezone: "America/New_York",
-      theme: "dark",
+      theme: isLight ? "light" : "dark",
       style: "2",
       locale: "en",
-      backgroundColor: "#0A120D",
-      gridColor: "rgba(61, 230, 140, 0.10)",
+      backgroundColor: isLight ? "#FFFFFF" : "#0C1220",
+      gridColor: "var(--cursor-fill)",
       hide_side_toolbar: true,
       hide_top_toolbar: false,
       allow_symbol_change: false,
@@ -44,7 +52,7 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
     container.appendChild(script);
 
     return () => { container.innerHTML = ""; };
-  }, [tickers.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tickers.join(","), themeTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ border: "1px solid var(--border)", borderRadius: 22, overflow: "hidden", height }}>

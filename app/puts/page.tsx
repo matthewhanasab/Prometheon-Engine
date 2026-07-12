@@ -284,7 +284,7 @@ function PutsInner() {
                   padding: "0.5rem 1rem", fontSize: "0.72rem", fontWeight: 600, border: "none", cursor: "pointer",
                   fontFamily: "'Public Sans', sans-serif",
                   background: strategy === key ? "var(--accent-gold)" : "transparent",
-                  color: strategy === key ? "#04110A" : "var(--text-secondary)",
+                  color: strategy === key ? "var(--on-accent)" : "var(--text-secondary)",
                 }}>
                   {label}
                 </button>
@@ -293,7 +293,7 @@ function PutsInner() {
           </div>
           <button onClick={() => load()} disabled={loading} style={{
             padding: "10px 28px", background: "var(--accent-gold)", border: "none", borderRadius: 22,
-            color: "#04110A", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
+            color: "var(--on-accent)", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", opacity: loading ? 0.7 : 1,
           }}>
             {loading ? "Screening…" : "Screen Options"}
@@ -318,7 +318,7 @@ function PutsInner() {
         <>
           {/* Earnings warning */}
           {earningsBeforeExpiry && (
-            <div style={{ background: "rgba(61,230,140,0.08)", border: "1px solid rgba(61,230,140,0.3)", borderRadius: 22, padding: "10px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--accent-gold)" }}>
+            <div style={{ background: "rgba(var(--accent-rgb), 0.10)", border: "1px solid rgba(var(--accent-rgb), 0.3)", borderRadius: 22, padding: "10px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--accent-gold)" }}>
               ⚠ <strong>Earnings {data.nextEarnings}</strong> falls before your {expiryDate.toISOString().slice(0, 10)} expiry — selling puts through earnings carries gap risk.
             </div>
           )}
@@ -414,21 +414,21 @@ function PutsInner() {
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={payoffData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="px" tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                  <XAxis dataKey="px" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(v: any) => `$${v}`} minTickGap={50} />
-                  <YAxis tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                  <YAxis tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(v: any) => `$${v.toLocaleString()}`} width={80} />
                   <Tooltip
-                    labelStyle={{ color: "#EAF6EE" }} itemStyle={{ color: "#EAF6EE" }}
-                    contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                    labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
+                    contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                     formatter={(v: any) => [`$${Number(v).toLocaleString()}`, "P&L"]}
                     labelFormatter={(l: any) => `Stock at $${l}`}
                   />
                   <ReferenceLine y={0} stroke="var(--border-active)" />
                   <ReferenceLine x={best.breakeven} stroke="var(--accent-gold)" strokeDasharray="4 3"
-                    label={{ value: `B/E $${fmt(best.breakeven)}`, fill: "#3DE68C", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopLeft" }} />
-                  <ReferenceLine x={best.strike} stroke="#9CC1AA" strokeDasharray="2 4"
-                    label={{ value: `Strike $${best.strike}`, fill: "#9CC1AA", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopRight" }} />
+                    label={{ value: `B/E $${fmt(best.breakeven)}`, fill: "var(--accent-gold)", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopLeft" }} />
+                  <ReferenceLine x={best.strike} stroke="var(--tick)" strokeDasharray="2 4"
+                    label={{ value: `Strike $${best.strike}`, fill: "var(--tick)", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopRight" }} />
                   <Area type="monotone" dataKey="pnl" stroke="#A78BFA" strokeWidth={2} fill="#A78BFA" fillOpacity={0.12} isAnimationActive={false} />
                 </AreaChart>
               </ResponsiveContainer>

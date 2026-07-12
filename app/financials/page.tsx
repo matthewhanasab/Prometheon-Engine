@@ -285,7 +285,7 @@ function FinancialsInner() {
             <label key={p} style={{
               padding: "9px 16px", cursor: "pointer",
               background: period === p ? "var(--accent-gold)" : "var(--bg-elevated)",
-              color: period === p ? "#04110A" : "var(--text-secondary)",
+              color: period === p ? "var(--on-accent)" : "var(--text-secondary)",
               fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: period === p ? 700 : 400,
               textTransform: "capitalize", letterSpacing: "0.05em", transition: "all 0.15s",
             }}>
@@ -298,7 +298,7 @@ function FinancialsInner() {
         <button
           type="submit"
           style={{
-            background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
+            background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
             padding: "9px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
             fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
           }}
@@ -325,8 +325,8 @@ function FinancialsInner() {
             </span>
             <span style={{
               fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.68rem", fontWeight: 600,
-              background: "rgba(61,230,140,0.15)", color: "var(--accent-gold)",
-              border: "1px solid rgba(61,230,140,0.3)", borderRadius: 24, padding: "2px 8px",
+              background: "rgba(var(--accent-rgb), 0.15)", color: "var(--accent-gold)",
+              border: "1px solid rgba(var(--accent-rgb), 0.3)", borderRadius: 24, padding: "2px 8px",
             }}>
               {period === "annual" ? "Annual · 5 years" : "Quarterly · 8 quarters"}
             </span>

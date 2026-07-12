@@ -81,7 +81,7 @@ function ToggleGroup<T extends string>({ options, value, onChange }: {
           fontSize: "0.72rem",
           fontWeight: 600,
           background: value === o.key ? "var(--accent-gold)" : "transparent",
-          color: value === o.key ? "#04110A" : "var(--text-secondary)",
+          color: value === o.key ? "var(--on-accent)" : "var(--text-secondary)",
           border: "none",
           cursor: "pointer",
           fontFamily: "'Public Sans', sans-serif",
@@ -212,7 +212,7 @@ function InsiderInner() {
                 fontSize: "0.8rem", outline: "none",
               }} />
             <button type="submit" style={{
-              background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
+              background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
               padding: "8px 18px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Search</button>

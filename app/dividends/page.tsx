@@ -217,7 +217,7 @@ function DividendsInner() {
           <button key={k} onClick={() => setMode(k)} style={{
             padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 600,
             background: mode === k ? "var(--accent-gold)" : "transparent",
-            color: mode === k ? "#04110A" : "var(--text-secondary)",
+            color: mode === k ? "var(--on-accent)" : "var(--text-secondary)",
             border: "none", cursor: "pointer", fontFamily: "'Public Sans', sans-serif",
           }}>
             {label}
@@ -237,7 +237,7 @@ function DividendsInner() {
                 fontSize: "0.85rem", outline: "none",
               }} />
             <button type="submit" style={{
-              background: "var(--accent-gold)", color: "#04110A", border: "none", borderRadius: 22,
+              background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
               padding: "10px 22px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem",
               fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
             }}>Analyze</button>
@@ -289,16 +289,16 @@ function DividendsInner() {
                   <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "12px 8px 4px" }}>
                     <ResponsiveContainer width="100%" height={240}>
                       <BarChart data={annual} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                        <XAxis dataKey="year" tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
-                        <YAxis tickFormatter={(v: any) => `$${Number(v).toFixed(2)}`} tick={{ fill: "#9CC1AA", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
+                        <XAxis dataKey="year" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
+                        <YAxis tickFormatter={(v: any) => `$${Number(v).toFixed(2)}`} tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
                         <Tooltip
-                          labelStyle={{ color: "#EAF6EE" }}
-                          itemStyle={{ color: "#EAF6EE" }}
-                          cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
+                          labelStyle={{ color: "var(--text-primary)" }}
+                          itemStyle={{ color: "var(--text-primary)" }}
+                          cursor={{ fill: "var(--cursor-fill)" }}
                           formatter={(v: any) => [`$${Number(v).toFixed(4)}`, "Dividend/share"]}
-                          contentStyle={{ background: "rgba(16, 36, 26, 0.95)", border: "1px solid rgba(61, 230, 140, 0.35)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                          contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                         />
-                        <Bar dataKey="total" fill="#3DE68C" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="total" fill="var(--accent-gold)" radius={[2, 2, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

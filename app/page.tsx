@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // ── Launch button with ignition animation ────────────────────────────────────
 function LaunchButton({ children, onLaunch }: { children: React.ReactNode; onLaunch: () => void }) {
   return (
     <button onClick={onLaunch} style={{
-      background: "var(--accent-gold)", color: "#04110A", border: "none", cursor: "pointer",
+      background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", cursor: "pointer",
       padding: "14px 34px", borderRadius: 22, fontSize: "0.78rem", fontWeight: 700,
       textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Public Sans', sans-serif",
     }}>
@@ -39,6 +40,7 @@ function Constellation() {
     resize();
     window.addEventListener("resize", resize);
 
+    const accentRgb = (getComputedStyle(document.documentElement).getPropertyValue("--accent-rgb") || "59, 110, 235").trim();
     const N = 80;
     const pts = Array.from({ length: N }, () => ({
       x: Math.random(),
@@ -66,7 +68,7 @@ function Constellation() {
           const d = Math.sqrt(dx * dx + dy * dy);
           if (d < 130) {
             const a = (1 - d / 130) * 0.28;
-            ctx.strokeStyle = `rgba(61, 230, 140, ${a})`;
+            ctx.strokeStyle = `rgba(${accentRgb}, ${a})`;
             ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.moveTo(pts[i].x * w, pts[i].y * h);
@@ -78,7 +80,7 @@ function Constellation() {
 
       // dots
       for (const p of pts) {
-        ctx.fillStyle = "rgba(61, 230, 140, 0.55)";
+        ctx.fillStyle = `rgba(${accentRgb}, 0.55)`;
         ctx.beginPath();
         ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2);
         ctx.fill();
@@ -145,8 +147,8 @@ function LivePreview({ href }: { href: string }) {
   return (
     <div style={{
       position: "relative", height: 280, overflow: "hidden", borderRadius: 22,
-      border: "1px solid rgba(61,230,140,0.45)", background: "var(--bg-primary)",
-      boxShadow: "0 0 24px rgba(61,230,140,0.08)",
+      border: "1px solid var(--border-active)", background: "var(--bg-primary)",
+      boxShadow: "0 0 24px rgba(var(--accent-rgb), 0.10)",
     }}>
       <iframe
         src={href}
@@ -220,13 +222,19 @@ export default function LandingPage() {
       opacity: leaving ? 0 : 1, transition: "opacity 0.5s ease",
     }}>
 
+      <ThemeToggle floating />
+
       {/* ── Hero ── */}
       <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
         <Constellation />
 
-        <div className="fade-up" style={{ position: "relative" }}>
-          <Image src="/logo_transparent.png" alt="Prometheon Engine" width={560} height={180} priority
-            style={{ objectFit: "contain", maxWidth: "88vw", height: "auto" }} />
+        <div className="fade-up" style={{ position: "relative", display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap", justifyContent: "center" }}>
+          <Image src="/logo_icon.png" alt="Prometheon Engine" width={110} height={128} priority
+            style={{ objectFit: "contain" }} />
+          <span style={{ textAlign: "left", lineHeight: 1.05 }}>
+            <span style={{ display: "block", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "clamp(2.2rem, 6vw, 3.6rem)", letterSpacing: "0.02em", color: "var(--text-primary)" }}>PROMETHEON</span>
+            <span style={{ display: "block", fontFamily: "'Public Sans', sans-serif", fontWeight: 300, fontSize: "clamp(0.9rem, 2.2vw, 1.3rem)", letterSpacing: "0.55em", color: "var(--text-secondary)", marginTop: 6 }}>ENGINE</span>
+          </span>
         </div>
 
         <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 2.4rem", maxWidth: 760 }}>
@@ -257,14 +265,14 @@ export default function LandingPage() {
 
           {/* Gold header card */}
           <div style={{
-            background: "linear-gradient(120deg, #8CF5BE 0%, var(--accent-gold) 55%, #17A45C 100%)",
+            background: "linear-gradient(120deg, #A9C7FF 0%, var(--accent-gold) 55%, #2456C8 100%)",
             borderRadius: 22, padding: "2.6rem 2.4rem", display: "flex",
             flexDirection: "column", justifyContent: "center", alignItems: "flex-start", gap: 20,
           }}>
-            <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "#04110A", margin: 0, letterSpacing: "-0.02em" }}>
+            <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "var(--on-accent)", margin: 0, letterSpacing: "-0.02em" }}>
               How it works
             </h2>
-            <p style={{ color: "#0A3B22", fontSize: "0.88rem", lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
+            <p style={{ color: "#0E2A66", fontSize: "0.88rem", lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
               These aren&apos;t mockups — every panel below is the live application, rendered in
               miniature. Click any card to open the real thing.
             </p>

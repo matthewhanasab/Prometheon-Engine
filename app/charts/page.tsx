@@ -17,7 +17,7 @@ import {
 } from "recharts";
 
 const SEGMENT_COLORS = [
-  "#3DE68C","#3B82F6","#22C55E","#EF4444","#A78BFA","#F97316",
+  "var(--accent-gold)","#3B82F6","#22C55E","#EF4444","#A78BFA","#F97316",
   "#06B6D4","#EC4899","#84CC16","#F59E0B","#6366F1","#14B8A6",
 ];
 
@@ -58,16 +58,16 @@ function rollingTTM(arr: number[]): (number | null)[] {
 // ─── shared chart style ──────────────────────────────────────────────────────
 
 const TOOLTIP_STYLE = {
-  cursor: { fill: "rgba(61, 230, 140, 0.10)" },
-  labelStyle: { color: "#EAF6EE" },
-  itemStyle: { color: "#EAF6EE" },
+  cursor: { fill: "var(--cursor-fill)" },
+  labelStyle: { color: "var(--text-primary)" },
+  itemStyle: { color: "var(--text-primary)" },
   contentStyle: {
-    background: "rgba(16, 36, 26, 0.95)",
-    border: "1px solid rgba(61, 230, 140, 0.35)",
+    background: "var(--tooltip-bg)",
+    border: "1px solid var(--tooltip-border)",
     borderRadius: 22,
     fontFamily: "Spline Sans Mono, monospace",
     fontSize: 15,
-    color: "#EAF6EE",
+    color: "var(--text-primary)",
   },
 };
 
@@ -88,8 +88,8 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   letterSpacing: "0.01em",
 };
 
-const X_TICK = { fill: "#9CC1AA", fontSize: 16 };
-const Y_TICK = { fill: "#9CC1AA", fontSize: 16 };
+const X_TICK = { fill: "var(--tick)", fontSize: 16 };
+const Y_TICK = { fill: "var(--tick)", fontSize: 16 };
 
 // ─── TTM toggle ──────────────────────────────────────────────────────────────
 
@@ -104,7 +104,7 @@ function TtmToggle({ isTtm, onChange }: { isTtm: boolean; onChange: (v: boolean)
             onClick={() => onChange(opt === "TTM")}
             style={{
               background: active ? "var(--accent-gold)" : "var(--bg-elevated)",
-              color: active ? "#04110A" : "var(--text-secondary)",
+              color: active ? "var(--on-accent)" : "var(--text-secondary)",
               border: "1px solid var(--border)",
               borderRadius: 24,
               padding: "3px 10px",
@@ -469,7 +469,7 @@ function ChartsInner() {
             background: "var(--accent-gold)",
             border: "none",
             borderRadius: 22,
-            color: "#04110A",
+            color: "var(--on-accent)",
             fontFamily: "'Public Sans', sans-serif",
             fontSize: "0.72rem",
             fontWeight: 700,
@@ -518,8 +518,8 @@ function ChartsInner() {
           {profile?.sector && (
             <span
               style={{
-                background: "rgba(61,230,140,0.12)",
-                border: "1px solid rgba(61,230,140,0.3)",
+                background: "rgba(var(--accent-rgb), 0.12)",
+                border: "1px solid rgba(var(--accent-rgb), 0.3)",
                 borderRadius: 24,
                 padding: "2px 8px",
                 fontSize: "0.7rem",
@@ -559,21 +559,21 @@ function ChartsInner() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={revenueData} margin={{ top: 20, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any, name: any) => [fmtVal(v), name === "forecast" ? "Est. Revenue" : "Revenue"]}
                 />
-                <Bar dataKey="value" stackId="rev" fill="#3DE68C" radius={[2, 2, 0, 0]} isAnimationActive={false}
+                <Bar dataKey="value" stackId="rev" fill="var(--accent-gold)" radius={[2, 2, 0, 0]} isAnimationActive={false}
                   label={
                     <QoQLabel
                       values={revenueData.map((d) => d.value as number)}
                     />
                   }
                 />
-                <Bar dataKey="forecast" stackId="rev" fill="#3DE68C" fillOpacity={0.3} stroke="#3DE68C" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="forecast" stackId="rev" fill="var(--accent-gold)" fillOpacity={0.3} stroke="var(--accent-gold)" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -584,14 +584,14 @@ function ChartsInner() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={ocfData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtVal(v), "Operating CF"]}
                 />
-                <Bar dataKey="value" fill="#5BD1EF" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="value" fill="var(--accent-2)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -602,7 +602,7 @@ function ChartsInner() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={opIncData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
@@ -626,7 +626,7 @@ function ChartsInner() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <LineChart data={marginData} margin={{ top: 14, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={pctTick} tick={Y_TICK} axisLine={false} tickLine={false} width={64} />
                 <Tooltip
@@ -637,24 +637,24 @@ function ChartsInner() {
                   ]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "#7E9887" }}
+                  wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "var(--text-muted)" }}
                   formatter={(v) => (v === "gross" ? "Gross Margin" : "Net Margin")}
                 />
                 <Line
                   type="monotone"
                   dataKey="gross"
-                  stroke="#3DE68C"
+                  stroke="var(--accent-gold)"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#3DE68C" }}
+                  dot={{ r: 3, fill: "var(--accent-gold)" }}
                   activeDot={{ r: 4 }}
                   isAnimationActive={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="net"
-                  stroke="#5BD1EF"
+                  stroke="var(--accent-2)"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#5BD1EF" }}
+                  dot={{ r: 3, fill: "var(--accent-2)" }}
                   activeDot={{ r: 4 }}
                   isAnimationActive={false}
                 />
@@ -667,7 +667,7 @@ function ChartsInner() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={epsData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis
                   tickFormatter={(v) => `$${v.toFixed(2)}`}
@@ -699,7 +699,7 @@ function ChartsInner() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={fcfData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
@@ -723,14 +723,14 @@ function ChartsInner() {
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={sharesData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={sharesTick} tick={Y_TICK} axisLine={false} tickLine={false} width={52} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(v: any) => [fmtShares(v), "Shares Outstanding"]}
                 />
-                <Bar dataKey="value" fill="#7E9887" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="value" fill="var(--text-muted)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -742,14 +742,14 @@ function ChartsInner() {
               <div style={CARD_STYLE}>
                 <ResponsiveContainer width="100%" height={360}>
                   <BarChart data={prodChartData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                    <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                    <CartesianGrid vertical={false} stroke="var(--border)" />
                     <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                     <Tooltip
                       {...TOOLTIP_STYLE}
                       formatter={(v: any, name: any) => [fmtVal(v), name]}
                     />
-                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "#7E9887" }} />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "var(--text-muted)" }} />
                     {prodKeys.map((key, i) => (
                       <Bar key={key} dataKey={key} stackId="a" fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]} isAnimationActive={false} />
                     ))}
@@ -766,14 +766,14 @@ function ChartsInner() {
               <div style={CARD_STYLE}>
                 <ResponsiveContainer width="100%" height={360}>
                   <BarChart data={geoChartData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
-                    <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                    <CartesianGrid vertical={false} stroke="var(--border)" />
                     <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                     <Tooltip
                       {...TOOLTIP_STYLE}
                       formatter={(v: any, name: any) => [fmtVal(v), name]}
                     />
-                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "#7E9887" }} />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "var(--text-muted)" }} />
                     {geoKeys.map((key, i) => (
                       <Bar key={key} dataKey={key} stackId="a" fill={SEGMENT_COLORS[i % SEGMENT_COLORS.length]} isAnimationActive={false} />
                     ))}
@@ -788,7 +788,7 @@ function ChartsInner() {
           <div style={{ ...CARD_STYLE, marginBottom: "2rem" }}>
             <ResponsiveContainer width="100%" height={360}>
               <LineChart data={balData} margin={{ top: 14, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" />
+                <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
@@ -799,7 +799,7 @@ function ChartsInner() {
                   ]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "#7E9887" }}
+                  wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "var(--text-muted)" }}
                   formatter={(v) => (v === "assets" ? "Current Assets" : "Current Liabilities")}
                 />
                 <Line

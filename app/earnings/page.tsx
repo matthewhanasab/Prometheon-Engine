@@ -58,7 +58,7 @@ function monthWeeks(year: number, month: number): (Date | null)[][] {
 }
 
 function Chip({ entry, side }: { entry: EarningsEntry; side: "bmo" | "amc" | "other" }) {
-  const borderColor = side === "bmo" ? "#5BD1EF" : side === "amc" ? "var(--negative)" : "var(--border-active)";
+  const borderColor = side === "bmo" ? "var(--accent-2)" : side === "amc" ? "var(--negative)" : "var(--border-active)";
   return (
     <a href={`/research?ticker=${entry.symbol}`} style={{ textDecoration: "none" }}>
       <span style={{
@@ -194,7 +194,7 @@ function EarningsInner() {
               fontSize: "0.78rem",
               fontWeight: 600,
               background: filter === f ? "var(--accent-gold)" : "transparent",
-              color: filter === f ? "#04110A" : "var(--text-secondary)",
+              color: filter === f ? "var(--on-accent)" : "var(--text-secondary)",
               border: "none",
               cursor: "pointer",
               fontFamily: "'Public Sans', sans-serif",
@@ -273,7 +273,7 @@ function EarningsInner() {
       {/* Summary strip */}
       <div style={{ marginTop: "0.5rem", padding: "0.65rem 1rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, fontSize: "0.8rem", color: "var(--text-secondary)", display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
         <span><strong style={{ color: "var(--text-primary)" }}>{totalCount}</strong> reports in {monthLabel}</span>
-        <span style={{ color: "#5BD1EF" }}>▲ {bmoCount} before open</span>
+        <span style={{ color: "var(--accent-2)" }}>▲ {bmoCount} before open</span>
         <span style={{ color: "var(--negative)" }}>▼ {amcCount} after close</span>
         <span style={{ marginLeft: "auto", fontSize: "0.7rem", color: "var(--text-muted)" }}>
           Filtered: {filter === "popular" ? "S&P 500 + Nasdaq 100" : "All stocks"}

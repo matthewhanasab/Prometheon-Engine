@@ -1,17 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary:    #0A120D;
-  --bg-surface:    rgba(255, 255, 255, 0.035);
-  --bg-elevated:   rgba(255, 255, 255, 0.065);
-  --border:        rgba(255, 255, 255, 0.09);
-  --border-active: rgba(61, 230, 140, 0.35);
-  --accent-gold:   #3DE68C;
-  --text-primary:  #EAF6EE;
-  --text-secondary:#93AF9E;
-  --text-muted:    #5C7466;
-  --positive:      #4ADE80;
-  --negative:      #F87171;
+  --bg-primary:    #E9EEF6;
+  --bg-surface:    rgba(255, 255, 255, 0.55);
+  --bg-elevated:   rgba(255, 255, 255, 0.75);
+  --border:        rgba(28, 48, 84, 0.10);
+  --border-active: rgba(59, 110, 235, 0.40);
+  --accent-gold:   #3B6EEB;
+  --accent-2:      #38B6D3;
+  --accent-rgb:    59, 110, 235;
+  --on-accent:     #FFFFFF;
+  --text-primary:  #1B2536;
+  --text-secondary:#5C6B82;
+  --text-muted:    #97A3B6;
+  --positive:      #189A55;
+  --negative:      #D64545;
+  --tick:          #7C8BA3;
+  --tooltip-bg:    rgba(255, 255, 255, 0.96);
+  --tooltip-border:rgba(59, 110, 235, 0.35);
+  --cursor-fill:   rgba(59, 110, 235, 0.08);
+  --glow-a:        rgba(120, 160, 230, 0.35);
+  --glow-b:        rgba(160, 190, 240, 0.30);
+  --bg-g1:         #F0F3F9;
+  --bg-g2:         #E7EDF6;
+  --bg-g3:         #DFE7F2;
+  --card-shadow:   0 12px 32px rgba(23, 43, 77, 0.10);
 }
 
 * { box-sizing: border-box; }
@@ -23,9 +36,9 @@ html {
 html, body {
   background-color: var(--bg-primary);
   background-image:
-    radial-gradient(1100px 600px at 85% -10%, rgba(61, 230, 140, 0.07), transparent 60%),
-    radial-gradient(900px 700px at -10% 110%, rgba(61, 230, 140, 0.05), transparent 55%),
-    linear-gradient(165deg, #0D1811 0%, #0A120D 45%, #081009 100%);
+    radial-gradient(1100px 600px at 85% -10%, var(--glow-a), transparent 60%),
+    radial-gradient(900px 700px at -10% 110%, var(--glow-b), transparent 55%),
+    linear-gradient(165deg, var(--bg-g1) 0%, var(--bg-g2) 45%, var(--bg-g3) 100%);
   background-attachment: fixed;
   color: var(--text-primary);
   font-family: 'Public Sans', sans-serif;

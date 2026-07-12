@@ -8,7 +8,7 @@ interface MetricCardProps {
 const TONES = {
   good:    { top: "#22C55E", sub: "#22C55E" },
   bad:     { top: "#EF4444", sub: "#EF4444" },
-  neutral: { top: "#3DE68C", sub: "#3DE68C" },
+  neutral: { top: "var(--accent-gold)", sub: "var(--accent-gold)" },
   default: { top: "var(--border)", sub: "var(--text-secondary)" },
 };
 

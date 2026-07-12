@@ -25,14 +25,14 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.09)" strokeDasharray="3 3" />
+          <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
             tickFormatter={(v) => {
               const d = new Date(v);
               return d.toLocaleString("en-US", { month: "short", year: "2-digit" });
             }}
-            tick={{ fill: "#7E9887", fontSize: 10, fontFamily: "Spline Sans Mono" }}
+            tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
             interval={Math.floor(data.length / 6)}
@@ -40,23 +40,23 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
           <YAxis
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v}`}
-            tick={{ fill: "#7E9887", fontSize: 10, fontFamily: "Spline Sans Mono" }}
+            tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
             width={60}
           />
           <Tooltip
-                  cursor={{ fill: "rgba(61, 230, 140, 0.10)" }}
+                  cursor={{ fill: "var(--cursor-fill)" }}
             contentStyle={{
-              background: "rgba(16, 36, 26, 0.95)",
-              border: "1px solid rgba(61, 230, 140, 0.35)",
+              background: "var(--tooltip-bg)",
+              border: "1px solid var(--tooltip-border)",
               borderRadius: 22,
               fontFamily: "Spline Sans Mono",
               fontSize: 12,
-              color: "#EAF6EE",
+              color: "var(--text-primary)",
             }}
             formatter={(v: any) => [fmt(v), "Price"]}
-            labelStyle={{ color: "#7E9887", fontSize: 10, marginBottom: 4 }}
+            labelStyle={{ color: "var(--text-muted)", fontSize: 10, marginBottom: 4 }}
           />
           <Area
             type="monotone"
