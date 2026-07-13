@@ -505,7 +505,7 @@ function ResearchInner() {
                       </ResponsiveContainer>
                     </div>
                   </div>
-                  <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.72rem", color:"var(--text-secondary)", background:"#0d1425", border:"1px solid var(--border)", borderRadius:22, padding:"10px 14px", marginTop:10 }}>
+                  <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.72rem", color:"var(--text-secondary)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:22, padding:"10px 14px", marginTop:10 }}>
                     E(R) = Rf + β × (Rm − Rf) = {(rf*100).toFixed(2)}% + {fmt(beta)} × (10% − {(rf*100).toFixed(2)}%) ={" "}
                     <span style={{ color:"var(--accent-gold)", fontWeight:600 }}>{(capmRet*100).toFixed(2)}%</span>
                     &nbsp;&nbsp;|&nbsp;&nbsp;1Y Actual:{" "}
