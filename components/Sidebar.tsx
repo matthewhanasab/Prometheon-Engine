@@ -94,7 +94,7 @@ export default function Sidebar() {
         borderRight: "1px solid var(--border)",
         display: "flex",
         flexDirection: "column",
-        padding: "2rem 0",
+        padding: "1.5rem 0 2rem",
         // Mobile: fixed overlay sidebar
         ...(isMobile ? {
           position: "fixed",
@@ -105,11 +105,15 @@ export default function Sidebar() {
           boxShadow: open ? "4px 0 24px rgba(0,0,0,0.4)" : "none",
         } : {}),
       }}>
-        {/* Logo — flame icon only (full wordmark lives on the landing page) */}
-        <div style={{ padding: "0 1.75rem 1.5rem", display: "flex", justifyContent: "flex-start" }}>
-          <Link href="/" onClick={handleNav} style={{ display: "inline-block", lineHeight: 0 }}>
+        {/* Logo — flame icon in a glass badge (full wordmark lives on the landing page) */}
+        <div style={{ padding: "0 1.75rem 1.25rem", display: "flex", justifyContent: "flex-start" }}>
+          <Link href="/" onClick={handleNav} style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 44, height: 44,
+            background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 14,
+          }}>
             <Image src="/logo_icon_crop.png" alt="Prometheon Engine"
-              width={34} height={49} style={{ objectFit: "contain" }} priority />
+              width={22} height={31} style={{ objectFit: "contain" }} priority />
           </Link>
         </div>
 
