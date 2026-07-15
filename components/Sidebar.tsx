@@ -106,10 +106,10 @@ export default function Sidebar() {
         } : {}),
       }}>
         {/* Logo — flame icon only (full wordmark lives on the landing page) */}
-        <div style={{ padding: "0 1.5rem 2rem", textAlign: "center" }}>
+        <div style={{ padding: "0 1.75rem 1.5rem", display: "flex", justifyContent: "flex-start" }}>
           <Link href="/" onClick={handleNav} style={{ display: "inline-block", lineHeight: 0 }}>
-            <Image src="/logo_icon.png" alt="Prometheon Engine"
-              width={52} height={60} style={{ objectFit: "contain" }} priority />
+            <Image src="/logo_icon_crop.png" alt="Prometheon Engine"
+              width={34} height={49} style={{ objectFit: "contain" }} priority />
           </Link>
         </div>
 
