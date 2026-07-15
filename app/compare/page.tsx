@@ -4,6 +4,8 @@ import { useSearchParams } from "next/navigation";
 import {
   ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend,
 } from "recharts";
+import CompareChart from "@/components/CompareChart";
+import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function fmt(n: number | null | undefined, d = 2) {
@@ -281,6 +283,7 @@ function CompareInner() {
   const [stocks, setStocks]   = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
+  const [chartMode, setChartMode] = useState<ChartMode>("builtin");
 
   function setTicker(i: number, v: string) {
     setTickers(prev => { const n = [...prev]; n[i] = v; return n; });
@@ -424,28 +427,41 @@ function CompareInner() {
           </div>
 
           {/* 1Y performance race */}
-          {perfData.length > 10 && (
+          {(perfData.length > 10 || chartMode === "tv") && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "20px 16px", marginBottom: "2rem" }}>
-              <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 16 }}>
-                1-Year Performance — % Return
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
+                <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>
+                  1-Year Performance — % Return
+                </div>
+                <ChartModeToggle mode={chartMode} onChange={setChartMode} />
               </div>
-              <ResponsiveContainer width="100%" height={340}>
-                <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
-                    tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
-                  <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
-                  <Tooltip
-                    labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
-                    contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
-                    formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
-                  />
-                  <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
-                  {stocks.map((s, i) => (
-                    <Line key={s.ticker} type="monotone" dataKey={s.ticker} stroke={COLORS[i]} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
+              {chartMode === "builtin" ? (
+                perfData.length > 10 ? (
+                  <ResponsiveContainer width="100%" height={340}>
+                    <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                      <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                      <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
+                        tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
+                      <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
+                      <Tooltip
+                        labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
+                        contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                        formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
+                      />
+                      <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
+                      {stocks.map((s, i) => (
+                        <Line key={s.ticker} type="monotone" dataKey={s.ticker} stroke={COLORS[i]} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)", padding: "40px 0", textAlign: "center" }}>
+                    Not enough price history to plot.
+                  </div>
+                )
+              ) : (
+                <CompareChart tickers={stocks.map(s => s.ticker)} height={400} />
+              )}
             </div>
           )}
 

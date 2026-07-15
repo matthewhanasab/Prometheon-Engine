@@ -3,6 +3,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import TradingViewChart from "@/components/TradingViewChart";
+import PriceChart from "@/components/PriceChart";
+import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
@@ -95,14 +97,18 @@ function AboutSection({ description }: { description: string }) {
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
     <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
       fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
       textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)",
       borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem",
       marginBottom: "1rem", marginTop: "2rem",
-    }}>{children}</div>
+    }}>
+      <span>{children}</span>
+      {right}
+    </div>
   );
 }
 
@@ -247,6 +253,7 @@ function ResearchInner() {
   const [data, setData]     = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState<string | null>(null);
+  const [chartMode, setChartMode] = useState<ChartMode>("builtin");
 
   useEffect(() => {
     const t = searchParams.get("ticker");
@@ -380,9 +387,11 @@ function ResearchInner() {
               tone={s.analystTarget && s.price && s.analystTarget > s.price ? "good" : "default"} />
           </Grid>
 
-          {/* ── TradingView Chart ── */}
-          <SectionLabel>Price Chart</SectionLabel>
-          <TradingViewChart ticker={s.ticker} />
+          {/* ── Price Chart ── */}
+          <SectionLabel right={<ChartModeToggle mode={chartMode} onChange={setChartMode} />}>Price Chart</SectionLabel>
+          {chartMode === "builtin"
+            ? <PriceChart data={price} positive={(s.change ?? 0) >= 0} />
+            : <TradingViewChart ticker={s.ticker} />}
 
           {/* ── Mandatory Metrics ── */}
           <SectionLabel>Mandatory Metrics</SectionLabel>
