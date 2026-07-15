@@ -109,11 +109,19 @@ const RADAR_DIMS: { label: string; calc: (s: any) => number }[] = [
   { label: "EPS Growth", calc: s => score((s.epsGrowth ?? null) != null ? s.epsGrowth * 100 : null, 0, 30) },
 ];
 
-// 1Y performance: % change from each stock's first close
+// 1Y performance: % change rebased from each stock's price ~12 months ago.
+// FMP's `limit` counts trading rows (~365 rows ≈ 1.45 calendar years), so we
+// clamp to a true trailing 12 months before rebasing to keep the label honest.
 function buildPerfData(stocks: any[]) {
   const rows = new Map<string, Record<string, number | string>>();
   for (const s of stocks) {
-    const hist = (s.priceHistory ?? []) as { date: string; price: number }[];
+    const full = (s.priceHistory ?? []) as { date: string; price: number }[];
+    if (full.length < 2) continue;
+    // History is ascending; the last point is the most recent.
+    const lastDate = new Date(full[full.length - 1].date);
+    const cutoff = new Date(lastDate);
+    cutoff.setFullYear(cutoff.getFullYear() - 1);
+    const hist = full.filter(pt => new Date(pt.date) >= cutoff);
     if (hist.length < 2) continue;
     const base = hist[0].price;
     if (!base) continue;
@@ -446,7 +454,7 @@ function CompareInner() {
                       <Tooltip
                         labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
                         contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
-                        formatter={(v: any) => [`${Number(v).toFixed(1)}%`]}
+                        formatter={(v: any, name: any) => [`${Number(v) >= 0 ? "+" : ""}${Number(v).toFixed(1)}%`, name]}
                       />
                       <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
                       {stocks.map((s, i) => (
