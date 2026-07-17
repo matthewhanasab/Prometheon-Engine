@@ -5,6 +5,7 @@ import Link from "next/link";
 import TradingViewChart from "@/components/TradingViewChart";
 import PriceChart from "@/components/PriceChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
+import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
@@ -254,6 +255,7 @@ function ResearchInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState<string | null>(null);
   const [chartMode, setChartMode] = useState<ChartMode>("builtin");
+  const [range, setRange] = useState<RangeKey>("1Y");
 
   useEffect(() => {
     const t = searchParams.get("ticker");
@@ -388,9 +390,21 @@ function ResearchInner() {
           </Grid>
 
           {/* ── Price Chart ── */}
-          <SectionLabel right={<ChartModeToggle mode={chartMode} onChange={setChartMode} />}>Price Chart</SectionLabel>
+          <SectionLabel right={
+            <div style={{ display:"inline-flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+              {/* TradingView ships its own timeframe controls */}
+              {chartMode === "builtin" && <RangeToggle range={range} onChange={setRange} />}
+              <ChartModeToggle mode={chartMode} onChange={setChartMode} />
+            </div>
+          }>Price Chart</SectionLabel>
           {chartMode === "builtin"
-            ? <PriceChart data={price} positive={(s.change ?? 0) >= 0} />
+            ? (() => {
+                const win = sliceRange<{ date: string; price: number }>(price, range);
+                // Colour by the selected window's return, not today's tick —
+                // a 5Y view shouldn't go red because the stock dipped this morning.
+                const up = win.length > 1 ? win[win.length - 1].price >= win[0].price : (s.change ?? 0) >= 0;
+                return <PriceChart data={win} positive={up} />;
+              })()
             : <TradingViewChart ticker={s.ticker} />}
 
           {/* ── Mandatory Metrics ── */}

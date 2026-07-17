@@ -10,6 +10,15 @@ function fmt(n: number) {
 export default function PriceChart({ data, positive }: { data: PricePoint[]; positive: boolean }) {
   const color = positive ? "#22C55E" : "#EF4444";
 
+  // Short windows need day-level labels; long ones would repeat the same month.
+  const spanDays = data.length > 1
+    ? (new Date(data[data.length - 1].date).getTime() - new Date(data[0].date).getTime()) / 86400000
+    : 0;
+  const tickOpts: Intl.DateTimeFormatOptions = spanDays <= 200
+    ? { month: "short", day: "numeric" }
+    : { month: "short", year: "2-digit" };
+  const tickInterval = Math.max(0, Math.floor(data.length / 6));
+
   return (
     <div style={{
       background: "var(--bg-surface)",
@@ -28,14 +37,11 @@ export default function PriceChart({ data, positive }: { data: PricePoint[]; pos
           <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tickFormatter={(v) => {
-              const d = new Date(v);
-              return d.toLocaleString("en-US", { month: "short", year: "2-digit" });
-            }}
+            tickFormatter={(v) => new Date(v).toLocaleString("en-US", tickOpts)}
             tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
-            interval={Math.floor(data.length / 6)}
+            interval={tickInterval}
           />
           <YAxis
             domain={["auto", "auto"]}
