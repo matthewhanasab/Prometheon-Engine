@@ -90,10 +90,12 @@ export default function Sidebar() {
       <aside style={{
         width: 220,
         minWidth: 220,
+        height: "100%",
         background: "var(--bg-primary)",
         borderRight: "1px solid var(--border)",
         display: "flex",
         flexDirection: "column",
+        overflowY: "auto",
         padding: "1.5rem 0 2rem",
         // Mobile: fixed overlay sidebar
         ...(isMobile ? {
