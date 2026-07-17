@@ -13,6 +13,32 @@ const asLocal = (d: string) => new Date(`${d}T00:00:00`);
 const longDate = (d: string) =>
   asLocal(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
+// Custom tooltip: recharts can't express "% change from the first point in the
+// window", so build the row here rather than in a formatter.
+function PriceTooltip({ active, payload, label, base, baseDate }: any) {
+  if (!active || !payload?.length) return null;
+  const v = payload[0].value as number;
+  const pct = base ? ((v - base) / base) * 100 : null;
+  const up = (pct ?? 0) >= 0;
+  return (
+    <div style={{
+      background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)",
+      borderRadius: 22, padding: "10px 14px", fontFamily: "'Spline Sans Mono', monospace",
+    }}>
+      <div style={{ color: "var(--text-muted)", fontSize: 10, marginBottom: 5 }}>{longDate(String(label))}</div>
+      <div style={{ color: "var(--text-primary)", fontSize: 13, fontWeight: 600 }}>{fmt(v)}</div>
+      {pct != null && (
+        <div style={{ color: up ? "#22C55E" : "#EF4444", fontSize: 12, fontWeight: 600, marginTop: 5 }}>
+          {up ? "▲" : "▼"} {up ? "+" : ""}{pct.toFixed(2)}%
+          <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: 10, fontWeight: 400, color: "var(--text-muted)", marginLeft: 6 }}>
+            since {longDate(baseDate)}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PriceChart({ data, label }: { data: PricePoint[]; label?: string }) {
   // Return over the visible window — recomputed whenever the range changes.
   const first = data[0]?.price;
@@ -82,18 +108,8 @@ export default function PriceChart({ data, label }: { data: PricePoint[]; label?
             width={60}
           />
           <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
-            contentStyle={{
-              background: "var(--tooltip-bg)",
-              border: "1px solid var(--tooltip-border)",
-              borderRadius: 22,
-              fontFamily: "Spline Sans Mono",
-              fontSize: 12,
-              color: "var(--text-primary)",
-            }}
-            formatter={(v: any) => [fmt(v), "Price"]}
-            labelFormatter={(d: any) => longDate(String(d))}
-            labelStyle={{ color: "var(--text-muted)", fontSize: 10, marginBottom: 4 }}
+            cursor={{ stroke: "var(--text-muted)", strokeDasharray: "3 3", strokeOpacity: 0.7 }}
+            content={<PriceTooltip base={first} baseDate={data[0]?.date} />}
           />
           <Area
             type="monotone"
