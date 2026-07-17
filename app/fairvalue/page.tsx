@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ComposedChart, Area, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
+  ReferenceArea, ReferenceLine,
 } from "recharts";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -57,6 +58,16 @@ function logTicks(lo: number, hi: number): number[] {
   return out;
 }
 const money = (v: number) => v === 0 ? "$0" : v >= 1 ? `$${v.toFixed(0)}` : `$${v.toFixed(2)}`;
+
+// Round an axis ceiling up to a readable 1/1.5/2/2.5/3/4/5/6/8/10 × 10^k step
+function niceMax(v: number): number {
+  if (!(v > 0)) return 10;
+  const exp = Math.pow(10, Math.floor(Math.log10(v)));
+  const f = v / exp;
+  const nice = f <= 1 ? 1 : f <= 1.5 ? 1.5 : f <= 2 ? 2 : f <= 2.5 ? 2.5
+    : f <= 3 ? 3 : f <= 4 ? 4 : f <= 5 ? 5 : f <= 6 ? 6 : f <= 8 ? 8 : 10;
+  return nice * exp;
+}
 
 const SPANS = [
   { key: 5,     label: "5Y" },
@@ -268,7 +279,7 @@ function FairValueInner() {
         if (typeof r[k] === "number" && r[k] < lo) r[k] = lo;
       }
     } else {
-      yDomain = [0, Math.ceil((vMax * 1.05) / 10) * 10];
+      yDomain = [0, niceMax(vMax * 1.02)];
     }
 
     // ── X ticks: exactly one per year (thinned to fit) ──
@@ -318,10 +329,17 @@ function FairValueInner() {
     }
     const blendedPE = priceNow && blendedEps > 0 ? priceNow / blendedEps : null;
 
+    // Where reported fact ends and analyst estimate begins. This is the last
+    // REPORTED fiscal year end — often months in the past — not "today".
+    const estStart = lastHistRow?.date ?? null;
+    const estEnd = rows.length ? rows[rows.length - 1].date : null;
+    // The last row that still has a real traded price = today.
+    const todayDate = [...rows].reverse().find(r => typeof r.price === "number")?.date ?? null;
+
     const lastDps = hist[hist.length - 1].dps;
     return {
       rows, years, hist, ests, M, normPE, growth, verdict, ratio, forecast, hasDivs,
-      useLog, yDomain, yTicks, xTicks,
+      useLog, yDomain, yTicks, xTicks, estStart, estEnd, todayDate,
       blendedPE, epsYield: priceNow && blendedEps ? blendedEps / priceNow : null,
       divYield: priceNow && lastDps ? lastDps / priceNow : null,
     };
@@ -421,6 +439,15 @@ function FairValueInner() {
             <ResponsiveContainer width="100%" height={440}>
               <ComposedChart data={model.rows} margin={{ top: 6, right: 14, left: 0, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                {/* Everything right of the last reported fiscal year rests on analyst estimates */}
+                {model.estStart && model.estEnd && (
+                  <ReferenceArea x1={model.estStart} x2={model.estEnd} fill="var(--text-primary)" fillOpacity={0.05} strokeOpacity={0}
+                    label={{ value: "Analyst estimates →", position: "insideTopLeft", fill: "var(--text-muted)", fontSize: 10, fontFamily: "'Public Sans', sans-serif" }} />
+                )}
+                {model.todayDate && (
+                  <ReferenceLine x={model.todayDate} stroke="var(--text-muted)" strokeDasharray="3 3" strokeOpacity={0.75}
+                    label={{ value: "Today", position: "insideTopRight", fill: "var(--text-muted)", fontSize: 10, fontFamily: "'Public Sans', sans-serif" }} />
+                )}
                 <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                   ticks={model.xTicks} interval={0} tickFormatter={(d: any) => String(d).slice(0, 4)} />
                 <YAxis tickFormatter={(v: any) => money(Number(v))} tick={{ fill: "var(--tick)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={58}
@@ -428,6 +455,7 @@ function FairValueInner() {
                 <Tooltip
                   labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
                   contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                  labelFormatter={(d: any) => model.estStart && String(d) > model.estStart ? `${d} · estimated earnings` : String(d)}
                   formatter={(v: any, name: any) => {
                     const labels: Record<string, string> = {
                       price: "Price", fv: "Fair value", fvE: "Fair value (est)",
