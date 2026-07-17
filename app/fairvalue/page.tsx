@@ -43,6 +43,21 @@ function median(xs: number[]): number | null {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+// 1-2-5 decade steps spanning [lo, hi] — readable ticks for a log axis
+function logTicks(lo: number, hi: number): number[] {
+  const out: number[] = [];
+  let dec = Math.floor(Math.log10(lo));
+  while (Math.pow(10, dec) <= hi * 10) {
+    for (const m of [1, 2, 5]) {
+      const v = m * Math.pow(10, dec);
+      if (v >= lo && v <= hi) out.push(v);
+    }
+    dec++;
+  }
+  return out;
+}
+const money = (v: number) => v === 0 ? "$0" : v >= 1 ? `$${v.toFixed(0)}` : `$${v.toFixed(2)}`;
+
 const SPANS = [
   { key: 5,     label: "5Y" },
   { key: 10,    label: "10Y" },
@@ -94,6 +109,7 @@ function FairValueInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const [span, setSpan]       = useState(15);
+  const [scaleMode, setScaleMode] = useState<"auto" | "log" | "linear">("auto");
 
   useEffect(() => {
     const t = searchParams.get("ticker");
@@ -168,12 +184,14 @@ function FairValueInner() {
     const endT = ts(years[years.length - 1].date);
     const startT = ts(hist[0].date);
 
-    const hasDivs = years.some(y => y.dps > 0);
+    // Only draw the dividend band when it is thick enough to see (>=5% payout)
+    const hasDivs = years.some(y => y.eps > 0 && y.dps / y.eps >= 0.05);
     const F = (v: number | null, mult: number) => (v == null ? undefined : Math.max(0, v * mult));
 
     // Chart rows: monthly prices inside the window…
     const rows: any[] = [];
     let priceNow: number | null = null;
+    let lastHistRow: any = null;
     for (const p of prices) {
       const t = ts(p.date);
       if (t < startT) continue;
@@ -183,13 +201,20 @@ function FairValueInner() {
       if (t <= lastHistT) {
         row.fv = F(e, M); row.top = hasDivs ? F(tp, M) : undefined;
         if (normPE != null) row.nv = F(e, normPE);
-        if (t === lastHistT) { row.fvE = row.fv; row.topE = row.top; row.nvE = row.nv; }
+        lastHistRow = row;
       } else {
         row.fvE = F(e, M); row.topE = hasDivs ? F(tp, M) : undefined;
         if (normPE != null) row.nvE = F(e, normPE);
       }
       rows.push(row);
       priceNow = p.price;
+    }
+    // Bridge history → estimates so the solid and dashed sections touch.
+    // (Fiscal year-ends never land exactly on a trading date, so this can't be an equality test.)
+    if (lastHistRow) {
+      lastHistRow.fvE = lastHistRow.fv;
+      lastHistRow.topE = lastHistRow.top;
+      lastHistRow.nvE = lastHistRow.nv;
     }
     // …then a monthly grid into the estimate future (no price)
     if (rows.length && ests.length) {
@@ -218,6 +243,43 @@ function FairValueInner() {
         nvE: normPE != null ? F(eEnd.eps, normPE) : undefined,
       });
     }
+
+    // ── Axis scale ──
+    // A linear axis cannot render a stock whose EPS grew 100×+ (the early years
+    // collapse onto zero), so switch to log once the dynamic range gets extreme.
+    const SERIES = ["price", "fv", "fvE", "nv", "nvE", "top", "topE"];
+    const vals: number[] = [];
+    for (const r of rows) for (const k of SERIES) if (typeof r[k] === "number" && r[k] > 0) vals.push(r[k]);
+    const vMin = vals.length ? Math.min(...vals) : 1;
+    const vMax = vals.length ? Math.max(...vals) : 10;
+    const autoLog = vMax / vMin > 50;
+    const useLog = scaleMode === "auto" ? autoLog : scaleMode === "log";
+
+    let yDomain: [number, number];
+    let yTicks: number[] | undefined;
+    if (useLog) {
+      const lo = Math.pow(10, Math.floor(Math.log10(vMin)));
+      const hi = Math.pow(10, Math.ceil(Math.log10(vMax)));
+      yDomain = [lo, hi];
+      yTicks = logTicks(lo, hi);
+      // Log axes cannot plot 0 — lift non-positive points to the floor so the
+      // mountain still touches the baseline in loss years.
+      for (const r of rows) for (const k of SERIES) {
+        if (typeof r[k] === "number" && r[k] < lo) r[k] = lo;
+      }
+    } else {
+      yDomain = [0, Math.ceil((vMax * 1.05) / 10) * 10];
+    }
+
+    // ── X ticks: exactly one per year (thinned to fit) ──
+    const firstOfYear: string[] = [];
+    let seenYear: number | null = null;
+    for (const r of rows) {
+      const y = parseInt(String(r.date).slice(0, 4));
+      if (y !== seenYear) { firstOfYear.push(r.date); seenYear = y; }
+    }
+    const step = Math.ceil(firstOfYear.length / 12);
+    const xTicks = firstOfYear.filter((_, i) => i % step === 0);
 
     // Verdict: price vs fair value today
     const nowT = Date.now();
@@ -259,10 +321,11 @@ function FairValueInner() {
     const lastDps = hist[hist.length - 1].dps;
     return {
       rows, years, hist, ests, M, normPE, growth, verdict, ratio, forecast, hasDivs,
+      useLog, yDomain, yTicks, xTicks,
       blendedPE, epsYield: priceNow && blendedEps ? blendedEps / priceNow : null,
       divYield: priceNow && lastDps ? lastDps / priceNow : null,
     };
-  }, [data, span]);
+  }, [data, span, scaleMode]);
 
   const toneColor = (t: string) => t === "good" ? "var(--positive)" : t === "bad" ? "var(--negative)" : "var(--accent-gold)";
 
@@ -317,15 +380,30 @@ function FairValueInner() {
 
           {/* Chart card */}
           <SectionLabel right={
-            <div style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
-              {SPANS.map(s => (
-                <button key={s.key} type="button" onClick={() => setSpan(s.key)} style={{
-                  padding: "5px 12px", borderRadius: 999, border: "none", cursor: "pointer",
-                  fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", fontWeight: 600, letterSpacing: "0.06em",
-                  background: span === s.key ? "var(--accent-gold)" : "transparent",
-                  color: span === s.key ? "var(--on-accent)" : "var(--text-secondary)",
-                }}>{s.label}</button>
-              ))}
+            <div style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+              <div style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
+                {([["log", "Log"], ["linear", "Linear"]] as const).map(([k, label]) => {
+                  const active = model.useLog === (k === "log");
+                  return (
+                    <button key={k} type="button" onClick={() => setScaleMode(k)} title={k === "log" ? "Log scale — equal % moves take equal vertical space" : "Linear scale — equal $ moves take equal vertical space"} style={{
+                      padding: "5px 12px", borderRadius: 999, border: "none", cursor: "pointer",
+                      fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", fontWeight: 600, letterSpacing: "0.06em",
+                      background: active ? "var(--accent-gold)" : "transparent",
+                      color: active ? "var(--on-accent)" : "var(--text-secondary)",
+                    }}>{label}</button>
+                  );
+                })}
+              </div>
+              <div style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
+                {SPANS.map(s => (
+                  <button key={s.key} type="button" onClick={() => setSpan(s.key)} style={{
+                    padding: "5px 12px", borderRadius: 999, border: "none", cursor: "pointer",
+                    fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", fontWeight: 600, letterSpacing: "0.06em",
+                    background: span === s.key ? "var(--accent-gold)" : "transparent",
+                    color: span === s.key ? "var(--on-accent)" : "var(--text-secondary)",
+                  }}>{s.label}</button>
+                ))}
+              </div>
             </div>
           }>Price vs. Earnings-Justified Value</SectionLabel>
 
@@ -344,8 +422,9 @@ function FairValueInner() {
               <ComposedChart data={model.rows} margin={{ top: 6, right: 14, left: 0, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
                 <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
-                  tickFormatter={(d: any) => String(d).slice(0, 4)} minTickGap={46} />
-                <YAxis tickFormatter={(v: any) => `$${v}`} tick={{ fill: "var(--tick)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={58} domain={[0, "auto"]} />
+                  ticks={model.xTicks} interval={0} tickFormatter={(d: any) => String(d).slice(0, 4)} />
+                <YAxis tickFormatter={(v: any) => money(Number(v))} tick={{ fill: "var(--tick)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={58}
+                  scale={model.useLog ? "log" : "linear"} domain={model.yDomain} ticks={model.yTicks} allowDataOverflow />
                 <Tooltip
                   labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
                   contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
@@ -359,10 +438,10 @@ function FairValueInner() {
                   }}
                 />
                 {/* dividend topper behind, mountain in front */}
-                {model.hasDivs && <Area type="linear" dataKey="top"  stroke="none" fill="var(--fv-top)" fillOpacity={1} isAnimationActive={false} connectNulls={false} />}
-                {model.hasDivs && <Area type="linear" dataKey="topE" stroke="none" fill="var(--fv-top)" fillOpacity={0.55} isAnimationActive={false} connectNulls={false} />}
-                <Area type="linear" dataKey="fv"  stroke="var(--fv-line)" strokeWidth={2.2} fill="var(--fv-fill)" fillOpacity={1} isAnimationActive={false} connectNulls={false} dot={false} />
-                <Area type="linear" dataKey="fvE" stroke="var(--fv-line)" strokeWidth={2} strokeDasharray="6 4" fill="var(--fv-fill-est)" fillOpacity={1} isAnimationActive={false} connectNulls={false} dot={false} />
+                {model.hasDivs && <Area type="linear" dataKey="top"  baseValue={model.yDomain[0]} stroke="none" fill="var(--fv-top)" fillOpacity={1} isAnimationActive={false} connectNulls={false} />}
+                {model.hasDivs && <Area type="linear" dataKey="topE" baseValue={model.yDomain[0]} stroke="none" fill="var(--fv-top)" fillOpacity={0.55} isAnimationActive={false} connectNulls={false} />}
+                <Area type="linear" dataKey="fv"  baseValue={model.yDomain[0]} stroke="var(--fv-line)" strokeWidth={2.2} fill="var(--fv-fill)" fillOpacity={1} isAnimationActive={false} connectNulls={false} dot={false} />
+                <Area type="linear" dataKey="fvE" baseValue={model.yDomain[0]} stroke="var(--fv-line)" strokeWidth={2} strokeDasharray="6 4" fill="var(--fv-fill-est)" fillOpacity={1} isAnimationActive={false} connectNulls={false} dot={false} />
                 {model.normPE != null && <Line type="linear" dataKey="nv"  stroke="var(--accent-gold)" strokeWidth={1.6} dot={false} isAnimationActive={false} connectNulls={false} />}
                 {model.normPE != null && <Line type="linear" dataKey="nvE" stroke="var(--accent-gold)" strokeWidth={1.4} strokeDasharray="6 4" dot={false} isAnimationActive={false} connectNulls={false} />}
                 <Line type="linear" dataKey="price" stroke="var(--text-primary)" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />
