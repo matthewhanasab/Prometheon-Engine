@@ -398,13 +398,7 @@ function ResearchInner() {
             </div>
           }>Price Chart</SectionLabel>
           {chartMode === "builtin"
-            ? (() => {
-                const win = sliceRange<{ date: string; price: number }>(price, range);
-                // Colour by the selected window's return, not today's tick —
-                // a 5Y view shouldn't go red because the stock dipped this morning.
-                const up = win.length > 1 ? win[win.length - 1].price >= win[0].price : (s.change ?? 0) >= 0;
-                return <PriceChart data={win} positive={up} />;
-              })()
+            ? <PriceChart data={sliceRange<{ date: string; price: number }>(price, range)} label={range} />
             : <TradingViewChart ticker={s.ticker} />}
 
           {/* ── Mandatory Metrics ── */}
