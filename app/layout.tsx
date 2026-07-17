@@ -60,6 +60,20 @@ th[style*="border:1px solid var(--border)"] {
 :root[data-theme="dark"] .logo-on-dark { display: inline-block; }
 :root[data-theme="dark"] .logo-on-light { display: none; }
 
+/* Fair Value Graph series (validated per-surface) */
+:root {
+  --fv-line:     #BC5F04;
+  --fv-fill:     rgba(24, 154, 85, 0.22);
+  --fv-fill-est: rgba(24, 154, 85, 0.10);
+  --fv-top:      rgba(24, 154, 85, 0.12);
+}
+:root[data-theme="dark"] {
+  --fv-line:     #F09A4A;
+  --fv-fill:     rgba(74, 222, 128, 0.16);
+  --fv-fill-est: rgba(74, 222, 128, 0.07);
+  --fv-top:      rgba(74, 222, 128, 0.09);
+}
+
 :root[data-theme="dark"] {
   --bg-primary:    #0C1220;
   --bg-surface:    rgba(255, 255, 255, 0.045);

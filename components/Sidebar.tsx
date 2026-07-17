@@ -7,6 +7,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV = [
   { href: "/research",      label: "Stock Research" },
+  { href: "/fairvalue",     label: "Fair Value Graph" },
   { href: "/portfolio",     label: "My Portfolio" },
   { href: "/compare",       label: "Compare Stocks" },
   { href: "/charts",        label: "Charts" },
