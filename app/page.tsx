@@ -275,48 +275,6 @@ export default function LandingPage() {
       {/* ── Live ticker ── */}
       <TickerTape />
 
-      {/* ── How it works ── */}
-      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "4.5rem 1.5rem 1rem" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(480px, 100%), 1fr))", gap: 18 }}>
-
-          {/* Gold header card */}
-          <div style={{
-            background: "linear-gradient(120deg, #A9C7FF 0%, var(--accent-gold) 55%, #2456C8 100%)",
-            borderRadius: 22, padding: "2.6rem 2.4rem", display: "flex",
-            flexDirection: "column", justifyContent: "center", alignItems: "flex-start", gap: 20,
-          }}>
-            <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "2rem", fontWeight: 600, color: "var(--on-accent)", margin: 0, letterSpacing: "-0.02em" }}>
-              How it works
-            </h2>
-            <p style={{ color: "#0E2A66", fontSize: "0.88rem", lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
-              These aren&apos;t mockups — every panel below is the live application, rendered in
-              miniature. Click any card to open the real thing.
-            </p>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <LaunchButton onLaunch={launch}>Launch the Engine</LaunchButton>
-            </div>
-          </div>
-
-          {/* Live preview cards */}
-          {SHOWCASE.map((s) => (
-            <Link key={s.href} href={s.href} className="feature-card" style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
-              padding: "1.4rem", textDecoration: "none", display: "flex", flexDirection: "column", gap: 14,
-            }}>
-              <div>
-                <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
-                  {s.title}
-                </div>
-                <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                  {s.desc}
-                </div>
-              </div>
-              <LivePreview href={s.href} />
-            </Link>
-          ))}
-        </div>
-      </section>
-
       {/* ── Features ── */}
       <section style={{ maxWidth: 1200, margin: "0 auto", padding: "4.5rem 1.5rem 3rem" }}>
         <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.4rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem", textAlign: "center" }}>
