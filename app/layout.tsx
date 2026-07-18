@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import AccessibilityWidget from "@/components/AccessibilityWidget";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://prometheonengine.com"),
@@ -60,6 +61,25 @@ th[style*="border:1px solid var(--border)"] {
 :root[data-theme="dark"] .logo-on-dark { display: inline-block; }
 :root[data-theme="dark"] .logo-on-light { display: none; }
 
+/* Accessibility preferences (set by AccessibilityWidget) */
+html[data-a11y-text="lg"] { font-size: clamp(18.4px, 1.44vw, 23px) !important; }
+html[data-a11y-links="underline"] a { text-decoration: underline !important; }
+html[data-a11y-motion="reduce"] *,
+html[data-a11y-motion="reduce"] *::before,
+html[data-a11y-motion="reduce"] *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+:root[data-a11y-contrast="high"] {
+  --text-secondary: #3A3F4C;
+  --text-muted:     #555B69;
+  --border:         rgba(35, 40, 55, 0.32);
+}
+:root[data-theme="dark"][data-a11y-contrast="high"] {
+  --text-secondary: #C7D2E5;
+  --text-muted:     #9AA8C0;
+  --border:         rgba(255, 255, 255, 0.24);
+}
+
 /* Fair Value Graph series (validated per-surface) */
 :root {
   --fv-line:     #BC5F04;
@@ -109,6 +129,7 @@ th[style*="border:1px solid var(--border)"] {
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: "2rem 2.5rem" }} className="main-content">
           {children}
         </main>
+        <AccessibilityWidget />
       </body>
     </html>
   );
