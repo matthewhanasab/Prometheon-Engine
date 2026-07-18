@@ -41,10 +41,11 @@ export default function AccessibilityPage() {
 
       <H2>Accessibility options</H2>
       <P>
-        The accessibility button in the bottom-right corner of every page provides options to
-        increase text size, raise text and border contrast, underline links, and reduce motion
-        (which disables animations such as the scrolling ticker). Preferences are saved in your
-        browser and persist between visits.
+        The accessibility button in the bottom-right corner of every page (or Ctrl+U) opens a
+        menu with options to increase text size (two levels), raise text and border contrast,
+        highlight links, widen text spacing, increase line height, pause animations, hide images,
+        switch to a dyslexia-friendlier font, enlarge the cursor, and desaturate colors.
+        Preferences are saved in your browser and persist between visits.
       </P>
 
       <H2>Known limitations</H2>

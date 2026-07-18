@@ -63,7 +63,8 @@ th[style*="border:1px solid var(--border)"] {
 
 /* Accessibility preferences (set by AccessibilityWidget) */
 html[data-a11y-text="lg"] { font-size: clamp(18.4px, 1.44vw, 23px) !important; }
-html[data-a11y-links="underline"] a { text-decoration: underline !important; }
+html[data-a11y-text="xl"] { font-size: clamp(20.8px, 1.63vw, 26px) !important; }
+html[data-a11y-links="underline"] a { text-decoration: underline !important; text-underline-offset: 2px; }
 html[data-a11y-motion="reduce"] *,
 html[data-a11y-motion="reduce"] *::before,
 html[data-a11y-motion="reduce"] *::after {
@@ -78,6 +79,20 @@ html[data-a11y-motion="reduce"] *::after {
   --text-secondary: #C7D2E5;
   --text-muted:     #9AA8C0;
   --border:         rgba(255, 255, 255, 0.24);
+}
+html[data-a11y-spacing="wide"] body { letter-spacing: 0.08em !important; word-spacing: 0.16em !important; }
+html[data-a11y-lineheight="tall"] body p,
+html[data-a11y-lineheight="tall"] body div,
+html[data-a11y-lineheight="tall"] body span,
+html[data-a11y-lineheight="tall"] body a,
+html[data-a11y-lineheight="tall"] body td,
+html[data-a11y-lineheight="tall"] body li { line-height: 1.9 !important; }
+html[data-a11y-images="hide"] img { visibility: hidden !important; }
+html[data-a11y-dyslexia="on"] body,
+html[data-a11y-dyslexia="on"] body * { font-family: Verdana, Tahoma, "Trebuchet MS", sans-serif !important; }
+html[data-a11y-saturation="low"] body { filter: saturate(0.25); }
+html[data-a11y-cursor="big"], html[data-a11y-cursor="big"] * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'%3E%3Cpath d='M4 2l16 11.5-6.6.9 3.8 6.7-3 1.7-3.8-6.8-4.9 4.5z' fill='white' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") 3 2, auto !important;
 }
 
 /* Fair Value Graph series (validated per-surface) */
