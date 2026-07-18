@@ -115,8 +115,8 @@ export default function Sidebar() {
             width: 44, height: 44,
             background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 14,
           }}>
-            <Image src="/logo_icon_crop.png" alt="Prometheon Engine"
-              width={22} height={31} style={{ objectFit: "contain" }} priority />
+            <Image src="/logo_icon_sq.png" alt="Prometheon Engine"
+              width={30} height={30} style={{ objectFit: "contain" }} priority />
           </Link>
         </div>
 
