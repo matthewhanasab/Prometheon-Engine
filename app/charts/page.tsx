@@ -14,6 +14,7 @@ import {
   Tooltip,
   Cell,
   Legend,
+  ReferenceLine,
 } from "recharts";
 
 const SEGMENT_COLORS = [
@@ -363,16 +364,31 @@ function ChartsInner() {
     }
     return best;
   }
-  const PE_CLAMP = 150;
-  const peData = income.map((r, i) => {
+  // PE is only meaningful with positive earnings; a trough that drops EPS toward
+  // zero sends the ratio to hundreds of × — real math, useless signal. Compute
+  // the raw series first, then derive a sane display ceiling from the data.
+  const peRaw = income.map((r, i) => {
     const ttmEps = epsTTMArr[i];
     const px = priceOnOrBefore(r.date);
-    // A near-zero EPS denominator produces meaningless thousand-x ratios
-    const pe = ttmEps != null && Math.abs(ttmEps) > 0.02 && px != null ? px / ttmEps : null;
+    return ttmEps != null && ttmEps > 0.05 && px != null ? px / ttmEps : null;
+  });
+  const peValid = peRaw.filter((v): v is number => v != null);
+  const peMedian = peValid.length
+    ? [...peValid].sort((a, b) => a - b)[Math.floor(peValid.length / 2)]
+    : null;
+  // Ceiling sits well above the typical range so normal quarters stay readable,
+  // while off-scale trough spikes flatten against the top instead of dominating.
+  const peCap = peMedian != null
+    ? Math.min(200, Math.max(40, Math.ceil((peMedian * 2.2) / 10) * 10))
+    : 100;
+  const peData = income.map((r, i) => {
+    const pe = peRaw[i];
+    const capped = pe != null && pe > peCap;
     return {
       label: labels[i],
-      value: pe == null ? null : Math.max(-PE_CLAMP, Math.min(PE_CLAMP, pe)),
+      value: pe == null ? null : Math.min(pe, peCap),
       actual: pe,
+      offscale: capped,
     };
   });
 
@@ -803,27 +819,49 @@ function ChartsInner() {
           <SectionLabel>Historical PE Ratio</SectionLabel>
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
-              <BarChart data={peData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
+              <LineChart data={peData} margin={{ top: 18, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => `${v.toFixed(0)}×`} tick={Y_TICK} axisLine={false} tickLine={false} width={64} />
+                <YAxis tickFormatter={(v) => `${v.toFixed(0)}×`} tick={Y_TICK} axisLine={false} tickLine={false} width={64} domain={[0, peCap]} allowDataOverflow />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: any, _n: any, item: any) => {
+                  formatter={(_v: any, _n: any, item: any) => {
                     const actual = item?.payload?.actual;
-                    return [actual != null ? `${actual.toFixed(1)}×` : "N/A", "PE (price ÷ TTM EPS)"];
+                    if (actual == null) return ["N/A", "PE"];
+                    const off = item?.payload?.offscale;
+                    return [`${actual.toFixed(1)}×${off ? " (off scale)" : ""}`, "PE (price ÷ TTM EPS)"];
                   }}
                 />
-                <Bar dataKey="value" radius={[2, 2, 0, 0]} isAnimationActive={false}>
-                  {peData.map((entry, i) => (
-                    <Cell key={i} fill={(entry.value as number) < 0 ? "#EF4444" : "#A78BFA"} />
-                  ))}
-                </Bar>
-              </BarChart>
+                {peMedian != null && (
+                  <ReferenceLine
+                    y={Math.min(peMedian, peCap)}
+                    stroke="var(--text-muted)"
+                    strokeDasharray="5 4"
+                    label={{ value: `median ${peMedian.toFixed(0)}×`, position: "insideTopRight", fill: "var(--text-muted)", fontSize: 12, fontFamily: "Spline Sans Mono, monospace" }}
+                  />
+                )}
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#A78BFA"
+                  strokeWidth={2.4}
+                  connectNulls
+                  isAnimationActive={false}
+                  dot={(props: any) => {
+                    const { cx, cy, payload, index } = props;
+                    if (cx == null || cy == null || payload?.value == null) return <g key={index} />;
+                    // Hollow ring marks a quarter whose true PE ran past the top of the scale
+                    return payload.offscale
+                      ? <circle key={index} cx={cx} cy={cy} r={4} fill="var(--bg-surface)" stroke="#A78BFA" strokeWidth={2} />
+                      : <circle key={index} cx={cx} cy={cy} r={3} fill="#A78BFA" />;
+                  }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </div>
           <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", color: "var(--text-muted)", margin: "6px 4px 0" }}>
-            Quarter-end price ÷ trailing-12-month diluted EPS. Bars clamp at ±{150}× for readability — hover for the exact value. Quarters with near-zero trailing EPS are omitted.
+            Quarter-end price ÷ trailing-12-month diluted EPS. The axis tops out at {peCap}× — hollow points mark quarters whose PE ran off scale (usually an earnings trough), where the exact value is in the tooltip. Loss-making quarters have no PE and are skipped.
           </div>
 
           {/* 7. Shares Outstanding */}
