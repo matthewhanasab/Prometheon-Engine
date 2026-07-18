@@ -172,6 +172,9 @@ interface BalanceRow {
   date: string;
   totalCurrentAssets: number;
   totalCurrentLiabilities: number;
+  cashAndCashEquivalents?: number;
+  shortTermInvestments?: number;
+  totalDebt?: number;
 }
 
 interface Profile {
@@ -194,6 +197,7 @@ interface ChartsData {
   productSegments: Record<string, number>[];
   geoSegments: Record<string, number>[];
   estimates: EstimateRow[];
+  prices: { date: string; price: number }[];
 }
 
 // ─── empty preview ───────────────────────────────────────────────────────────
@@ -206,8 +210,11 @@ function ChartsEmpty() {
     ["Gross & Net Margin", "Margin trends over the last five years"],
     ["Earnings Per Share", "Diluted EPS with forward estimates"],
     ["Free Cash Flow", "What's left after capital expenditures"],
+    ["Free Cash Flow Per Share", "Cash generation on a per-share basis"],
+    ["Historical PE Ratio", "What the market has paid for a dollar of earnings, quarter by quarter"],
     ["Shares Outstanding", "Dilution or buybacks at a glance"],
     ["Revenue by Product & Geography", "Where the money actually comes from"],
+    ["Cash · Securities · Debt", "Liquidity stack vs. total debt each quarter"],
   ];
   return (
     <div>
@@ -241,6 +248,8 @@ function ChartsInner() {
   const [ttmOCF, setTtmOCF] = useState(false);
   const [ttmOpInc, setTtmOpInc] = useState(false);
   const [ttmFCF, setTtmFCF] = useState(false);
+  const [ttmEPS, setTtmEPS] = useState(false);
+  const [ttmFCFps, setTtmFCFps] = useState(false);
 
   useEffect(() => {
     const t = searchParams.get("ticker");
@@ -312,7 +321,9 @@ function ChartsInner() {
     r.revenue ? (r.netIncome / r.revenue) * 100 : null
   );
 
-  const epsVals       = income.map((r) => r.epsDiluted ?? r.eps ?? null);
+  const epsRaw        = income.map((r) => r.epsDiluted ?? r.eps ?? null);
+  const epsTTMArr     = rollingTTM(epsRaw as number[]);
+  const epsVals       = ttmEPS ? epsTTMArr : epsRaw;
 
   const fcfRaw        = cashflow.map((r) =>
     r.freeCashFlow != null
@@ -327,6 +338,51 @@ function ChartsInner() {
   const sharesVals    = income.map(
     (r) => r.weightedAverageShsOutDil ?? r.weightedAverageShsOut ?? null
   );
+
+  // FCF per share: match cash-flow quarters to income quarters for share counts
+  const sharesByDate = new Map<string, number>();
+  income.forEach((r) => {
+    const sh = r.weightedAverageShsOutDil ?? r.weightedAverageShsOut;
+    if (sh) sharesByDate.set(r.date, sh);
+  });
+  const fcfpsRaw = cashflow.map((r, i) => {
+    const fcf = fcfRaw[i];
+    const sh = sharesByDate.get(r.date);
+    return fcf != null && sh ? fcf / sh : null;
+  });
+  const fcfpsTTMArr = rollingTTM(fcfpsRaw as number[]);
+  const fcfpsVals   = ttmFCFps ? fcfpsTTMArr : fcfpsRaw;
+
+  // Historical PE: quarter-end price ÷ trailing-12-month EPS
+  const prices = data?.prices ?? [];
+  function priceOnOrBefore(dateStr: string): number | null {
+    let best: number | null = null;
+    for (const p of prices) {
+      if (p.date <= dateStr) best = p.price;
+      else break;
+    }
+    return best;
+  }
+  const PE_CLAMP = 150;
+  const peData = income.map((r, i) => {
+    const ttmEps = epsTTMArr[i];
+    const px = priceOnOrBefore(r.date);
+    // A near-zero EPS denominator produces meaningless thousand-x ratios
+    const pe = ttmEps != null && Math.abs(ttmEps) > 0.02 && px != null ? px / ttmEps : null;
+    return {
+      label: labels[i],
+      value: pe == null ? null : Math.max(-PE_CLAMP, Math.min(PE_CLAMP, pe)),
+      actual: pe,
+    };
+  });
+
+  // Cash / marketable securities / total debt (grouped)
+  const cashDebtData = balance.map((r, i) => ({
+    label: balLabels[i],
+    cash: r.cashAndCashEquivalents ?? null,
+    securities: r.shortTermInvestments ?? null,
+    debt: r.totalDebt ?? null,
+  }));
 
   // recharts data arrays
   function toBarData<T>(lbls: string[], vals: (T | null)[]) {
@@ -353,11 +409,13 @@ function ChartsInner() {
   }));
   const epsData: { label: string; value: number | null; forecast?: number | null }[] =
     toBarData(labels, epsVals);
-  futureEst.forEach((e) => {
-    if (e.epsAvg != null) {
-      epsData.push({ label: `${qLabel(e.date)}E`, value: null, forecast: e.epsAvg });
-    }
-  });
+  if (!ttmEPS) {
+    futureEst.forEach((e) => {
+      if (e.epsAvg != null) {
+        epsData.push({ label: `${qLabel(e.date)}E`, value: null, forecast: e.epsAvg });
+      }
+    });
+  }
   const fcfData       = toBarData(cfLabels, fcfVals);
   const sharesData    = toBarData(labels, sharesVals);
   const balData       = balLabels.map((label, i) => ({
@@ -429,7 +487,7 @@ function ChartsInner() {
         Financial Charts
       </h1>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0 0 0.75rem" }}>
-        Revenue · OCF · Operating Income · Margins · EPS · FCF · Shares · PE Ratio
+        Revenue · OCF · Operating Income · Margins · EPS · FCF · FCF/Share · PE Ratio · Shares · Segments · Cash vs Debt
       </p>
 
       {/* Gold divider */}
@@ -664,6 +722,7 @@ function ChartsInner() {
 
           {/* 5. EPS */}
           <SectionLabel>Earnings Per Share (EPS)</SectionLabel>
+          <TtmToggle isTtm={ttmEPS} onChange={setTtmEPS} />
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={epsData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
@@ -716,6 +775,55 @@ function ChartsInner() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* 6b. Free Cash Flow Per Share */}
+          <SectionLabel>Free Cash Flow Per Share</SectionLabel>
+          <TtmToggle isTtm={ttmFCFps} onChange={setTtmFCFps} />
+          <div style={CARD_STYLE}>
+            <ResponsiveContainer width="100%" height={360}>
+              <BarChart data={toBarData(cfLabels, fcfpsVals)} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={Y_TICK} axisLine={false} tickLine={false} width={70} />
+                <Tooltip
+                  {...TOOLTIP_STYLE}
+                  formatter={(v: any) => [`$${v.toFixed(2)}`, "FCF / Share"]}
+                />
+                <Bar dataKey="value" radius={[2, 2, 0, 0]} isAnimationActive={false}>
+                  {toBarData(cfLabels, fcfpsVals).map((entry, i) => (
+                    <Cell key={i} fill={(entry.value as number) < 0 ? "#EF4444" : "#10B981"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* 6c. Historical PE Ratio */}
+          <SectionLabel>Historical PE Ratio</SectionLabel>
+          <div style={CARD_STYLE}>
+            <ResponsiveContainer width="100%" height={360}>
+              <BarChart data={peData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={(v) => `${v.toFixed(0)}×`} tick={Y_TICK} axisLine={false} tickLine={false} width={64} />
+                <Tooltip
+                  {...TOOLTIP_STYLE}
+                  formatter={(v: any, _n: any, item: any) => {
+                    const actual = item?.payload?.actual;
+                    return [actual != null ? `${actual.toFixed(1)}×` : "N/A", "PE (price ÷ TTM EPS)"];
+                  }}
+                />
+                <Bar dataKey="value" radius={[2, 2, 0, 0]} isAnimationActive={false}>
+                  {peData.map((entry, i) => (
+                    <Cell key={i} fill={(entry.value as number) < 0 ? "#EF4444" : "#A78BFA"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", color: "var(--text-muted)", margin: "6px 4px 0" }}>
+            Quarter-end price ÷ trailing-12-month diluted EPS. Bars clamp at ±{150}× for readability — hover for the exact value. Quarters with near-zero trailing EPS are omitted.
           </div>
 
           {/* 7. Shares Outstanding */}
@@ -785,7 +893,7 @@ function ChartsInner() {
 
           {/* 8. Current Assets vs Liabilities */}
           <SectionLabel>Current Assets vs Liabilities</SectionLabel>
-          <div style={{ ...CARD_STYLE, marginBottom: "2rem" }}>
+          <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <LineChart data={balData} margin={{ top: 14, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -821,6 +929,32 @@ function ChartsInner() {
                   isAnimationActive={false}
                 />
               </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* 11. Cash / Marketable Securities / Debt */}
+          <SectionLabel>Cash · Marketable Securities · Debt</SectionLabel>
+          <div style={{ ...CARD_STYLE, marginBottom: "2rem" }}>
+            <ResponsiveContainer width="100%" height={360}>
+              <BarChart data={cashDebtData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }} barGap={2}>
+                <CartesianGrid vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
+                <Tooltip
+                  {...TOOLTIP_STYLE}
+                  formatter={(v: any, name: any) => [
+                    fmtVal(v),
+                    name === "cash" ? "Cash & Equivalents" : name === "securities" ? "Marketable Securities" : "Total Debt",
+                  ]}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 10, fontFamily: "Spline Sans Mono, monospace", color: "var(--text-muted)" }}
+                  formatter={(v) => (v === "cash" ? "Cash" : v === "securities" ? "Marketable Securities" : "Debt")}
+                />
+                <Bar dataKey="cash" stackId="liq" fill="#22C55E" isAnimationActive={false} />
+                <Bar dataKey="securities" stackId="liq" fill="#3B82F6" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="debt" fill="#EF4444" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </>
