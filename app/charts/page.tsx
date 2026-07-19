@@ -30,6 +30,16 @@ function qLabel(dateStr: string): string {
   return `Q${q} '${String(d.getFullYear()).slice(2)}`;
 }
 
+// Prefer FMP's reported fiscal period/year — deriving the quarter from the
+// period-end date mislabels companies whose quarter ends spill a day into the
+// next calendar quarter (e.g. AMD's Q1 ends April 1), and can even collide.
+function periodLabel(r: { period?: string; fiscalYear?: string | number; date: string }): string {
+  if (r.period && /^Q[1-4]$/.test(r.period) && r.fiscalYear != null) {
+    return `${r.period} '${String(r.fiscalYear).slice(2)}`;
+  }
+  return qLabel(r.date);
+}
+
 function fmtVal(v: number | null): string {
   if (v == null) return "N/A";
   const abs = Math.abs(v);
@@ -166,6 +176,8 @@ function QoQLabel(props: {
 
 interface IncomeRow {
   date: string;
+  period?: string;
+  fiscalYear?: string | number;
   revenue: number;
   grossProfit: number;
   operatingIncome: number;
@@ -178,6 +190,8 @@ interface IncomeRow {
 
 interface CashflowRow {
   date: string;
+  period?: string;
+  fiscalYear?: string | number;
   operatingCashFlow: number;
   freeCashFlow?: number;
   capitalExpenditure?: number;
@@ -185,6 +199,8 @@ interface CashflowRow {
 
 interface BalanceRow {
   date: string;
+  period?: string;
+  fiscalYear?: string | number;
   totalCurrentAssets: number;
   totalCurrentLiabilities: number;
   cashAndCashEquivalents?: number;
@@ -313,9 +329,9 @@ function ChartsInner() {
         .slice(0, 6)
     : [];
 
-  const labels        = income.map((r) => qLabel(r.date));
-  const cfLabels      = cashflow.map((r) => qLabel(r.date));
-  const balLabels     = balance.map((r) => qLabel(r.date));
+  const labels        = income.map((r) => periodLabel(r));
+  const cfLabels      = cashflow.map((r) => periodLabel(r));
+  const balLabels     = balance.map((r) => periodLabel(r));
 
   const revenueRaw    = income.map((r) => r.revenue ?? null);
   const revenueTTM    = rollingTTM(revenueRaw as number[]);
