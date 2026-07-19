@@ -71,13 +71,23 @@ function logTicks(lo: number, hi: number): number[] {
   return out;
 }
 
-function rollingTTM(arr: number[]): (number | null)[] {
-  // arr is chronological (oldest first). TTM[i] = sum of [i-3..i]
+function rollingTTM(arr: (number | null)[]): (number | null)[] {
+  // arr is chronological (oldest first). TTM[i] = sum of [i-3..i]; any missing
+  // quarter in the window makes the whole sum null rather than undercounting.
   return arr.map((_, i) => {
     if (i < 3) return null;
-    const sum = arr[i] + arr[i - 1] + arr[i - 2] + arr[i - 3];
-    return isFinite(sum) ? sum : null;
+    const w = [arr[i], arr[i - 1], arr[i - 2], arr[i - 3]];
+    if (w.some((v) => v == null || !isFinite(v as number))) return null;
+    return (w as number[]).reduce((a, b) => a + b, 0);
   });
+}
+
+// TTM series extended through forecast quarters. Each future quarter's TTM is the
+// trailing four quarters ending there — a blend of reported and estimated quarters.
+function forecastTTM(actualQ: (number | null)[], estQ: (number | null)[]): (number | null)[] {
+  const combined = [...actualQ, ...estQ];
+  const ttm = rollingTTM(combined);
+  return ttm.slice(actualQ.length); // just the estimate-quarter TTM values
 }
 
 // ─── shared chart style ──────────────────────────────────────────────────────
@@ -449,11 +459,19 @@ function ChartsInner() {
     return lbls.map((label, i) => ({ label, value: vals[i] }));
   }
 
-  // Revenue + EPS charts get forecast bars appended (quarterly view only —
-  // estimates are per-quarter so they don't line up with TTM sums)
+  // Revenue + EPS charts get forecast bars appended. In quarterly view each
+  // estimate is a single quarter; in TTM view we roll the estimates into the
+  // trailing-four-quarter sum so the dashed bars continue the TTM line.
   const revenueData: { label: string; value: number | null; forecast?: number | null }[] =
     toBarData(labels, revenueVals);
-  if (!ttmRevenue) {
+  if (ttmRevenue) {
+    const ttmEst = forecastTTM(revenueRaw, futureEst.map((e) => e.revenueAvg ?? null));
+    futureEst.forEach((e, j) => {
+      if (ttmEst[j] != null) {
+        revenueData.push({ label: `${qLabel(e.date)}E`, value: null, forecast: ttmEst[j] });
+      }
+    });
+  } else {
     futureEst.forEach((e) => {
       if (e.revenueAvg != null) {
         revenueData.push({ label: `${qLabel(e.date)}E`, value: null, forecast: e.revenueAvg });
@@ -469,7 +487,14 @@ function ChartsInner() {
   }));
   const epsData: { label: string; value: number | null; forecast?: number | null }[] =
     toBarData(labels, epsVals);
-  if (!ttmEPS) {
+  if (ttmEPS) {
+    const ttmEst = forecastTTM(epsRaw, futureEst.map((e) => e.epsAvg ?? null));
+    futureEst.forEach((e, j) => {
+      if (ttmEst[j] != null) {
+        epsData.push({ label: `${qLabel(e.date)}E`, value: null, forecast: ttmEst[j] });
+      }
+    });
+  } else {
     futureEst.forEach((e) => {
       if (e.epsAvg != null) {
         epsData.push({ label: `${qLabel(e.date)}E`, value: null, forecast: e.epsAvg });
