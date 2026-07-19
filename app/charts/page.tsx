@@ -381,6 +381,12 @@ function ChartsInner() {
   const peCap = peMedian != null
     ? Math.min(200, Math.max(40, Math.ceil((peMedian * 2.2) / 10) * 10))
     : 100;
+  // Axis tops out above the clamp ceiling so off-scale points rest below the
+  // card's top edge instead of touching it.
+  const peAxisMax = Math.ceil((peCap * 1.1) / 10) * 10;
+  const peStep = peAxisMax <= 80 ? 20 : peAxisMax <= 160 ? 40 : 50;
+  const peTicks: number[] = [];
+  for (let v = 0; v <= peAxisMax; v += peStep) peTicks.push(v);
   const peData = income.map((r, i) => {
     const pe = peRaw[i];
     const capped = pe != null && pe > peCap;
@@ -819,10 +825,10 @@ function ChartsInner() {
           <SectionLabel>Historical PE Ratio</SectionLabel>
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
-              <LineChart data={peData} margin={{ top: 18, right: 16, left: 8, bottom: 0 }}>
+              <LineChart data={peData} margin={{ top: 24, right: 20, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => `${v.toFixed(0)}×`} tick={Y_TICK} axisLine={false} tickLine={false} width={64} domain={[0, peCap]} allowDataOverflow />
+                <YAxis tickFormatter={(v) => `${v.toFixed(0)}×`} tick={Y_TICK} axisLine={false} tickLine={false} width={64} domain={[0, peAxisMax]} ticks={peTicks} allowDataOverflow />
                 <Tooltip
                   {...TOOLTIP_STYLE}
                   formatter={(_v: any, _n: any, item: any) => {
@@ -835,9 +841,10 @@ function ChartsInner() {
                 {peMedian != null && (
                   <ReferenceLine
                     y={Math.min(peMedian, peCap)}
-                    stroke="var(--text-muted)"
-                    strokeDasharray="5 4"
-                    label={{ value: `median ${peMedian.toFixed(0)}×`, position: "insideTopRight", fill: "var(--text-muted)", fontSize: 12, fontFamily: "Spline Sans Mono, monospace" }}
+                    stroke="var(--accent-2)"
+                    strokeWidth={1.75}
+                    strokeDasharray="7 5"
+                    label={{ value: `median ${peMedian.toFixed(0)}×`, position: "insideTopLeft", fill: "var(--accent-2)", fontSize: 13, fontWeight: 700, fontFamily: "Spline Sans Mono, monospace" }}
                   />
                 )}
                 <Line
