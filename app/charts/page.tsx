@@ -206,6 +206,8 @@ interface BalanceRow {
   cashAndCashEquivalents?: number;
   shortTermInvestments?: number;
   totalDebt?: number;
+  totalStockholdersEquity?: number;
+  totalEquity?: number;
 }
 
 interface Profile {
@@ -244,6 +246,7 @@ function ChartsEmpty() {
     ["Free Cash Flow Per Share", "Cash generation on a per-share basis"],
     ["Historical PE Ratio", "What the market has paid for a dollar of earnings, quarter by quarter"],
     ["Shares Outstanding", "Dilution or buybacks at a glance"],
+    ["Shareholders' Equity", "Book value — what's left for owners after debts"],
     ["Revenue by Product & Geography", "Where the money actually comes from"],
     ["Cash · Securities · Debt", "Liquidity stack vs. total debt each quarter"],
   ];
@@ -435,6 +438,12 @@ function ChartsInner() {
     debt: r.totalDebt ?? null,
   }));
 
+  // Shareholders' equity (book value) by quarter
+  const equityData = balance.map((r, i) => ({
+    label: balLabels[i],
+    value: r.totalStockholdersEquity ?? r.totalEquity ?? null,
+  }));
+
   // recharts data arrays
   function toBarData<T>(lbls: string[], vals: (T | null)[]) {
     return lbls.map((label, i) => ({ label, value: vals[i] }));
@@ -538,7 +547,7 @@ function ChartsInner() {
         Financial Charts
       </h1>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0 0 0.75rem" }}>
-        Revenue · OCF · Operating Income · Margins · EPS · FCF · FCF/Share · PE Ratio · Shares · Segments · Cash vs Debt
+        Revenue · OCF · Operating Income · Margins · EPS · FCF · FCF/Share · PE Ratio · Shares · Equity · Segments · Cash vs Debt
       </p>
 
       {/* Gold divider */}
@@ -908,6 +917,27 @@ function ChartsInner() {
                   formatter={(v: any) => [fmtShares(v), "Shares Outstanding"]}
                 />
                 <Bar dataKey="value" fill="var(--text-muted)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* 7b. Shareholders' Equity */}
+          <SectionLabel>Shareholders&apos; Equity</SectionLabel>
+          <div style={CARD_STYLE}>
+            <ResponsiveContainer width="100%" height={360}>
+              <BarChart data={equityData} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
+                <Tooltip
+                  {...TOOLTIP_STYLE}
+                  formatter={(v: any) => [fmtVal(v), "Shareholders' Equity"]}
+                />
+                <Bar dataKey="value" radius={[2, 2, 0, 0]} isAnimationActive={false}>
+                  {equityData.map((entry, i) => (
+                    <Cell key={i} fill={(entry.value as number) < 0 ? "#EF4444" : "#84CC16"} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
