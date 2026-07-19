@@ -47,6 +47,20 @@ function fmtShares(v: number | null): string {
   return v.toFixed(0);
 }
 
+// 1-2-5 per-decade ticks across [lo, hi] for a log axis
+function logTicks(lo: number, hi: number): number[] {
+  const out: number[] = [];
+  let dec = Math.floor(Math.log10(lo));
+  while (Math.pow(10, dec) <= hi + 1e-9) {
+    for (const m of [1, 2, 5]) {
+      const v = m * Math.pow(10, dec);
+      if (v >= lo - 1e-9 && v <= hi + 1e-9) out.push(v);
+    }
+    dec++;
+  }
+  return out;
+}
+
 function rollingTTM(arr: number[]): (number | null)[] {
   // arr is chronological (oldest first). TTM[i] = sum of [i-3..i]
   return arr.map((_, i) => {
@@ -373,30 +387,29 @@ function ChartsInner() {
     return ttmEps != null && ttmEps > 0.05 && px != null ? px / ttmEps : null;
   });
   const peValid = peRaw.filter((v): v is number => v != null);
-  const peMedian = peValid.length
-    ? [...peValid].sort((a, b) => a - b)[Math.floor(peValid.length / 2)]
-    : null;
-  // Ceiling sits well above the typical range so normal quarters stay readable,
-  // while off-scale trough spikes flatten against the top instead of dominating.
-  const peCap = peMedian != null
-    ? Math.min(200, Math.max(40, Math.ceil((peMedian * 2.2) / 10) * 10))
-    : 100;
-  // Axis tops out above the clamp ceiling so off-scale points rest below the
-  // card's top edge instead of touching it.
-  const peAxisMax = Math.ceil((peCap * 1.1) / 10) * 10;
-  const peStep = peAxisMax <= 80 ? 20 : peAxisMax <= 160 ? 40 : 50;
-  const peTicks: number[] = [];
-  for (let v = 0; v <= peAxisMax; v += peStep) peTicks.push(v);
-  const peData = income.map((r, i) => {
-    const pe = peRaw[i];
-    const capped = pe != null && pe > peCap;
-    return {
-      label: labels[i],
-      value: pe == null ? null : Math.min(pe, peCap),
-      actual: pe,
-      offscale: capped,
-    };
-  });
+  const peSorted = [...peValid].sort((a, b) => a - b);
+  const peMedian = peSorted.length ? peSorted[Math.floor(peSorted.length / 2)] : null;
+  const peMin = peSorted.length ? peSorted[0] : null;
+  const peMax = peSorted.length ? peSorted[peSorted.length - 1] : null;
+  // When the ratio swings across an order of magnitude (a trough sends PE to the
+  // hundreds), a log axis shows the true spike; a linear one would need clamping
+  // and produce a flat plateau. Stable stocks stay linear so their range fills out.
+  const peUseLog = peMin != null && peMax != null && peMin > 0 && peMax / peMin > 8;
+  let peDomain: [number, number];
+  let peTicks: number[];
+  if (peUseLog && peMin != null && peMax != null) {
+    const lo = Math.pow(10, Math.floor(Math.log10(peMin)));
+    const hi = Math.pow(10, Math.ceil(Math.log10(peMax)));
+    peDomain = [lo, hi];
+    peTicks = logTicks(lo, hi);
+  } else {
+    const hi = peMax != null ? Math.ceil((peMax * 1.12) / 10) * 10 : 50;
+    peDomain = [0, hi];
+    const step = hi <= 80 ? 20 : hi <= 160 ? 40 : 50;
+    peTicks = [];
+    for (let v = 0; v <= hi; v += step) peTicks.push(v);
+  }
+  const peData = income.map((r, i) => ({ label: labels[i], value: peRaw[i] }));
 
   // Cash / marketable securities / total debt (grouped)
   const cashDebtData = balance.map((r, i) => ({
@@ -828,19 +841,21 @@ function ChartsInner() {
               <LineChart data={peData} margin={{ top: 24, right: 20, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => `${v.toFixed(0)}×`} tick={Y_TICK} axisLine={false} tickLine={false} width={64} domain={[0, peAxisMax]} ticks={peTicks} allowDataOverflow />
+                <YAxis
+                  scale={peUseLog ? "log" : "linear"}
+                  domain={peDomain}
+                  ticks={peTicks}
+                  tickFormatter={(v) => `${v}×`}
+                  tick={Y_TICK} axisLine={false} tickLine={false} width={64}
+                  allowDataOverflow
+                />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(_v: any, _n: any, item: any) => {
-                    const actual = item?.payload?.actual;
-                    if (actual == null) return ["N/A", "PE"];
-                    const off = item?.payload?.offscale;
-                    return [`${actual.toFixed(1)}×${off ? " (off scale)" : ""}`, "PE (price ÷ TTM EPS)"];
-                  }}
+                  formatter={(v: any) => [v == null ? "N/A" : `${Number(v).toFixed(1)}×`, "PE (price ÷ TTM EPS)"]}
                 />
                 {peMedian != null && (
                   <ReferenceLine
-                    y={Math.min(peMedian, peCap)}
+                    y={peMedian}
                     stroke="var(--accent-2)"
                     strokeWidth={1.75}
                     strokeDasharray="7 5"
@@ -854,21 +869,14 @@ function ChartsInner() {
                   strokeWidth={2.4}
                   connectNulls
                   isAnimationActive={false}
-                  dot={(props: any) => {
-                    const { cx, cy, payload, index } = props;
-                    if (cx == null || cy == null || payload?.value == null) return <g key={index} />;
-                    // Hollow ring marks a quarter whose true PE ran past the top of the scale
-                    return payload.offscale
-                      ? <circle key={index} cx={cx} cy={cy} r={4} fill="var(--bg-surface)" stroke="#A78BFA" strokeWidth={2} />
-                      : <circle key={index} cx={cx} cy={cy} r={3} fill="#A78BFA" />;
-                  }}
+                  dot={{ r: 3, fill: "#A78BFA" }}
                   activeDot={{ r: 5 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", color: "var(--text-muted)", margin: "6px 4px 0" }}>
-            Quarter-end price ÷ trailing-12-month diluted EPS. The axis tops out at {peCap}× — hollow points mark quarters whose PE ran off scale (usually an earnings trough), where the exact value is in the tooltip. Loss-making quarters have no PE and are skipped.
+            Quarter-end price ÷ trailing-12-month diluted EPS.{peUseLog ? " Shown on a log scale — the ratio spans a wide range (usually an earnings trough sending PE to the hundreds)." : ""} Loss-making quarters have no PE and are skipped.
           </div>
 
           {/* 7. Shares Outstanding */}
