@@ -67,6 +67,15 @@ html[data-topbar="1"] .main-content { padding-top: 5.9rem !important; }
   html[data-topbar="1"] .main-content { padding-top: 4.6rem !important; }
 }
 
+/* Left-edge nav tab: a slow beacon pulse so people notice it's the way around */
+@keyframes navTabPulse {
+  0%, 100% { box-shadow: 3px 0 14px rgba(0,0,0,0.22), 0 0 0 0 rgba(var(--accent-rgb), 0.55); }
+  50%      { box-shadow: 3px 0 14px rgba(0,0,0,0.22), 0 0 0 9px rgba(var(--accent-rgb), 0); }
+}
+.nav-edge-tab { animation: navTabPulse 2.6s ease-in-out infinite; }
+.nav-edge-tab:hover { animation: none; }
+@media (prefers-reduced-motion: reduce) { .nav-edge-tab { animation: none !important; } }
+
 /* Accessibility preferences (set by AccessibilityWidget) */
 html[data-a11y-text="lg"] { font-size: clamp(18.4px, 1.44vw, 23px) !important; }
 html[data-a11y-text="xl"] { font-size: clamp(20.8px, 1.63vw, 26px) !important; }

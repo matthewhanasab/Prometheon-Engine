@@ -98,27 +98,36 @@ export default function Sidebar() {
       {/* ── Left-edge pull tab: opens the nav; rides the drawer's edge when open ── */}
       <button
         onClick={() => setOpen(o => !o)}
-        aria-label={open ? "Close navigation" : "Open navigation"}
+        aria-label={open ? "Close navigation" : "Open navigation menu"}
         aria-expanded={open}
-        title={open ? "Close navigation" : "Open navigation"}
+        title={open ? "Close menu" : "Open menu"}
+        className={open ? undefined : "nav-edge-tab"}
         style={{
           position: "fixed", top: "50%", left: open ? 236 : 0, transform: "translateY(-50%)",
           zIndex: 220, cursor: "pointer", padding: 0,
-          width: 26, height: 60,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: open ? "var(--accent-gold)" : "var(--bg-elevated)",
-          border: "1px solid var(--border)", borderLeft: "none",
-          borderTopRightRadius: 14, borderBottomRightRadius: 14,
-          color: open ? "var(--on-accent)" : "var(--text-secondary)",
-          boxShadow: "3px 0 12px rgba(0,0,0,0.18)",
-          transition: "left 0.22s ease, background 0.15s ease",
+          width: 34, height: open ? 66 : 108,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+          background: "var(--accent-gold)",
+          border: "1px solid var(--accent-gold)", borderLeft: "none",
+          borderTopRightRadius: 16, borderBottomRightRadius: 16,
+          color: "var(--on-accent)",
+          transition: "left 0.22s ease, height 0.2s ease",
         }}
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"
           style={{ display: "block", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }}>
           <path d="M9 6l6 6-6 6" />
         </svg>
+        {!open && (
+          <span style={{
+            writingMode: "vertical-rl", transform: "rotate(180deg)",
+            fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", fontWeight: 700,
+            letterSpacing: "0.18em", textTransform: "uppercase", lineHeight: 1,
+          }}>
+            Menu
+          </span>
+        )}
       </button>
 
       {/* ── Backdrop ── */}
