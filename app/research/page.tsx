@@ -266,6 +266,9 @@ function ResearchInner() {
 
   // TradingView-style: start typing a letter/number anywhere and it jumps into
   // the ticker box. Ignores typing already aimed at a field, and modifier combos.
+  // This handler only fires when the box is unfocused — i.e. the user is starting
+  // a fresh ticker — so it REPLACES any prior ticker rather than appending to it
+  // (type AMD, search, then type AAPL → a new AAPL search, not "AMDAAPL").
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -276,7 +279,7 @@ function ResearchInner() {
         const box = inputRef.current;
         if (!box) return;
         e.preventDefault();
-        setInput((prev) => (prev + e.key).toUpperCase());
+        setInput(e.key.toUpperCase());
         box.focus();
       }
     }
@@ -345,7 +348,7 @@ function ResearchInner() {
       </div>
 
       {/* Search */}
-      <form onSubmit={e => { e.preventDefault(); load(input); }} style={{ display:"flex", gap:10, marginBottom:"2rem", maxWidth:380 }}>
+      <form onSubmit={e => { e.preventDefault(); load(input); inputRef.current?.blur(); }} style={{ display:"flex", gap:10, marginBottom:"2rem", maxWidth:380 }}>
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder="Type a ticker…"
           style={{ flex:1, background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:22, padding:"10px 14px", color:"var(--text-primary)", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.85rem", outline:"none" }} />
         <button type="submit" style={{ background:"var(--accent-gold)", color:"var(--on-accent)", border:"none", borderRadius:22, padding:"10px 22px", fontFamily:"'Public Sans', sans-serif", fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", cursor:"pointer" }}>Analyze</button>
