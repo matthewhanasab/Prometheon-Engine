@@ -61,6 +61,10 @@ th[style*="border:1px solid var(--border)"] {
 :root[data-theme="dark"] .logo-on-dark { display: inline-block; }
 :root[data-theme="dark"] .logo-on-light { display: none; }
 
+/* Room for the fixed brand elements the Sidebar renders */
+html[data-sidebar="collapsed"] .main-content { padding-top: 5.2rem !important; }
+html[data-topbar="mobile"] .main-content { padding-top: 4.6rem !important; }
+
 /* Accessibility preferences (set by AccessibilityWidget) */
 html[data-a11y-text="lg"] { font-size: clamp(18.4px, 1.44vw, 23px) !important; }
 html[data-a11y-text="xl"] { font-size: clamp(20.8px, 1.63vw, 26px) !important; }
