@@ -112,9 +112,12 @@ export default function Sidebar() {
         {/* Logo — full wordmark, theme-swapped via the logo-on-* classes in layout */}
         <div style={{ padding: "0 1.5rem 1.1rem" }}>
           <Link href="/" onClick={handleNav} style={{ display: "block" }}>
-            <Image src="/logo_transparent.png" alt="Prometheon Engine" className="logo-on-light"
+            {/* File names are misleading: logo_transparent.png has WHITE text (needs a
+                dark backdrop) and logo_transparent_dark.png has dark navy text (needs a
+                light backdrop) — assigned by actual text color, not filename. */}
+            <Image src="/logo_transparent_dark.png" alt="Prometheon Engine" className="logo-on-light"
               width={172} height={53} style={{ width: "100%", height: "auto", objectFit: "contain" }} priority />
-            <Image src="/logo_transparent_dark.png" alt="Prometheon Engine" className="logo-on-dark"
+            <Image src="/logo_transparent.png" alt="Prometheon Engine" className="logo-on-dark"
               width={172} height={53} style={{ width: "100%", height: "auto", objectFit: "contain" }} priority />
           </Link>
         </div>
