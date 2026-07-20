@@ -109,15 +109,13 @@ export default function Sidebar() {
           boxShadow: open ? "4px 0 24px rgba(0,0,0,0.4)" : "none",
         } : {}),
       }}>
-        {/* Logo — flame icon in a glass badge (full wordmark lives on the landing page) */}
-        <div style={{ padding: "0 1.75rem 1.25rem", display: "flex", justifyContent: "flex-start" }}>
-          <Link href="/" onClick={handleNav} style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            width: 44, height: 44,
-            background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 14,
-          }}>
-            <Image src="/logo_icon_sq.png" alt="Prometheon Engine"
-              width={30} height={30} style={{ objectFit: "contain" }} priority />
+        {/* Logo — full wordmark, theme-swapped via the logo-on-* classes in layout */}
+        <div style={{ padding: "0 1.5rem 1.1rem" }}>
+          <Link href="/" onClick={handleNav} style={{ display: "block" }}>
+            <Image src="/logo_transparent.png" alt="Prometheon Engine" className="logo-on-light"
+              width={172} height={53} style={{ width: "100%", height: "auto", objectFit: "contain" }} priority />
+            <Image src="/logo_transparent_dark.png" alt="Prometheon Engine" className="logo-on-dark"
+              width={172} height={53} style={{ width: "100%", height: "auto", objectFit: "contain" }} priority />
           </Link>
         </div>
 
