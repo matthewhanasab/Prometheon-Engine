@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import StockHeatmap from "@/components/StockHeatmap";
 
 interface Mover {
   symbol: string;
@@ -99,6 +100,18 @@ export default function MoversPage() {
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.45, maxWidth: 200, marginBottom: "0.9rem" }} />
       <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
         Today&apos;s biggest gainers, losers, and most active names — plus sector performance at a glance
+      </div>
+
+      {/* S&P 500 heatmap */}
+      <div style={{
+        fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600,
+        textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)",
+        borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "1rem",
+      }}>
+        S&amp;P 500 Heatmap — sized by market cap, colored by performance
+      </div>
+      <div style={{ marginBottom: "2rem" }}>
+        <StockHeatmap />
       </div>
 
       {loading && (

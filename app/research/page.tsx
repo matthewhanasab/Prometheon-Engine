@@ -303,6 +303,7 @@ function ResearchInner() {
   const news     = data?.news     ?? [];
   const insiders      = data?.insiders      ?? [];
   const institutional = data?.institutional ?? [];
+  const float         = data?.float         ?? null;
   const rf            = data?.rf            ?? 0.043;
   const scores        = data?.scores        ?? null;
   const dcf           = data?.dcf           ?? null;
@@ -652,8 +653,58 @@ function ResearchInner() {
             </>
           )}
 
+          {/* ── Ownership & Float ── */}
+          {float && float.freeFloatPct != null && (
+            <>
+              <SectionLabel>Ownership &amp; Float</SectionLabel>
+              {(() => {
+                const freeFloat = Math.max(0, Math.min(100, float.freeFloatPct));
+                const closelyHeld = 100 - freeFloat;
+                const outShares = float.outstandingShares ?? null;
+                const floatShares = float.floatShares ?? (outShares ? outShares * freeFloat / 100 : null);
+                const heldShares = outShares && floatShares != null ? outShares - floatShares : null;
+                const bn = (n: number | null) => n == null ? "—" : n >= 1e9 ? `${(n/1e9).toFixed(2)}B` : n >= 1e6 ? `${(n/1e6).toFixed(1)}M` : n.toLocaleString();
+                return (
+                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"18px 18px 16px", marginBottom:"0.5rem" }}>
+                    {/* stacked bar */}
+                    <div style={{ display:"flex", height:26, borderRadius:999, overflow:"hidden", border:"1px solid var(--border)", marginBottom:14 }}>
+                      <div style={{ width:`${freeFloat}%`, background:"var(--accent-gold)" }} />
+                      <div style={{ width:`${closelyHeld}%`, background:"var(--accent-2)" }} />
+                    </div>
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(min(150px, 45vw), 1fr))", gap:12 }}>
+                      <div>
+                        <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
+                          <span style={{ width:11, height:11, borderRadius:3, background:"var(--accent-gold)", display:"inline-block" }} />
+                          <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", color:"var(--text-secondary)" }}>Public float</span>
+                        </div>
+                        <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.15rem", fontWeight:600, color:"var(--text-primary)" }}>{freeFloat.toFixed(1)}%</div>
+                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)" }}>{bn(floatShares)} shares tradable</div>
+                      </div>
+                      <div>
+                        <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
+                          <span style={{ width:11, height:11, borderRadius:3, background:"var(--accent-2)", display:"inline-block" }} />
+                          <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", color:"var(--text-secondary)" }}>Closely held</span>
+                        </div>
+                        <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.15rem", fontWeight:600, color:"var(--text-primary)" }}>{closelyHeld.toFixed(1)}%</div>
+                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)" }}>{bn(heldShares)} insiders &amp; strategic</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", color:"var(--text-secondary)", marginBottom:4 }}>Shares outstanding</div>
+                        <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.15rem", fontWeight:600, color:"var(--text-primary)" }}>{bn(outShares)}</div>
+                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)" }}>total issued</div>
+                      </div>
+                    </div>
+                    <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)", marginTop:12 }}>
+                      Closely held = shares not in the public float (insiders, founders, and strategic holders). Institutional vs. retail split isn&apos;t available on the current data plan.
+                    </div>
+                  </div>
+                );
+              })()}
+            </>
+          )}
+
           {/* ── Insider Activity ── */}
-          <SectionLabel>Insider Activity — SEC EDGAR Form 4</SectionLabel>
+          <SectionLabel>Insider Activity — Form 4</SectionLabel>
           {insiders.length > 0 ? (
             <>
               <Grid cols={4}>
@@ -674,7 +725,7 @@ function ResearchInner() {
                     t.value  ? (t.value >= 1e6 ? `$${(t.value/1e6).toFixed(1)}M` : t.value >= 1e3 ? `$${(t.value/1e3).toFixed(0)}K` : `$${t.value.toLocaleString()}`) : "—",
                     t.owned  ? t.owned.toLocaleString(undefined,{maximumFractionDigits:0}) : "—",
                   ])} />
-                <div style={{ fontSize:"0.65rem", color:"var(--text-muted)", marginTop:6 }}>SEC EDGAR Form 4 · BUY = acquisition · SELL = disposal · No API key required.</div>
+                <div style={{ fontSize:"0.65rem", color:"var(--text-muted)", marginTop:6 }}>SEC Form 4 filings · BUY = acquisition · SELL = disposal.</div>
               </div>
             </>
           ) : (

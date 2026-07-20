@@ -255,6 +255,7 @@ function ChartsEmpty() {
     ["Free Cash Flow", "What's left after capital expenditures"],
     ["Free Cash Flow Per Share", "Cash generation on a per-share basis"],
     ["Historical PE Ratio", "What the market has paid for a dollar of earnings, quarter by quarter"],
+    ["Historical Price / Sales", "Market cap against trailing revenue, with the historical median"],
     ["Shares Outstanding", "Dilution or buybacks at a glance"],
     ["Shareholders' Equity", "Book value — what's left for owners after debts"],
     ["Revenue by Product & Geography", "Where the money actually comes from"],
@@ -452,6 +453,20 @@ function ChartsInner() {
   }
   const peData = income.map((r, i) => ({ label: labels[i], value: peRaw[i] }));
 
+  // Historical P/S: quarter-end market cap ÷ trailing-12-month revenue.
+  // (Revenue rarely craters, so P/S stays in a tight range — plain linear axis.)
+  const psRaw = income.map((r, i) => {
+    const ttmRev = revenueTTM[i];
+    const px = priceOnOrBefore(r.date);
+    const sh = r.weightedAverageShsOutDil ?? r.weightedAverageShsOut ?? null;
+    return ttmRev != null && ttmRev > 0 && px != null && sh ? (px * sh) / ttmRev : null;
+  });
+  const psValid = psRaw.filter((v): v is number => v != null).sort((a, b) => a - b);
+  const psMedian = psValid.length ? psValid[Math.floor(psValid.length / 2)] : null;
+  const psMax = psValid.length ? psValid[psValid.length - 1] : null;
+  const psAxisMax = psMax != null ? Math.max(2, Math.ceil(psMax * 1.15)) : 10;
+  const psData = income.map((r, i) => ({ label: labels[i], value: psRaw[i] }));
+
   // Cash / marketable securities / total debt (grouped)
   const cashDebtData = balance.map((r, i) => ({
     label: balLabels[i],
@@ -593,7 +608,7 @@ function ChartsInner() {
         Financial Charts
       </h1>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0 0 0.75rem" }}>
-        Revenue · OCF · Operating Income · Margins · EPS · FCF · FCF/Share · PE Ratio · Shares · Equity · Segments · Cash vs Debt
+        Revenue · OCF · Operating Income · Margins · EPS · FCF · FCF/Share · PE · P/S · Shares · Equity · Segments · Cash vs Debt
       </p>
 
       {/* Gold divider */}
@@ -953,6 +968,49 @@ function ChartsInner() {
           </div>
           <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", color: "var(--text-muted)", margin: "6px 4px 0" }}>
             Quarter-end price ÷ trailing-12-month diluted EPS.{peUseLog ? " Shown on a log scale — the ratio spans a wide range (usually an earnings trough sending PE to the hundreds)." : ""} Loss-making quarters have no PE and are skipped.
+          </div>
+
+          {/* 6d. Historical Price / Sales */}
+          <SectionLabel>Historical Price / Sales (P/S)</SectionLabel>
+          <div style={CARD_STYLE}>
+            <ResponsiveContainer width="100%" height={360}>
+              <LineChart data={psData} margin={{ top: 24, right: 20, left: 8, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
+                <YAxis
+                  domain={[0, psAxisMax]}
+                  tickFormatter={(v) => `${v}×`}
+                  tick={Y_TICK} axisLine={false} tickLine={false} width={56}
+                  allowDataOverflow
+                />
+                <Tooltip
+                  {...TOOLTIP_STYLE}
+                  formatter={(v: any) => [v == null ? "N/A" : `${Number(v).toFixed(2)}×`, "P/S (mkt cap ÷ TTM rev)"]}
+                />
+                {psMedian != null && (
+                  <ReferenceLine
+                    y={psMedian}
+                    stroke="var(--accent-2)"
+                    strokeWidth={1.75}
+                    strokeDasharray="7 5"
+                    label={{ value: `median ${psMedian.toFixed(1)}×`, position: "insideTopLeft", fill: "var(--accent-2)", fontSize: 13, fontWeight: 700, fontFamily: "Spline Sans Mono, monospace" }}
+                  />
+                )}
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#06B6D4"
+                  strokeWidth={2.4}
+                  connectNulls
+                  isAnimationActive={false}
+                  dot={{ r: 3, fill: "#06B6D4" }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", color: "var(--text-muted)", margin: "6px 4px 0" }}>
+            Quarter-end market cap (price × diluted shares) ÷ trailing-12-month revenue. The dashed line marks the historical median.
           </div>
 
           {/* 7. Shares Outstanding */}

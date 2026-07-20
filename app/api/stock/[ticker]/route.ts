@@ -33,6 +33,56 @@ async function getInstitutionalHolders(ticker: string) {
   } catch { return []; }
 }
 
+// FMP insider trades (the SEC-EDGAR scraper is fragile and often returns nothing)
+async function getInsiderTradesFMP(ticker: string) {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/insider-trading/search?symbol=${ticker}&limit=40&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data.map((t: any) => {
+      const name = String(t.reportingName ?? "Unknown")
+        .split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+      const shares = t.securitiesTransacted ?? 0;
+      const price = t.price ?? null;
+      return {
+        date: t.transactionDate ?? t.filingDate ?? "",
+        name,
+        title: t.typeOfOwner ?? "—",
+        type: t.acquisitionOrDisposition === "A" ? "BUY" : t.acquisitionOrDisposition === "D" ? "SELL" : "OTHER",
+        shares,
+        price,
+        value: price && shares ? Math.round(shares * price) : null,
+        owned: t.securitiesOwned ?? null,
+      };
+    });
+  } catch { return []; }
+}
+
+// Ownership / float snapshot (institutional-holdings endpoints are gated on our plan)
+async function getSharesFloat(ticker: string) {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/shares-float?symbol=${ticker}&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) return null;
+    return {
+      freeFloatPct: row.freeFloat ?? null,
+      floatShares: row.floatShares ?? null,
+      outstandingShares: row.outstandingShares ?? null,
+    };
+  } catch { return null; }
+}
+
 async function getFinancialScores(ticker: string) {
   const key = process.env.FMP_KEY ?? "";
   try {
@@ -111,7 +161,7 @@ export async function GET(
   const { ticker: rawTicker } = await params;
   const ticker = rawTicker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   try {
-    const [stock, price, earnings, recs, news, insiders, rf, priceTarget, institutional, scores, dcf, grades, gradesConsensus, peers] = await Promise.all([
+    const [stock, price, earnings, recs, news, insidersSec, rf, priceTarget, institutional, scores, dcf, grades, gradesConsensus, peers, insidersFmp, float] = await Promise.all([
       getFullStockData(ticker),
       getPriceHistory(ticker, 365),
       getEarnings(ticker),
@@ -126,7 +176,12 @@ export async function GET(
       getGrades(ticker),
       getGradesConsensus(ticker),
       getPeers(ticker),
+      getInsiderTradesFMP(ticker),
+      getSharesFloat(ticker),
     ]);
+
+    // Prefer FMP insiders (reliable); fall back to the SEC scraper if FMP is empty
+    const insiders = insidersFmp.length > 0 ? insidersFmp : insidersSec;
 
     // Compute 1Y return from price history
     let return1Y: number | null = null;
@@ -136,7 +191,7 @@ export async function GET(
 
     // Merge Finnhub price target into stock object
     if (priceTarget && !stock.analystTarget) (stock as any).analystTarget = priceTarget;
-    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers });
+    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers, float });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
