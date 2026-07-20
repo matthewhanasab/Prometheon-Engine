@@ -85,7 +85,7 @@ export default function Sidebar() {
       {/* ── Fixed brand bar: the logo owns the top-left, always ── */}
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, height: BAR_H, zIndex: 210,
-        display: "flex", alignItems: "center", gap: isMobile ? 10 : 14,
+        display: "flex", alignItems: "center",
         padding: isMobile ? "0 12px" : "0 20px",
         background: "var(--bg-primary)",
         borderBottom: "1px solid var(--border)",
@@ -93,26 +93,33 @@ export default function Sidebar() {
         <Link href="/" style={{ display: "flex", alignItems: "center" }}>
           <Brand width={logoW} />
         </Link>
-        <button
-          onClick={() => setOpen(o => !o)}
-          aria-label={open ? "Close navigation" : "Open navigation"}
-          aria-expanded={open}
-          title={open ? "Close navigation" : "Menu"}
-          style={{
-            width: 32, height: 32, borderRadius: 999, cursor: "pointer", flexShrink: 0,
-            display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
-            background: open ? "var(--accent-gold)" : "var(--bg-elevated)",
-            border: "1px solid var(--border)",
-            color: open ? "var(--on-accent)" : "var(--text-secondary)",
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-            style={{ display: "block", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }}>
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </button>
       </div>
+
+      {/* ── Left-edge pull tab: opens the nav; rides the drawer's edge when open ── */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        aria-label={open ? "Close navigation" : "Open navigation"}
+        aria-expanded={open}
+        title={open ? "Close navigation" : "Open navigation"}
+        style={{
+          position: "fixed", top: "50%", left: open ? 236 : 0, transform: "translateY(-50%)",
+          zIndex: 220, cursor: "pointer", padding: 0,
+          width: 26, height: 60,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: open ? "var(--accent-gold)" : "var(--bg-elevated)",
+          border: "1px solid var(--border)", borderLeft: "none",
+          borderTopRightRadius: 14, borderBottomRightRadius: 14,
+          color: open ? "var(--on-accent)" : "var(--text-secondary)",
+          boxShadow: "3px 0 12px rgba(0,0,0,0.18)",
+          transition: "left 0.22s ease, background 0.15s ease",
+        }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          style={{ display: "block", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }}>
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
 
       {/* ── Backdrop ── */}
       {open && (
