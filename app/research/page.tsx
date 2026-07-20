@@ -257,6 +257,35 @@ function ResearchInner() {
   const [chartMode, setChartMode] = useState<ChartMode>("builtin");
   const [range, setRange] = useState<RangeKey>("1Y");
 
+  // Earnings call transcripts (lazy: quarters list on load, content on demand)
+  const [tsDates, setTsDates] = useState<{ quarter: number; fiscalYear: number; date: string | null }[]>([]);
+  const [tsSel, setTsSel] = useState<string | null>(null); // "year-quarter"
+  const [tsContent, setTsContent] = useState<string | null>(null);
+  const [tsLoading, setTsLoading] = useState(false);
+
+  useEffect(() => {
+    const tk = data?.stock?.ticker;
+    setTsDates([]); setTsSel(null); setTsContent(null);
+    if (!tk) return;
+    fetch(`/api/transcript/${tk}`)
+      .then(r => r.json())
+      .then(j => setTsDates(j.dates ?? []))
+      .catch(() => {});
+  }, [data?.stock?.ticker]);
+
+  async function loadTranscript(year: number, quarter: number) {
+    const key = `${year}-${quarter}`;
+    if (tsSel === key) return;
+    setTsSel(key); setTsContent(null); setTsLoading(true);
+    try {
+      const res = await fetch(`/api/transcript/${data?.stock?.ticker}?year=${year}&quarter=${quarter}`);
+      const j = await res.json();
+      setTsContent(j.transcript?.content ?? null);
+    } catch {
+      setTsContent(null);
+    } finally { setTsLoading(false); }
+  }
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -308,6 +337,7 @@ function ResearchInner() {
   const institutional = data?.institutional ?? [];
   const float         = data?.float         ?? null;
   const etfExposure   = data?.etfExposure   ?? null;
+  const instOwn       = data?.instOwnership ?? null;
   const rf            = data?.rf            ?? 0.043;
   const scores        = data?.scores        ?? null;
   const dcf           = data?.dcf           ?? null;
@@ -657,50 +687,111 @@ function ResearchInner() {
             </>
           )}
 
-          {/* ── Ownership & Float ── */}
-          {float && float.freeFloatPct != null && (
+          {/* ── Ownership Breakdown ── */}
+          {(float?.freeFloatPct != null || instOwn) && (
             <>
-              <SectionLabel>Ownership &amp; Float</SectionLabel>
+              <SectionLabel>Ownership Breakdown</SectionLabel>
               {(() => {
-                const freeFloat = Math.max(0, Math.min(100, float.freeFloatPct));
-                const closelyHeld = 100 - freeFloat;
-                const outShares = float.outstandingShares ?? null;
-                const floatShares = float.floatShares ?? (outShares ? outShares * freeFloat / 100 : null);
-                const heldShares = outShares && floatShares != null ? outShares - floatShares : null;
+                const freeFloat = float?.freeFloatPct != null ? Math.max(0, Math.min(100, float.freeFloatPct)) : null;
+                const insidersPct = freeFloat != null ? 100 - freeFloat : null;
+                const instPctRaw = instOwn?.institutionsPct ?? null;
+                // 13F totals can overlap the closely-held bucket; cap so slices fit
+                const instPct = instPctRaw != null
+                  ? Math.min(instPctRaw, insidersPct != null ? 100 - insidersPct : 100)
+                  : null;
+                const retailPct = instPct != null && insidersPct != null
+                  ? Math.max(0, 100 - instPct - insidersPct)
+                  : null;
+                const outShares = float?.outstandingShares ?? null;
                 const bn = (n: number | null) => n == null ? "—" : n >= 1e9 ? `${(n/1e9).toFixed(2)}B` : n >= 1e6 ? `${(n/1e6).toFixed(1)}M` : n.toLocaleString();
+                const money = (n: number | null) => n == null ? "—" : n >= 1e12 ? `$${(n/1e12).toFixed(2)}T` : n >= 1e9 ? `$${(n/1e9).toFixed(1)}B` : `$${(n/1e6).toFixed(0)}M`;
+
+                const slices = instPct != null && insidersPct != null
+                  ? [
+                      { label: "Institutions", pct: instPct, raw: instPctRaw, color: "var(--accent-gold)", sub: instOwn?.investorCount ? `${instOwn.investorCount.toLocaleString()} funds (13F)` : "13F filers" },
+                      { label: "Insiders & Strategic", pct: insidersPct, raw: insidersPct, color: "var(--accent-2)", sub: "outside the public float" },
+                      { label: "Retail & Other", pct: retailPct ?? 0, raw: retailPct, color: "#A78BFA", sub: "remainder of float" },
+                    ]
+                  : [
+                      { label: "Public Float", pct: freeFloat ?? 0, raw: freeFloat, color: "var(--accent-gold)", sub: `${bn(float?.floatShares ?? null)} shares tradable` },
+                      { label: "Insiders & Strategic", pct: insidersPct ?? 0, raw: insidersPct, color: "var(--accent-2)", sub: "outside the public float" },
+                    ];
+
+                // SVG donut
+                const R = 52, C = 2 * Math.PI * R;
+                let acc = 0;
+                const arcs = slices.filter(sl => sl.pct > 0).map((sl) => {
+                  const seg = (sl.pct / 100) * C;
+                  const arc = { ...sl, dash: `${seg} ${C - seg}`, offset: -acc };
+                  acc += seg;
+                  return arc;
+                });
+
                 return (
-                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"18px 18px 16px", marginBottom:"0.5rem" }}>
-                    {/* stacked bar */}
-                    <div style={{ display:"flex", height:26, borderRadius:999, overflow:"hidden", border:"1px solid var(--border)", marginBottom:14 }}>
-                      <div style={{ width:`${freeFloat}%`, background:"var(--accent-gold)" }} />
-                      <div style={{ width:`${closelyHeld}%`, background:"var(--accent-2)" }} />
-                    </div>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(min(150px, 45vw), 1fr))", gap:12 }}>
-                      <div>
-                        <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
-                          <span style={{ width:11, height:11, borderRadius:3, background:"var(--accent-gold)", display:"inline-block" }} />
-                          <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", color:"var(--text-secondary)" }}>Public float</span>
+                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"20px 20px 16px", marginBottom:"0.5rem" }}>
+                    <div style={{ display:"flex", gap:26, flexWrap:"wrap", alignItems:"center" }}>
+                      {/* Donut */}
+                      <svg width="150" height="150" viewBox="0 0 130 130" role="img" aria-label="Ownership breakdown donut chart">
+                        <g transform="rotate(-90 65 65)">
+                          {arcs.map((a) => (
+                            <circle key={a.label} cx="65" cy="65" r={R} fill="none"
+                              stroke={a.color} strokeWidth="21"
+                              strokeDasharray={a.dash} strokeDashoffset={a.offset} />
+                          ))}
+                        </g>
+                        <text x="65" y="61" textAnchor="middle" style={{ fill:"var(--text-primary)", fontFamily:"'Spline Sans Mono',monospace", fontSize:15, fontWeight:700 }}>
+                          {instPct != null ? `${instPct.toFixed(0)}%` : freeFloat != null ? `${freeFloat.toFixed(0)}%` : ""}
+                        </text>
+                        <text x="65" y="76" textAnchor="middle" style={{ fill:"var(--text-muted)", fontFamily:"'Public Sans', sans-serif", fontSize:8 }}>
+                          {instPct != null ? "institutional" : "public float"}
+                        </text>
+                      </svg>
+                      {/* Legend */}
+                      <div style={{ flex:"1 1 240px", display:"flex", flexDirection:"column", gap:10 }}>
+                        {slices.map((sl) => (
+                          <div key={sl.label} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                            <span style={{ width:12, height:12, borderRadius:4, background:sl.color, flexShrink:0 }} />
+                            <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.76rem", color:"var(--text-primary)", flex:1 }}>{sl.label}</span>
+                            <span style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.85rem", fontWeight:600, color:"var(--text-primary)" }}>
+                              {sl.raw != null ? `${sl.raw.toFixed(1)}%` : "—"}
+                            </span>
+                            <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)", flexBasis:"38%", textAlign:"right" }}>{sl.sub}</span>
+                          </div>
+                        ))}
+                        <div style={{ display:"flex", gap:18, marginTop:4, flexWrap:"wrap", fontFamily:"'Public Sans', sans-serif", fontSize:"0.64rem", color:"var(--text-muted)" }}>
+                          <span>Shares outstanding: <span style={{ fontFamily:"'Spline Sans Mono',monospace", color:"var(--text-secondary)" }}>{bn(outShares)}</span></span>
+                          {instOwn?.totalInvested != null && (
+                            <span>13F value: <span style={{ fontFamily:"'Spline Sans Mono',monospace", color:"var(--text-secondary)" }}>{money(instOwn.totalInvested)}</span></span>
+                          )}
+                          {instOwn?.asOf && <span>as of {instOwn.asOf} filings</span>}
                         </div>
-                        <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.15rem", fontWeight:600, color:"var(--text-primary)" }}>{freeFloat.toFixed(1)}%</div>
-                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)" }}>{bn(floatShares)} shares tradable</div>
                       </div>
-                      <div>
-                        <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
-                          <span style={{ width:11, height:11, borderRadius:3, background:"var(--accent-2)", display:"inline-block" }} />
-                          <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", color:"var(--text-secondary)" }}>Closely held</span>
+                    </div>
+
+                    {/* Top institutional holders */}
+                    {instOwn?.holders?.length > 0 && (
+                      <div style={{ marginTop:16, borderTop:"1px solid var(--border)", paddingTop:10, overflowX:"auto" }}>
+                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.58rem", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text-secondary)", marginBottom:6 }}>
+                          Top 10 Institutional Holders
                         </div>
-                        <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.15rem", fontWeight:600, color:"var(--text-primary)" }}>{closelyHeld.toFixed(1)}%</div>
-                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)" }}>{bn(heldShares)} insiders &amp; strategic</div>
+                        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:"0.76rem" }}>
+                          <tbody>
+                            {instOwn.holders.map((h: any, i: number) => (
+                              <tr key={h.name} style={{ borderTop: i > 0 ? "1px solid var(--border)" : "none" }}>
+                                <td style={{ padding:"6px 8px 6px 0", color:"var(--text-muted)", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.68rem", width:24 }}>{i+1}</td>
+                                <td style={{ padding:"6px 8px", color:"var(--text-primary)" }}>{h.name.split(" ").map((w: string) => w.charAt(0) + w.slice(1).toLowerCase()).join(" ")}</td>
+                                <td style={{ padding:"6px 8px", textAlign:"right", fontFamily:"'Spline Sans Mono',monospace", fontWeight:600, color:"var(--accent-gold)" }}>
+                                  {h.pctOwned != null ? `${Number(h.pctOwned).toFixed(2)}%` : "—"}
+                                </td>
+                                <td style={{ padding:"6px 0 6px 8px", textAlign:"right", fontFamily:"'Spline Sans Mono',monospace", color:"var(--text-secondary)" }}>
+                                  {h.shares != null ? bn(h.shares) + " sh" : ""}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                      <div>
-                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", color:"var(--text-secondary)", marginBottom:4 }}>Shares outstanding</div>
-                        <div style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.15rem", fontWeight:600, color:"var(--text-primary)" }}>{bn(outShares)}</div>
-                        <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)" }}>total issued</div>
-                      </div>
-                    </div>
-                    <div style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.62rem", color:"var(--text-muted)", marginTop:12 }}>
-                      Closely held = shares not in the public float (insiders, founders, and strategic holders). Institutional vs. retail split isn&apos;t available on the current data plan.
-                    </div>
+                    )}
                   </div>
                 );
               })()}
@@ -763,6 +854,56 @@ function ResearchInner() {
               <div style={{ fontSize:"0.62rem", color:"var(--text-muted)", marginTop:6, padding:"0 4px", marginBottom:"0.4rem" }}>
                 Twelve largest ETF positions by dollar value — weight is how much of each fund this stock makes up. Click a fund to open it in the ETF Hub.
               </div>
+            </>
+          )}
+
+          {/* ── Earnings Call Transcripts ── */}
+          {tsDates.length > 0 && (
+            <>
+              <SectionLabel>Earnings Call Transcripts</SectionLabel>
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:"0.7rem" }}>
+                {tsDates.map((d) => {
+                  const key = `${d.fiscalYear}-${d.quarter}`;
+                  const active = tsSel === key;
+                  return (
+                    <button key={key} type="button" onClick={() => loadTranscript(d.fiscalYear, d.quarter)} style={{
+                      background: active ? "var(--accent-gold)" : "var(--bg-elevated)",
+                      color: active ? "var(--on-accent)" : "var(--text-secondary)",
+                      border: "1px solid var(--border)", borderRadius: 999, padding: "5px 13px",
+                      fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.7rem", cursor: "pointer",
+                    }}>
+                      Q{d.quarter} FY{String(d.fiscalYear).slice(2)}
+                    </button>
+                  );
+                })}
+              </div>
+              {tsLoading && (
+                <div style={{ color:"var(--text-secondary)", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.78rem", padding:"14px 0" }}>Loading transcript…</div>
+              )}
+              {!tsLoading && tsSel && !tsContent && (
+                <div style={{ color:"var(--text-muted)", fontSize:"0.8rem", padding:"10px 0" }}>Transcript not available for this quarter.</div>
+              )}
+              {!tsLoading && tsContent && (
+                <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"18px 20px", maxHeight:520, overflowY:"auto" }}>
+                  {tsContent.split(/\n+/).map((para, i) => {
+                    const m = para.match(/^([A-Z][A-Za-z.'\- ]{1,60}?):\s*/);
+                    return (
+                      <p key={i} style={{ margin:"0 0 0.85rem", fontSize:"0.8rem", lineHeight:1.75, color:"var(--text-secondary)", fontFamily:"'Public Sans', sans-serif" }}>
+                        {m ? (
+                          <>
+                            <strong style={{ color:"var(--text-primary)" }}>{m[1]}:</strong> {para.slice(m[0].length)}
+                          </>
+                        ) : para}
+                      </p>
+                    );
+                  })}
+                </div>
+              )}
+              {!tsSel && (
+                <div style={{ color:"var(--text-muted)", fontSize:"0.78rem", padding:"4px 0 8px" }}>
+                  Pick a quarter to read the full call — prepared remarks and analyst Q&amp;A.
+                </div>
+              )}
             </>
           )}
 

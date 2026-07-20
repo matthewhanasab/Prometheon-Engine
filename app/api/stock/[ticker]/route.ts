@@ -112,6 +112,82 @@ async function getEtfExposure(ticker: string) {
   } catch { return null; }
 }
 
+// 13F institutional ownership summary + top holders (Ultimate plan). Filings are
+// due 45 days after quarter end, so a just-ended quarter EXISTS but is only
+// partially filed (early filers → tiny ownership %, wrong "top holders"). Only
+// use quarters whose filing window has fully closed.
+function recentQuarters(): { year: number; quarter: number }[] {
+  const now = Date.now();
+  const out: { year: number; quarter: number }[] = [];
+  let y = new Date().getFullYear();
+  let q = Math.floor(new Date().getMonth() / 3) + 1; // current calendar quarter
+  for (let i = 0; i < 5 && out.length < 3; i++) {
+    q -= 1;
+    if (q === 0) { q = 4; y -= 1; }
+    const qEnd = new Date(y, q * 3, 0); // last day of the quarter
+    const daysSinceEnd = (now - qEnd.getTime()) / 86400000;
+    if (daysSinceEnd >= 50) out.push({ year: y, quarter: q }); // deadline + buffer
+  }
+  return out;
+}
+
+async function getInstitutionalOwnership(ticker: string) {
+  const key = process.env.FMP_KEY ?? "";
+  for (const { year, quarter } of recentQuarters()) {
+    try {
+      const res = await fetch(
+        `${FMP_BASE}/institutional-ownership/symbol-positions-summary?symbol=${ticker}&year=${year}&quarter=${quarter}&apikey=${key}`,
+        { next: { revalidate: 21600 } }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const row = Array.isArray(data) ? data[0] : null;
+      if (!row || row.ownershipPercent == null) continue;
+
+      // Top holders for the same quarter
+      let holders: any[] = [];
+      try {
+        const hRes = await fetch(
+          `${FMP_BASE}/institutional-ownership/extract-analytics/holder?symbol=${ticker}&year=${year}&quarter=${quarter}&page=0&limit=10&apikey=${key}`,
+          { next: { revalidate: 21600 } }
+        );
+        if (hRes.ok) {
+          const hData = await hRes.json();
+          if (Array.isArray(hData)) {
+            // NOTE: `weight` here is the stock's share of the INVESTOR's
+            // portfolio (AAPL ≈ 22% of Berkshire's book), not % of the company.
+            // Rank by shares held; true ownership % is computed by the caller
+            // from shares outstanding.
+            holders = hData
+              .filter((h: any) => h.investorName && (h.sharesNumber ?? 0) > 0)
+              .sort((a: any, b: any) => b.sharesNumber - a.sharesNumber)
+              .slice(0, 10)
+              .map((h: any) => ({
+                name: h.investorName,
+                shares: h.sharesNumber,
+                value: h.marketValue ?? null,
+                portfolioWeight: h.weight ?? null,
+                changeInShares: h.changeInSharesNumber ?? null,
+              }));
+          }
+        }
+      } catch { /* holders are best-effort */ }
+
+      return {
+        asOf: row.date,
+        institutionsPct: row.ownershipPercent,
+        institutionsPctChange: row.ownershipPercentChange ?? null,
+        investorCount: row.investorsHolding ?? null,
+        investorCountChange: row.investorsHoldingChange ?? null,
+        totalInvested: row.totalInvested ?? null,
+        putCallRatio: row.putCallRatio ?? null,
+        holders,
+      };
+    } catch { /* try older quarter */ }
+  }
+  return null;
+}
+
 // Ownership / float snapshot (institutional-holdings endpoints are gated on our plan)
 async function getSharesFloat(ticker: string) {
   const key = process.env.FMP_KEY ?? "";
@@ -210,7 +286,7 @@ export async function GET(
   const { ticker: rawTicker } = await params;
   const ticker = rawTicker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   try {
-    const [stock, price, earnings, recs, news, insidersSec, rf, priceTarget, institutional, scores, dcf, grades, gradesConsensus, peers, insidersFmp, float, etfExposure] = await Promise.all([
+    const [stock, price, earnings, recs, news, insidersSec, rf, priceTarget, institutional, scores, dcf, grades, gradesConsensus, peers, insidersFmp, float, etfExposure, instOwnership] = await Promise.all([
       getFullStockData(ticker),
       getPriceHistory(ticker, 365),
       getEarnings(ticker),
@@ -228,10 +304,20 @@ export async function GET(
       getInsiderTradesFMP(ticker),
       getSharesFloat(ticker),
       getEtfExposure(ticker),
+      getInstitutionalOwnership(ticker),
     ]);
 
     // Prefer FMP insiders (reliable); fall back to the SEC scraper if FMP is empty
     const insiders = insidersFmp.length > 0 ? insidersFmp : insidersSec;
+
+    // True ownership % per holder = shares held ÷ shares outstanding
+    const outSh = float?.outstandingShares ?? null;
+    if (instOwnership?.holders && outSh) {
+      instOwnership.holders = instOwnership.holders.map((h: any) => ({
+        ...h,
+        pctOwned: (h.shares / outSh) * 100,
+      }));
+    }
 
     // Price ETF positions in USD from the live quote (see getEtfExposure note)
     const px = stock.price ?? null;
@@ -249,7 +335,7 @@ export async function GET(
 
     // Merge Finnhub price target into stock object
     if (priceTarget && !stock.analystTarget) (stock as any).analystTarget = priceTarget;
-    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers, float, etfExposure: etfExposurePriced });
+    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers, float, etfExposure: etfExposurePriced, instOwnership });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
