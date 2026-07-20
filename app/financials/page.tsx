@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -232,15 +232,38 @@ function FinancialsInner() {
     } finally { setLoading(false); }
   }
 
+  const tickerInputRef = useRef<HTMLInputElement>(null);
+
   async function load(e: React.FormEvent) {
     e.preventDefault();
     fetchData(input, period);
+    tickerInputRef.current?.blur();
   }
 
   useEffect(() => {
     const t = searchParams.get("ticker");
     if (t) { setInput(t.toUpperCase()); fetchData(t.toUpperCase(), period); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // TradingView-style type-to-search: typing anywhere (box unfocused) starts a
+  // fresh ticker — replacing any prior one, not appending to it.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = document.activeElement;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (el as HTMLElement)?.isContentEditable) return;
+      if (/^[a-zA-Z0-9.]$/.test(e.key)) {
+        const box = tickerInputRef.current;
+        if (!box) return;
+        e.preventDefault();
+        setInput(e.key.toUpperCase());
+        box.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   function switchPeriod(p: "annual" | "quarterly") {
@@ -268,9 +291,10 @@ function FinancialsInner() {
       {/* Search form */}
       <form onSubmit={load} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: "2rem" }}>
         <input
+          ref={tickerInputRef}
           value={input}
           onChange={e => setInput(e.target.value.toUpperCase())}
-          placeholder="Ticker"
+          placeholder="Type a ticker…"
           required
           style={{
             width: 160, background: "var(--bg-elevated)", border: "1px solid var(--border)",

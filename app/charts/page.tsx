@@ -314,6 +314,27 @@ function ChartsInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // TradingView-style type-to-search: typing anywhere (box unfocused) starts a
+  // fresh ticker — replacing any prior one, not appending to it.
+  const tickerInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = document.activeElement;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (el as HTMLElement)?.isContentEditable) return;
+      if (/^[a-zA-Z0-9.]$/.test(e.key)) {
+        const box = tickerInputRef.current;
+        if (!box) return;
+        e.preventDefault();
+        setInputTicker(e.key.toUpperCase());
+        box.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   async function handleSubmit(symArg?: string) {
     const sym = (symArg ?? inputTicker).trim().toUpperCase();
     if (!sym) return;
@@ -623,10 +644,11 @@ function ChartsInner() {
       {/* Ticker form */}
       <div style={{ display: "flex", gap: "0.6rem", marginBottom: "1.5rem", alignItems: "center" }}>
         <input
+          ref={tickerInputRef}
           value={inputTicker}
           onChange={(e) => setInputTicker(e.target.value.toUpperCase())}
-          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder="Ticker"
+          onKeyDown={(e) => { if (e.key === "Enter") { handleSubmit(); tickerInputRef.current?.blur(); } }}
+          placeholder="Type a ticker…"
           style={{
             width: 180,
             padding: "0.5rem 0.75rem",

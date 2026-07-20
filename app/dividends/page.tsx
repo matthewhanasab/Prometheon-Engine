@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -135,6 +135,28 @@ function DividendsInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // TradingView-style type-to-search: typing anywhere (box unfocused) starts a
+  // fresh ticker — replacing any prior one. The ref is null in calendar mode
+  // (no input rendered), so the handler no-ops there.
+  const tickerInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = document.activeElement;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (el as HTMLElement)?.isContentEditable) return;
+      if (/^[a-zA-Z0-9.]$/.test(e.key)) {
+        const box = tickerInputRef.current;
+        if (!box) return;
+        e.preventDefault();
+        setInput(e.key.toUpperCase());
+        box.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   useEffect(() => {
     if (mode !== "calendar") return;
     setCalLoading(true);
@@ -228,9 +250,9 @@ function DividendsInner() {
       {mode === "lookup" && (
         <>
           {/* Search */}
-          <form onSubmit={(e) => { e.preventDefault(); setSearched(input.trim().toUpperCase()); loadTicker(input); }}
+          <form onSubmit={(e) => { e.preventDefault(); setSearched(input.trim().toUpperCase()); loadTicker(input); tickerInputRef.current?.blur(); }}
             style={{ display: "flex", gap: 10, marginBottom: "2rem", maxWidth: 380 }}>
-            <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
+            <input ref={tickerInputRef} value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Type a ticker…"
               style={{
                 flex: 1, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22,
                 padding: "10px 14px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace",
