@@ -29,7 +29,8 @@ function fmtLarge(n: number | null | undefined) {
   return `$${n.toLocaleString()}`;
 }
 
-const COLORS = ["#3B82F6", "var(--accent-gold)", "#22C55E", "#A78BFA"];
+const COLORS = ["#3B82F6", "var(--accent-gold)", "#22C55E", "#A78BFA", "#F97316"];
+const MAX_TICKERS = 5;
 
 // â”€â”€ Metric config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type MetricDef = {
@@ -56,8 +57,8 @@ const SECTIONS: { title: string; metrics: MetricDef[] }[] = [
   {
     title: "GROWTH",
     metrics: [
-      { label: "EPS Growth",     key: s => s.epsGrowth,     fmt: fmtPct, lowerIsBetter: false },
-      { label: "Revenue Growth", key: s => s.revenueGrowth, fmt: fmtPct, lowerIsBetter: false },
+      { label: "EPS Growth (fwd)",     key: s => s.epsGrowth,     fmt: fmtPct, lowerIsBetter: false },
+      { label: "Revenue Growth (YoY)", key: s => s.revenueGrowth, fmt: fmtPct, lowerIsBetter: false },
     ],
   },
   {
@@ -287,7 +288,7 @@ function EmptyHint({ title, desc }: { title: string; desc: string }) {
 
 function CompareInner() {
   const searchParams = useSearchParams();
-  const [tickers, setTickers] = useState(["AAPL", "MSFT", "", ""]);
+  const [tickers, setTickers] = useState(["AAPL", "MSFT", "", "", ""]);
   const [stocks, setStocks]   = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
@@ -300,9 +301,9 @@ function CompareInner() {
   useEffect(() => {
     const q = searchParams.get("t");
     if (q) {
-      const list = q.split(",").map(s => s.trim().toUpperCase()).filter(Boolean).slice(0, 4);
+      const list = q.split(",").map(s => s.trim().toUpperCase()).filter(Boolean).slice(0, MAX_TICKERS);
       if (list.length >= 2) {
-        setTickers([list[0] ?? "", list[1] ?? "", list[2] ?? "", list[3] ?? ""]);
+        setTickers(Array.from({ length: MAX_TICKERS }, (_, i) => list[i] ?? ""));
         runCompare(list);
       }
     }
@@ -372,8 +373,8 @@ function CompareInner() {
     { name: "ROE",       ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.roe)])) },
   ];
   const growthBars = [
-    { name: "Revenue", ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.revenueGrowth)])) },
-    { name: "EPS",     ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.epsGrowth)])) },
+    { name: "Rev (YoY)", ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.revenueGrowth)])) },
+    { name: "EPS (fwd)", ...Object.fromEntries(stocks.map(s => [s.ticker, pct(s.epsGrowth)])) },
   ];
   const valuationBars = [
     { name: "P/E",   ...Object.fromEntries(stocks.map(s => [s.ticker, s.peRatio ?? null])) },
@@ -394,7 +395,7 @@ function CompareInner() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, marginBottom: "2rem" }}>
-        {[0, 1, 2, 3].map(i => (
+        {Array.from({ length: MAX_TICKERS }, (_, i) => (
           <TickerInput
             key={i}
             value={tickers[i]}
@@ -418,7 +419,7 @@ function CompareInner() {
       {!loading && stocks.length === 0 && !error && (
         <>
           <EmptyHint title="Side-by-Side Overview" desc="Price, market cap, and daily move for each ticker, color-coded per company." />
-          <EmptyHint title="1-Year Performance Race" desc="Both stocks&apos; percentage returns overlaid on one chart." />
+          <EmptyHint title="1-Year Performance Race" desc="Each ticker&apos;s percentage return overlaid on one chart." />
           <EmptyHint title="Category Scorecard" desc="Who wins Valuation, Growth, Profitability, and Health — metric by metric." />
           <EmptyHint title="Metric Comparison Table" desc="Valuation, growth, profitability, and balance-sheet health — best value starred in each row." />
           <EmptyHint title="Strength Heatmap" desc="Eight dimensions scored 0-100 against fixed benchmarks, color-coded per company." />
@@ -544,7 +545,7 @@ function CompareInner() {
           {/* Grouped bar comparisons */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: "2rem" }}>
             <GroupedBars title="Profitability — %" data={marginBars} stocks={stocks} unit="%" />
-            <GroupedBars title="Growth — % (TTM vs Fwd)" data={growthBars} stocks={stocks} unit="%" />
+            <GroupedBars title="Growth — Revenue YoY vs EPS forward, %" data={growthBars} stocks={stocks} unit="%" />
             <GroupedBars title="Valuation Multiples — lower is cheaper" data={valuationBars} stocks={stocks} unit="x" />
           </div>
 

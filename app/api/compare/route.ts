@@ -3,7 +3,7 @@ import { getFullStockData, getPriceHistory } from "@/lib/fmp";
 
 export async function GET(req: NextRequest) {
   const t = req.nextUrl.searchParams.get("t") ?? "";
-  const tickers = t.split(",").map(s => s.trim().toUpperCase()).filter(Boolean).slice(0, 4);
+  const tickers = t.split(",").map(s => s.trim().toUpperCase()).filter(Boolean).slice(0, 5);
   if (tickers.length < 2) {
     return NextResponse.json({ error: "Provide at least 2 tickers via ?t=AAPL,MSFT" }, { status: 400 });
   }
