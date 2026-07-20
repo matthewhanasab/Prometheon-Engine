@@ -307,6 +307,7 @@ function ResearchInner() {
   const insiders      = data?.insiders      ?? [];
   const institutional = data?.institutional ?? [];
   const float         = data?.float         ?? null;
+  const etfExposure   = data?.etfExposure   ?? null;
   const rf            = data?.rf            ?? 0.043;
   const scores        = data?.scores        ?? null;
   const dcf           = data?.dcf           ?? null;
@@ -703,6 +704,65 @@ function ResearchInner() {
                   </div>
                 );
               })()}
+            </>
+          )}
+
+          {/* ── ETF Ownership ── */}
+          {etfExposure && etfExposure.top?.length > 0 && (
+            <>
+              <SectionLabel>ETF Ownership</SectionLabel>
+              <div style={{ display:"flex", alignItems:"baseline", gap:14, flexWrap:"wrap", marginBottom:"0.6rem" }}>
+                <span style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"1.05rem", fontWeight:600, color:"var(--text-primary)" }}>
+                  Held by {etfExposure.fundCount.toLocaleString()} ETFs
+                </span>
+                <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.72rem", color:"var(--text-secondary)" }}>
+                  {(() => { const v = etfExposure.totalValue; return v >= 1e12 ? `$${(v/1e12).toFixed(2)}T` : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : `$${(v/1e6).toFixed(0)}M`; })()} of {s.ticker} sits inside ETFs
+                </span>
+              </div>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"6px 0", overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:"0.78rem" }}>
+                  <thead>
+                    <tr style={{ color:"var(--text-secondary)", fontFamily:"'Public Sans', sans-serif", fontSize:"0.6rem", textTransform:"uppercase", letterSpacing:"0.1em" }}>
+                      <th style={{ textAlign:"left", padding:"8px 14px", fontWeight:600 }}>#</th>
+                      <th style={{ textAlign:"left", padding:"8px 6px", fontWeight:600 }}>Fund</th>
+                      <th style={{ textAlign:"right", padding:"8px 6px", fontWeight:600 }}>{s.ticker} Weight</th>
+                      <th style={{ textAlign:"left", padding:"8px 6px", fontWeight:600, minWidth:90 }}></th>
+                      <th style={{ textAlign:"right", padding:"8px 6px", fontWeight:600 }}>Shares</th>
+                      <th style={{ textAlign:"right", padding:"8px 14px", fontWeight:600 }}>Position Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const maxW = Math.max(...etfExposure.top.map((r: any) => r.weight ?? 0), 0.01);
+                      return etfExposure.top.map((r: any, i: number) => (
+                        <tr key={r.etf} style={{ borderTop:"1px solid var(--border)" }}>
+                          <td style={{ padding:"8px 14px", color:"var(--text-muted)", fontFamily:"'Spline Sans Mono',monospace", fontSize:"0.7rem" }}>{i+1}</td>
+                          <td style={{ padding:"8px 6px" }}>
+                            <Link href={`/etf?ticker=${encodeURIComponent(r.etf)}`} style={{ color:"var(--accent-gold)", textDecoration:"none", fontFamily:"'Spline Sans Mono',monospace", fontWeight:600 }}>
+                              {r.etf}
+                            </Link>
+                          </td>
+                          <td style={{ padding:"8px 6px", textAlign:"right", fontFamily:"'Spline Sans Mono',monospace" }}>{r.weight != null ? `${Number(r.weight).toFixed(2)}%` : "—"}</td>
+                          <td style={{ padding:"8px 6px" }}>
+                            <div style={{ height:6, borderRadius:999, background:"var(--bg-elevated)", overflow:"hidden" }}>
+                              <div style={{ width:`${Math.max(2, ((r.weight ?? 0)/maxW)*100)}%`, height:"100%", borderRadius:999, background:"var(--accent-2)" }} />
+                            </div>
+                          </td>
+                          <td style={{ padding:"8px 6px", textAlign:"right", fontFamily:"'Spline Sans Mono',monospace", color:"var(--text-secondary)" }}>
+                            {r.shares != null ? (r.shares >= 1e9 ? `${(r.shares/1e9).toFixed(2)}B` : r.shares >= 1e6 ? `${(r.shares/1e6).toFixed(1)}M` : r.shares.toLocaleString()) : "—"}
+                          </td>
+                          <td style={{ padding:"8px 14px", textAlign:"right", fontFamily:"'Spline Sans Mono',monospace" }}>
+                            {r.marketValue != null ? (r.marketValue >= 1e9 ? `$${(r.marketValue/1e9).toFixed(2)}B` : `$${(r.marketValue/1e6).toFixed(1)}M`) : "—"}
+                          </td>
+                        </tr>
+                      ));
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize:"0.62rem", color:"var(--text-muted)", marginTop:6, padding:"0 4px", marginBottom:"0.4rem" }}>
+                Twelve largest ETF positions by dollar value — weight is how much of each fund this stock makes up. Click a fund to open it in the ETF Hub.
+              </div>
             </>
           )}
 

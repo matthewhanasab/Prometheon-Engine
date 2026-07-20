@@ -63,6 +63,55 @@ async function getInsiderTradesFMP(ticker: string) {
   } catch { return []; }
 }
 
+// Which ETFs hold this stock (Ultimate-plan endpoint). Thousands of rows come
+// back and marketValue is denominated in each fund's LOCAL currency (a Chilean
+// cross-listing reports pesos), so rank by share count — currency-independent —
+// and let the caller price positions in USD.
+async function getEtfExposure(ticker: string) {
+  const key = process.env.FMP_KEY ?? "";
+  try {
+    const res = await fetch(
+      `${FMP_BASE}/etf/asset-exposure?symbol=${ticker}&apikey=${key}`,
+      { next: { revalidate: 21600 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return null;
+    const rows = data.filter((r: any) => r.symbol && (r.sharesNumber ?? 0) > 0);
+
+    // Cross-listings and mutual-fund share classes of the same portfolio report
+    // identical positions under different tickers (VTI = VTSAX = VTS.AX …).
+    // Collapse rows with matching share count + weight, preferring the cleanest
+    // US ETF ticker (no exchange suffix, shortest).
+    const byPrint = new Map<string, any>();
+    for (const r of rows) {
+      // Shares-only fingerprint: identical share counts at this scale always
+      // mean the same reported position, even when listed weights differ.
+      const print = String(Math.round(r.sharesNumber));
+      const cur = byPrint.get(print);
+      const cleaner = (a: string, b: string) => {
+        const dotA = a.includes(".") || a.includes("-"), dotB = b.includes(".") || b.includes("-");
+        if (dotA !== dotB) return dotA ? b : a;
+        if (a.length !== b.length) return a.length < b.length ? a : b;
+        return a < b ? a : b;
+      };
+      if (!cur) byPrint.set(print, r);
+      else if (cleaner(cur.symbol, r.symbol) === r.symbol) byPrint.set(print, r);
+    }
+    const distinct = Array.from(byPrint.values());
+    const totalShares = distinct.reduce((s: number, r: any) => s + r.sharesNumber, 0);
+    const top = distinct
+      .sort((a: any, b: any) => b.sharesNumber - a.sharesNumber)
+      .slice(0, 12)
+      .map((r: any) => ({
+        etf: r.symbol,
+        weight: r.weightPercentage ?? null,
+        shares: r.sharesNumber,
+      }));
+    return { fundCount: distinct.length, totalShares, top };
+  } catch { return null; }
+}
+
 // Ownership / float snapshot (institutional-holdings endpoints are gated on our plan)
 async function getSharesFloat(ticker: string) {
   const key = process.env.FMP_KEY ?? "";
@@ -161,7 +210,7 @@ export async function GET(
   const { ticker: rawTicker } = await params;
   const ticker = rawTicker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   try {
-    const [stock, price, earnings, recs, news, insidersSec, rf, priceTarget, institutional, scores, dcf, grades, gradesConsensus, peers, insidersFmp, float] = await Promise.all([
+    const [stock, price, earnings, recs, news, insidersSec, rf, priceTarget, institutional, scores, dcf, grades, gradesConsensus, peers, insidersFmp, float, etfExposure] = await Promise.all([
       getFullStockData(ticker),
       getPriceHistory(ticker, 365),
       getEarnings(ticker),
@@ -178,10 +227,19 @@ export async function GET(
       getPeers(ticker),
       getInsiderTradesFMP(ticker),
       getSharesFloat(ticker),
+      getEtfExposure(ticker),
     ]);
 
     // Prefer FMP insiders (reliable); fall back to the SEC scraper if FMP is empty
     const insiders = insidersFmp.length > 0 ? insidersFmp : insidersSec;
+
+    // Price ETF positions in USD from the live quote (see getEtfExposure note)
+    const px = stock.price ?? null;
+    const etfExposurePriced = etfExposure && px ? {
+      fundCount: etfExposure.fundCount,
+      totalValue: etfExposure.totalShares * px,
+      top: etfExposure.top.map((r: any) => ({ ...r, marketValue: r.shares * px })),
+    } : etfExposure;
 
     // Compute 1Y return from price history
     let return1Y: number | null = null;
@@ -191,7 +249,7 @@ export async function GET(
 
     // Merge Finnhub price target into stock object
     if (priceTarget && !stock.analystTarget) (stock as any).analystTarget = priceTarget;
-    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers, float });
+    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers, float, etfExposure: etfExposurePriced });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
