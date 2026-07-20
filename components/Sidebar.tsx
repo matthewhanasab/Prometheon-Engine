@@ -10,6 +10,7 @@ const NAV = [
   { href: "/fairvalue",     label: "Fair Value Graph" },
   { href: "/portfolio",     label: "My Portfolio" },
   { href: "/compare",       label: "Compare Stocks" },
+  { href: "/etf",           label: "ETF Hub" },
   { href: "/charts",        label: "Charts" },
   { href: "/financials",    label: "Financials" },
   { href: "/covered-calls", label: "Covered Calls" },
