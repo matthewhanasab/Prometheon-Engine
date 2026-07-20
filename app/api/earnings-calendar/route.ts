@@ -16,15 +16,36 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "FMP_KEY not configured" }, { status: 500 });
   }
 
-  // FMP is the source of truth (Finnhub's free calendar has large gaps)
-  const fmpRes = await fetch(
-    `https://financialmodelingprep.com/stable/earnings-calendar?from=${from}&to=${to}&apikey=${fmpKey}`,
-    { next: { revalidate: 3600 } }
-  );
-  if (!fmpRes.ok) {
-    return NextResponse.json({ error: "FMP request failed" }, { status: 502 });
+  // FMP is the source of truth (Finnhub's free calendar has large gaps), but its
+  // earnings-calendar caps at 4000 rows and silently drops the EARLIEST dates when
+  // the range is too wide — a full month loses its first two weeks. Fetch in
+  // weekly chunks (a peak week is ~2500 rows, well under the cap) and merge.
+  const chunks: [string, string][] = [];
+  {
+    const end = new Date(`${to}T00:00:00Z`);
+    let start = new Date(`${from}T00:00:00Z`);
+    let guard = 0;
+    while (start <= end && guard++ < 20) {
+      const chunkEnd = new Date(start);
+      chunkEnd.setUTCDate(chunkEnd.getUTCDate() + 6);
+      const cEnd = chunkEnd > end ? end : chunkEnd;
+      chunks.push([start.toISOString().slice(0, 10), cEnd.toISOString().slice(0, 10)]);
+      start = new Date(cEnd);
+      start.setUTCDate(start.getUTCDate() + 1);
+    }
   }
-  const fmpData = await fmpRes.json();
+
+  const chunkResults = await Promise.all(
+    chunks.map(([cf, ct]) =>
+      fetch(
+        `https://financialmodelingprep.com/stable/earnings-calendar?from=${cf}&to=${ct}&apikey=${fmpKey}`,
+        { next: { revalidate: 3600 } }
+      )
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => [])
+    )
+  );
+  const fmpData = chunkResults.flat();
 
   // Finnhub supplies the report hour (bmo/amc) where it knows it
   const hourMap = new Map<string, string>();

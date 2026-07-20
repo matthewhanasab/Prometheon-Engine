@@ -211,7 +211,7 @@ function GroupedBars({ title, data, stocks, unit }: {
             cursor={{ fill: "var(--cursor-fill)" }}
             labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
             contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
-            formatter={(v: any) => [`${Number(v).toFixed(1)}${unit}`]}
+            formatter={(v: any, name: any) => [`${Number(v).toFixed(1)}${unit}`, name]}
           />
           {stocks.map((s, i) => (
             <Bar key={s.ticker} dataKey={s.ticker} fill={COLORS[i]} radius={[2, 2, 0, 0]} isAnimationActive={false} />

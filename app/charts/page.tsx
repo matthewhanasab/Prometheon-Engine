@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ResponsiveContainer,
@@ -295,6 +295,18 @@ function ChartsInner() {
   const [ttmEPS, setTtmEPS] = useState(false);
   const [ttmFCFps, setTtmFCFps] = useState(false);
 
+  // Measure the revenue chart width so per-bar QoQ % labels only render when they
+  // actually fit — otherwise they collide into an unreadable smear on small screens.
+  const revCardRef = useRef<HTMLDivElement>(null);
+  const [revCardW, setRevCardW] = useState(0);
+  useEffect(() => {
+    const el = revCardRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => setRevCardW(entries[0].contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [data]);
+
   useEffect(() => {
     const t = searchParams.get("ticker");
     if (t) { setInputTicker(t.toUpperCase()); handleSubmit(t.toUpperCase()); }
@@ -478,6 +490,15 @@ function ChartsInner() {
       }
     });
   }
+  // QoQ % per bar (vs previous bar's actual or forecast value) — used in the
+  // tooltip so the growth read survives even when the on-bar labels are hidden.
+  const revSeries: (number | null)[] = revenueData.map((d) => (d.value ?? d.forecast ?? null));
+  const revenueDataQ = revenueData.map((d, i) => {
+    const cur = revSeries[i], prev = revSeries[i - 1];
+    const qoq = i > 0 && cur != null && prev != null && prev !== 0
+      ? ((cur - prev) / Math.abs(prev)) * 100 : null;
+    return { ...d, qoq };
+  });
   const ocfData       = toBarData(cfLabels, ocfVals);
   const opIncData     = toBarData(labels, opIncVals);
   const marginData    = labels.map((label, i) => ({
@@ -699,21 +720,26 @@ function ChartsInner() {
           {/* 1. Revenue */}
           <SectionLabel>Revenue</SectionLabel>
           <TtmToggle isTtm={ttmRevenue} onChange={setTtmRevenue} />
-          <div style={CARD_STYLE}>
+          <div style={CARD_STYLE} ref={revCardRef}>
             <ResponsiveContainer width="100%" height={360}>
-              <BarChart data={revenueData} margin={{ top: 20, right: 8, left: 8, bottom: 0 }}>
+              <BarChart data={revenueDataQ} margin={{ top: 20, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="label" tick={X_TICK} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={yTickFmt} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(v: any, name: any) => [fmtVal(v), name === "forecast" ? "Est. Revenue" : "Revenue"]}
+                  formatter={(v: any, name: any, item: any) => {
+                    const qoq = item?.payload?.qoq;
+                    const suffix = qoq != null ? ` (${qoq >= 0 ? "+" : ""}${qoq.toFixed(1)}% QoQ)` : "";
+                    return [`${fmtVal(v)}${suffix}`, name === "forecast" ? "Est. Revenue" : "Revenue"];
+                  }}
                 />
                 <Bar dataKey="value" stackId="rev" fill="var(--accent-gold)" radius={[2, 2, 0, 0]} isAnimationActive={false}
                   label={
-                    <QoQLabel
-                      values={revenueData.map((d) => d.value as number)}
-                    />
+                    // Only draw the % labels when each bar has room for the text.
+                    (revCardW - 85) / Math.max(1, revenueDataQ.length) >= 42
+                      ? <QoQLabel values={revenueDataQ.map((d) => d.value as number)} />
+                      : undefined
                   }
                 />
                 <Bar dataKey="forecast" stackId="rev" fill="var(--accent-gold)" fillOpacity={0.3} stroke="var(--accent-gold)" strokeDasharray="4 3" radius={[2, 2, 0, 0]} isAnimationActive={false} />
