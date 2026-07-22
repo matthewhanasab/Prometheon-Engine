@@ -61,20 +61,13 @@ th[style*="border:1px solid var(--border)"] {
 :root[data-theme="dark"] .logo-on-dark { display: inline-block; }
 :root[data-theme="dark"] .logo-on-light { display: none; }
 
-/* Room for the fixed brand bar the Sidebar renders on app pages */
+/* Room for the fixed top nav bar the Sidebar renders on app pages */
 html[data-topbar="1"] .main-content { padding-top: 5.9rem !important; }
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   html[data-topbar="1"] .main-content { padding-top: 4.6rem !important; }
 }
-
-/* Left-edge nav tab: a slow beacon pulse so people notice it's the way around */
-@keyframes navTabPulse {
-  0%, 100% { box-shadow: 3px 0 14px rgba(0,0,0,0.22), 0 0 0 0 rgba(var(--accent-rgb), 0.55); }
-  50%      { box-shadow: 3px 0 14px rgba(0,0,0,0.22), 0 0 0 9px rgba(var(--accent-rgb), 0); }
-}
-.nav-edge-tab { animation: navTabPulse 2.6s ease-in-out infinite; }
-.nav-edge-tab:hover { animation: none; }
-@media (prefers-reduced-motion: reduce) { .nav-edge-tab { animation: none !important; } }
+.topnav-link { transition: color 0.12s ease, background 0.12s ease; }
+.topnav-link:hover { color: var(--text-primary) !important; background: var(--bg-elevated); }
 
 /* Accessibility preferences (set by AccessibilityWidget) */
 html[data-a11y-text="lg"] { font-size: clamp(18.4px, 1.44vw, 23px) !important; }
