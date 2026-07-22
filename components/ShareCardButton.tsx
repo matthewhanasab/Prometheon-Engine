@@ -74,16 +74,21 @@ async function drawCard({ stock, window: win, rangeLabel }: Props): Promise<Blob
     ctx.drawImage(logo, PAD, 40, lw, lh);
   } catch { /* card still works without the logo */ }
 
-  // Range pill, top right
-  ctx.font = "700 15px 'Public Sans'";
-  const rangeText = rangeLabel.toUpperCase();
-  const rtw = ctx.measureText(rangeText).width;
-  ctx.fillStyle = "rgba(107,156,255,0.16)";
-  ctx.beginPath();
-  ctx.roundRect(W - PAD - rtw - 28, 52, rtw + 28, 32, 999);
-  ctx.fill();
-  ctx.fillStyle = "#6B9CFF";
-  ctx.fillText(rangeText, W - PAD - rtw - 14, 73);
+  // Company logo — white rounded tile, top right (1000x-style branding)
+  try {
+    const clogo = await loadImage(`/api/logo/${encodeURIComponent(stock.ticker)}`);
+    const tile = 92, tx = W - PAD - tile, ty = 34;
+    ctx.save();
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 20); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 20); ctx.clip();
+    const inset = 15, box = tile - inset * 2;
+    const ar = (clogo.width || 1) / (clogo.height || 1);
+    let dw = box, dh = box;
+    if (ar > 1) dh = box / ar; else dw = box * ar;
+    ctx.drawImage(clogo, tx + (tile - dw) / 2, ty + (tile - dh) / 2, dw, dh);
+    ctx.restore();
+  } catch { /* no logo for this ticker — card still renders */ }
 
   // ── Company + ticker ──
   ctx.fillStyle = "#EDF2FA";
