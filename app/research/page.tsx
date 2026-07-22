@@ -433,19 +433,6 @@ function ResearchInner() {
             </div>
           </div>
 
-          {/* ── Quick Stats ── */}
-          <Grid cols={5}>
-            <MCard label="52-Wk High" value={s.week52High ? `$${fmt(s.week52High)}` : "N/A"} />
-            <MCard label="52-Wk Low"  value={s.week52Low  ? `$${fmt(s.week52Low)}`  : "N/A"} />
-            <MCard label="52-Wk Position" value={pos52 != null ? `${pos52.toFixed(0)}%` : "N/A"}
-              sub={pos52 != null ? (pos52 > 70 ? "Near 52-wk high" : pos52 < 30 ? "Near 52-wk low" : "Mid-range") : undefined} />
-            <MCard label="Beta" value={beta != null ? fmt(beta) : "N/A"}
-              sub={beta != null ? (beta > 1.3 ? "High volatility" : beta < 0.8 ? "Low volatility" : "Market-like beta") : undefined} />
-            <MCard label="Analyst Target" value={s.analystTarget ? `$${fmt(s.analystTarget)}` : "N/A"}
-              sub={s.analystTarget && s.price ? `${(((s.analystTarget - s.price) / s.price) * 100) >= 0 ? "+" : ""}${(((s.analystTarget - s.price) / s.price) * 100).toFixed(1)}% upside` : undefined}
-              tone={s.analystTarget && s.price && s.analystTarget > s.price ? "good" : "default"} />
-          </Grid>
-
           {/* ── Price Chart ── */}
           <SectionLabel right={
             <div style={{ display:"inline-flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
@@ -457,6 +444,20 @@ function ResearchInner() {
           {chartMode === "builtin"
             ? <PriceChart data={sliceRange<{ date: string; price: number }>(price, range)} label={range} />
             : <TradingViewChart ticker={s.ticker} />}
+
+          {/* ── Quick Stats ── */}
+          <SectionLabel>Quick Stats</SectionLabel>
+          <Grid cols={5}>
+            <MCard label="52-Wk High" value={s.week52High ? `$${fmt(s.week52High)}` : "N/A"} />
+            <MCard label="52-Wk Low"  value={s.week52Low  ? `$${fmt(s.week52Low)}`  : "N/A"} />
+            <MCard label="52-Wk Position" value={pos52 != null ? `${pos52.toFixed(0)}%` : "N/A"}
+              sub={pos52 != null ? (pos52 > 70 ? "Near 52-wk high" : pos52 < 30 ? "Near 52-wk low" : "Mid-range") : undefined} />
+            <MCard label="Beta" value={beta != null ? fmt(beta) : "N/A"}
+              sub={beta != null ? (beta > 1.3 ? "High volatility" : beta < 0.8 ? "Low volatility" : "Market-like beta") : undefined} />
+            <MCard label="Analyst Target" value={s.analystTarget ? `$${fmt(s.analystTarget)}` : "N/A"}
+              sub={s.analystTarget && s.price ? `${(((s.analystTarget - s.price) / s.price) * 100) >= 0 ? "+" : ""}${(((s.analystTarget - s.price) / s.price) * 100).toFixed(1)}% upside` : undefined}
+              tone={s.analystTarget && s.price && s.analystTarget > s.price ? "good" : "default"} />
+          </Grid>
 
           {/* ── Mandatory Metrics ── */}
           <SectionLabel>Mandatory Metrics</SectionLabel>
