@@ -87,7 +87,12 @@ export async function getFullStockData(ticker: string) {
   const totalDebt    = bal.totalDebt    ?? 0;
   const totalEquity  = bal.totalStockholdersEquity ?? bal.totalEquity ?? null;
   const cashAndEq    = bal.cashAndCashEquivalents ?? p.cashAndCashEquivalents ?? 0;
-  const netDebt      = totalDebt - cashAndEq;
+  // Net debt against ALL liquid holdings — cash plus short-term investments.
+  // (FMP's own netDebt ignores marketable securities, which turns NVDA's ~$68B
+  // net-cash position into a rounding error.)
+  const liquidAssets = bal.cashAndShortTermInvestments
+    ?? (cashAndEq + (bal.shortTermInvestments ?? 0));
+  const netDebt      = totalDebt - liquidAssets;
 
   // ── From cash flow ──
   const operatingCF  = cf.operatingCashFlow  ?? cf.netCashProvidedByOperatingActivities ?? null;

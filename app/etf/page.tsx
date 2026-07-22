@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import PriceChart from "@/components/PriceChart";
 import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
+import CompanyLogo from "@/components/CompanyLogo";
 
 // ── formatting ───────────────────────────────────────────────────────────────
 const bigMoney = (v: number | null | undefined) => {
@@ -207,7 +208,8 @@ function EtfInner() {
       {data && (
         <>
           {/* ── Fund identity ── */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
+            <CompanyLogo ticker={data.ticker} size={44} />
             <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.3rem", fontWeight: 700, color: "var(--accent-gold)" }}>{data.ticker}</span>
             <span style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.35rem", fontWeight: 600 }}>{info?.name ?? quote?.name ?? ""}</span>
           </div>

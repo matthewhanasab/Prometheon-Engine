@@ -4,8 +4,10 @@ import { useSearchParams } from "next/navigation";
 import {
   ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend,
 } from "recharts";
+import Link from "next/link";
 import CompareChart from "@/components/CompareChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
+import CompanyLogo from "@/components/CompanyLogo";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function fmt(n: number | null | undefined, d = 2) {
@@ -156,7 +158,9 @@ function StrengthHeatmap({ stocks }: { stocks: any[] }) {
           <tr>
             <th style={{ textAlign: "left", padding: "8px 14px", fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)" }}>Dimension</th>
             {stocks.map((s, i) => (
-              <th key={s.ticker} style={{ textAlign: "center", padding: "8px 14px", fontWeight: 700, color: COLORS[i], borderBottom: "1px solid var(--border)" }}>{s.ticker}</th>
+              <th key={s.ticker} style={{ textAlign: "center", padding: "8px 14px", borderBottom: "1px solid var(--border)" }}>
+                <Link href={`/research?ticker=${s.ticker}`} title={`Research ${s.ticker}`} style={{ color: COLORS[i], fontWeight: 700, textDecoration: "none" }}>{s.ticker}</Link>
+              </th>
             ))}
           </tr>
         </thead>
@@ -251,11 +255,12 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
       borderTop: `3px solid ${color}`, borderRadius: 22, padding: "14px 16px",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <span style={{
+        <CompanyLogo ticker={stock.ticker} size={28} />
+        <Link href={`/research?ticker=${stock.ticker}`} title={`Research ${stock.ticker}`} style={{
           fontFamily: "'Spline Sans Mono',monospace", fontSize: "0.72rem", fontWeight: 700,
           background: `${color}22`, color, border: `1px solid ${color}55`,
-          borderRadius: 24, padding: "2px 7px",
-        }}>{stock.ticker}</span>
+          borderRadius: 24, padding: "2px 7px", textDecoration: "none",
+        }}>{stock.ticker}</Link>
         {stock.sector && (
           <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.60rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stock.sector}</span>
         )}

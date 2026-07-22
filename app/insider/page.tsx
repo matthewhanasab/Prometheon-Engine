@@ -122,6 +122,7 @@ function InsiderInner() {
   const [searched, setSearched] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "purchases" | "sales" | "awards">("all");
   const [minValue, setMinValue] = useState(0);
+  const [quickFilter, setQuickFilter] = useState("");
   const [trades, setTrades] = useState<InsiderTrade[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,6 +168,12 @@ function InsiderInner() {
     if (typeFilter === "sales" && !isSale(t.type)) return false;
     if (typeFilter === "awards" && !isAward(t.type)) return false;
     if (minValue > 0 && (t.value == null || t.value < minValue)) return false;
+    if (quickFilter.trim()) {
+      const q = quickFilter.trim().toUpperCase();
+      const inTicker = (t.symbol ?? "").toUpperCase().includes(q);
+      const inName = (t.insider ?? "").toUpperCase().includes(q);
+      if (!inTicker && !inName) return false;
+    }
     return true;
   });
 
@@ -234,6 +241,18 @@ function InsiderInner() {
           <ToggleGroup
             options={VALUE_OPTIONS.map(o => ({ key: o.key as any, label: o.label }))}
             value={minValue as any} onChange={(v: any) => setMinValue(Number(v))} />
+        </div>
+        <div>
+          <label style={LABEL_STYLE}>Search</label>
+          <input
+            value={quickFilter}
+            onChange={(e) => setQuickFilter(e.target.value)}
+            placeholder="Ticker or insider name…"
+            style={{
+              width: 200, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22,
+              padding: "8px 12px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace",
+              fontSize: "0.78rem", outline: "none",
+            }} />
         </div>
       </div>
 

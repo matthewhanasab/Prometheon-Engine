@@ -3,6 +3,7 @@ import { getFullStockData, getPriceHistory, getEarnings } from "@/lib/fmp";
 import { getFinnhubRecommendations, getFinnhubNews } from "@/lib/finnhub";
 import { getInsiderTrades } from "@/lib/sec";
 import { get10YTreasury } from "@/lib/fred";
+import { applyClassificationOverride } from "@/lib/classificationOverrides";
 
 const FMP_BASE = "https://financialmodelingprep.com/stable";
 
@@ -266,13 +267,54 @@ async function getGradesConsensus(ticker: string) {
   } catch { return null; }
 }
 
+// Peers built from the screener — same industry, ranked by market-cap proximity.
+// (FMP's stock-peers list is unreliable: wrong market caps, odd names like PLTR
+// as an AMD peer. The screener approach yields the lineup a human would pick.)
 async function getPeers(ticker: string) {
   const key = process.env.FMP_KEY ?? "";
   try {
-    const res = await fetch(
-      `${FMP_BASE}/stock-peers?symbol=${ticker}&apikey=${key}`,
-      { next: { revalidate: 21600 } }
-    );
+    const profRes = await fetch(`${FMP_BASE}/profile?symbol=${ticker}&apikey=${key}`, { next: { revalidate: 21600 } });
+    const prof = profRes.ok ? (await profRes.json())?.[0] : null;
+    const industry = prof?.industry;
+    const ownCap = prof?.marketCap ?? 0;
+
+    if (industry) {
+      const scrRes = await fetch(
+        `${FMP_BASE}/company-screener?industry=${encodeURIComponent(industry)}&marketCapMoreThan=${Math.max(2e8, ownCap / 50)}&limit=60&apikey=${key}`,
+        { next: { revalidate: 21600 } }
+      );
+      if (scrRes.ok) {
+        const rows = await scrRes.json();
+        if (Array.isArray(rows) && rows.length > 1) {
+          const seen = new Set<string>();
+          const peers = rows
+            // US primary listings only; drops OTC cross-listings like SKHYV
+            .filter((r: any) => r.symbol && /^[A-Z]{1,5}$/.test(r.symbol) && r.symbol !== ticker)
+            .filter((r: any) => ["NASDAQ", "NYSE", "AMEX"].includes(r.exchangeShortName ?? r.exchange))
+            .filter((r: any) => {
+              const nameKey = String(r.companyName ?? r.symbol).slice(0, 12);
+              if (seen.has(nameKey)) return false;
+              seen.add(nameKey);
+              return true;
+            })
+            .sort((a: any, b: any) =>
+              Math.abs(Math.log((a.marketCap ?? 1) / (ownCap || 1))) -
+              Math.abs(Math.log((b.marketCap ?? 1) / (ownCap || 1)))
+            )
+            .slice(0, 8)
+            .map((r: any) => ({
+              symbol: r.symbol,
+              companyName: r.companyName ?? r.symbol,
+              price: r.price ?? null,
+              mktCap: r.marketCap ?? null,
+            }));
+          if (peers.length >= 3) return peers;
+        }
+      }
+    }
+
+    // Fallback: FMP's native peer list
+    const res = await fetch(`${FMP_BASE}/stock-peers?symbol=${ticker}&apikey=${key}`, { next: { revalidate: 21600 } });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data.slice(0, 8) : [];
@@ -310,6 +352,9 @@ export async function GET(
     // Prefer FMP insiders (reliable); fall back to the SEC scraper if FMP is empty
     const insiders = insidersFmp.length > 0 ? insidersFmp : insidersSec;
 
+    // Curated sector/industry corrections for providers' misclassifications
+    const stockFixed = applyClassificationOverride(stock as any);
+
     // True ownership % per holder = shares held ÷ shares outstanding
     const outSh = float?.outstandingShares ?? null;
     if (instOwnership?.holders && outSh) {
@@ -335,7 +380,7 @@ export async function GET(
 
     // Merge Finnhub price target into stock object
     if (priceTarget && !stock.analystTarget) (stock as any).analystTarget = priceTarget;
-    return NextResponse.json({ stock, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers, float, etfExposure: etfExposurePriced, instOwnership });
+    return NextResponse.json({ stock: stockFixed, price, earnings, recs, news, insiders, rf, return1Y, institutional, scores, dcf, grades, gradesConsensus, peers, float, etfExposure: etfExposurePriced, instOwnership });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });

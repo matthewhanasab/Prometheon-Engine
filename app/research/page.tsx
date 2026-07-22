@@ -7,6 +7,7 @@ import PriceChart from "@/components/PriceChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
 import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 import ShareCardButton from "@/components/ShareCardButton";
+import CompanyLogo from "@/components/CompanyLogo";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
@@ -396,7 +397,10 @@ function ResearchInner() {
         <>
           {/* ── Company Header ── */}
           <div style={{ borderBottom:"1px solid var(--border)", paddingBottom:"1.5rem", marginBottom:"1.5rem" }}>
-            <div style={{ fontFamily:"'Space Grotesk', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-primary)", marginBottom:10 }}>{s.name}</div>
+            <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:10 }}>
+              <CompanyLogo ticker={s.ticker} size={58} />
+              <div style={{ fontFamily:"'Space Grotesk', Georgia, serif", fontSize:"2rem", fontWeight:500, color:"var(--text-primary)" }}>{s.name}</div>
+            </div>
             <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12 }}>
               {[s.ticker, s.exchange, s.sector, s.industry].filter(Boolean).map((v: string) => (
                 <span key={v} style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.60rem", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-secondary)", background:"var(--bg-elevated)", border:"1px solid var(--border)", borderRadius:999, padding:"2px 8px" }}>{v}</span>
@@ -416,7 +420,7 @@ function ResearchInner() {
                     {p.price != null && <span style={{ color:"var(--text-secondary)", marginLeft:6 }}>${Number(p.price).toFixed(2)}</span>}
                   </Link>
                 ))}
-                <Link href={`/compare?t=${[s.ticker, ...peers.slice(0, 3).map((p: any) => p.symbol)].join(",")}`} style={{
+                <Link href={`/compare?t=${[s.ticker, ...peers.slice(0, 4).map((p: any) => p.symbol)].join(",")}`} style={{
                   fontFamily:"'Public Sans', sans-serif", fontSize:"0.68rem", fontWeight:600,
                   color:"var(--accent-gold)", background:"transparent",
                   border:"1px solid var(--accent-gold)", borderRadius:999, padding:"3px 9px",
@@ -894,7 +898,29 @@ function ResearchInner() {
                 <div style={{ color:"var(--text-muted)", fontSize:"0.8rem", padding:"10px 0" }}>Transcript not available for this quarter.</div>
               )}
               {!tsLoading && tsContent && (
-                <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"18px 20px", maxHeight:520, overflowY:"auto" }}>
+                <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:8 }}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      const btn = e.currentTarget;
+                      navigator.clipboard.writeText(tsContent).then(() => {
+                        btn.textContent = "Copied ✓";
+                        setTimeout(() => { btn.textContent = "Copy transcript"; }, 2000);
+                      }).catch(() => {});
+                    }}
+                    style={{
+                      background:"var(--bg-elevated)", color:"var(--text-secondary)",
+                      border:"1px solid var(--border)", borderRadius:999, padding:"6px 14px",
+                      fontFamily:"'Public Sans', sans-serif", fontSize:"0.66rem", fontWeight:700,
+                      textTransform:"uppercase", letterSpacing:"0.08em", cursor:"pointer",
+                    }}
+                  >
+                    Copy transcript
+                  </button>
+                </div>
+              )}
+              {!tsLoading && tsContent && (
+                <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:22, padding:"18px 20px", maxHeight:520, overflowY:"auto", userSelect:"text" }}>
                   {tsContent.split(/\n+/).map((para, i) => {
                     const m = para.match(/^([A-Z][A-Za-z.'\- ]{1,60}?):\s*/);
                     return (
