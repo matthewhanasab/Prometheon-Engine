@@ -6,6 +6,7 @@ import TradingViewChart from "@/components/TradingViewChart";
 import PriceChart from "@/components/PriceChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
 import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
+import ShareCardButton from "@/components/ShareCardButton";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
@@ -156,6 +157,13 @@ function EmptyPreview() {
         <span style={{ fontFamily:"'Spline Sans Mono',monospace", fontSize:"2.4rem", fontWeight:600, color:"var(--text-muted)", letterSpacing:"-0.02em" }}>$—.——</span>
       </div>
 
+      <SectionLabel>Price Chart</SectionLabel>
+      <div style={{ height: 500, border: "1px dashed var(--border-active)", borderRadius: 22, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, background: "var(--bg-surface)" }}>
+        <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1rem", color: "var(--text-secondary)" }}>Interactive price chart</div>
+        <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Candles · volume · drawing tools · indicators</div>
+      </div>
+
+      <SectionLabel>Quick Stats</SectionLabel>
       <Grid cols={5}>
         <MCard label="52-Wk High" value={D} />
         <MCard label="52-Wk Low" value={D} />
@@ -163,12 +171,6 @@ function EmptyPreview() {
         <MCard label="Beta" value={D} />
         <MCard label="Analyst Target" value={D} />
       </Grid>
-
-      <SectionLabel>Price Chart</SectionLabel>
-      <div style={{ height: 500, border: "1px dashed var(--border-active)", borderRadius: 22, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, background: "var(--bg-surface)" }}>
-        <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1rem", color: "var(--text-secondary)" }}>Interactive price chart</div>
-        <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Candles · volume · drawing tools · indicators</div>
-      </div>
 
       <SectionLabel>Mandatory Metrics</SectionLabel>
       <Grid cols={5}>
@@ -430,6 +432,13 @@ function ResearchInner() {
                 {(s.change ?? 0) >= 0 ? "▲" : "▼"} ${Math.abs(s.change ?? 0).toFixed(2)} ({s.changePct != null ? `${s.changePct >= 0 ? "+" : ""}${s.changePct.toFixed(2)}%` : "N/A"})
               </span>
               <span style={{ fontFamily:"'Public Sans', sans-serif", fontSize:"0.78rem", color:"var(--text-secondary)" }}>Mkt cap: {fmtLarge(s.mktCap)}</span>
+              <span style={{ marginLeft:"auto", alignSelf:"center" }}>
+                <ShareCardButton
+                  stock={{ ticker: s.ticker, name: s.name, sector: s.sector, price: s.price, change: s.change, changePct: s.changePct, mktCap: s.mktCap, week52High: s.week52High, week52Low: s.week52Low, peRatio: s.peRatio, analystTarget: s.analystTarget }}
+                  window={sliceRange<{ date: string; price: number }>(price, range)}
+                  rangeLabel={range}
+                />
+              </span>
             </div>
           </div>
 
