@@ -71,19 +71,19 @@ async function drawCard({ stock, window: win, rangeLabel, stats: customStats }: 
   // ── Logo (white-text wordmark for the dark card) ──
   try {
     const logo = await loadImage("/logo_transparent.png");
-    const lw = 210, lh = lw * (605 / 1953);
-    ctx.drawImage(logo, PAD, 40, lw, lh);
+    const lw = 288, lh = lw * (605 / 1953);
+    ctx.drawImage(logo, PAD, 42, lw, lh);
   } catch { /* card still works without the logo */ }
 
   // Company logo — white rounded tile, top right (1000x-style branding)
   try {
     const clogo = await loadImage(`/api/logo/${encodeURIComponent(stock.ticker)}`);
-    const tile = 120, tx = W - PAD - tile, ty = 30;
+    const tile = 156, tx = W - PAD - tile, ty = 28;
     ctx.save();
     ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 26); ctx.fill();
-    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 26); ctx.clip();
-    const inset = 20, box = tile - inset * 2;
+    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 32); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 32); ctx.clip();
+    const inset = 26, box = tile - inset * 2;
     const ar = (clogo.width || 1) / (clogo.height || 1);
     let dw = box, dh = box;
     if (ar > 1) dh = box / ar; else dw = box * ar;
@@ -93,13 +93,13 @@ async function drawCard({ stock, window: win, rangeLabel, stats: customStats }: 
 
   // ── Company + ticker ──
   ctx.fillStyle = "#EDF2FA";
-  ctx.font = "600 40px 'Space Grotesk'";
+  ctx.font = "600 42px 'Space Grotesk'";
   const name = stock.name ?? stock.ticker;
-  ctx.fillText(name.length > 38 ? name.slice(0, 37) + "…" : name, PAD, 165);
-  ctx.font = "700 20px 'Spline Sans Mono'";
+  ctx.fillText(name.length > 34 ? name.slice(0, 33) + "…" : name, PAD, 178);
+  ctx.font = "700 21px 'Spline Sans Mono'";
   ctx.fillStyle = "#6B9CFF";
   const tickerText = stock.ticker + (stock.sector ? `  ·  ${stock.sector.toUpperCase()}` : "");
-  ctx.fillText(tickerText, PAD, 196);
+  ctx.fillText(tickerText, PAD, 210);
 
   // ── Price + day change ──
   const up = (stock.changePct ?? 0) >= 0;
@@ -211,13 +211,6 @@ async function drawCard({ stock, window: win, rangeLabel, stats: customStats }: 
     ctx.fillStyle = "#EDF2FA";
     ctx.fillText(value, x, SY + 20);
   });
-
-  // ── Footer URL ──
-  ctx.font = "700 14px 'Public Sans'";
-  ctx.fillStyle = "#6B9CFF";
-  ctx.textAlign = "right";
-  ctx.fillText("prometheonengine.com", W - PAD, H - 20);
-  ctx.textAlign = "left";
 
   return new Promise((resolve, reject) =>
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/png")
