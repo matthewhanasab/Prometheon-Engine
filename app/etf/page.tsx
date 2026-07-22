@@ -5,6 +5,7 @@ import Link from "next/link";
 import PriceChart from "@/components/PriceChart";
 import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 import CompanyLogo from "@/components/CompanyLogo";
+import ShareCardButton from "@/components/ShareCardButton";
 
 // ── formatting ───────────────────────────────────────────────────────────────
 const bigMoney = (v: number | null | undefined) => {
@@ -231,6 +232,22 @@ function EtfInner() {
               {quote.yearLow != null && quote.yearHigh != null && (
                 <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                   52-wk range <span style={{ fontFamily: "'Spline Sans Mono', monospace" }}>${quote.yearLow.toFixed(2)} – ${quote.yearHigh.toFixed(2)}</span>
+                </span>
+              )}
+              {prices.length > 1 && (
+                <span style={{ marginLeft: "auto", alignSelf: "center" }}>
+                  <ShareCardButton
+                    stock={{ ticker: data.ticker, name: info?.name ?? quote?.name ?? data.ticker, sector: info?.assetClass ?? "ETF", price: quote?.price, change: quote?.change, changePct: quote?.changePct }}
+                    window={sliceRange<{ date: string; price: number }>(prices, range)}
+                    rangeLabel={range}
+                    stats={[
+                      ["EXPENSE RATIO", info?.expenseRatio != null ? `${info.expenseRatio.toFixed(2)}%` : "—"],
+                      ["AUM", bigMoney(info?.aum)],
+                      ["YIELD", ttmYield != null ? `${ttmYield.toFixed(2)}%` : "—"],
+                      ["HOLDINGS", info?.holdingsCount != null ? String(info.holdingsCount) : holdings.length ? String(holdings.length) : "—"],
+                      ["TOP HOLDING", holdings[0] ? `${holdings[0].asset} ${holdings[0].weight.toFixed(1)}%` : "—"],
+                    ]}
+                  />
                 </span>
               )}
             </div>

@@ -19,6 +19,7 @@ interface Props {
   stock: ShareStock;
   window: { date: string; price: number }[]; // chart window (already range-sliced)
   rangeLabel: string;
+  stats?: [string, string][]; // optional override for the bottom stat strip (ETFs, etc.)
 }
 
 const fmtBig = (v: number | null | undefined) => {
@@ -39,7 +40,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-async function drawCard({ stock, window: win, rangeLabel }: Props): Promise<Blob> {
+async function drawCard({ stock, window: win, rangeLabel, stats: customStats }: Props): Promise<Blob> {
   const W = 1200, H = 675, SCALE = 2;
   const canvas = document.createElement("canvas");
   canvas.width = W * SCALE; canvas.height = H * SCALE;
@@ -77,12 +78,12 @@ async function drawCard({ stock, window: win, rangeLabel }: Props): Promise<Blob
   // Company logo — white rounded tile, top right (1000x-style branding)
   try {
     const clogo = await loadImage(`/api/logo/${encodeURIComponent(stock.ticker)}`);
-    const tile = 92, tx = W - PAD - tile, ty = 34;
+    const tile = 120, tx = W - PAD - tile, ty = 30;
     ctx.save();
     ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 20); ctx.fill();
-    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 20); ctx.clip();
-    const inset = 15, box = tile - inset * 2;
+    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 26); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(tx, ty, tile, tile, 26); ctx.clip();
+    const inset = 20, box = tile - inset * 2;
     const ar = (clogo.width || 1) / (clogo.height || 1);
     let dw = box, dh = box;
     if (ar > 1) dh = box / ar; else dw = box * ar;
@@ -189,8 +190,8 @@ async function drawCard({ stock, window: win, rangeLabel }: Props): Promise<Blob
     ctx.textAlign = "left";
   }
 
-  // ── Stats row ──
-  const stats: [string, string][] = [
+  // ── Stats row (caller can override, e.g. ETFs) ──
+  const stats: [string, string][] = customStats ?? [
     ["52-WK HIGH", stock.week52High != null ? `$${stock.week52High.toFixed(2)}` : "—"],
     ["52-WK LOW", stock.week52Low != null ? `$${stock.week52Low.toFixed(2)}` : "—"],
     ["MKT CAP", fmtBig(stock.mktCap)],
