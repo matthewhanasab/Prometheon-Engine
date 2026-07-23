@@ -17,6 +17,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import ChartShotButton from "@/components/ChartShotButton";
+import CompanyLogo from "@/components/CompanyLogo";
 
 const SEGMENT_COLORS = [
   "var(--accent-gold)","#3B82F6","#22C55E","#EF4444","#A78BFA","#F97316",
@@ -707,6 +708,7 @@ function ChartsInner() {
             marginBottom: "0.5rem",
           }}
         >
+          <CompanyLogo ticker={ticker} size={44} />
           <span
             style={{
               fontFamily: "'Spline Sans Mono', monospace",
