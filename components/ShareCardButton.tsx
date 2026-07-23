@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { copyImageToClipboard, saveImage, prefersNativeShare } from "./shareImage";
 
 interface ShareStock {
   ticker: string;
@@ -218,55 +219,95 @@ async function drawCard({ stock, window: win, rangeLabel, stats: customStats }: 
 }
 
 export default function ShareCardButton(props: Props) {
-  const [state, setState] = useState<"idle" | "busy" | "copied" | "downloaded">("idle");
+  const [state, setState] = useState<"idle" | "busy" | "copied" | "saved">("idle");
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const filename = `${props.stock.ticker}-prometheon.png`;
 
-  async function onClick() {
-    if (state === "busy") return;
-    setState("busy");
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => { if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    window.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDoc); window.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  async function handleCopy() {
+    setOpen(false); setState("busy");
     try {
       const blob = await drawCard(props);
-      try {
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        setState("copied");
-      } catch {
-        // clipboard blocked → download instead
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${props.stock.ticker}-prometheon.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-        setState("downloaded");
-      }
-    } catch {
-      setState("idle");
-      return;
-    }
+      setState((await copyImageToClipboard(blob)) ? "copied" : "idle");
+    } catch { setState("idle"); }
     setTimeout(() => setState("idle"), 2200);
   }
 
-  const label = state === "busy" ? "Rendering…" : state === "copied" ? "Copied ✓" : state === "downloaded" ? "Downloaded ✓" : "Screenshot";
+  async function handleSave() {
+    setOpen(false); setState("busy");
+    try {
+      const blob = await drawCard(props);
+      const result = await saveImage(blob, filename);
+      setState(result === "cancelled" ? "idle" : "saved");
+    } catch { setState("idle"); }
+    setTimeout(() => setState("idle"), 2200);
+  }
 
+  const done = state === "copied" || state === "saved";
+  const label = state === "busy" ? "Rendering…" : state === "copied" ? "Copied ✓" : state === "saved" ? (prefersNativeShare() ? "Saved ✓" : "Downloaded ✓") : "Screenshot";
+  const saveLabel = prefersNativeShare() ? "Save to Photos" : "Download";
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        title="Copy or save a share-ready image of this stock"
+        aria-expanded={open}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 7,
+          padding: "8px 16px", borderRadius: 999, cursor: "pointer",
+          background: done ? "var(--positive)" : "var(--bg-elevated)",
+          border: "1px solid var(--border)",
+          color: done ? "#08120A" : "var(--text-secondary)",
+          fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", fontWeight: 700,
+          textTransform: "uppercase", letterSpacing: "0.08em",
+          transition: "background 0.15s ease, color 0.15s ease",
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+          <circle cx="12" cy="13" r="4" />
+        </svg>
+        {label}
+      </button>
+      {open && (
+        <div style={{
+          position: "absolute", top: "100%", right: 0, marginTop: 6, zIndex: 300,
+          background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 14,
+          padding: 5, minWidth: 168, boxShadow: "0 10px 28px rgba(0,0,0,0.28)",
+        }}>
+          <MenuItem label="Copy Image" onClick={handleCopy} />
+          <MenuItem label={saveLabel} onClick={handleSave} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MenuItem({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      title="Copy a share-ready image of this stock"
       style={{
-        display: "inline-flex", alignItems: "center", gap: 7,
-        padding: "8px 16px", borderRadius: 999, cursor: "pointer",
-        background: state === "copied" || state === "downloaded" ? "var(--positive)" : "var(--bg-elevated)",
-        border: "1px solid var(--border)",
-        color: state === "copied" || state === "downloaded" ? "#08120A" : "var(--text-secondary)",
-        fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", fontWeight: 700,
-        textTransform: "uppercase", letterSpacing: "0.08em",
-        transition: "background 0.15s ease, color 0.15s ease",
+        display: "block", width: "100%", textAlign: "left", padding: "8px 12px", borderRadius: 9,
+        background: "transparent", border: "none", cursor: "pointer",
+        fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", fontWeight: 500,
+        color: "var(--text-primary)",
       }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--bg-elevated)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
     >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-        <circle cx="12" cy="13" r="4" />
-      </svg>
       {label}
     </button>
   );
