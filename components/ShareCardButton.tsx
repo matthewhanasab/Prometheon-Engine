@@ -253,7 +253,8 @@ export default function ShareCardButton(props: Props) {
   }
 
   const done = state === "copied" || state === "saved";
-  const label = state === "busy" ? "Rendering…" : state === "copied" ? "Copied ✓" : state === "saved" ? (prefersNativeShare() ? "Saved ✓" : "Downloaded ✓") : "Screenshot";
+  const busy = state === "busy";
+  const tip = busy ? "Rendering…" : state === "copied" ? "Copied ✓" : state === "saved" ? (prefersNativeShare() ? "Saved ✓" : "Downloaded ✓") : "Copy or save a share-ready image of this stock";
   const saveLabel = prefersNativeShare() ? "Save to Photos" : "Download";
 
   return (
@@ -261,24 +262,29 @@ export default function ShareCardButton(props: Props) {
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        title="Copy or save a share-ready image of this stock"
+        title={tip}
+        aria-label="Screenshot this stock"
         aria-expanded={open}
         style={{
-          display: "inline-flex", alignItems: "center", gap: 7,
-          padding: "8px 16px", borderRadius: 999, cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 34, height: 34, padding: 0, borderRadius: 999, cursor: "pointer", flexShrink: 0,
           background: done ? "var(--positive)" : "var(--bg-elevated)",
           border: "1px solid var(--border)",
           color: done ? "#08120A" : "var(--text-secondary)",
-          fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", fontWeight: 700,
-          textTransform: "uppercase", letterSpacing: "0.08em",
+          opacity: busy ? 0.6 : 1,
           transition: "background 0.15s ease, color 0.15s ease",
         }}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-          <circle cx="12" cy="13" r="4" />
-        </svg>
-        {label}
+        {done ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        )}
       </button>
       {open && (
         <div style={{
