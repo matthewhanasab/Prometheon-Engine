@@ -16,6 +16,7 @@ import {
   Legend,
   ReferenceLine,
 } from "recharts";
+import ChartShotButton from "@/components/ChartShotButton";
 
 const SEGMENT_COLORS = [
   "var(--accent-gold)","#3B82F6","#22C55E","#EF4444","#A78BFA","#F97316",
@@ -597,7 +598,12 @@ function ChartsInner() {
   // ── render helpers ────────────────────────────────────────────────────────
 
   function SectionLabel({ children }: { children: React.ReactNode }) {
-    return <div style={SECTION_LABEL_STYLE}>{children}</div>;
+    return (
+      <div data-chart-section style={{ ...SECTION_LABEL_STYLE, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <span data-section-title>{children}</span>
+        {ticker && <ChartShotButton ticker={ticker} companyName={data?.profile?.companyName} />}
+      </div>
+    );
   }
 
   function yTickFmt(v: number) {
