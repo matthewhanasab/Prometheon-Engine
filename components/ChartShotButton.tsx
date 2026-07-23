@@ -39,16 +39,20 @@ async function captureChart(
   const cw = Math.max(1, Math.round(rect.width));
   const ch = Math.max(1, Math.round(rect.height));
 
-  // Clone + inline computed styles, then rasterize the SVG to an image
+  const SCALE = 2, PAD = 44, HEADER = 78, LEGEND = legend.length ? 40 : 0, FOOTER = 56;
+
+  // Clone + inline computed styles, then rasterize the SVG at SCALE× so the
+  // chart layer matches the canvas's pixel density. A viewBox is required —
+  // recharts only sets width/height, and without one, upsizing those would
+  // leave the drawing at its original size in a corner instead of scaling.
   const clone = svg.cloneNode(true) as SVGSVGElement;
   inlineComputed(svg, clone);
-  clone.setAttribute("width", String(cw));
-  clone.setAttribute("height", String(ch));
+  if (!clone.getAttribute("viewBox")) clone.setAttribute("viewBox", `0 0 ${cw} ${ch}`);
+  clone.setAttribute("width", String(cw * SCALE));
+  clone.setAttribute("height", String(ch * SCALE));
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   const svgStr = new XMLSerializer().serializeToString(clone);
   const chartImg = await loadImage("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr));
-
-  const SCALE = 2, PAD = 44, HEADER = 78, LEGEND = legend.length ? 40 : 0, FOOTER = 56;
   const W = cw + PAD * 2;
   const H = PAD + HEADER + ch + LEGEND + FOOTER;
 
@@ -56,6 +60,8 @@ async function captureChart(
   canvas.width = W * SCALE; canvas.height = H * SCALE;
   const ctx = canvas.getContext("2d")!;
   ctx.scale(SCALE, SCALE);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
   await Promise.all([
     document.fonts.load("700 26px 'Space Grotesk'"),
