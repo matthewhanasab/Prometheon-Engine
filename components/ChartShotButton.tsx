@@ -214,24 +214,29 @@ export default function ChartShotButton({ ticker, companyName }: { ticker: strin
         ref={ref}
         type="button"
         onClick={() => setOpen(o => !o)}
-        title="Screenshot this chart"
+        title={state === "copied" ? "Copied ✓" : state === "saved" ? "Saved ✓" : "Screenshot this chart"}
         aria-label="Screenshot this chart"
         aria-expanded={open}
         style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "5px 10px", borderRadius: 999, cursor: "pointer", flexShrink: 0,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 30, height: 30, padding: 0, borderRadius: 999, cursor: "pointer", flexShrink: 0,
           background: done ? "var(--positive)" : "var(--bg-elevated)",
           border: "1px solid var(--border)",
           color: done ? "#08120A" : "var(--text-secondary)",
-          fontFamily: "'Public Sans', sans-serif", fontSize: "0.6rem", fontWeight: 700,
-          textTransform: "uppercase", letterSpacing: "0.08em",
+          opacity: state === "busy" ? 0.6 : 1,
+          transition: "background 0.15s ease, color 0.15s ease",
         }}
       >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-          <circle cx="12" cy="13" r="4" />
-        </svg>
-        {state === "busy" ? "…" : state === "copied" ? "Copied ✓" : state === "saved" ? "Saved ✓" : "PNG"}
+        {done ? (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        ) : (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        )}
       </button>
       {open && (
         <div style={{
