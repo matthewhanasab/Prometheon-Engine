@@ -708,7 +708,7 @@ function ChartsInner() {
             marginBottom: "0.5rem",
           }}
         >
-          <CompanyLogo ticker={ticker} size={44} />
+          <CompanyLogo ticker={ticker} size={64} />
           <span
             style={{
               fontFamily: "'Spline Sans Mono', monospace",
