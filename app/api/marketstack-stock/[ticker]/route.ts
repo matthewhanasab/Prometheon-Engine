@@ -139,7 +139,9 @@ export async function GET(
   // ── Long-horizon returns (the 15-year entitlement, made visible) ──
   const longReturns = horizons.map((y, i) => {
     const row = rows(anchorRes[i]?.data)[0];
-    const c = row ? Number(row.close) : 0;
+    // adj_close, not close: raw closes across a split make old anchors look
+    // 2-10x too expensive (KO's 2011 close is pre-2012-split).
+    const c = row ? Number(row.adj_close ?? row.close) : 0;
     if (!(c > 0)) return { years: y, available: false as const };
     const total = ((last.close - c) / c) * 100;
     const cagr = (Math.pow(last.close / c, 1 / y) - 1) * 100;
