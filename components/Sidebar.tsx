@@ -26,6 +26,7 @@ const NAV = [
   { href: "/movers",        label: "Market Movers" },
   { href: "/screener",      label: "Screener" },
   { href: "/sec",           label: "SEC Filings" },
+  { href: "/marketstack",   label: "Market Stack" },
 ];
 
 // Desktop top bar: direct tabs + grouped dropdowns (1000x-style)
@@ -66,9 +67,10 @@ const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
   {
     label: "More",
     items: [
-      { href: "/macro",      label: "Macro Dashboard" },
-      { href: "/movers",     label: "Market Movers" },
-      { href: "/calculator", label: "Compound Calculator" },
+      { href: "/macro",       label: "Macro Dashboard" },
+      { href: "/movers",      label: "Market Movers" },
+      { href: "/calculator",  label: "Compound Calculator" },
+      { href: "/marketstack", label: "Market Stack" },
     ],
   },
 ];
