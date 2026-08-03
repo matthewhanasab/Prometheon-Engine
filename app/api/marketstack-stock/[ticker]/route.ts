@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchFacts, deriveFundamentals } from "@/lib/edgarFacts";
 
 // Full research-page aggregator running exclusively on marketstack (Business
 // plan). Endpoint audit for this key, verified 2026-08-02:
@@ -251,12 +252,25 @@ export async function GET(
     factor: Number(r.split_factor ?? 1),
   }));
 
-  // ── SEC filings, via CIK from /tickers ──
+  // ── SEC filings + XBRL fundamentals, via CIK from /tickers ──
   let filings: any[] = [];
   let cik: string | null = null;
+  let fundamentals: any = null;
   const tickMeta = tickRes.data?.data ?? tickRes.data;
   if (tickMeta?.cik) {
     cik = String(tickMeta.cik).padStart(10, "0");
+
+    // Fundamentals come from EDGAR directly — marketstack's Statements/Facts/
+    // Concepts endpoints 404 despite being on the Business plan's feature list.
+    const facts = await fetchFacts(cik);
+    if (facts) {
+      try {
+        fundamentals = deriveFundamentals(facts, last.close);
+      } catch {
+        fundamentals = null;
+      }
+    }
+
     const sub = await get(`${MS}/submissions?access_key=${key}&cik_code=${cik}`);
     const recent = sub.data?.data?.filings?.recent;
     if (recent?.form && Array.isArray(recent.form)) {
@@ -310,6 +324,7 @@ export async function GET(
       freq: divs.find((d) => d.freq)?.freq ?? null,
     },
     splits,
+    fundamentals,
     filings: filings.map((f) => ({ ...f, url: filingUrl(f) })),
     meta: {
       cik,

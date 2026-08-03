@@ -60,6 +60,29 @@ function Grid({ cols = 5, children }: { cols?: number; children: React.ReactNode
   );
 }
 
+const pctOf = (n: number | null | undefined, d = 2) =>
+  n == null || !Number.isFinite(n) ? "N/A" : `${(n * 100).toFixed(d)}%`;
+const mult = (n: number | null | undefined) =>
+  n == null || !Number.isFinite(n) ? "N/A" : `${n.toFixed(2)}×`;
+
+type Tone = "good" | "bad" | "neutral" | "default";
+const peTone = (pe: number | null): [string, Tone] =>
+  pe == null ? ["No data", "default"] : pe < 15 ? ["Value territory", "good"]
+    : pe < 25 ? ["Reasonable multiple", "neutral"] : ["Growth premium priced in", "bad"];
+const marginTone = (m: number | null, kind: "gross" | "operating" | "net"): [string, Tone] => {
+  if (m == null) return ["No data", "default"];
+  const hi = kind === "gross" ? 0.4 : kind === "operating" ? 0.2 : 0.15;
+  const lo = kind === "gross" ? 0.2 : kind === "operating" ? 0.08 : 0.05;
+  return m > hi ? [kind === "gross" ? "Solid gross margin" : kind === "operating" ? "Strong operating leverage" : "Highly profitable", "good"]
+    : m > lo ? ["Moderate margin", "neutral"] : ["Thin margin", "bad"];
+};
+const roeTone = (r: number | null): [string, Tone] =>
+  r == null ? ["No data", "default"] : r > 0.2 ? ["Exceptional capital returns", "good"]
+    : r > 0.1 ? ["Healthy returns", "neutral"] : r > 0 ? ["Low returns", "bad"] : ["Negative returns", "bad"];
+const deTone = (d: number | null): [string, Tone] =>
+  d == null ? ["No data", "default"] : d < 0.5 ? ["Conservative leverage", "good"]
+    : d < 1.5 ? ["Moderate leverage", "neutral"] : ["High leverage", "bad"];
+
 function ratingTone(r: string | null): string {
   if (!r) return "var(--text-secondary)";
   const s = r.toLowerCase();
@@ -102,6 +125,7 @@ function MarketstackResearchInner() {
   const prof = data?.profile;
   const cons = data?.consensus;
   const div = data?.dividends;
+  const fun = data?.fundamentals;
 
   return (
     <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
@@ -205,6 +229,129 @@ function MarketstackResearchInner() {
               )
             )}
           </Grid>
+
+          {/* ── Mandatory Metrics (SEC EDGAR XBRL) ── */}
+          {fun && (
+            <>
+              <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>SEC EDGAR · TTM through {fun.asOf}</span>}>
+                Mandatory Metrics
+              </SectionLabel>
+              <Grid cols={5}>
+                {(() => { const [sub, tn] = peTone(fun.peRatio); return <MCard label="TTM P/E Ratio" value={mult(fun.peRatio)} sub={sub} tone={tn} />; })()}
+                <MCard label="Total Revenue" value={compact(fun.revenue)} sub="trailing twelve months" />
+                <MCard label="Revenue Growth" value={pctOf(fun.revenueGrowth, 1)}
+                  sub={fun.revenueGrowth == null ? "No data" : fun.revenueGrowth > 0.1 ? "Rapid growth" : fun.revenueGrowth > 0 ? "Modest growth" : "Revenue declining"}
+                  tone={fun.revenueGrowth == null ? "default" : fun.revenueGrowth > 0.1 ? "good" : fun.revenueGrowth > 0 ? "neutral" : "bad"} />
+                <MCard label="EPS (TTM)" value={fun.eps != null ? money(fun.eps) : "N/A"}
+                  sub={fun.epsGrowth != null ? `${pctOf(fun.epsGrowth, 1)} YoY` : undefined} />
+                <MCard label="Price / Sales" value={mult(fun.ps)}
+                  sub={fun.ps == null ? "No data" : fun.ps < 3 ? "Cheap vs revenue" : fun.ps < 8 ? "Fair P/S" : "Rich valuation"}
+                  tone={fun.ps == null ? "default" : fun.ps < 3 ? "good" : fun.ps < 8 ? "neutral" : "bad"} />
+              </Grid>
+              <div style={{ height: 8 }} />
+              <Grid cols={5}>
+                {(() => { const [sub, tn] = marginTone(fun.grossMargin, "gross"); return <MCard label="Gross Margin" value={pctOf(fun.grossMargin)} sub={sub} tone={tn} />; })()}
+                {(() => { const [sub, tn] = marginTone(fun.operatingMargin, "operating"); return <MCard label="Operating Margin" value={pctOf(fun.operatingMargin)} sub={sub} tone={tn} />; })()}
+                {(() => { const [sub, tn] = marginTone(fun.netMargin, "net"); return <MCard label="Net Margin" value={pctOf(fun.netMargin)} sub={sub} tone={tn} />; })()}
+                <MCard label="Net Income" value={compact(fun.netIncome)}
+                  sub={fun.netIncomeGrowth != null ? `${pctOf(fun.netIncomeGrowth, 1)} YoY` : undefined}
+                  tone={fun.netIncomeGrowth == null ? "default" : fun.netIncomeGrowth > 0 ? "good" : "bad"} />
+                <MCard label="Market Cap" value={compact(fun.marketCap)}
+                  sub={fun.shares != null ? `${compact(fun.shares)} shares out` : undefined} />
+              </Grid>
+
+              {/* ── Advanced Metrics ── */}
+              <SectionLabel>Advanced Metrics</SectionLabel>
+              <Grid cols={5}>
+                <MCard label="PEG Ratio" value={mult(fun.pegRatio)}
+                  sub={fun.pegRatio == null ? "Needs positive EPS growth" : fun.pegRatio < 1 ? "Growth at a discount" : fun.pegRatio < 2 ? "Fairly priced" : "Expensive vs growth"}
+                  tone={fun.pegRatio == null ? "default" : fun.pegRatio < 1 ? "good" : fun.pegRatio < 2 ? "neutral" : "bad"} />
+                {(() => { const [sub, tn] = roeTone(fun.roe); return <MCard label="Return on Equity" value={pctOf(fun.roe)} sub={sub} tone={tn} />; })()}
+                <MCard label="Price / Book" value={mult(fun.pb)}
+                  sub={fun.pb == null ? "No data" : fun.pb < 3 ? "Near book value" : "Premium to book"}
+                  tone={fun.pb == null ? "default" : fun.pb < 3 ? "good" : "bad"} />
+                <MCard label="Price / FCF" value={mult(fun.pfcf)}
+                  sub={fun.pfcf == null ? "No data" : fun.pfcf < 20 ? "Cheap on cash flow" : "Expensive on FCF"}
+                  tone={fun.pfcf == null ? "default" : fun.pfcf < 20 ? "good" : "bad"} />
+                <MCard label="FCF Yield" value={pctOf(fun.fcfYield, 1)}
+                  sub={fun.fcf != null ? `${compact(fun.fcf)} free cash flow` : undefined}
+                  tone={fun.fcfYield == null ? "default" : fun.fcfYield > 0.05 ? "good" : "neutral"} />
+              </Grid>
+              <div style={{ height: 8 }} />
+              <Grid cols={5}>
+                <MCard label="Dividend Yield" value={div?.yieldPct != null ? `${div.yieldPct.toFixed(2)}%` : "N/A"}
+                  sub={div?.yieldPct == null ? "No dividend" : div.yieldPct > 3 ? "High yield" : div.yieldPct > 1 ? "Moderate yield" : "Token dividend"} />
+                {(() => { const [sub, tn] = deTone(fun.debtToEquity); return <MCard label="Debt / Equity" value={mult(fun.debtToEquity)} sub={sub} tone={tn} />; })()}
+                <MCard label="Current Ratio" value={mult(fun.currentRatio)}
+                  sub={fun.currentRatio == null ? "No data" : fun.currentRatio > 1.5 ? "Strong liquidity" : fun.currentRatio >= 1 ? "Adequate liquidity" : "Tight liquidity"}
+                  tone={fun.currentRatio == null ? "default" : fun.currentRatio > 1.5 ? "good" : fun.currentRatio >= 1 ? "neutral" : "bad"} />
+                <MCard label="Net Debt / Cash"
+                  value={fun.netDebt == null ? "N/A" : `${compact(Math.abs(fun.netDebt))} ${fun.netDebt >= 0 ? "net debt" : "net cash"}`}
+                  sub={fun.longTermInvestments ? `excl. ${compact(fun.longTermInvestments)} LT securities` : `${compact(fun.cash)} cash + ST inv.`}
+                  tone={fun.netDebt == null ? "default" : fun.netDebt < 0 ? "good" : "neutral"} />
+                <MCard label="Operating CF" value={compact(fun.ocf)}
+                  sub={fun.capex != null ? `less ${compact(fun.capex)} capex` : undefined}
+                  tone={fun.ocf != null && fun.ocf > 0 ? "good" : "default"} />
+              </Grid>
+
+              {/* ── Quality & Fair Value ── */}
+              <SectionLabel>Quality &amp; Fair Value</SectionLabel>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 92vw), 1fr))", gap: 10 }}>
+                <div style={{ ...CARD, padding: "16px 18px" }}>
+                  <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>Piotroski F-Score</div>
+                  <div style={{ fontFamily: MONO, fontSize: "1.6rem", fontWeight: 700, color: fun.piotroski.score >= 7 ? "var(--positive)" : fun.piotroski.score >= 4 ? "var(--accent-gold)" : "var(--negative)" }}>
+                    {fun.piotroski.score} / {fun.piotroski.outOf}
+                  </div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 10 }}>{fun.piotroski.basis}</div>
+                  <div style={{ display: "grid", gap: 3 }}>
+                    {fun.piotroski.checks.map((c: any, i: number) => (
+                      <div key={i} style={{ display: "flex", gap: 8, fontSize: "0.68rem", alignItems: "baseline" }}>
+                        <span style={{ width: 12, color: c.pass === true ? "var(--positive)" : c.pass === false ? "var(--negative)" : "var(--text-muted)", fontWeight: 700 }}>
+                          {c.pass === true ? "✓" : c.pass === false ? "✗" : "–"}
+                        </span>
+                        <span style={{ color: c.pass === false ? "var(--text-secondary)" : "var(--text-primary)" }}>{c.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ ...CARD, padding: "16px 18px" }}>
+                  <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>Altman Z-Score</div>
+                  <div style={{ fontFamily: MONO, fontSize: "1.6rem", fontWeight: 700, color: (fun.altmanZ ?? 0) > 2.99 ? "var(--positive)" : (fun.altmanZ ?? 0) > 1.81 ? "var(--accent-gold)" : "var(--negative)" }}>
+                    {fun.altmanZ != null ? fun.altmanZ.toFixed(2) : "N/A"}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)", marginTop: 6 }}>
+                    {fun.altmanZ == null ? "Insufficient data"
+                      : fun.altmanZ > 2.99 ? "Safe zone — low bankruptcy risk"
+                      : fun.altmanZ > 1.81 ? "Grey zone — some financial stress"
+                      : "Distress zone — elevated risk"}
+                  </div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 10, lineHeight: 1.5 }}>
+                    Weighted from working capital, retained earnings, operating income, market cap and revenue, all against total assets.
+                  </div>
+                </div>
+
+                <div style={{ ...CARD, padding: "16px 18px" }}>
+                  <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>DCF Fair Value</div>
+                  <div style={{ fontFamily: MONO, fontSize: "1.6rem", fontWeight: 700, color: fun.dcf && fun.dcf.perShare > q.price ? "var(--positive)" : "var(--negative)" }}>
+                    {fun.dcf ? money(fun.dcf.perShare) : "N/A"}
+                  </div>
+                  {fun.dcf && (
+                    <>
+                      <div style={{ fontSize: "0.7rem", color: fun.dcf.perShare > q.price ? "var(--positive)" : "var(--negative)", marginTop: 6 }}>
+                        {pct(((fun.dcf.perShare - q.price) / q.price) * 100, 1)} vs price
+                      </div>
+                      <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 10, lineHeight: 1.5 }}>
+                        Two-stage FCF model: {pctOf(fun.dcf.assumedGrowth, 1)} growth for 5y then half that,
+                        {" "}{pctOf(fun.dcf.discount, 0)} discount, {pctOf(fun.dcf.terminal, 1)} terminal.
+                        Assumption-driven — a reference point, not a target.
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* ── Analyst Ratings ── */}
           {cons && (
@@ -390,9 +537,9 @@ function MarketstackResearchInner() {
           )}
 
           <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "2rem", lineHeight: 1.6 }}>
-            All data on this page from marketstack (Business plan) except the interactive chart, which is the
-            TradingView widget. Statements/Facts/Concepts endpoints from the pricing page are not live on the
-            API yet; ETF holdings currently returns no data.
+            Prices, quotes, ratings, dividends, splits and filings from marketstack (Business plan); chart by
+            TradingView. Fundamentals come from SEC EDGAR XBRL — marketstack&apos;s Statements/Facts/Concepts
+            endpoints are on the pricing page but return &quot;route not found&quot;, and ETF holdings returns no data.
           </div>
         </>
       )}
