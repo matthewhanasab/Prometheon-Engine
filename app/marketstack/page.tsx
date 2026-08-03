@@ -1,137 +1,130 @@
 "use client";
-import { useState, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import CompanyLogo from "@/components/CompanyLogo";
+import TradingViewChart from "@/components/TradingViewChart";
 
-const CARD: React.CSSProperties = {
-  background: "var(--bg-surface)",
-  border: "1px solid var(--border)",
-  borderRadius: 22,
-};
+// Stock Research, rebuilt on marketstack data end-to-end. Same visual language
+// as /research, but every number here comes from the marketstack Business plan
+// (plus TradingView's own widget for the interactive chart).
+
 const MONO = "'Spline Sans Mono', monospace";
 const SANS = "'Public Sans', sans-serif";
 const SERIF = "'Space Grotesk', Georgia, serif";
+const CARD: React.CSSProperties = {
+  background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
+};
 
-const PICKS = ["AAPL", "NVDA", "KO", "SPY", "IREN", "JNJ"];
+const PICKS = ["AAPL", "NVDA", "MSFT", "KO", "SPY", "IREN"];
 
-function Label({ children, hint }: { children: React.ReactNode; hint?: string }) {
+const fmt = (n: number | null | undefined, d = 2) =>
+  n == null || !Number.isFinite(n) ? "N/A" : n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const money = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "N/A" : `$${fmt(n)}`);
+const pct = (n: number | null | undefined, d = 2) =>
+  n == null || !Number.isFinite(n) ? "N/A" : `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
+const compact = (n: number | null | undefined) =>
+  n == null || !Number.isFinite(n) ? "N/A"
+    : n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K` : String(Math.round(n));
+
+function SectionLabel({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
-    <div
-      style={{
-        display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap",
-        fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600,
-        textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)",
-        borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem",
-        margin: "1.9rem 0 0.9rem",
-      }}
-    >
-      <span>{children}</span>
-      {hint && (
-        <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.62rem" }}>
-          {hint}
-        </span>
-      )}
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
+      fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase",
+      letterSpacing: "0.14em", color: "var(--text-secondary)",
+      borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", margin: "2rem 0 0.9rem",
+    }}>
+      <span>{children}</span>{right}
     </div>
   );
 }
 
-function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "good" | "bad" }) {
+function MCard({ label, value, sub, tone = "default" }: {
+  label: string; value: string; sub?: string; tone?: "good" | "bad" | "neutral" | "default";
+}) {
   const color = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : "var(--text-primary)";
   return (
-    <div style={{ ...CARD, padding: "13px 16px" }}>
-      <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 5 }}>
-        {label}
-      </div>
+    <div style={{ ...CARD, padding: "14px 16px" }}>
+      <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 5 }}>{label}</div>
       <div style={{ fontFamily: MONO, fontSize: "1.15rem", fontWeight: 600, color }}>{value}</div>
       {sub && <div style={{ fontFamily: SANS, fontSize: "0.6rem", color: "var(--text-muted)", marginTop: 3 }}>{sub}</div>}
     </div>
   );
 }
 
-const money = (n: number) => `$${n.toFixed(2)}`;
-const pct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
-const compact = (n: number) =>
-  n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K` : String(Math.round(n));
-
-/** Inline sparkline — avoids pulling a chart lib into an evaluation page. */
-function Sparkline({ series, up }: { series: { d: string; c: number }[]; up: boolean }) {
-  if (series.length < 2) return null;
-  const W = 1000, H = 200, PAD = 4;
-  const vals = series.map((p) => p.c);
-  const min = Math.min(...vals), max = Math.max(...vals);
-  const span = max - min || 1;
-  const x = (i: number) => (i / (series.length - 1)) * W;
-  const y = (v: number) => PAD + (1 - (v - min) / span) * (H - PAD * 2);
-  const line = series.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.c).toFixed(1)}`).join(" ");
-  const area = `${line} L${W},${H} L0,${H} Z`;
-  const stroke = up ? "var(--positive)" : "var(--negative)";
-  const gid = up ? "msUp" : "msDown";
+function Grid({ cols = 5, children }: { cols?: number; children: React.ReactNode }) {
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: 200, display: "block" }}>
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stroke} stopOpacity="0.28" />
-          <stop offset="100%" stopColor={stroke} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill={`url(#${gid})`} />
-      <path d={line} fill="none" stroke={stroke} strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-    </svg>
+    <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(min(150px, 44vw), 1fr))`, gap: 10 }}>
+      {children}
+    </div>
   );
 }
 
-function MarketStackInner() {
-  const [input, setInput] = useState("AAPL");
+function ratingTone(r: string | null): string {
+  if (!r) return "var(--text-secondary)";
+  const s = r.toLowerCase();
+  if (s.includes("buy") || s.includes("outperform") || s.includes("overweight")) return "var(--positive)";
+  if (s.includes("sell") || s.includes("underperform") || s.includes("underweight")) return "var(--negative)";
+  return "var(--accent-gold)";
+}
+
+function MarketstackResearchInner() {
+  const search = useSearchParams();
+  const [input, setInput] = useState(search.get("ticker") ?? "AAPL");
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loadedOnce = useRef(false);
 
-  async function search(sym?: string) {
+  async function load(sym?: string) {
     const t = (sym ?? input).trim().toUpperCase();
     if (!t) return;
-    setInput(t); setLoading(true); setError(null); setData(null);
+    setInput(t); setLoading(true); setError(null);
     try {
-      const res = await fetch(`/api/marketstack-lookup/${t}`);
+      const res = await fetch(`/api/marketstack-stock/${t}`);
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error ?? "Request failed");
       setData(json);
     } catch (e: any) {
-      setError(e?.message ?? "Failed to fetch");
+      setError(e?.message ?? "Failed to fetch"); setData(null);
     } finally { setLoading(false); }
   }
 
-  const p = data?.price;
+  useEffect(() => {
+    if (loadedOnce.current) return;
+    loadedOnce.current = true;
+    const t = search.get("ticker");
+    if (t) load(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const q = data?.quote;
   const prof = data?.profile;
+  const cons = data?.consensus;
   const div = data?.dividends;
-  const up = (p?.periodReturnPct ?? 0) >= 0;
 
   return (
     <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
       <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
-        Marketstack Explorer
+        Market Stack Research
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
-      <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "0.35rem" }}>
-        Everything the <strong>free tier</strong> exposes, in one view — company profile, prices, full dividend and split history.
-      </div>
-      <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "1.4rem" }}>
-        Each new ticker spends 4 of the 100 monthly requests; results cache 24h so repeats are free.
+      <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1.4rem" }}>
+        The research page, rebuilt on <strong>marketstack</strong> data — 15-year history, live IEX quotes,
+        analyst ratings, SEC filings, full dividend record.
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); search(); }} style={{ display: "flex", gap: 10, maxWidth: 380, marginBottom: "0.7rem" }}>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value.toUpperCase())}
-          placeholder="Ticker (e.g. AAPL)"
-          style={{ flex: 1, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, padding: "10px 14px", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.85rem", outline: "none" }}
-        />
+      <form onSubmit={(e) => { e.preventDefault(); load(); }} style={{ display: "flex", gap: 10, maxWidth: 380, marginBottom: "0.7rem" }}>
+        <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Type a ticker…"
+          style={{ flex: 1, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, padding: "10px 14px", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.85rem", outline: "none" }} />
         <button type="submit" disabled={loading}
           style={{ background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22, padding: "10px 22px", fontFamily: SANS, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
-          {loading ? "Loading…" : "Search"}
+          {loading ? "Loading…" : "Analyze"}
         </button>
       </form>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: "1.6rem" }}>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: "1.2rem" }}>
         {PICKS.map((t) => (
-          <button key={t} type="button" onClick={() => search(t)}
+          <button key={t} type="button" onClick={() => load(t)}
             style={{
               background: data?.ticker === t ? "var(--accent-gold)" : "var(--bg-elevated)",
               color: data?.ticker === t ? "var(--on-accent)" : "var(--text-secondary)",
@@ -141,101 +134,250 @@ function MarketStackInner() {
         ))}
       </div>
 
-      {error && <p style={{ color: "var(--negative)", fontSize: "0.85rem" }}>❌ {error}</p>}
+      {loading && <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", padding: "30px 0" }}>Loading {input}…</div>}
+      {error && <div style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</div>}
 
-      {data && p && (
+      {data && q && !loading && (
         <>
-          {/* ── Header ── */}
-          <div style={{ ...CARD, padding: "20px 24px", display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
-            <CompanyLogo ticker={data.ticker} size={54} />
-            <div style={{ minWidth: 180 }}>
-              <div style={{ fontFamily: SERIF, fontSize: "1.35rem", fontWeight: 600, letterSpacing: "-0.02em" }}>
-                {prof?.name ?? data.ticker}
-              </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: 3 }}>
-                <span style={{ fontFamily: MONO }}>{data.ticker}</span>
-                {prof?.sector && <> · {prof.sector}</>}
-                {prof?.industry && <> · {prof.industry}</>}
-              </div>
+          {/* ── Company Header ── */}
+          <div style={{ borderBottom: "1px solid var(--border)", paddingBottom: "1.5rem", marginBottom: "0.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10 }}>
+              <CompanyLogo ticker={data.ticker} size={58} />
+              <div style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 500 }}>{prof?.name ?? data.ticker}</div>
             </div>
-            <div style={{ marginLeft: "auto", textAlign: "right" }}>
-              <div style={{ fontFamily: MONO, fontSize: "1.9rem", fontWeight: 700 }}>{money(p.latest)}</div>
-              <div style={{ fontFamily: MONO, fontSize: "0.72rem", color: p.dayChangePct >= 0 ? "var(--positive)" : "var(--negative)" }}>
-                {p.dayChangePct != null ? pct(p.dayChangePct) : "—"} <span style={{ color: "var(--text-muted)" }}>· {p.latestDate}</span>
-              </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+              {[data.ticker, prof?.exchange, prof?.sector, prof?.industry].filter(Boolean).map((v: string) => (
+                <span key={v} style={{ fontSize: "0.6rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "2px 8px" }}>{v}</span>
+              ))}
+              {data.meta?.cik && (
+                <span style={{ fontSize: "0.6rem", fontWeight: 500, letterSpacing: "0.08em", color: "var(--text-muted)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "2px 8px", fontFamily: MONO }}>
+                  CIK {Number(data.meta.cik)}
+                </span>
+              )}
             </div>
-          </div>
-
-          {/* ── Price chart ── */}
-          <Label hint={`${p.oldestDate} → ${p.latestDate}`}>Price History</Label>
-          <div style={{ ...CARD, padding: "16px 8px 10px" }}>
-            <Sparkline series={data.series} up={up} />
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 14px 0", fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-muted)" }}>
-              <span>{p.oldestDate}</span>
-              <span style={{ color: up ? "var(--positive)" : "var(--negative)", fontWeight: 600 }}>
-                {p.periodReturnPct != null ? pct(p.periodReturnPct) : ""} over period
+            <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
+              <span style={{ fontFamily: MONO, fontSize: "2.4rem", fontWeight: 600, letterSpacing: "-0.02em" }}>{money(q.price)}</span>
+              <span style={{ fontFamily: MONO, fontSize: "1rem", fontWeight: 500, color: (q.change ?? 0) >= 0 ? "var(--positive)" : "var(--negative)" }}>
+                {(q.change ?? 0) >= 0 ? "▲" : "▼"} ${Math.abs(q.change ?? 0).toFixed(2)} ({pct(q.changePct)})
               </span>
-              <span>{p.latestDate}</span>
+              <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>as of {q.date}</span>
             </div>
-          </div>
-
-          {/* ── Price stats ── */}
-          <Label>Price Stats</Label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10 }}>
-            <Stat label="52-Week High" value={money(p.high52)} />
-            <Stat label="52-Week Low" value={money(p.low52)} />
-            <Stat label="Avg Volume" value={compact(p.avgVol)} sub="over available history" />
-            <Stat label="Trading Days" value={String(p.rowCount)} sub={p.droppedZeroRows ? `${p.droppedZeroRows} $0 rows filtered` : "clean series"} />
-          </div>
-
-          {/* ── Company profile ── */}
-          {prof && (
-            <>
-              <Label hint="free tier · /tickerinfo">Company Profile</Label>
-              {prof.about && (
-                <div style={{ ...CARD, padding: "16px 20px", fontSize: "0.82rem", lineHeight: 1.6, color: "var(--text-secondary)", marginBottom: 10 }}>
-                  {prof.about}
-                </div>
-              )}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10 }}>
-                {prof.employees != null && <Stat label="Employees" value={compact(Number(prof.employees))} />}
-                {prof.incorporation && <Stat label="Incorporated" value={String(prof.incorporation)} />}
-                {prof.fiscalYearEnd && <Stat label="Fiscal Year End" value={String(prof.fiscalYearEnd)} />}
-                {prof.itemType && <Stat label="Type" value={String(prof.itemType)} />}
+            {data.intraday?.last != null && (
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 10, fontFamily: MONO, fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+                <span style={{ color: "var(--accent-gold)", fontWeight: 700, fontFamily: SANS, fontSize: "0.58rem", textTransform: "uppercase", letterSpacing: "0.1em", alignSelf: "center" }}>Live · IEX</span>
+                <span>last {money(data.intraday.last)}</span>
+                {data.intraday.bid != null && <span>bid {money(data.intraday.bid)}{data.intraday.bidSize ? ` ×${data.intraday.bidSize}` : ""}</span>}
+                {data.intraday.ask != null && <span>ask {money(data.intraday.ask)}{data.intraday.askSize ? ` ×${data.intraday.askSize}` : ""}</span>}
+                {data.intraday.time && <span style={{ color: "var(--text-muted)" }}>{data.intraday.time} UTC</span>}
               </div>
-              {(prof.address || prof.website || prof.phone) && (
-                <div style={{ ...CARD, padding: "14px 20px", marginTop: 10, fontSize: "0.76rem", lineHeight: 1.8, color: "var(--text-secondary)" }}>
-                  {prof.address && <div>🏢 {prof.address}</div>}
-                  {prof.phone && <div>📞 {prof.phone}</div>}
-                  {prof.website && (
-                    <div>
-                      🔗 <a href={prof.website} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-gold)" }}>{prof.website}</a>
-                    </div>
-                  )}
-                  {prof.listings?.length > 0 && (
-                    <div style={{ color: "var(--text-muted)" }}>📈 Listed on: {prof.listings.join(", ")}</div>
-                  )}
-                  {prof.previousNames?.length > 0 && (
-                    <div style={{ color: "var(--text-muted)" }}>
-                      📝 Formerly: {prof.previousNames.map((n: any) => `${n.name} (${String(n.from).slice(0, 4)})`).join(", ")}
-                    </div>
-                  )}
+            )}
+          </div>
+
+          {/* ── Price Chart (TradingView) ── */}
+          <SectionLabel>Price Chart — TradingView</SectionLabel>
+          <TradingViewChart ticker={data.ticker} />
+
+          {/* ── Quick Stats ── */}
+          <SectionLabel>Quick Stats</SectionLabel>
+          <Grid cols={5}>
+            <MCard label="52-Wk High" value={money(q.week52High)} />
+            <MCard label="52-Wk Low" value={money(q.week52Low)} />
+            <MCard label="52-Wk Position" value={q.pos52 != null ? `${q.pos52.toFixed(0)}%` : "N/A"}
+              sub={q.pos52 != null ? (q.pos52 > 70 ? "Near 52-wk high" : q.pos52 < 30 ? "Near 52-wk low" : "Mid-range") : undefined} />
+            <MCard label="Avg Volume" value={compact(q.avgVol)} sub="1-year daily average" />
+            <MCard label="Analyst Target" value={cons?.avgTarget != null ? money(cons.avgTarget) : "N/A"}
+              sub={cons?.avgTarget != null && q.price ? `${pct(((cons.avgTarget - q.price) / q.price) * 100, 1)} vs price` : undefined}
+              tone={cons?.avgTarget != null && cons.avgTarget > q.price ? "good" : "default"} />
+          </Grid>
+
+          {/* ── Long-Term Performance ── */}
+          <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>the 15-year history entitlement, live</span>}>
+            Long-Term Performance
+          </SectionLabel>
+          <Grid cols={5}>
+            {data.longReturns?.map((r: any) =>
+              r.available ? (
+                <MCard key={r.years} label={`${r.years}-Year Return`} value={pct(r.totalPct, 0)}
+                  sub={`${pct(r.cagrPct, 1)}/yr · from ${money(r.fromPrice)} (${String(r.fromDate).slice(0, 4)})`}
+                  tone={r.totalPct >= 0 ? "good" : "bad"} />
+              ) : (
+                <MCard key={r.years} label={`${r.years}-Year Return`} value="—" sub="not listed that long" />
+              )
+            )}
+          </Grid>
+
+          {/* ── Analyst Ratings ── */}
+          {cons && (
+            <>
+              <SectionLabel right={cons.asOf ? <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>as of {cons.asOf}</span> : undefined}>
+                Analyst Ratings — {cons.analysts ?? "?"} Analysts
+              </SectionLabel>
+              <Grid cols={5}>
+                <MCard label="Avg Target" value={money(cons.avgTarget)}
+                  sub={q.price && cons.avgTarget != null ? `${pct(((cons.avgTarget - q.price) / q.price) * 100, 1)} implied` : undefined}
+                  tone={cons.avgTarget != null && cons.avgTarget > q.price ? "good" : "bad"} />
+                <MCard label="High Target" value={money(cons.highTarget)} tone="good" />
+                <MCard label="Low Target" value={money(cons.lowTarget)} tone="bad" />
+                <MCard label="Buy / Hold / Sell" value={`${cons.buy} / ${cons.hold} / ${cons.sell}`} />
+                <MCard label="Consensus" value={
+                  cons.buy + cons.hold + cons.sell > 0
+                    ? cons.buy / (cons.buy + cons.hold + cons.sell) > 0.6 ? "Buy" : cons.sell > cons.buy ? "Sell" : "Hold"
+                    : "N/A"
+                } tone={cons.buy > cons.hold + cons.sell ? "good" : "neutral"} />
+              </Grid>
+
+              {/* buy/hold/sell bar */}
+              {cons.buy + cons.hold + cons.sell > 0 && (
+                <div style={{ display: "flex", height: 10, borderRadius: 999, overflow: "hidden", marginTop: 10, border: "1px solid var(--border)" }}>
+                  <div style={{ width: `${(cons.buy / (cons.buy + cons.hold + cons.sell)) * 100}%`, background: "var(--positive)" }} />
+                  <div style={{ width: `${(cons.hold / (cons.buy + cons.hold + cons.sell)) * 100}%`, background: "var(--accent-gold)" }} />
+                  <div style={{ width: `${(cons.sell / (cons.buy + cons.hold + cons.sell)) * 100}%`, background: "var(--negative)" }} />
                 </div>
               )}
+
+              {data.analysts?.length > 0 && (
+                <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12, maxHeight: 380, overflowY: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
+                    <thead>
+                      <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                        <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Analyst</th>
+                        <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Firm</th>
+                        <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Rating</th>
+                        <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Target</th>
+                        <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.analysts.map((a: any, i: number) => (
+                        <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
+                          <td style={{ padding: "7px 14px", fontWeight: 600 }}>{a.name}</td>
+                          <td style={{ padding: "7px 10px", color: "var(--text-secondary)", fontSize: "0.72rem" }}>{a.firm}</td>
+                          <td style={{ padding: "7px 10px", color: ratingTone(a.rating), fontWeight: 600 }}>
+                            {a.rating ?? "—"}{a.action ? <span style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: "0.66rem" }}> · {a.action}</span> : null}
+                          </td>
+                          <td style={{ padding: "7px 10px", textAlign: "right", fontFamily: MONO }}>{a.target != null ? money(a.target) : "—"}</td>
+                          <td style={{ padding: "7px 14px", textAlign: "right", fontFamily: MONO, color: "var(--text-muted)" }}>{a.date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── Dividends ── */}
+          <SectionLabel right={div?.count ? <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>{div.count} records since {div.oldest}</span> : undefined}>
+            Dividends
+          </SectionLabel>
+          {div?.count > 0 ? (
+            <>
+              <Grid cols={5}>
+                <MCard label="TTM Dividends" value={money(div.ttmTotal)} />
+                <MCard label="Yield" value={div.yieldPct != null ? `${div.yieldPct.toFixed(2)}%` : "N/A"} tone="good" />
+                <MCard label="Frequency" value={div.freq === "q" ? "Quarterly" : div.freq === "m" ? "Monthly" : div.freq === "s" ? "Semi-Annual" : div.freq ?? "N/A"} />
+                {div.upcoming?.length > 0
+                  ? <MCard label="Next Ex-Date" value={div.upcoming[0].date} sub={`${money(div.upcoming[0].amount)}${div.upcoming[0].paymentDate ? ` · pays ${div.upcoming[0].paymentDate}` : ""}`} tone="good" />
+                  : <MCard label="Next Ex-Date" value="Not declared" />}
+                <MCard label="History Depth" value={String(div.count)} sub={`back to ${String(div.oldest).slice(0, 4)}`} />
+              </Grid>
+              <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12, maxHeight: 300, overflowY: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem", fontFamily: MONO }}>
+                  <thead>
+                    <tr style={{ color: "var(--text-secondary)", fontFamily: SANS, fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Ex-Date</th>
+                      <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Amount</th>
+                      <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Paid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {div.recent.map((d: any) => (
+                      <tr key={d.date} style={{ borderTop: "1px solid var(--border)" }}>
+                        <td style={{ padding: "6px 14px", color: "var(--text-secondary)" }}>{d.date}</td>
+                        <td style={{ padding: "6px 10px", textAlign: "right" }}>{money(d.amount)}</td>
+                        <td style={{ padding: "6px 14px", textAlign: "right", color: "var(--text-muted)" }}>{d.paymentDate ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <div style={{ ...CARD, padding: "14px 20px", fontSize: "0.8rem", color: "var(--text-muted)" }}>No dividends on record.</div>
+          )}
+
+          {/* ── SEC Filings ── */}
+          {data.filings?.length > 0 && (
+            <>
+              <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>via marketstack EDGAR submissions</span>}>
+                SEC Filings
+              </SectionLabel>
+              <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
+                  <thead>
+                    <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Form</th>
+                      <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Description</th>
+                      <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Filed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.filings.map((f: any, i: number) => (
+                      <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
+                        <td style={{ padding: "7px 14px", fontFamily: MONO, fontWeight: 600, color: "var(--accent-gold)" }}>
+                          {f.url ? <a href={f.url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-gold)" }}>{f.form}</a> : f.form}
+                        </td>
+                        <td style={{ padding: "7px 10px", color: "var(--text-secondary)", fontSize: "0.72rem" }}>{f.description}</td>
+                        <td style={{ padding: "7px 14px", textAlign: "right", fontFamily: MONO, color: "var(--text-muted)" }}>{f.filed}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {/* ── Splits ── */}
+          {data.splits?.length > 0 && (
+            <>
+              <SectionLabel>Split History</SectionLabel>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {data.splits.map((s: any) => (
+                  <span key={s.date} style={{ ...CARD, borderRadius: 999, padding: "6px 14px", fontFamily: MONO, fontSize: "0.74rem" }}>
+                    <span style={{ fontWeight: 700 }}>{s.factor}:1</span>
+                    <span style={{ color: "var(--text-muted)", marginLeft: 8 }}>{s.date}</span>
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ── About / Profile ── */}
+          {prof?.about && (
+            <>
+              <SectionLabel>About</SectionLabel>
+              <div style={{ ...CARD, padding: "16px 20px", fontSize: "0.82rem", lineHeight: 1.65, color: "var(--text-secondary)" }}>
+                {prof.about}
+                <div style={{ marginTop: 12, fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.9 }}>
+                  {prof.employees != null && <div>👥 {Number(prof.employees).toLocaleString()} employees</div>}
+                  {prof.address && <div>🏢 {prof.address}</div>}
+                  {prof.website && <div>🔗 <a href={prof.website} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-gold)" }}>{prof.website}</a></div>}
+                </div>
+              </div>
             </>
           )}
 
           {/* ── Executives ── */}
           {prof?.executives?.length > 0 && (
             <>
-              <Label>Key Executives</Label>
+              <SectionLabel>Key Executives</SectionLabel>
               <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
                   <tbody>
                     {prof.executives.map((e: any, i: number) => (
                       <tr key={i} style={{ borderTop: i ? "1px solid var(--border)" : "none" }}>
                         <td style={{ padding: "8px 16px", fontWeight: 600 }}>{e.name}</td>
-                        <td style={{ padding: "8px 16px", color: "var(--text-secondary)", fontSize: "0.74rem" }}>{e.role ?? "—"}</td>
+                        <td style={{ padding: "8px 16px", color: "var(--text-secondary)", fontSize: "0.72rem" }}>{e.role ?? "—"}</td>
                         <td style={{ padding: "8px 16px", textAlign: "right", fontFamily: MONO, color: "var(--text-muted)" }}>
                           {e.salary ? `$${Number(e.salary).toLocaleString()}` : ""}
                         </td>
@@ -247,102 +389,10 @@ function MarketStackInner() {
             </>
           )}
 
-          {/* ── Dividends ── */}
-          <Label hint={div?.count ? `${div.count} records back to ${div.oldest} — NOT capped at 1yr` : undefined}>
-            Dividend History
-          </Label>
-          {div?.count > 0 ? (
-            <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10, marginBottom: 10 }}>
-                <Stat label="TTM Dividends" value={money(div.ttmTotal)} sub="trailing 12 months" />
-                <Stat label="Yield" value={div.dividendYield != null ? `${div.dividendYield.toFixed(2)}%` : "—"} sub="TTM ÷ price" tone="good" />
-                <Stat label="Frequency" value={div.freq === "q" ? "Quarterly" : div.freq ? String(div.freq) : "—"} />
-                <Stat label="History Depth" value={`${div.count}`} sub={`since ${div.oldest}`} />
-              </div>
-
-              {div.upcoming?.length > 0 && (
-                <div style={{ ...CARD, padding: "12px 18px", marginBottom: 10, borderLeft: "3px solid var(--accent-gold)" }}>
-                  <span style={{ fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--accent-gold)" }}>
-                    Upcoming
-                  </span>
-                  {div.upcoming.map((d: any) => (
-                    <div key={d.date} style={{ fontFamily: MONO, fontSize: "0.8rem", marginTop: 4 }}>
-                      {money(d.amount)} · ex-date {d.date}
-                      {d.paymentDate && <span style={{ color: "var(--text-muted)" }}> · pays {d.paymentDate}</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", maxHeight: 340, overflowY: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem", fontFamily: MONO }}>
-                  <thead>
-                    <tr style={{ color: "var(--text-secondary)", fontFamily: SANS, fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                      <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Ex-Date</th>
-                      <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Amount</th>
-                      <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Declared</th>
-                      <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Paid</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {div.all.map((d: any) => (
-                      <tr key={d.date} style={{ borderTop: "1px solid var(--border)" }}>
-                        <td style={{ padding: "6px 14px", color: "var(--text-secondary)" }}>{d.date}</td>
-                        <td style={{ padding: "6px 10px", textAlign: "right" }}>{money(d.amount)}</td>
-                        <td style={{ padding: "6px 10px", textAlign: "right", color: "var(--text-muted)" }}>{d.declarationDate ?? "—"}</td>
-                        <td style={{ padding: "6px 14px", textAlign: "right", color: "var(--text-muted)" }}>{d.paymentDate ?? "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          ) : (
-            <div style={{ ...CARD, padding: "14px 20px", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              No dividend history — this ticker doesn&apos;t pay one.
-            </div>
-          )}
-
-          {/* ── Splits ── */}
-          <Label hint="full history on free tier">Split History</Label>
-          {data.splits?.length > 0 ? (
-            <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem", fontFamily: MONO }}>
-                <tbody>
-                  {data.splits.map((s: any, i: number) => (
-                    <tr key={s.date} style={{ borderTop: i ? "1px solid var(--border)" : "none" }}>
-                      <td style={{ padding: "8px 16px", color: "var(--text-secondary)" }}>{s.date}</td>
-                      <td style={{ padding: "8px 16px", textAlign: "right", fontWeight: 600 }}>{s.factor}-for-1</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div style={{ ...CARD, padding: "14px 20px", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              No splits on record.
-            </div>
-          )}
-
-          {/* ── Capability matrix ── */}
-          <Label hint="what this API key actually unlocks">Free Tier Capabilities</Label>
-          <div style={{ ...CARD, padding: "6px 0" }}>
-            {Object.entries(data.capabilities ?? {}).map(([name, c]: any, i) => (
-              <div key={name} style={{
-                display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
-                padding: "10px 18px", borderTop: i ? "1px solid var(--border)" : "none",
-              }}>
-                <span style={{ color: c.ok ? "var(--positive)" : "var(--negative)", fontWeight: 700, width: 16 }}>
-                  {c.ok ? "✓" : "✗"}
-                </span>
-                <span style={{ fontSize: "0.82rem", fontWeight: 600, minWidth: 130 }}>{name}</span>
-                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontFamily: MONO }}>{c.note}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: 10, lineHeight: 1.6 }}>
-            Paid tiers add intraday and real-time quotes, index data, 15+ years of EOD history, and SEC/EDGAR
-            endpoints. Dividends, splits, and company profiles already return full depth on the free plan.
+          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "2rem", lineHeight: 1.6 }}>
+            All data on this page from marketstack (Business plan) except the interactive chart, which is the
+            TradingView widget. Statements/Facts/Concepts endpoints from the pricing page are not live on the
+            API yet; ETF holdings currently returns no data.
           </div>
         </>
       )}
@@ -350,6 +400,6 @@ function MarketStackInner() {
   );
 }
 
-export default function MarketStackPage() {
-  return <Suspense fallback={null}><MarketStackInner /></Suspense>;
+export default function MarketstackResearchPage() {
+  return <Suspense fallback={null}><MarketstackResearchInner /></Suspense>;
 }
