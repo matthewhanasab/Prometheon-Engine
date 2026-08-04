@@ -3,6 +3,10 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CompanyLogo from "@/components/CompanyLogo";
 import TradingViewChart from "@/components/TradingViewChart";
+import PriceChart from "@/components/PriceChart";
+import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
+import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
+import ShareCardButton from "@/components/ShareCardButton";
 
 // Stock Research, rebuilt on marketstack data end-to-end. Same visual language
 // as /research, but every number here comes from the marketstack Business plan
@@ -141,6 +145,8 @@ function MarketstackResearchInner() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [range, setRange] = useState<RangeKey>("1Y");
+  const [chartMode, setChartMode] = useState<ChartMode>("builtin");
   const loadedOnce = useRef(false);
 
   async function load(sym?: string) {
@@ -172,6 +178,8 @@ function MarketstackResearchInner() {
   const fun = data?.fundamentals;
   const intra = data?.intraday;
   const capm = data?.capm;
+  const priceSeries: { date: string; price: number }[] = data?.price ?? [];
+  const chartWindow = sliceRange<{ date: string; price: number }>(priceSeries, range);
   // "Live" = the newest bar is within ~15 minutes of now. Off-hours the same
   // panel still renders, labelled as the last completed session.
   const marketLive = intra?.time
@@ -243,6 +251,25 @@ function MarketstackResearchInner() {
                 {(q.change ?? 0) >= 0 ? "▲" : "▼"} ${Math.abs(q.change ?? 0).toFixed(2)} ({pct(q.changePct)})
               </span>
               <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>as of {q.date}</span>
+              <span style={{ marginLeft: "auto", alignSelf: "center" }}>
+                <ShareCardButton
+                  stock={{
+                    ticker: data.ticker,
+                    name: prof?.name ?? data.ticker,
+                    sector: prof?.sector ?? null,
+                    price: q.price,
+                    change: q.change,
+                    changePct: q.changePct,
+                    mktCap: fun?.marketCap ?? null,
+                    week52High: q.week52High,
+                    week52Low: q.week52Low,
+                    peRatio: fun?.peRatio ?? null,
+                    analystTarget: cons?.avgTarget ?? null,
+                  }}
+                  window={chartWindow}
+                  rangeLabel={range}
+                />
+              </span>
             </div>
             {intra?.last != null && (
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 10, fontFamily: MONO, fontSize: "0.72rem", color: "var(--text-secondary)" }}>
@@ -291,9 +318,17 @@ function MarketstackResearchInner() {
             </>
           )}
 
-          {/* ── Price Chart (TradingView) ── */}
-          <SectionLabel>Price Chart — TradingView</SectionLabel>
-          <TradingViewChart ticker={data.ticker} />
+          {/* ── Price Chart ── */}
+          <SectionLabel right={
+            <div style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              {/* TradingView ships its own timeframe controls */}
+              {chartMode === "builtin" && <RangeToggle range={range} onChange={setRange} />}
+              <ChartModeToggle mode={chartMode} onChange={setChartMode} />
+            </div>
+          }>Price Chart</SectionLabel>
+          {chartMode === "builtin"
+            ? <PriceChart data={chartWindow} label={range} />
+            : <TradingViewChart ticker={data.ticker} />}
 
           {/* ── Quick Stats ── */}
           <SectionLabel>Quick Stats</SectionLabel>

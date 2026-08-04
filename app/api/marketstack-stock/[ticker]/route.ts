@@ -244,6 +244,17 @@ export async function GET(
 
   const rf = (await get10YTreasury()) ?? 0.043;
 
+  // ── Daily series for the built-in chart, ascending. Sourced from the 5-year
+  // pull so every range toggle (1M…5Y) has data, and on adj_close so a split
+  // doesn't draw a cliff mid-chart. ──
+  const priceSeries = rows(stock5yRes?.data)
+    .map((r) => ({
+      date: String(r.date ?? "").slice(0, 10),
+      price: Number(r.adj_close ?? r.close ?? 0),
+    }))
+    .filter((r) => r.date && r.price > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   // ── Real-time IEX intraday.
   //
   // Field trap: `open`/`close` on an intraday bar are the SESSION's open/close,
@@ -428,6 +439,7 @@ export async function GET(
       avgVol,
     },
     intraday,
+    price: priceSeries,
     capm: {
       rf,
       beta,
