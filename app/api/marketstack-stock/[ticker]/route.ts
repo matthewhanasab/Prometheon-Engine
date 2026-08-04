@@ -125,7 +125,9 @@ export async function GET(
     await pool(
       [
         () => get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=400`),
-        () => get(`${MS}/intraday?access_key=${key}&symbols=${t}&interval=1min&limit=1`, QUOTE_TTL),
+        // A full session of minute bars, not a single bar: same API cost, and it
+        // powers both the live quote and the intraday chart.
+        () => get(`${MS}/intraday?access_key=${key}&symbols=${t}&interval=1min&limit=400`, QUOTE_TTL),
         () => get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
         () => get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`),
         () => get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
@@ -196,22 +198,54 @@ export async function GET(
     };
   });
 
-  // ── Real-time IEX quote. Off-hours the feed returns zeros — treat those as
-  // absent so the UI hides the Live row instead of showing "$0.00 bid". ──
+  // ── Real-time IEX intraday.
+  //
+  // Field trap: `open`/`close` on an intraday bar are the SESSION's open/close,
+  // identical on every bar — charting them draws a flat line. The actual
+  // per-minute traded price is `marketstack_last`. The `last`/`bid`/`ask` quote
+  // fields only populate while the market is open, so they're a bonus, not the
+  // basis. ──
   const pos = (v: any): number | null => {
     const n = num(v);
     return n != null && n > 0 ? n : null;
   };
-  const iq = rows(intradayRes.data)[0];
-  const iqLast = iq ? pos(iq.last) ?? pos(iq.close) : null;
-  const intraday = iq && iqLast != null
+  const iRows = rows(intradayRes.data);
+  const iSeries = iRows
+    .map((r) => ({
+      t: String(r.date ?? ""),
+      p: pos(r.marketstack_last) ?? pos(r.last) ?? pos(r.mid),
+      v: num(r.volume),
+    }))
+    .filter((r) => r.p != null && r.t)
+    .sort((a, b) => a.t.localeCompare(b.t));
+
+  const iq = iRows[0];
+  const newest = iSeries[iSeries.length - 1];
+  // Session boundary = the most recent bar's calendar day, so after-hours the
+  // panel shows the last complete session rather than mixing two days.
+  const sessionDay = newest ? newest.t.slice(0, 10) : null;
+  const session = sessionDay ? iSeries.filter((r) => r.t.slice(0, 10) === sessionDay) : [];
+  const sessionPrices = session.map((r) => r.p as number);
+
+  const intraday = newest
     ? {
-        last: iqLast,
-        bid: pos(iq.bid_price),
-        ask: pos(iq.ask_price),
-        bidSize: pos(iq.bid_size),
-        askSize: pos(iq.ask_size),
-        time: iq.date ? String(iq.date).replace("T", " ").slice(0, 16) : null,
+        last: newest.p,
+        time: newest.t.replace("T", " ").slice(0, 16),
+        sessionDate: sessionDay,
+        sessionHigh: sessionPrices.length ? Math.max(...sessionPrices) : null,
+        sessionLow: sessionPrices.length ? Math.min(...sessionPrices) : null,
+        sessionOpen: session.length ? session[0].p : null,
+        volume: session.length ? Math.max(...session.map((r) => r.v ?? 0)) : null,
+        bars: session.length,
+        // Quote-book fields, live-hours only.
+        bid: iq ? pos(iq.bid_price) : null,
+        ask: iq ? pos(iq.ask_price) : null,
+        bidSize: iq ? pos(iq.bid_size) : null,
+        askSize: iq ? pos(iq.ask_size) : null,
+        // Thinned for transport; enough points for a smooth line.
+        series: session
+          .filter((_, i) => i % Math.max(1, Math.ceil(session.length / 200)) === 0)
+          .map((r) => ({ t: r.t.slice(11, 16), p: r.p })),
       }
     : null;
 
