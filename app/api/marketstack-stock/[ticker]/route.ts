@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchFacts, deriveFundamentals } from "@/lib/edgarFacts";
+import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
 
 // Full research-page aggregator running exclusively on marketstack (Business
 // plan). Endpoint audit for this key, verified 2026-08-02:
@@ -33,27 +33,46 @@ async function getOnce(url: string, ttl: number): Promise<{ data: any; err: stri
   }
 }
 
+// Failed upstream calls are never stored in the Next.js data cache, so without
+// this a rate-limited endpoint re-pays its full retry backoff on EVERY page
+// load — including fully-cached ones. A short negative cache turns a failing
+// endpoint into a fast miss instead of a 6-second stall.
+const failCache: Map<string, number> =
+  ((globalThis as any).__msFailCache ??= new Map<string, number>());
+const FAIL_TTL = 90_000;
+
 async function get(url: string, ttl = DAY): Promise<{ data: any; err: string | null }> {
+  const failedAt = failCache.get(url);
+  if (failedAt && Date.now() - failedAt < FAIL_TTL) {
+    return { data: null, err: "rate_limit_reached (recent, skipped)" };
+  }
   let out = await getOnce(url, ttl);
-  // marketstack enforces a per-second rate limit; paced retries clear it. The
-  // companyratings endpoint throttles harder than the rest, hence the long tail.
-  for (let i = 0; i < 3 && out.err === "rate_limit_reached"; i++) {
-    await sleep(1500 + i * 2500);
+  // marketstack enforces a strict per-second rate limit; short paced retries.
+  for (let i = 0; i < 2 && out.err === "rate_limit_reached"; i++) {
+    await sleep(1200 + i * 1300);
     out = await getOnce(url, ttl);
   }
+  if (out.err === "rate_limit_reached") failCache.set(url, Date.now());
+  else failCache.delete(url);
   return out;
 }
 
-// Run jobs in small batches: 13 parallel calls trips the per-second limit,
-// 3-at-a-time with a beat between batches does not.
-async function batched<T>(jobs: (() => Promise<T>)[], size = 3, gapMs = 1100): Promise<T[]> {
-  const out: T[] = [];
-  for (let i = 0; i < jobs.length; i += size) {
-    const chunk = jobs.slice(i, i + size);
-    out.push(...(await Promise.all(chunk.map((j) => j()))));
-    if (i + size < jobs.length) await sleep(gapMs);
+// Concurrency-limited pool with NO fixed sleeps. The old approach paced fixed
+// 1.1s gaps between batches, which ran even when every response came from the
+// Next.js data cache — a fully-cached page load still took ~4.5s of pure sleep.
+// A pool lets cached responses stream through instantly; only genuinely
+// rate-limited calls pay for waiting, via get()'s backoff retries.
+async function pool<T>(jobs: (() => Promise<T>)[], limit = 4): Promise<T[]> {
+  const results: T[] = new Array(jobs.length);
+  let next = 0;
+  async function worker() {
+    while (next < jobs.length) {
+      const idx = next++;
+      results[idx] = await jobs[idx]();
+    }
   }
-  return out;
+  await Promise.all(Array.from({ length: Math.min(limit, jobs.length) }, worker));
+  return results;
 }
 
 const rows = (d: any): any[] =>
@@ -89,20 +108,44 @@ export async function GET(
   };
   const horizons = [1, 3, 5, 10, 15];
 
-  const [eodRes, latestRes, intradayRes, infoRes, divRes, splitRes, ratingsRes, tickRes, ...anchorRes] =
-    await batched([
-      () => get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=400`),
-      () => get(`${MS}/eod/latest?access_key=${key}&symbols=${t}`, QUOTE_TTL),
-      () => get(`${MS}/intraday?access_key=${key}&symbols=${t}&interval=1min&limit=1`, QUOTE_TTL),
-      () => get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
-      () => get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`),
-      () => get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
-      () => get(`${MS}/companyratings?access_key=${key}&ticker=${t}`),
-      () => get(`${MS}/tickers/${t}?access_key=${key}`),
-      ...horizons.map((y) => () =>
-        get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(y)}&sort=ASC&limit=1`)
-      ),
-    ]);
+  // EDGAR fundamentals run in PARALLEL with the marketstack pool (SEC traffic
+  // doesn't count against marketstack's rate limit). The CIK comes from the
+  // SEC's own ticker map, cached 24h.
+  const cikPromise = resolveCik(t);
+  const factsPromise = cikPromise.then((cik) => (cik ? fetchFacts(cik) : null));
+
+  // Everything marketstack goes through ONE pool at concurrency 2 — their
+  // per-second limit is strict enough that a burst of 4 parallel calls gets
+  // some of them 429'd. Cached responses resolve in ~5ms, so a warm load
+  // sails through the pool with no real serialization. eod/latest was
+  // dropped: the eod series' newest row is the same data, one call cheaper.
+  // Ratings and submissions sit at the end of the list where traffic is
+  // thinnest — they're the endpoints most prone to 429.
+  const [eodRes, intradayRes, infoRes, divRes, splitRes, tickRes, ...tailRes] =
+    await pool(
+      [
+        () => get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=400`),
+        () => get(`${MS}/intraday?access_key=${key}&symbols=${t}&interval=1min&limit=1`, QUOTE_TTL),
+        () => get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
+        () => get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`),
+        () => get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
+        () => get(`${MS}/tickers/${t}?access_key=${key}`),
+        ...horizons.map((y) => () =>
+          get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(y)}&sort=ASC&limit=1`)
+        ),
+        () => get(`${MS}/companyratings?access_key=${key}&ticker=${t}`),
+        async () => {
+          const cik = await cikPromise;
+          return cik
+            ? get(`${MS}/submissions?access_key=${key}&cik_code=${cik}`)
+            : { data: null, err: "no CIK" };
+        },
+      ],
+      2
+    );
+  const anchorRes = tailRes.slice(0, horizons.length);
+  const ratingsRes = tailRes[horizons.length];
+  const subsRes = tailRes[horizons.length + 1];
 
   // ── EOD series (newest-first). Filter marketstack's occasional close=0 rows. ──
   const eod = rows(eodRes.data)
@@ -121,10 +164,7 @@ export async function GET(
     );
   }
 
-  const latestRow = rows(latestRes.data)[0];
-  const last = latestRow && Number(latestRow.close) > 0
-    ? { close: Number(latestRow.close), date: String(latestRow.date ?? "").slice(0, 10) }
-    : { close: eod[0].close, date: eod[0].date };
+  const last = { close: eod[0].close, date: eod[0].date };
   const prevClose = eod.find((r) => r.date < last.date)?.close ?? eod[1]?.close ?? null;
   const change = prevClose != null ? last.close - prevClose : null;
   const changePct = prevClose ? ((last.close - prevClose) / prevClose) * 100 : null;
@@ -252,27 +292,24 @@ export async function GET(
     factor: Number(r.split_factor ?? 1),
   }));
 
-  // ── SEC filings + XBRL fundamentals, via CIK from /tickers ──
+  // ── SEC filings + XBRL fundamentals (already fetched in parallel above).
+  // Fundamentals come from EDGAR directly — marketstack's Statements/Facts/
+  // Concepts endpoints 404 despite being on the Business plan's feature list. ──
   let filings: any[] = [];
-  let cik: string | null = null;
   let fundamentals: any = null;
   const tickMeta = tickRes.data?.data ?? tickRes.data;
-  if (tickMeta?.cik) {
-    cik = String(tickMeta.cik).padStart(10, "0");
-
-    // Fundamentals come from EDGAR directly — marketstack's Statements/Facts/
-    // Concepts endpoints 404 despite being on the Business plan's feature list.
-    const facts = await fetchFacts(cik);
-    if (facts) {
-      try {
-        fundamentals = deriveFundamentals(facts, last.close);
-      } catch {
-        fundamentals = null;
-      }
+  const facts = await factsPromise;
+  const cik: string | null =
+    (await cikPromise) ?? (tickMeta?.cik ? String(tickMeta.cik).padStart(10, "0") : null);
+  if (facts) {
+    try {
+      fundamentals = deriveFundamentals(facts, last.close);
+    } catch {
+      fundamentals = null;
     }
-
-    const sub = await get(`${MS}/submissions?access_key=${key}&cik_code=${cik}`);
-    const recent = sub.data?.data?.filings?.recent;
+  }
+  {
+    const recent = subsRes?.data?.data?.filings?.recent;
     if (recent?.form && Array.isArray(recent.form)) {
       const n = Math.min(recent.form.length, 400);
       const all: any[] = [];

@@ -244,6 +244,30 @@ export const C = {
   inventory: ["InventoryNet"],
 };
 
+/**
+ * Ticker → CIK from the SEC's own mapping file (small, cached 24h). Resolving
+ * this locally instead of via a marketstack call lets the EDGAR work start
+ * immediately, in parallel with the price/ratings calls, instead of waiting
+ * for the whole marketstack batch to finish first.
+ */
+export async function resolveCik(ticker: string): Promise<string | null> {
+  try {
+    const res = await fetch("https://www.sec.gov/files/company_tickers.json", {
+      headers: { "User-Agent": SEC_UA, Accept: "application/json" },
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) return null;
+    const map = await res.json();
+    const t = ticker.toUpperCase();
+    for (const k of Object.keys(map)) {
+      if (map[k]?.ticker === t) return String(map[k].cik_str).padStart(10, "0");
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchFacts(cik: string): Promise<Facts | null> {
   try {
     const res = await fetch(FACTS_URL(cik), {
