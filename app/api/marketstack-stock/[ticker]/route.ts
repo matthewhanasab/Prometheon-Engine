@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
+import { get10YTreasury } from "@/lib/fred";
 
 // Full research-page aggregator running exclusively on marketstack (Business
 // plan). Endpoint audit for this key, verified 2026-08-02:
@@ -135,6 +136,12 @@ export async function GET(
         ...horizons.map((y) => () =>
           get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(y)}&sort=ASC&limit=1`)
         ),
+        // Five years of daily closes for the ticker and for SPY, sampled to
+        // month-ends for the beta regression. Published betas (FMP, Yahoo) use
+        // 5-year monthly; a 1-year daily window is a different statistic and
+        // produced a nonsensical negative beta for defensive names like KO.
+        () => get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(5)}&limit=1400`),
+        () => get(`${MS}/eod?access_key=${key}&symbols=SPY&date_from=${anchorFor(5)}&limit=1400`),
         () => get(`${MS}/companyratings?access_key=${key}&ticker=${t}`),
         async () => {
           const cik = await cikPromise;
@@ -146,8 +153,10 @@ export async function GET(
       2
     );
   const anchorRes = tailRes.slice(0, horizons.length);
-  const ratingsRes = tailRes[horizons.length];
-  const subsRes = tailRes[horizons.length + 1];
+  const stock5yRes = tailRes[horizons.length];
+  const spy5yRes = tailRes[horizons.length + 1];
+  const ratingsRes = tailRes[horizons.length + 2];
+  const subsRes = tailRes[horizons.length + 3];
 
   // ── EOD series (newest-first). Filter marketstack's occasional close=0 rows. ──
   const eod = rows(eodRes.data)
@@ -197,6 +206,43 @@ export async function GET(
       cagrPct: cagr,
     };
   });
+
+  // ── Beta: 5-year monthly returns regressed against SPY, the convention
+  // published betas use. β = cov(stock, market) / var(market). Sanity-checked
+  // by running SPY against itself, which returns exactly 1.000. ──
+  const monthEnds = (res: any): Map<string, number> => {
+    const byMonth = new Map<string, { date: string; close: number }>();
+    for (const r of rows(res?.data)) {
+      const date = String(r.date ?? "").slice(0, 10);
+      // adj_close so splits/dividends don't inject fake return spikes.
+      const close = Number(r.adj_close ?? r.close ?? 0);
+      if (!date || !(close > 0)) continue;
+      const m = date.slice(0, 7);
+      const cur = byMonth.get(m);
+      if (!cur || date > cur.date) byMonth.set(m, { date, close });
+    }
+    return new Map([...byMonth].map(([m, v]) => [m, v.close]));
+  };
+  const stockM = monthEnds(stock5yRes);
+  const spyM = monthEnds(spy5yRes);
+  const months = [...stockM.keys()].filter((m) => spyM.has(m)).sort();
+  const paired: { s: number; m: number }[] = [];
+  for (let i = 1; i < months.length; i++) {
+    const sPrev = stockM.get(months[i - 1])!, sCur = stockM.get(months[i])!;
+    const mPrev = spyM.get(months[i - 1])!, mCur = spyM.get(months[i])!;
+    paired.push({ s: sCur / sPrev - 1, m: mCur / mPrev - 1 });
+  }
+  let beta: number | null = null;
+  if (paired.length >= 24) {
+    const n = paired.length;
+    const ms = paired.reduce((a, x) => a + x.s, 0) / n;
+    const mm = paired.reduce((a, x) => a + x.m, 0) / n;
+    const cov = paired.reduce((a, x) => a + (x.s - ms) * (x.m - mm), 0) / (n - 1);
+    const varM = paired.reduce((a, x) => a + (x.m - mm) ** 2, 0) / (n - 1);
+    if (varM > 0) beta = cov / varM;
+  }
+
+  const rf = (await get10YTreasury()) ?? 0.043;
 
   // ── Real-time IEX intraday.
   //
@@ -382,6 +428,15 @@ export async function GET(
       avgVol,
     },
     intraday,
+    capm: {
+      rf,
+      beta,
+      betaSamples: paired.length,
+      // Market return held at 10% to match the research page's convention.
+      erp: 0.10 - rf,
+      expected: beta != null ? rf + beta * (0.10 - rf) : null,
+      actual1Y: longReturns.find((r) => r.years === 1 && r.available)?.totalPct ?? null,
+    },
     longReturns,
     consensus,
     analysts,

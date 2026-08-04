@@ -65,15 +65,33 @@ function SectionLabel({ children, right }: { children: React.ReactNode; right?: 
   );
 }
 
-function MCard({ label, value, sub, tone = "default" }: {
-  label: string; value: string; sub?: string; tone?: "good" | "bad" | "neutral" | "default";
+function MCard({ label, value, sub, tone = "default", na = false }: {
+  label: string; value?: string; sub?: string; tone?: "good" | "bad" | "neutral" | "default"; na?: boolean;
 }) {
   const color = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : "var(--text-primary)";
   return (
-    <div style={{ ...CARD, padding: "14px 16px" }}>
+    <div style={{ ...CARD, padding: "14px 16px", opacity: na ? 0.6 : 1 }}>
       <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 5 }}>{label}</div>
-      <div style={{ fontFamily: MONO, fontSize: "1.15rem", fontWeight: 600, color }}>{value}</div>
+      {na ? (
+        <div style={{ fontFamily: SANS, fontSize: "0.72rem", fontWeight: 600, color: "var(--accent-gold)", lineHeight: 1.35 }}>
+          Not available on Market Stack
+        </div>
+      ) : (
+        <div style={{ fontFamily: MONO, fontSize: "1.15rem", fontWeight: 600, color }}>{value}</div>
+      )}
       {sub && <div style={{ fontFamily: SANS, fontSize: "0.6rem", color: "var(--text-muted)", marginTop: 3 }}>{sub}</div>}
+    </div>
+  );
+}
+
+/** Whole-section placeholder, so the layout still mirrors /research. */
+function NASection({ reason }: { reason: string }) {
+  return (
+    <div style={{ ...CARD, padding: "18px 20px", opacity: 0.6, borderStyle: "dashed" }}>
+      <div style={{ fontFamily: SANS, fontSize: "0.8rem", fontWeight: 700, color: "var(--accent-gold)", marginBottom: 4 }}>
+        Not available on Market Stack
+      </div>
+      <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.5 }}>{reason}</div>
     </div>
   );
 }
@@ -153,6 +171,7 @@ function MarketstackResearchInner() {
   const div = data?.dividends;
   const fun = data?.fundamentals;
   const intra = data?.intraday;
+  const capm = data?.capm;
   // "Live" = the newest bar is within ~15 minutes of now. Off-hours the same
   // panel still renders, labelled as the last completed session.
   const marketLive = intra?.time
@@ -210,6 +229,13 @@ function MarketstackResearchInner() {
                   CIK {Number(data.meta.cik)}
                 </span>
               )}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, alignItems: "center" }}>
+              <span style={{ fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-muted)", marginRight: 2 }}>Peers</span>
+              <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--accent-gold)", background: "var(--bg-elevated)", border: "1px dashed var(--border)", borderRadius: 999, padding: "3px 9px" }}>
+                Not available on Market Stack
+              </span>
+              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>no screener endpoint to rank industry peers by market cap</span>
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
               <span style={{ fontFamily: MONO, fontSize: "2.4rem", fontWeight: 600, letterSpacing: "-0.02em" }}>{money(q.price)}</span>
@@ -276,9 +302,10 @@ function MarketstackResearchInner() {
             <MCard label="52-Wk Low" value={money(q.week52Low)} />
             <MCard label="52-Wk Position" value={q.pos52 != null ? `${q.pos52.toFixed(0)}%` : "N/A"}
               sub={q.pos52 != null ? (q.pos52 > 70 ? "Near 52-wk high" : q.pos52 < 30 ? "Near 52-wk low" : "Mid-range") : undefined} />
-            <MCard label="Avg Volume" value={compact(q.avgVol)} sub="1-year daily average" />
+            <MCard label="Beta" value={capm?.beta != null ? capm.beta.toFixed(2) : "N/A"}
+              sub={capm?.beta == null ? "Insufficient overlap" : capm.beta > 1.3 ? "High volatility" : capm.beta < 0.8 ? "Low volatility" : "Market-like beta"} />
             <MCard label="Analyst Target" value={cons?.avgTarget != null ? money(cons.avgTarget) : "N/A"}
-              sub={cons?.avgTarget != null && q.price ? `${pct(((cons.avgTarget - q.price) / q.price) * 100, 1)} vs price` : undefined}
+              sub={cons?.avgTarget != null && q.price ? `${pct(((cons.avgTarget - q.price) / q.price) * 100, 1)} upside` : undefined}
               tone={cons?.avgTarget != null && cons.avgTarget > q.price ? "good" : "default"} />
           </Grid>
 
@@ -306,26 +333,23 @@ function MarketstackResearchInner() {
               </SectionLabel>
               <Grid cols={5}>
                 {(() => { const [sub, tn] = peTone(fun.peRatio); return <MCard label="TTM P/E Ratio" value={mult(fun.peRatio)} sub={sub} tone={tn} />; })()}
-                <MCard label="Total Revenue" value={compact(fun.revenue)} sub="trailing twelve months" />
+                <MCard label="Forward P/E" na sub="Needs analyst EPS estimates" />
+                <MCard label="Fwd EPS Growth" na sub="Needs analyst EPS estimates" />
                 <MCard label="Revenue Growth" value={pctOf(fun.revenueGrowth, 1)}
                   sub={fun.revenueGrowth == null ? "No data" : fun.revenueGrowth > 0.1 ? "Rapid growth" : fun.revenueGrowth > 0 ? "Modest growth" : "Revenue declining"}
                   tone={fun.revenueGrowth == null ? "default" : fun.revenueGrowth > 0.1 ? "good" : fun.revenueGrowth > 0 ? "neutral" : "bad"} />
-                <MCard label="EPS (TTM)" value={fun.eps != null ? money(fun.eps) : "N/A"}
-                  sub={fun.epsGrowth != null ? `${pctOf(fun.epsGrowth, 1)} YoY` : undefined} />
-                <MCard label="Price / Sales" value={mult(fun.ps)}
-                  sub={fun.ps == null ? "No data" : fun.ps < 3 ? "Cheap vs revenue" : fun.ps < 8 ? "Fair P/S" : "Rich valuation"}
-                  tone={fun.ps == null ? "default" : fun.ps < 3 ? "good" : fun.ps < 8 ? "neutral" : "bad"} />
+                <MCard label="Total Revenue" value={compact(fun.revenue)} sub="Trailing twelve months" />
               </Grid>
               <div style={{ height: 8 }} />
               <Grid cols={5}>
                 {(() => { const [sub, tn] = marginTone(fun.grossMargin, "gross"); return <MCard label="Gross Margin" value={pctOf(fun.grossMargin)} sub={sub} tone={tn} />; })()}
                 {(() => { const [sub, tn] = marginTone(fun.operatingMargin, "operating"); return <MCard label="Operating Margin" value={pctOf(fun.operatingMargin)} sub={sub} tone={tn} />; })()}
                 {(() => { const [sub, tn] = marginTone(fun.netMargin, "net"); return <MCard label="Net Margin" value={pctOf(fun.netMargin)} sub={sub} tone={tn} />; })()}
-                <MCard label="Net Income" value={compact(fun.netIncome)}
-                  sub={fun.netIncomeGrowth != null ? `${pctOf(fun.netIncomeGrowth, 1)} YoY` : undefined}
-                  tone={fun.netIncomeGrowth == null ? "default" : fun.netIncomeGrowth > 0 ? "good" : "bad"} />
-                <MCard label="Market Cap" value={compact(fun.marketCap)}
-                  sub={fun.shares != null ? `${compact(fun.shares)} shares out` : undefined} />
+                <MCard label="Price / Sales" value={mult(fun.ps)}
+                  sub={fun.ps == null ? "No data" : fun.ps < 3 ? "Cheap vs revenue" : fun.ps < 8 ? "Fair P/S" : "Rich valuation"}
+                  tone={fun.ps == null ? "default" : fun.ps < 3 ? "good" : fun.ps < 8 ? "neutral" : "bad"} />
+                <MCard label="EPS (TTM)" value={fun.eps != null ? money(fun.eps) : "N/A"}
+                  sub={fun.epsGrowth != null ? `${pctOf(fun.epsGrowth, 1)} YoY` : undefined} />
               </Grid>
 
               {/* ── Advanced Metrics ── */}
@@ -421,6 +445,41 @@ function MarketstackResearchInner() {
             </>
           )}
 
+          {/* ── CAPM ── */}
+          {capm && (
+            <>
+              <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
+                beta from {capm.betaSamples} monthly returns vs SPY (5-year)
+              </span>}>
+                CAPM · Risk-Adjusted Return
+              </SectionLabel>
+              <Grid cols={5}>
+                <MCard label="Risk-Free Rate (10Y)" value={`${(capm.rf * 100).toFixed(2)}%`} sub="FRED DGS10 · daily" />
+                <MCard label="Beta (vs Market)" value={capm.beta != null ? capm.beta.toFixed(2) : "N/A"}
+                  sub={capm.beta == null ? "Insufficient overlap" : capm.beta > 1 ? "More volatile than market" : "Less volatile than market"} />
+                <MCard label="Equity Risk Premium" value={`${(capm.erp * 100).toFixed(2)}%`} sub={`Mkt 10% − Rf ${(capm.rf * 100).toFixed(2)}%`} />
+                <MCard label="CAPM Expected Return" value={capm.expected != null ? `${(capm.expected * 100).toFixed(2)}%` : "N/A"} sub="Rf + β × ERP" tone="neutral" />
+                <MCard label="Actual 1Y Return" value={capm.actual1Y != null ? pct(capm.actual1Y, 1) : "N/A"}
+                  tone={capm.actual1Y == null ? "default" : capm.actual1Y >= 0 ? "good" : "bad"} />
+              </Grid>
+              {capm.expected != null && capm.actual1Y != null && (
+                <>
+                  <div style={{ height: 8 }} />
+                  <Grid cols={5}>
+                    <MCard label="Jensen's Alpha (1Y)"
+                      value={pct(capm.actual1Y - capm.expected * 100, 2)}
+                      sub={capm.actual1Y / 100 > capm.expected ? "Outperformed CAPM" : "Underperformed CAPM"}
+                      tone={capm.actual1Y / 100 > capm.expected ? "good" : "bad"} />
+                  </Grid>
+                </>
+              )}
+            </>
+          )}
+
+          {/* ── Earnings History ── */}
+          <SectionLabel>Earnings History</SectionLabel>
+          <NASection reason="Marketstack has no earnings-surprise endpoint (reported vs estimate). Reported EPS is available from SEC filings, but the estimate side — which is what makes a surprise — is not." />
+
           {/* ── Analyst Ratings ── */}
           {cons && (
             <>
@@ -480,6 +539,30 @@ function MarketstackResearchInner() {
               )}
             </>
           )}
+
+          {/* ── Consensus Estimates ── */}
+          <SectionLabel>Consensus Estimates — EPS &amp; Revenue</SectionLabel>
+          <NASection reason="Marketstack's companyratings endpoint returns price targets and buy/hold/sell ratings, but no forward EPS or revenue estimates. This is the same gap that blocks Forward P/E and Fwd EPS Growth above." />
+
+          {/* ── Ownership Breakdown ── */}
+          <SectionLabel>Ownership Breakdown</SectionLabel>
+          <NASection reason="No institutional/insider ownership endpoint. This is buildable from SEC EDGAR 13F and Form 4 filings (free, public domain) but needs a parsing layer — it isn't a marketstack feature." />
+
+          {/* ── ETF Ownership ── */}
+          <SectionLabel>ETF Ownership</SectionLabel>
+          <NASection reason="The etfholdings endpoint is listed on the Business plan but returns &quot;No data is available for this ticker at the moment&quot; — tested against SPY and QQQ. Worth raising with their support." />
+
+          {/* ── Earnings Call Transcripts ── */}
+          <SectionLabel>Earnings Call Transcripts</SectionLabel>
+          <NASection reason="Marketstack does not offer transcripts at any tier." />
+
+          {/* ── Insider Activity ── */}
+          <SectionLabel>Insider Activity — Form 4</SectionLabel>
+          <NASection reason="Form 4 filings are listed in the SEC Filings section below (via the submissions endpoint), but marketstack provides no parsed insider transactions — no buy/sell direction, share counts, or values." />
+
+          {/* ── Institutional Holders ── */}
+          <SectionLabel>Institutional Holders</SectionLabel>
+          <NASection reason="No 13F holdings endpoint. Same as Ownership Breakdown: available free from SEC EDGAR, but requires building the parser." />
 
           {/* ── Dividends ── */}
           <SectionLabel right={div?.count ? <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>{div.count} records since {div.oldest}</span> : undefined}>
@@ -603,6 +686,10 @@ function MarketstackResearchInner() {
               </div>
             </>
           )}
+
+          {/* ── Recent News ── */}
+          <SectionLabel>Recent News</SectionLabel>
+          <NASection reason="Marketstack has no news endpoint. The research page uses Finnhub for this — a separate provider." />
 
           <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "2rem", lineHeight: 1.6 }}>
             Prices, quotes, ratings, dividends, splits and filings from marketstack (Business plan); chart by
