@@ -7,10 +7,16 @@ import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 
 // ── Launch button with ignition animation ────────────────────────────────────
-function LaunchButton({ children, onLaunch }: { children: React.ReactNode; onLaunch: () => void }) {
+function LaunchButton({ children, onLaunch, variant = "solid" }: {
+  children: React.ReactNode; onLaunch: () => void; variant?: "solid" | "outline";
+}) {
+  const solid = variant === "solid";
   return (
     <button onClick={onLaunch} style={{
-      background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", cursor: "pointer",
+      background: solid ? "var(--accent-gold)" : "transparent",
+      color: solid ? "var(--on-accent)" : "var(--accent-gold)",
+      border: solid ? "none" : "1.5px solid var(--accent-gold)",
+      cursor: "pointer",
       padding: "14px 34px", borderRadius: 22, fontSize: "0.78rem", fontWeight: 700,
       textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Public Sans', sans-serif",
     }}>
@@ -230,11 +236,13 @@ export default function LandingPage() {
   const router = useRouter();
   const [leaving, setLeaving] = useState(false);
 
-  function launch() {
+  // Two engines, one ignition: the FMP-powered main site or the Market Stack
+  // mirror (marketstack + SEC EDGAR + FRED — the publicly-licensable stack).
+  function launch(dest: string = "/research") {
     if (leaving) return;
     setLeaving(true);
-    router.prefetch("/research");
-    setTimeout(() => router.push("/research"), 500);
+    router.prefetch(dest);
+    setTimeout(() => router.push(dest), 500);
   }
 
   return (
@@ -258,8 +266,14 @@ export default function LandingPage() {
           Every number that matters. One software.
         </h1>
 
-        <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
-          <LaunchButton onLaunch={launch}>Launch the Engine</LaunchButton>
+        <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
+            <LaunchButton onLaunch={() => launch("/research")}>Launch · FMP Engine</LaunchButton>
+            <LaunchButton variant="outline" onLaunch={() => launch("/ms")}>Launch · Market Stack</LaunchButton>
+          </div>
+          <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", letterSpacing: "0.06em" }}>
+            same engine, two data providers — Market Stack runs on commercially licensed &amp; public-domain data
+          </div>
         </div>
 
         {/* Stat chips */}
@@ -308,7 +322,10 @@ export default function LandingPage() {
         <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", color: "var(--text-primary)", marginBottom: "1.4rem" }}>
           Stop tab-hopping. Start researching.
         </div>
-        <LaunchButton onLaunch={launch}>Launch the Engine</LaunchButton>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
+          <LaunchButton onLaunch={() => launch("/research")}>Launch · FMP Engine</LaunchButton>
+          <LaunchButton variant="outline" onLaunch={() => launch("/ms")}>Launch · Market Stack</LaunchButton>
+        </div>
       </section>
 
       {/* ── Footer ── */}

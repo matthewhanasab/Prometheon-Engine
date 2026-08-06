@@ -13,7 +13,7 @@ const SERIF = "'Space Grotesk', Georgia, serif";
 
 const LIVE: { href: string; title: string; desc: string; src: string }[] = [
   {
-    href: "/marketstack",
+    href: "/ms/research",
     title: "Stock Research",
     desc: "Full research page — live IEX quotes, intraday chart, 15-year returns, fundamentals, analyst ratings, F-Score / Z-Score / DCF, dividends, SEC filings.",
     src: "marketstack + EDGAR + FRED",
@@ -37,14 +37,16 @@ const LIVE: { href: string; title: string; desc: string; src: string }[] = [
     src: "marketstack",
   },
   {
-    href: "/macro",
-    title: "Macro Dashboard",
-    desc: "The existing macro page already runs on FRED with no FMP involved, so this edition shares it as-is.",
-    src: "FRED",
+    href: "/ms/calculator",
+    title: "Compound Calculator",
+    desc: "Pure math, no data provider — shared with the main site verbatim.",
+    src: "no external data",
   },
 ];
 
 const UNAVAILABLE: { title: string; why: string }[] = [
+  { title: "Macro Dashboard", why: "mostly FRED, but several series come through FMP — the FRED portion is portable, not yet split out" },
+  { title: "My Portfolio", why: "quotes are portable via marketstack; the page just isn't rewired yet" },
   { title: "ETF Hub", why: "marketstack's etfholdings endpoint returns no data even for SPY — raised as a support issue" },
   { title: "Screener / Market Movers", why: "no screening or gainers-losers endpoint" },
   { title: "Earnings (estimates & surprises)", why: "no analyst EPS/revenue estimates — this also blocks Forward P/E" },

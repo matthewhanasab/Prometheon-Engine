@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 // + the TradingView widget only.
 const ITEMS = [
   { href: "/ms", label: "Hub" },
-  { href: "/marketstack", label: "Research" },
+  { href: "/ms/research", label: "Research" },
   { href: "/ms/compare", label: "Compare" },
   { href: "/ms/charts", label: "Charts" },
   { href: "/ms/dividends", label: "Dividends" },
