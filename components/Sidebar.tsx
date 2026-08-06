@@ -26,7 +26,7 @@ const NAV = [
   { href: "/movers",        label: "Market Movers" },
   { href: "/screener",      label: "Screener" },
   { href: "/sec",           label: "SEC Filings" },
-  { href: "/marketstack",   label: "Market Stack" },
+  { href: "/ms",            label: "Market Stack" },
 ];
 
 // Desktop top bar: direct tabs + grouped dropdowns (1000x-style)
@@ -36,6 +36,7 @@ const DIRECT = [
   { href: "/charts",    label: "Charts" },
   { href: "/etf",       label: "ETFs" },
   { href: "/portfolio", label: "Portfolio" },
+  { href: "/ms",        label: "Market Stack" },
 ];
 const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
   {
@@ -67,10 +68,9 @@ const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
   {
     label: "More",
     items: [
-      { href: "/macro",       label: "Macro Dashboard" },
-      { href: "/movers",      label: "Market Movers" },
-      { href: "/calculator",  label: "Compound Calculator" },
-      { href: "/marketstack", label: "Market Stack" },
+      { href: "/macro",      label: "Macro Dashboard" },
+      { href: "/movers",     label: "Market Movers" },
+      { href: "/calculator", label: "Compound Calculator" },
     ],
   },
 ];

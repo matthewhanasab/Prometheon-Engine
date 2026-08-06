@@ -7,6 +7,7 @@ import PriceChart from "@/components/PriceChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
 import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 import ShareCardButton from "@/components/ShareCardButton";
+import MsNav from "@/components/MsNav";
 
 // Stock Research, rebuilt on marketstack data end-to-end. Same visual language
 // as /research, but every number here comes from the marketstack Business plan
@@ -188,8 +189,9 @@ function MarketstackResearchInner() {
 
   return (
     <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
+      <MsNav />
       <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
-        Market Stack Research
+        Stock Research
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
       <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1.4rem" }}>
