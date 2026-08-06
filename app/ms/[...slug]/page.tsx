@@ -25,7 +25,7 @@ const PAGES: Record<string, { title: string; reason: string; alt?: { href: strin
   },
   congress: {
     title: "Congress Trades",
-    reason: "The main site sources congressional trading via FMP. The underlying disclosures are public (Senate/House portals) and could be wired in directly, but that isn't built yet — and marketstack itself has no such data.",
+    reason: "Investigated and ruled out. The House Clerk publishes a downloadable archive, but it contains only a filing index — member, state, filing type, document ID — with no transactions. The trades live inside per-filing PDFs that are frequently scanned or handwritten, and the Senate portal is session-gated rather than an API. The community datasets that used to mirror this data now return 403. Extracting it reliably would mean owning an OCR pipeline over hundreds of filings, or taking on another paid provider with unpublished redistribution terms.",
   },
   insider: {
     title: "Insider Trading",

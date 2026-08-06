@@ -287,8 +287,41 @@ export const C = {
   ocf: ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"],
   capex: ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"],
   taxExpense: ["IncomeTaxExpenseBenefit"],
-  interestExpense: ["InterestExpense", "InterestExpenseDebt"],
+  interestExpense: ["InterestExpense", "InterestExpenseDebt", "InterestExpenseNonoperating"],
   inventory: ["InventoryNet"],
+  // ── Additional statement lines, for the Financials viewer ──
+  rnd: ["ResearchAndDevelopmentExpense"],
+  sga: [
+    "SellingGeneralAndAdministrativeExpense",
+    "GeneralAndAdministrativeExpense",
+    "SellingAndMarketingExpense",
+  ],
+  pretaxIncome: [
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic",
+  ],
+  dna: [
+    "DepreciationDepletionAndAmortization",
+    "DepreciationAmortizationAndAccretionNet",
+    "DepreciationAndAmortization",
+  ],
+  stockComp: ["ShareBasedCompensation", "AllocatedShareBasedCompensationExpense"],
+  receivables: ["AccountsReceivableNetCurrent", "ReceivablesNetCurrent"],
+  ppe: ["PropertyPlantAndEquipmentNet"],
+  goodwill: ["Goodwill"],
+  intangibles: ["IntangibleAssetsNetExcludingGoodwill", "FiniteLivedIntangibleAssetsNet"],
+  accountsPayable: ["AccountsPayableCurrent", "AccountsPayableAndAccruedLiabilitiesCurrent"],
+  investingCF: ["NetCashProvidedByUsedInInvestingActivities"],
+  financingCF: ["NetCashProvidedByUsedInFinancingActivities"],
+  dividendsPaid: ["PaymentsOfDividendsCommonStock", "PaymentsOfDividends"],
+  buybacks: ["PaymentsForRepurchaseOfCommonStock"],
+  debtRepayment: ["RepaymentsOfLongTermDebt", "RepaymentsOfDebt"],
+  acquisitions: ["PaymentsToAcquireBusinessesNetOfCashAcquired"],
+  netChangeInCash: [
+    "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect",
+    "CashAndCashEquivalentsPeriodIncreaseDecrease",
+  ],
 };
 
 /**
@@ -577,6 +610,127 @@ export function deriveChartSeries(f: Facts, limit = 28) {
     revenueTtm: revTtm,
     sharesForRatio: sharesQ,
   };
+}
+
+/**
+ * Full financial statements, period by period, for the Financials viewer.
+ *
+ * Returns column-oriented periods (newest first) with every statement line
+ * keyed by the same field names the FMP-backed page uses, so the two render
+ * identically. Flow rows go through quarterlyComplete(), which reconstructs Q4
+ * and un-cumulates the year-to-date cash-flow tagging; balance-sheet rows are
+ * point-in-time and read directly.
+ */
+export function deriveStatements(f: Facts, period: "annual" | "quarterly", limit = 12) {
+  const flow = (aliases: string[]): Period[] =>
+    period === "annual" ? f.annual(aliases) : f.quarterlyComplete(aliases);
+  const stockSeries = (aliases: string[]): Period[] => f.instant(aliases);
+
+  // Column dates come from revenue (or net income for filers that don't tag it).
+  const spine = flow(C.revenue).length ? flow(C.revenue) : flow(C.netIncome);
+  const dates = spine.slice(-limit).map((p) => p.end).reverse();
+  if (!dates.length) return { periods: [], rows: {} as Record<string, (number | null)[]> };
+
+  const fyEnds = f.annual(C.revenue).length ? f.annual(C.revenue) : f.annual(C.netIncome);
+  const fyEndMonth = fyEnds.length
+    ? new Date(new Date(fyEnds[fyEnds.length - 1].end).getTime() - 5 * 864e5).getMonth() + 1
+    : 12;
+  const label = (end: string): string => {
+    const d = new Date(new Date(end).getTime() - 5 * 864e5);
+    const m = d.getMonth() + 1;
+    const fy = m > fyEndMonth ? d.getFullYear() + 1 : d.getFullYear();
+    if (period === "annual") return `FY ${fy}`;
+    return `Q${Math.floor(((m - fyEndMonth - 1 + 12) % 12) / 3) + 1} ${fy}`;
+  };
+
+  const align = (series: Period[]): (number | null)[] => {
+    const m = new Map(series.map((p) => [p.end, p.val]));
+    return dates.map((d) => {
+      const exact = m.get(d);
+      if (exact != null) return exact;
+      // Balance-sheet dates can be a day or two off the income-statement close.
+      let best: number | null = null, gap = Infinity;
+      for (const p of series) {
+        const g = Math.abs(Date.parse(p.end) - Date.parse(d));
+        if (g < gap) { gap = g; best = p.val; }
+      }
+      return gap <= 10 * 864e5 ? best : null;
+    });
+  };
+
+  const F = (a: string[]) => align(flow(a));
+  const B = (a: string[]) => align(stockSeries(a));
+  const sub = (a: (number | null)[], b: (number | null)[]) =>
+    a.map((v, i) => (v == null ? null : v - (b[i] ?? 0)));
+  const add = (a: (number | null)[], b: (number | null)[]) =>
+    a.map((v, i) => (v == null && b[i] == null ? null : (v ?? 0) + (b[i] ?? 0)));
+
+  const revenue = F(C.revenue);
+  const grossProfit = F(C.grossProfit);
+  const costOfRevenue = F(C.costOfRevenue);
+  const operatingIncome = F(C.operatingIncome);
+  const netIncome = F(C.netIncome);
+  const dna = F(C.dna);
+  const ocf = F(C.ocf);
+  const capex = F(C.capex);
+  const goodwill = B(C.goodwill);
+  const intangibles = B(C.intangibles);
+  const assets = B(C.assets);
+  const equity = B(C.equity);
+
+  const rows: Record<string, (number | null)[]> = {
+    // Income statement
+    revenue,
+    costOfRevenue: costOfRevenue.some((v) => v != null) ? costOfRevenue : sub(revenue, grossProfit),
+    grossProfit: grossProfit.some((v) => v != null) ? grossProfit : sub(revenue, costOfRevenue),
+    researchAndDevelopmentExpenses: F(C.rnd),
+    sellingGeneralAndAdministrativeExpenses: F(C.sga),
+    operatingIncome,
+    interestExpense: F(C.interestExpense),
+    incomeBeforeTax: F(C.pretaxIncome),
+    incomeTaxExpense: F(C.taxExpense),
+    netIncome,
+    // EBITDA isn't a GAAP line — reconstructed as operating income + D&A.
+    ebitda: add(operatingIncome, dna),
+    epsDiluted: F(C.epsDiluted),
+
+    // Balance sheet
+    cashAndCashEquivalents: B(C.cash),
+    shortTermInvestments: B(C.shortTermInvestments),
+    netReceivables: B(C.receivables),
+    inventory: B(C.inventory),
+    totalCurrentAssets: B(C.assetsCurrent),
+    propertyPlantEquipmentNet: B(C.ppe),
+    goodwillAndIntangibleAssets: add(goodwill, intangibles),
+    totalAssets: assets,
+    accountPayables: B(C.accountsPayable),
+    shortTermDebt: B(C.currentDebt),
+    totalCurrentLiabilities: B(C.liabilitiesCurrent),
+    longTermDebt: B(C.longTermDebt),
+    // Coca-Cola and others never tag Liabilities — fall back to the identity.
+    totalLiabilities: (() => {
+      const direct = B(C.liabilities);
+      return direct.some((v) => v != null) ? direct : sub(assets, equity);
+    })(),
+    retainedEarnings: B(C.retainedEarnings),
+    totalStockholdersEquity: equity,
+
+    // Cash flow
+    depreciationAndAmortization: dna,
+    stockBasedCompensation: F(C.stockComp),
+    operatingCashFlow: ocf,
+    capitalExpenditure: capex,
+    acquisitionsNet: F(C.acquisitions),
+    investingCashFlow: F(C.investingCF),
+    dividendsPaid: F(C.dividendsPaid),
+    commonStockRepurchased: F(C.buybacks),
+    debtRepayment: F(C.debtRepayment),
+    financingCashFlow: F(C.financingCF),
+    freeCashFlow: sub(ocf, capex),
+    netChangeInCash: F(C.netChangeInCash),
+  };
+
+  return { periods: dates.map((d) => ({ date: d, label: label(d) })), rows };
 }
 
 export type Fundamentals = ReturnType<typeof deriveFundamentals>;

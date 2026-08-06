@@ -45,8 +45,8 @@ const LIVE: { href: string; title: string; desc: string; src: string }[] = [
   {
     href: "/ms/financials",
     title: "Financials",
-    desc: "Income statement, balance sheet and cash flow — quarterly and annual, per ticker.",
-    src: "TradingView widget",
+    desc: "Full income statement, balance sheet and cash flow — annual and quarterly, exactly as filed with the SEC.",
+    src: "SEC EDGAR XBRL",
   },
   {
     href: "/ms/movers",
@@ -56,9 +56,9 @@ const LIVE: { href: string; title: string; desc: string; src: string }[] = [
   },
   {
     href: "/ms/earnings",
-    title: "Earnings Calendar",
-    desc: "Upcoming releases with consensus vs actual. Per-ticker surprise history still needs estimates.",
-    src: "TradingView widget",
+    title: "Earnings",
+    desc: "Reported EPS, revenue and net income by quarter with YoY growth, plus the upcoming release calendar.",
+    src: "SEC EDGAR + TradingView",
   },
   {
     href: "/ms/covered-calls",
@@ -86,7 +86,7 @@ const UNAVAILABLE: { title: string; why: string }[] = [
   { title: "ETF Hub", why: "marketstack's etfholdings endpoint returns no data even for SPY — raised as a support issue" },
   { title: "Per-ticker earnings surprises", why: "the calendar is covered by a TradingView widget, but reported-vs-estimated history needs analyst estimates — this also blocks Forward P/E and Projections" },
   { title: "Live options-chain quotes", why: "the options pages model premiums from realized volatility (as the FMP site already did) — but no real bid/ask from an exchange chain is available on either edition" },
-  { title: "Congress Trades", why: "different data domain (official disclosure portals); not FMP-dependent but not built into this edition yet" },
+  { title: "Congress Trades", why: "the House Clerk archive publishes only a filing index — the actual trades exist solely inside scanned/handwritten PDFs, and the Senate portal is session-gated. Reliable extraction would need an OCR pipeline or another paid provider" },
   { title: "Insider Trading (parsed)", why: "Form 4 filings are listed on Research, but parsed buy/sell transactions need an EDGAR parsing layer" },
   { title: "Earnings Call Transcripts", why: "not offered by marketstack at any tier" },
 ];
