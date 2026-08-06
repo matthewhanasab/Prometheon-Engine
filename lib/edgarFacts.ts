@@ -60,20 +60,43 @@ export class Facts {
    * actually using; fact count breaks ties.
    */
   private best(aliases: string[], keep: (x: RawFact) => boolean): Period[] {
+    const candidates: RawFact[][] = [];
     let winner: RawFact[] | null = null;
     let winnerEnd = "";
     for (const c of aliases) {
       const f = dedupeByEnd(this.raw(c).filter(keep));
       if (!f.length) continue;
+      candidates.push(f);
       const end = f[f.length - 1].end;
       if (!winner || end > winnerEnd || (end === winnerEnd && f.length > winner.length)) {
         winner = f;
         winnerEnd = end;
       }
     }
-    return winner
-      ? winner.map((x) => ({ end: x.end, start: x.start, val: x.val, fy: x.fy, fp: x.fp }))
-      : [];
+    if (!winner) return [];
+
+    // Backfill history from superseded concepts.
+    //
+    // A migration can leave the current concept covering only a few periods:
+    // NVIDIA moved short-term investments from MarketableSecuritiesCurrent to
+    // DebtSecuritiesCurrent in early 2026, so the newest concept has two data
+    // points and the older one has sixty-seven. Taking either alone leaves a
+    // hole. Only dates strictly BEFORE the winner's first period are filled —
+    // that is the migration signature. Gaps in the middle are left alone, since
+    // there a second concept usually means something genuinely different (an
+    // SG&A line filled in from a bare G&A line would understate it).
+    const earliest = winner[0].end;
+    const merged = new Map(winner.map((x) => [x.end, x]));
+    for (const series of candidates) {
+      if (series === winner) continue;
+      for (const x of series) {
+        if (x.end < earliest && !merged.has(x.end)) merged.set(x.end, x);
+      }
+    }
+
+    return [...merged.values()]
+      .sort((a, b) => a.end.localeCompare(b.end))
+      .map((x) => ({ end: x.end, start: x.start, val: x.val, fy: x.fy, fp: x.fp }));
   }
 
   /** Annual (10-K, ~365-day) series. */
@@ -259,7 +282,15 @@ export const C = {
   equity: ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],
   retainedEarnings: ["RetainedEarningsAccumulatedDeficit"],
   cash: ["CashAndCashEquivalentsAtCarryingValue", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"],
-  shortTermInvestments: ["MarketableSecuritiesCurrent", "ShortTermInvestments", "AvailableForSaleSecuritiesDebtSecuritiesCurrent"],
+  // NVIDIA switched to DebtSecuritiesCurrent in early 2026; the older concepts
+  // still carry the history and are backfilled behind it.
+  shortTermInvestments: [
+    "MarketableSecuritiesCurrent",
+    "DebtSecuritiesCurrent",
+    "ShortTermInvestments",
+    "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
+    "OtherShortTermInvestments",
+  ],
   longTermInvestments: ["MarketableSecuritiesNoncurrent", "LongTermInvestments"],
   // Some filers publish one all-in debt figure; prefer it when present.
   totalDebtCombined: [
