@@ -97,29 +97,76 @@ export class Facts {
     return s.length ? s[s.length - 1].val : null;
   }
 
+  /** Every duration fact for a concept, cumulative ones included. */
+  private allDurations(aliases: string[]): Period[] {
+    return this.best(
+      aliases,
+      (x) => !!x.start && days(x.start!, x.end) > 20 && days(x.start!, x.end) < 400
+    );
+  }
+
   /**
-   * Quarterly series with fourth quarters reconstructed.
+   * Discrete quarterly series, reconstructed from however the filer tagged it.
    *
-   * US filers report Q1–Q3 on 10-Qs but fold Q4 into the 10-K, so the raw
-   * quarterly series has a hole every year. Without filling it, four consecutive
-   * tagged quarters span ~15 months and every TTM silently falls back to the
-   * last 10-K — which is how "TTM revenue" ends up equalling last fiscal year.
-   * Q4 = FY total − (Q1 + Q2 + Q3).
+   * Two separate problems have to be solved here:
+   *
+   * 1. Q4 is never filed on its own — it's folded into the 10-K, so a raw
+   *    quarterly series has a hole every year.
+   * 2. Cash-flow statements are tagged CUMULATIVE year-to-date and nothing
+   *    else: 90d, 181d, 272d, 363d, all starting at the fiscal-year start.
+   *    A naive "~90 day" filter therefore catches only Q1 each year — Apple's
+   *    quarterly operating cash flow came back as 16 points spread over 17
+   *    years before this was handled.
+   *
+   * Differencing consecutive facts that share a start date solves both at once
+   * (Q3cum − Q2cum = discrete Q3; FY − Q3cum = discrete Q4). Natively-tagged
+   * discrete quarters always win over a derived value.
    */
   quarterlyComplete(aliases: string[]): Period[] {
-    const q = this.quarterly(aliases);
-    const a = this.annual(aliases);
-    if (!q.length || !a.length) return q;
-    const out = [...q];
-    for (const yr of a) {
-      const inside = q.filter((x) => x.start! >= yr.start! && x.end <= yr.end);
+    const all = this.allDurations(aliases);
+    if (!all.length) return [];
+    const discrete = new Map<string, Period>();
+
+    // 1. Natively discrete quarters.
+    for (const p of all) {
+      const d = days(p.start!, p.end);
+      if (d > 80 && d < 100) discrete.set(p.end, p);
+    }
+
+    // 2. Difference cumulative runs sharing a fiscal-year start.
+    const byStart = new Map<string, Period[]>();
+    for (const p of all) {
+      const arr = byStart.get(p.start!) ?? [];
+      arr.push(p);
+      byStart.set(p.start!, arr);
+    }
+    for (const group of byStart.values()) {
+      const sorted = [...group].sort((a, b) => a.end.localeCompare(b.end));
+      for (let i = 1; i < sorted.length; i++) {
+        const prev = sorted[i - 1], cur = sorted[i];
+        const span = days(prev.end, cur.end);
+        if (span < 80 || span > 100) continue;
+        if (discrete.has(cur.end)) continue;
+        discrete.set(cur.end, { start: prev.end, end: cur.end, val: cur.val - prev.val, fp: cur.fp });
+      }
+    }
+
+    // 3. Last resort for filers that tag discrete quarters but no cumulative
+    //    run: Q4 = FY − (Q1 + Q2 + Q3).
+    for (const yr of this.annual(aliases)) {
+      if (discrete.has(yr.end)) continue;
+      const inside = [...discrete.values()].filter((x) => x.start! >= yr.start! && x.end <= yr.end);
       if (inside.length !== 3) continue;
       const covered = inside.reduce((s, x) => s + x.val, 0);
-      const lastEnd = inside[inside.length - 1].end;
-      if (out.some((x) => x.end === yr.end && x.start === lastEnd)) continue;
-      out.push({ start: lastEnd, end: yr.end, val: yr.val - covered, fp: "Q4" });
+      discrete.set(yr.end, {
+        start: inside[inside.length - 1].end,
+        end: yr.end,
+        val: yr.val - covered,
+        fp: "Q4",
+      });
     }
-    return out.sort((x, y) => x.end.localeCompare(y.end));
+
+    return [...discrete.values()].sort((x, y) => x.end.localeCompare(y.end));
   }
 
   private ttmAt(aliases: string[], offset: number): number | null {
@@ -430,6 +477,106 @@ function dcf(f: Facts, shares: number | null) {
   return Number.isFinite(perShare) && perShare > 0
     ? { perShare, assumedGrowth: g1, discount, terminal, fcf }
     : null;
+}
+
+/**
+ * Quarterly + TTM series for the Charts page.
+ *
+ * Uses quarterlyComplete() so reconstructed Q4s are included — without them
+ * every fourth bar would be missing, since US filers fold Q4 into the 10-K.
+ * Balance-sheet items are point-in-time and need no reconstruction.
+ */
+export function deriveChartSeries(f: Facts, limit = 28) {
+  type Pt = { date: string; label: string; value: number };
+
+  // Fiscal-year-end month, taken from the company's own annual periods.
+  const fyEnds = f.annual(C.revenue).length ? f.annual(C.revenue) : f.annual(C.netIncome);
+  const fyEndMonth = fyEnds.length
+    ? new Date(new Date(fyEnds[fyEnds.length - 1].end).getTime() - 5 * 864e5).getMonth() + 1
+    : 12;
+
+  /**
+   * Fiscal quarter label, derived from the period end relative to the filer's
+   * fiscal year end.
+   *
+   * The `fy`/`fp` fields on a companyfacts entry describe the FILING, not the
+   * fact's own period — a 10-Q carries prior-year comparatives stamped with the
+   * current filing's fiscal tag. Trusting them produced duplicate labels
+   * ("Q2 '26" on both the Mar-2025 and Mar-2026 quarters). Computing from the
+   * fiscal calendar is unambiguous: Apple's FY ends in September, so its
+   * December quarter is correctly Q1 of the following fiscal year.
+   */
+  const qLabel = (endDate: string): string => {
+    const d = new Date(new Date(endDate).getTime() - 5 * 864e5); // Apr-1 ends belong to Q1
+    const m = d.getMonth() + 1;
+    const fy = m > fyEndMonth ? d.getFullYear() + 1 : d.getFullYear();
+    const offset = (m - fyEndMonth - 1 + 12) % 12;
+    return `Q${Math.floor(offset / 3) + 1} '${String(fy).slice(2)}`;
+  };
+  const pts = (s: Period[]): Pt[] =>
+    s.slice(-limit).map((p) => ({ date: p.end, label: qLabel(p.end), value: p.val }));
+
+  const flow = (aliases: string[]) => pts(f.quarterlyComplete(aliases));
+  const stock = (aliases: string[]) => pts(f.instant(aliases));
+
+  /** Rolling 4-quarter sum — the TTM view of a flow series. */
+  const ttm = (s: Pt[]): Pt[] =>
+    s.map((p, i) =>
+      i < 3 ? null : { ...p, value: s.slice(i - 3, i + 1).reduce((a, x) => a + x.value, 0) }
+    ).filter(Boolean) as Pt[];
+
+  const align = (a: Pt[], b: Pt[], fn: (x: number, y: number) => number | null): Pt[] => {
+    const m = new Map(b.map((p) => [p.date, p.value]));
+    return a
+      .map((p) => {
+        const other = m.get(p.date);
+        if (other == null) return null;
+        const v = fn(p.value, other);
+        return v == null || !Number.isFinite(v) ? null : { ...p, value: v };
+      })
+      .filter(Boolean) as Pt[];
+  };
+
+  const revenue = flow(C.revenue);
+  const grossProfit = flow(C.grossProfit);
+  const operatingIncome = flow(C.operatingIncome);
+  const netIncome = flow(C.netIncome);
+  const ocf = flow(C.ocf);
+  const capex = flow(C.capex);
+  const epsQ = flow(C.epsDiluted);
+  const sharesQ = flow(C.dilutedShares);
+
+  const fcf = align(ocf, capex, (o, c) => o - c);
+  const revTtm = ttm(revenue);
+
+  return {
+    revenue: { q: revenue, ttm: revTtm },
+    ocf: { q: ocf, ttm: ttm(ocf) },
+    operatingIncome: { q: operatingIncome, ttm: ttm(operatingIncome) },
+    netIncome: { q: netIncome, ttm: ttm(netIncome) },
+    eps: { q: epsQ, ttm: ttm(epsQ) },
+    fcf: { q: fcf, ttm: ttm(fcf) },
+    // Per-share divides by the share count for that quarter, not a TTM sum of
+    // share counts — shares are a stock, not a flow, so summing four quarters
+    // would understate per-share values by ~4x.
+    fcfPerShare: {
+      q: align(fcf, sharesQ, (v, sh) => (sh > 0 ? v / sh : null)),
+      ttm: align(ttm(fcf), sharesQ, (v, sh) => (sh > 0 ? v / sh : null)),
+    },
+    grossMargin: align(grossProfit, revenue, (g, r) => (r !== 0 ? (g / r) * 100 : null)),
+    netMargin: align(netIncome, revenue, (n, r) => (r !== 0 ? (n / r) * 100 : null)),
+    shares: stock(C.sharesOutstanding).length >= 4 ? stock(C.sharesOutstanding) : sharesQ,
+    equity: stock(C.equity),
+    currentAssets: stock(C.assetsCurrent),
+    currentLiabilities: stock(C.liabilitiesCurrent),
+    cash: stock(C.cash),
+    shortTermInvestments: stock(C.shortTermInvestments),
+    debt: stock(C.longTermDebt),
+    // TTM EPS/revenue power the historical P/E and P/S charts.
+    epsTtm: ttm(epsQ),
+    revenueTtm: revTtm,
+    sharesForRatio: sharesQ,
+  };
 }
 
 export type Fundamentals = ReturnType<typeof deriveFundamentals>;
