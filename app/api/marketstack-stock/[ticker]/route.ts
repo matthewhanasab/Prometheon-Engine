@@ -137,7 +137,7 @@ export async function GET(
           get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(y)}&sort=ASC&limit=1`)
         ),
         // Five years of daily closes for the ticker and for SPY, sampled to
-        // month-ends for the beta regression. Published betas (FMP, Yahoo) use
+        // month-ends for the beta regression. Published betas (Yahoo et al.) use
         // 5-year monthly; a 1-year daily window is a different statistic and
         // produced a nonsensical negative beta for defensive names like KO.
         () => get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(5)}&limit=1400`),

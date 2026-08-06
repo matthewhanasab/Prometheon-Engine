@@ -6,7 +6,7 @@ import { fetchFacts, resolveCik, Facts, C } from "@/lib/edgarFacts";
 // The options pages never consumed an options chain — strikes, premiums, greeks
 // and probabilities are all computed client-side from Black-Scholes. The feed
 // only has to supply price, a volatility estimate, the risk-free rate and the
-// next earnings date. All four are obtainable without FMP:
+// next earnings date. All four come from the current stack:
 //   price / 52-week range / history → marketstack
 //   risk-free rate (3-month T-bill) → FRED
 //   next earnings date              → projected from SEC filing cadence

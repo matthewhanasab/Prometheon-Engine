@@ -647,7 +647,7 @@ export function deriveChartSeries(f: Facts, limit = 28) {
  * Full financial statements, period by period, for the Financials viewer.
  *
  * Returns column-oriented periods (newest first) with every statement line
- * keyed by the same field names the FMP-backed page uses, so the two render
+ * keyed by stable field names shared with the statements viewer, so both render
  * identically. Flow rows go through quarterlyComplete(), which reconstructs Q4
  * and un-cumulates the year-to-date cash-flow tagging; balance-sheet rows are
  * point-in-time and read directly.

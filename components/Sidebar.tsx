@@ -26,7 +26,6 @@ const NAV = [
   { href: "/movers",        label: "Market Movers" },
   { href: "/screener",      label: "Screener" },
   { href: "/sec",           label: "SEC Filings" },
-  { href: "/ms",            label: "Market Stack" },
 ];
 
 // Desktop top bar: direct tabs + grouped dropdowns (1000x-style)
@@ -36,7 +35,6 @@ const DIRECT = [
   { href: "/charts",    label: "Charts" },
   { href: "/etf",       label: "ETFs" },
   { href: "/portfolio", label: "Portfolio" },
-  { href: "/ms",        label: "Market Stack" },
 ];
 const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
   {
@@ -146,18 +144,6 @@ export default function Sidebar() {
 
   const isActive = (href: string) => pathname === href || (href !== "/" && pathname.startsWith(href));
 
-  // ── Market Stack mirror mode ─────────────────────────────────────────────
-  // Under /ms the ENTIRE nav points at the mirrored site: every href becomes
-  // /ms/<page>. Ported pages render for real; the rest hit the /ms catch-all,
-  // which explains what marketstack can't provide. The "Market Stack" tab
-  // becomes "FMP Site" so there is always one exit back.
-  const inMs = pathname === "/ms" || pathname.startsWith("/ms/");
-  const mirror = (items: { href: string; label: string }[]) =>
-    items.map((it) =>
-      !inMs ? it
-      : it.href === "/ms" ? { href: "/research", label: "FMP Site" }
-      : { href: `/ms${it.href}`, label: it.label }
-    );
 
   // ── Mobile: logo top-left, hamburger top-right, right-side drawer ──────────
   if (isMobile) {
@@ -169,13 +155,8 @@ export default function Sidebar() {
           padding: "0 12px",
           background: "var(--bg-primary)", borderBottom: "1px solid var(--border)",
         }}>
-          <Link href={inMs ? "/ms" : "/"} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center" }}>
             <Brand width={128} />
-            {inMs && (
-              <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--on-accent)", background: "var(--accent-gold)", borderRadius: 999, padding: "2px 7px" }}>
-                MS
-              </span>
-            )}
           </Link>
           <button
             onClick={() => setOpen(o => !o)}
@@ -223,7 +204,7 @@ export default function Sidebar() {
           boxShadow: open ? "-6px 0 28px rgba(0,0,0,0.35)" : "none",
         }}>
           <nav style={{ flex: 1 }}>
-            {mirror(NAV).map(({ href, label }) => {
+            {NAV.map(({ href, label }) => {
               const active = isActive(href);
               return (
                 <Link key={href} href={href} onClick={() => setOpen(false)} style={{
@@ -259,27 +240,22 @@ export default function Sidebar() {
       padding: "0 20px",
       background: "var(--bg-primary)", borderBottom: "1px solid var(--border)",
     }}>
-      <Link href={inMs ? "/ms" : "/"} style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+      <Link href="/" style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
         <Brand width={182} />
-        {inMs && (
-          <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.54rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--on-accent)", background: "var(--accent-gold)", borderRadius: 999, padding: "3px 9px", whiteSpace: "nowrap" }}>
-            Market Stack
-          </span>
-        )}
       </Link>
 
       {/* breathing room + divider between brand and tabs */}
       <div style={{ width: 1, height: 34, background: "var(--border)", margin: "0 18px 0 22px", flexShrink: 0 }} />
 
       <nav style={{ display: "flex", alignItems: "center", gap: 2, flex: 1, minWidth: 0 }}>
-        {mirror(DIRECT).map(({ href, label }) => (
+        {DIRECT.map(({ href, label }) => (
           <Link key={href} href={href} className="topnav-link" style={TAB_STYLE(isActive(href))}>
             {label}
           </Link>
         ))}
 
         {GROUPS.map((g) => {
-          const groupActive = mirror(g.items).some((it) => isActive(it.href));
+          const groupActive = g.items.some((it) => isActive(it.href));
           const openMenu = menu === g.label;
           return (
             <div key={g.label} style={{ position: "relative" }}
@@ -307,7 +283,7 @@ export default function Sidebar() {
                     borderRadius: 14, padding: 6,
                     boxShadow: "0 14px 34px rgba(0,0,0,0.28)",
                   }}>
-                    {mirror(g.items).map((it) => {
+                    {g.items.map((it) => {
                       const active = isActive(it.href);
                       return (
                         <Link key={it.href} href={it.href} onClick={() => setMenu(null)} style={{

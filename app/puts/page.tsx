@@ -120,9 +120,8 @@ function navKeys(e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) {
 
 // ─── page ─────────────────────────────────────────────────────────────────────
 
-// See CoveredCallsInner — `apiBase` lets the Market Stack mirror reuse this
-// page against a non-FMP endpoint returning the same shape.
-export function PutsInner({ apiBase = "/api/covered-calls" }: { apiBase?: string } = {}) {
+// See CoveredCallsInner — same inputs, put-side model.
+export function PutsInner({ apiBase = "/api/ms-options" }: { apiBase?: string } = {}) {
   const searchParams = useSearchParams();
   const [inputTicker, setInputTicker] = useState("");
   const [data, setData] = useState<CCData | null>(null);

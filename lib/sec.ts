@@ -77,7 +77,10 @@ export async function getInsiderTrades(ticker: string) {
     for (const idx of idxs) {
       try {
         const acc = accnums[idx].replace(/-/g, "");
-        const doc = docs[idx];
+        // primaryDocument often points at the XSL-rendered view
+        // (xslF345X06/form4.xml) which serves HTML — strip the prefix to get
+        // the raw XML the parser needs.
+        const doc = String(docs[idx]).replace(/^xsl[^/]*\//i, "");
         const fd  = dates[idx];
         const url = `https://www.sec.gov/Archives/edgar/data/${cikInt}/${acc}/${doc}`;
         const res = await fetch(url, { headers: HEADERS });

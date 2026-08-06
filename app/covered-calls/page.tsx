@@ -122,11 +122,10 @@ function navKeys(e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) {
 
 // ─── page ─────────────────────────────────────────────────────────────────────
 
-// `apiBase` lets the Market Stack mirror reuse this page verbatim against an
-// endpoint backed by marketstack + FRED + EDGAR instead of FMP. Both return
-// the same shape, and every strike, premium and greek on this page is computed
-// locally from Black-Scholes — there is no options-chain feed on either side.
-export function CoveredCallsInner({ apiBase = "/api/covered-calls" }: { apiBase?: string } = {}) {
+// Inputs come from marketstack + FRED + SEC EDGAR; every strike, premium and
+// greek on this page is computed locally from Black-Scholes — there is no
+// options-chain feed involved.
+export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: string } = {}) {
   const searchParams = useSearchParams();
   const [inputTicker, setInputTicker] = useState("");
   const [data, setData] = useState<CCData | null>(null);

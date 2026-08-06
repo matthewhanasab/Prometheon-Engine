@@ -1,6 +1,6 @@
 // Black-Scholes pricing toolkit.
 // All option pricing in this app is model-estimated on 21-day historical
-// volatility (FMP has no options-chain data) — label it honestly in the UI.
+// volatility (no options-chain feed in the stack) — label it honestly in the UI.
 
 export function normCdf(x: number): number {
   // Abramowitz-Stegun approximation

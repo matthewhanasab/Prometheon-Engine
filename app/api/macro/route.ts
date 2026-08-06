@@ -65,8 +65,40 @@ async function fetchLatestFred(series: string): Promise<number | null> {
   } catch { return null; }
 }
 
+// Index/commodity tracker quotes via marketstack (SPY, QQQ, GLD, USO, UUP).
+// Bitcoin was sourced from the old quote provider; marketstack carries no
+// crypto, so BTCUSD is simply absent and the page skips its card.
+async function fetchMarkets(): Promise<any[]> {
+  const key = process.env.MARKETSTACK_KEY ?? "";
+  if (!key) return [];
+  const syms = ["SPY", "QQQ", "GLD", "USO", "UUP"];
+  const out: any[] = [];
+  for (const s of syms) {
+    try {
+      const res = await fetch(
+        `https://api.marketstack.com/v2/eod?access_key=${key}&symbols=${s}&limit=2`,
+        { next: { revalidate: 21600 } }
+      );
+      const j = await res.json().catch(() => null);
+      const rows = (Array.isArray(j?.data) ? j.data : []).filter((r: any) => Number(r?.close) > 0);
+      if (!rows.length) continue;
+      const price = Number(rows[0].close);
+      const prev = rows[1] ? Number(rows[1].close) : null;
+      const pct = prev ? ((price - prev) / prev) * 100 : null;
+      out.push({
+        symbol: s,
+        price,
+        // Both field spellings: the macro page reads changesPercentage, the
+        // home ticker tape reads changePct.
+        changesPercentage: pct,
+        changePct: pct,
+      });
+    } catch { /* skip symbol */ }
+  }
+  return out;
+}
+
 export async function GET() {
-  const fmpKey = process.env.FMP_KEY ?? "";
 
   const YIELD_SERIES = [
     { label: "1M", series: "DGS1MO", maturity: 1/12 },
@@ -109,15 +141,12 @@ export async function GET() {
     fetchFred("ICSA"),
     fetchFred("UMCSENT"),
     fetchFred("VIXCLS", { limit: "500" }),
-    fetch(
-      `https://financialmodelingprep.com/api/v3/quote/SPY,QQQ,GLD,USO,BTCUSD,UUP?apikey=${fmpKey}`,
-      { next: { revalidate: 21600 } }
-    ),
+    fetchMarkets(),
     fetch("https://api.alternative.me/fng/?limit=30", { next: { revalidate: 21600 } }),
     ...YIELD_SERIES.map((s) => fetchLatestFred(s.series)),
   ]);
 
-  const markets = await marketsRes.json();
+  const markets = marketsRes;
   const spread = spreadRaw.slice(-300);
   const cpiYoy = computeYoY(cpiRaw);
   const pceYoy = computeYoY(pceRaw);

@@ -236,8 +236,6 @@ export default function LandingPage() {
   const router = useRouter();
   const [leaving, setLeaving] = useState(false);
 
-  // Two engines, one ignition: the FMP-powered main site or the Market Stack
-  // mirror (marketstack + SEC EDGAR + FRED — the publicly-licensable stack).
   function launch(dest: string = "/research") {
     if (leaving) return;
     setLeaving(true);
@@ -267,13 +265,7 @@ export default function LandingPage() {
         </h1>
 
         <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
-            <LaunchButton onLaunch={() => launch("/research")}>Launch · FMP Engine</LaunchButton>
-            <LaunchButton variant="outline" onLaunch={() => launch("/ms")}>Launch · Market Stack</LaunchButton>
-          </div>
-          <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", letterSpacing: "0.06em" }}>
-            same engine, two data providers — Market Stack runs on commercially licensed &amp; public-domain data
-          </div>
+          <LaunchButton onLaunch={() => launch("/research")}>Launch the Engine</LaunchButton>
         </div>
 
         {/* Stat chips */}
@@ -322,10 +314,7 @@ export default function LandingPage() {
         <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", color: "var(--text-primary)", marginBottom: "1.4rem" }}>
           Stop tab-hopping. Start researching.
         </div>
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
-          <LaunchButton onLaunch={() => launch("/research")}>Launch · FMP Engine</LaunchButton>
-          <LaunchButton variant="outline" onLaunch={() => launch("/ms")}>Launch · Market Stack</LaunchButton>
-        </div>
+        <LaunchButton onLaunch={() => launch("/research")}>Launch the Engine</LaunchButton>
       </section>
 
       {/* ── Footer ── */}

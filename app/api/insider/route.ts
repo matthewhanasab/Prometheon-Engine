@@ -1,70 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getInsiderTrades } from "@/lib/sec";
 
-const FMP_BASE = "https://financialmodelingprep.com/stable";
+// Insider trading (SEC Form 4), parsed straight from EDGAR filings.
+//
+// Per-ticker: lib/sec fetches the filer's recent Form 4 XML documents and
+// parses the non-derivative transactions. Market-wide "latest across all
+// companies": EDGAR's current-filings feed lists filers but not parsed
+// transactions, so without a ticker this returns a small default set of
+// widely-held names instead of a full market stream.
+export const revalidate = 1800;
 
-async function fetchJson(url: string, revalidate: number): Promise<any[]> {
-  try {
-    const res = await fetch(url, { next: { revalidate } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-}
+const DEFAULT_TICKERS = ["AAPL", "NVDA", "MSFT", "TSLA", "AMZN", "META"];
 
-// "PELOSI NANCY P" -> "Pelosi Nancy P"
-function titleCase(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/\b[a-z]/g, (c) => c.toUpperCase());
-}
-
-// "officer: Chief Financial Officer" -> "Chief Financial Officer"
-// "director" -> "Director"
-function prettyRole(s: string | null | undefined): string | null {
-  if (!s) return null;
-  const idx = s.indexOf(":");
-  const part = (idx >= 0 ? s.slice(idx + 1) : s).trim();
-  if (!part) return null;
-  return part.charAt(0).toUpperCase() + part.slice(1);
+function shape(sym: string, rows: any[]) {
+  return rows.map((r) => ({
+    symbol: sym,
+    insider: r.name ?? "Unknown",
+    role: r.title ?? "—",
+    type: r.type ?? "OTHER",
+    shares: r.shares ?? null,
+    price: r.price ?? null,
+    value: r.value ?? null,
+    transactionDate: r.date ?? null,
+    filingDate: r.date ?? null,
+    url: null,
+  }));
 }
 
 export async function GET(req: NextRequest) {
-  const key = process.env.FMP_KEY ?? "";
   const symbol = req.nextUrl.searchParams.get("symbol");
-
   try {
-    let rows: any[] = [];
     if (symbol) {
       const sym = symbol.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
-      rows = await fetchJson(`${FMP_BASE}/insider-trading/search?symbol=${sym}&limit=100&apikey=${key}`, 3600);
-    } else {
-      rows = await fetchJson(`${FMP_BASE}/insider-trading/latest?page=0&limit=100&apikey=${key}`, 3600);
+      const rows = await getInsiderTrades(sym);
+      return NextResponse.json({ trades: shape(sym, rows) });
     }
 
-    const trades = rows.map((r) => {
-      const shares = typeof r.securitiesTransacted === "number" ? r.securitiesTransacted : null;
-      const price = typeof r.price === "number" ? r.price : null;
-      const value = price && shares ? price * shares : null;
-      return {
-        symbol: r.symbol ?? null,
-        filingDate: r.filingDate ?? null,
-        transactionDate: r.transactionDate ?? null,
-        insider: r.reportingName ? titleCase(String(r.reportingName)) : null,
-        role: prettyRole(r.typeOfOwner),
-        type: r.transactionType ?? null,
-        ad: r.acquisitionOrDisposition ?? null,
-        shares,
-        price,
-        value,
-        security: r.securityName ?? null,
-        formType: r.formType ?? null,
-        url: r.url ?? null,
-      };
+    const all = await Promise.all(
+      DEFAULT_TICKERS.map(async (sym) => {
+        try {
+          return shape(sym, await getInsiderTrades(sym));
+        } catch {
+          return [];
+        }
+      })
+    );
+    const trades = all
+      .flat()
+      .sort((a, b) => (b.transactionDate ?? "").localeCompare(a.transactionDate ?? ""))
+      .slice(0, 100);
+    return NextResponse.json({
+      trades,
+      note: "Without a ticker, showing recent Form 4 activity for a default set of widely-held names — a full market-wide stream is not available with current data.",
     });
-
-    return NextResponse.json({ trades });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch insider trades" }, { status: 500 });

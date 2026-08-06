@@ -1,65 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPriceHistory } from "@/lib/fmp";
 
-const FMP = "https://financialmodelingprep.com/stable";
-
-async function fmpGet(path: string, params: Record<string, string>, revalidate = 1800) {
-  const key = process.env.FMP_KEY ?? "";
-  const url = new URL(`${FMP}${path}`);
-  url.searchParams.set("apikey", key);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  try {
-    const res = await fetch(url.toString(), { next: { revalidate } });
-    if (!res.ok) return null;
-    return res.json();
-  } catch { return null; }
-}
-
-// GET /api/portfolio?t=AAPL,MSFT,NVDA — per-ticker quote, profile, ratios, history, next earnings
+// Portfolio holdings feed, sourced from this site's own aggregator endpoints
+// (marketstack prices/ratings + SEC EDGAR fundamentals + FRED). One source of
+// truth: a holding here shows the same P/E and beta as its research page.
+//
+// GET /api/portfolio?t=AAPL,MSFT,NVDA
 export async function GET(req: NextRequest) {
-  const t = req.nextUrl.searchParams.get("t") ?? "";
-  const tickers = Array.from(new Set(
-    t.split(",").map(s => s.trim().toUpperCase()).filter(Boolean)
-  )).slice(0, 25);
-  if (tickers.length === 0) {
-    return NextResponse.json({ error: "No tickers provided" }, { status: 400 });
-  }
+  const t = (req.nextUrl.searchParams.get("t") ?? "")
+    .split(",")
+    .map((s) => s.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, ""))
+    .filter(Boolean)
+    .slice(0, 25);
+  if (!t.length) return NextResponse.json({ holdings: [], spyHistory: [] });
 
-  const today = new Date().toISOString().slice(0, 10);
+  const origin = req.nextUrl.origin;
+  const yearAgo = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
+
+  const grab = async (sym: string) => {
+    try {
+      const [stockRes, optRes] = await Promise.all([
+        fetch(`${origin}/api/marketstack-stock/${sym}`),
+        fetch(`${origin}/api/ms-options/${sym}`),
+      ]);
+      const s = await stockRes.json();
+      if (!stockRes.ok || s.error) return null;
+      const o = optRes.ok ? await optRes.json() : {};
+      const history = (s.price ?? [])
+        .filter((p: any) => p.date >= yearAgo)
+        .map((p: any) => ({ date: p.date, price: p.price }));
+      return {
+        ticker: sym,
+        name: s.profile?.name ?? sym,
+        price: s.quote?.price ?? null,
+        changePct: s.quote?.changePct ?? null,
+        sector: s.profile?.sector ?? "Other",
+        beta: s.capm?.beta ?? null,
+        pe: s.fundamentals?.peRatio ?? null,
+        divYield: s.dividends?.yieldPct != null ? s.dividends.yieldPct / 100 : null,
+        // Projected from SEC filing cadence — an estimate, not a confirmed date.
+        nextEarnings: o.nextEarnings ?? null,
+        history,
+      };
+    } catch {
+      return null;
+    }
+  };
 
   try {
-    const [holdings, spyHistory] = await Promise.all([
-      Promise.all(tickers.map(async (sym) => {
-        const [quoteRaw, profileRaw, ratiosRaw, history, earningsRaw] = await Promise.all([
-          fmpGet("/quote", { symbol: sym }, 300),
-          fmpGet("/profile", { symbol: sym }, 86400),
-          fmpGet("/ratios-ttm", { symbol: sym }, 21600),
-          getPriceHistory(sym, 365).catch(() => []),
-          fmpGet("/earnings", { symbol: sym, limit: "6" }, 21600),
-        ]);
-        const q = Array.isArray(quoteRaw) ? quoteRaw[0] ?? {} : {};
-        const p = Array.isArray(profileRaw) ? profileRaw[0] ?? {} : {};
-        const r = Array.isArray(ratiosRaw) ? ratiosRaw[0] ?? {} : {};
-        const futureEarnings = Array.isArray(earningsRaw)
-          ? earningsRaw.map((e: any) => e.date).filter((d: string) => d && d >= today).sort()[0] ?? null
-          : null;
-        return {
-          ticker: sym,
-          name: q.name ?? p.companyName ?? sym,
-          price: q.price ?? null,
-          changePct: q.changePercentage ?? null,
-          sector: p.sector ?? "Other",
-          beta: p.beta ?? null,
-          pe: r.priceToEarningsRatioTTM ?? null,
-          divYield: r.dividendYieldTTM ?? null,
-          nextEarnings: futureEarnings,
-          history,
-        };
-      })),
-      getPriceHistory("SPY", 365).catch(() => []),
+    const [holdingsRaw, spyRes] = await Promise.all([
+      Promise.all(t.map(grab)),
+      fetch(`${origin}/api/marketstack-stock/SPY`),
     ]);
+    let spyHistory: { date: string; price: number }[] = [];
+    try {
+      const spy = await spyRes.json();
+      spyHistory = (spy.price ?? [])
+        .filter((p: any) => p.date >= yearAgo)
+        .map((p: any) => ({ date: p.date, price: p.price }));
+    } catch { /* benchmark race simply hides */ }
 
-    return NextResponse.json({ holdings, spyHistory });
+    return NextResponse.json({ holdings: holdingsRaw.filter(Boolean), spyHistory });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch portfolio data" }, { status: 500 });
