@@ -8,6 +8,7 @@ import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
 import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 import ShareCardButton from "@/components/ShareCardButton";
 import MsNav from "@/components/MsNav";
+import TradingViewWidget, { tvSymbol } from "@/components/TradingViewWidget";
 
 // Stock Research, rebuilt on marketstack data end-to-end. Same visual language
 // as /research, but every number here comes from the marketstack Business plan
@@ -724,9 +725,27 @@ function MarketstackResearchInner() {
             </>
           )}
 
+          {/* ── Technical Analysis ── */}
+          <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>TradingView widget</span>}>
+            Technical Analysis
+          </SectionLabel>
+          <TradingViewWidget
+            key={`ta-${data.ticker}`}
+            widget="technical-analysis"
+            height={430}
+            config={{ symbol: tvSymbol(data.ticker, prof?.exchange), interval: "1D", showIntervalTabs: true }}
+          />
+
           {/* ── Recent News ── */}
-          <SectionLabel>Recent News</SectionLabel>
-          <NASection reason="Marketstack has no news endpoint. The research page uses Finnhub for this — a separate provider." />
+          <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>TradingView widget</span>}>
+            Recent News
+          </SectionLabel>
+          <TradingViewWidget
+            key={`news-${data.ticker}`}
+            widget="timeline"
+            height={480}
+            config={{ feedMode: "symbol", symbol: tvSymbol(data.ticker, prof?.exchange), displayMode: "regular" }}
+          />
 
           <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "2rem", lineHeight: 1.6 }}>
             Prices, quotes, ratings, dividends, splits and filings from marketstack (Business plan); chart by

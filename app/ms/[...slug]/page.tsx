@@ -19,22 +19,9 @@ const PAGES: Record<string, { title: string; reason: string; alt?: { href: strin
     reason: "The Fair Value Graph plots price against analyst forward EPS estimates. Marketstack's ratings endpoint provides price targets and buy/hold/sell calls, but no EPS or revenue forecasts — the estimate layer that powers this page doesn't exist there.",
     alt: { href: "/ms/research", label: "DCF fair value on Research →" },
   },
-  financials: {
-    title: "Financials",
-    reason: "The full statement viewer needs line-item income statements, balance sheets and cash flows by quarter. Marketstack's advertised Statements endpoints return \"route not found\". Annual figures from SEC 10-Ks are charted on this edition's Charts page.",
-    alt: { href: "/ms/charts", label: "Annual fundamentals on Charts →" },
-  },
   projections: {
     title: "Projections",
-    reason: "Projections are built from analyst forward estimates (EPS, revenue, growth). No marketstack tier carries estimate data.",
-  },
-  earnings: {
-    title: "Earnings",
-    reason: "The earnings page shows the calendar plus reported-vs-estimated surprises. Marketstack has neither an earnings calendar nor the estimate side of surprises.",
-  },
-  screener: {
-    title: "Screener",
-    reason: "Marketstack has no screening endpoint — you can look up a known ticker but not query \"all stocks where market cap > X\". This also blocks peer discovery on the Research page.",
+    reason: "Projections are built from analyst forward estimates (EPS, revenue, growth). No marketstack tier carries estimate data, and estimates can't be read out of a TradingView widget either.",
   },
   "covered-calls": {
     title: "Covered Calls",
@@ -61,10 +48,6 @@ const PAGES: Record<string, { title: string; reason: string; alt?: { href: strin
   macro: {
     title: "Macro Dashboard",
     reason: "The macro page runs mostly on FRED, but several series come through FMP. The FRED portion is portable; it just hasn't been split out yet.",
-  },
-  movers: {
-    title: "Market Movers",
-    reason: "Marketstack has no gainers/losers/most-active endpoint, and the S&P heatmap is a TradingView widget that lives on the main page.",
   },
   etf: {
     title: "ETF Hub",

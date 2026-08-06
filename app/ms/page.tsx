@@ -37,6 +37,30 @@ const LIVE: { href: string; title: string; desc: string; src: string }[] = [
     src: "marketstack",
   },
   {
+    href: "/ms/screener",
+    title: "Screener",
+    desc: "Screen the whole market on valuation, performance, dividends, margins and technicals across five exchanges.",
+    src: "TradingView widget",
+  },
+  {
+    href: "/ms/financials",
+    title: "Financials",
+    desc: "Income statement, balance sheet and cash flow — quarterly and annual, per ticker.",
+    src: "TradingView widget",
+  },
+  {
+    href: "/ms/movers",
+    title: "Market Movers",
+    desc: "Gainers, losers and most-active names, plus an indices/futures/forex overview.",
+    src: "TradingView widget",
+  },
+  {
+    href: "/ms/earnings",
+    title: "Earnings Calendar",
+    desc: "Upcoming releases with consensus vs actual. Per-ticker surprise history still needs estimates.",
+    src: "TradingView widget",
+  },
+  {
     href: "/ms/calculator",
     title: "Compound Calculator",
     desc: "Pure math, no data provider — shared with the main site verbatim.",
@@ -48,13 +72,11 @@ const UNAVAILABLE: { title: string; why: string }[] = [
   { title: "Macro Dashboard", why: "mostly FRED, but several series come through FMP — the FRED portion is portable, not yet split out" },
   { title: "My Portfolio", why: "quotes are portable via marketstack; the page just isn't rewired yet" },
   { title: "ETF Hub", why: "marketstack's etfholdings endpoint returns no data even for SPY — raised as a support issue" },
-  { title: "Screener / Market Movers", why: "no screening or gainers-losers endpoint" },
-  { title: "Earnings (estimates & surprises)", why: "no analyst EPS/revenue estimates — this also blocks Forward P/E" },
+  { title: "Per-ticker earnings surprises", why: "the calendar is covered by a TradingView widget, but reported-vs-estimated history needs analyst estimates — this also blocks Forward P/E and Projections" },
   { title: "Covered Calls / Cash-Secured Puts", why: "no options chain data" },
   { title: "Congress Trades", why: "different data domain (official disclosure portals); not FMP-dependent but not built into this edition yet" },
   { title: "Insider Trading (parsed)", why: "Form 4 filings are listed on Research, but parsed buy/sell transactions need an EDGAR parsing layer" },
   { title: "Earnings Call Transcripts", why: "not offered by marketstack at any tier" },
-  { title: "News", why: "no news endpoint (the main site uses Finnhub)" },
 ];
 
 export default function MsHub() {
@@ -68,8 +90,9 @@ export default function MsHub() {
       <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", maxWidth: 720, lineHeight: 1.65, marginBottom: "0.4rem" }}>
         The same site, rebuilt on commercially-licensed and public-domain data:{" "}
         <strong>marketstack</strong> (prices, intraday, ratings, dividends, splits),{" "}
-        <strong>SEC EDGAR</strong> (fundamentals, filings), <strong>FRED</strong> (rates) and the{" "}
-        <strong>TradingView</strong> widget. No FMP anywhere on these pages.
+        <strong>SEC EDGAR</strong> (fundamentals, filings), <strong>FRED</strong> (rates) and{" "}
+        <strong>TradingView widgets</strong> (charts, screener, financials, movers, news). No FMP anywhere
+        on these pages.
       </p>
       <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "1.8rem" }}>
         This is the deployable-to-the-public stack — the main site remains on FMP under a personal-use license.
