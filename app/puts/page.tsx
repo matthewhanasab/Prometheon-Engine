@@ -120,7 +120,9 @@ function navKeys(e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) {
 
 // ─── page ─────────────────────────────────────────────────────────────────────
 
-function PutsInner() {
+// See CoveredCallsInner — `apiBase` lets the Market Stack mirror reuse this
+// page against a non-FMP endpoint returning the same shape.
+export function PutsInner({ apiBase = "/api/covered-calls" }: { apiBase?: string } = {}) {
   const searchParams = useSearchParams();
   const [inputTicker, setInputTicker] = useState("");
   const [data, setData] = useState<CCData | null>(null);
@@ -146,7 +148,7 @@ function PutsInner() {
     if (!sym) return;
     setLoading(true);
     setError(null);
-    fetch(`/api/covered-calls/${sym}`)
+    fetch(`${apiBase}/${sym}`)
       .then(r => r.json())
       .then(d => {
         if (d.error) throw new Error(d.error);

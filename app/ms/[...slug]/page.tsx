@@ -23,14 +23,6 @@ const PAGES: Record<string, { title: string; reason: string; alt?: { href: strin
     title: "Projections",
     reason: "Projections are built from analyst forward estimates (EPS, revenue, growth). No marketstack tier carries estimate data, and estimates can't be read out of a TradingView widget either.",
   },
-  "covered-calls": {
-    title: "Covered Calls",
-    reason: "Options chains (strikes, premiums, expirations, greeks) are not offered by marketstack at any tier.",
-  },
-  puts: {
-    title: "Cash-Secured Puts",
-    reason: "Options chains (strikes, premiums, expirations, greeks) are not offered by marketstack at any tier.",
-  },
   congress: {
     title: "Congress Trades",
     reason: "The main site sources congressional trading via FMP. The underlying disclosures are public (Senate/House portals) and could be wired in directly, but that isn't built yet — and marketstack itself has no such data.",

@@ -61,6 +61,18 @@ const LIVE: { href: string; title: string; desc: string; src: string }[] = [
     src: "TradingView widget",
   },
   {
+    href: "/ms/covered-calls",
+    title: "Covered Calls",
+    desc: "Strike ladder with premiums, greeks, assignment probability and annualized yield — modelled from realized volatility.",
+    src: "marketstack + FRED + Black-Scholes",
+  },
+  {
+    href: "/ms/puts",
+    title: "Cash-Secured Puts",
+    desc: "The same engine for the put side: entry discount, assignment odds, capital-at-risk yield.",
+    src: "marketstack + FRED + Black-Scholes",
+  },
+  {
     href: "/ms/calculator",
     title: "Compound Calculator",
     desc: "Pure math, no data provider — shared with the main site verbatim.",
@@ -73,7 +85,7 @@ const UNAVAILABLE: { title: string; why: string }[] = [
   { title: "My Portfolio", why: "quotes are portable via marketstack; the page just isn't rewired yet" },
   { title: "ETF Hub", why: "marketstack's etfholdings endpoint returns no data even for SPY — raised as a support issue" },
   { title: "Per-ticker earnings surprises", why: "the calendar is covered by a TradingView widget, but reported-vs-estimated history needs analyst estimates — this also blocks Forward P/E and Projections" },
-  { title: "Covered Calls / Cash-Secured Puts", why: "no options chain data" },
+  { title: "Live options-chain quotes", why: "the options pages model premiums from realized volatility (as the FMP site already did) — but no real bid/ask from an exchange chain is available on either edition" },
   { title: "Congress Trades", why: "different data domain (official disclosure portals); not FMP-dependent but not built into this edition yet" },
   { title: "Insider Trading (parsed)", why: "Form 4 filings are listed on Research, but parsed buy/sell transactions need an EDGAR parsing layer" },
   { title: "Earnings Call Transcripts", why: "not offered by marketstack at any tier" },
