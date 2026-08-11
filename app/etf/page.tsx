@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import CompanyLogo from "@/components/CompanyLogo";
+import PriceChart from "@/components/PriceChart";
 
 // ETF Hub. Holdings come from SEC N-PORT filings (via marketstack), so the
 // portfolio is as-of a quarterly report date rather than live — that date is
@@ -153,6 +154,29 @@ function EtfInner() {
             </div>
           </div>
 
+          {/* Price chart + returns work for EVERY ETF, holdings or not */}
+          {q?.chart?.length > 1 && (
+            <>
+              <SectionLabel hint="dividend-adjusted · up to 5 years">Price</SectionLabel>
+              <PriceChart data={q.chart} label="5Y" />
+            </>
+          )}
+          {q?.returns?.length > 0 && (
+            <>
+              <SectionLabel>Total Return</SectionLabel>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10 }}>
+                {q.returns.map((r: any) => (
+                  <Stat key={r.years} label={`${r.years}-Year Return`} value={pct(r.totalPct, 0)}
+                    sub={`${pct(r.cagrPct, 1)}/yr`} tone={r.totalPct >= 0 ? "good" : "bad"} />
+                ))}
+                {q.pos52 != null && (
+                  <Stat label="52-Week Range" value={`${q.pos52.toFixed(0)}%`}
+                    sub={`${money(q.week52Low)} – ${money(q.week52High)}`} />
+                )}
+              </div>
+            </>
+          )}
+
           {!data.holdingsAvailable ? (
             <div style={{ ...CARD, padding: "22px 24px", borderStyle: "dashed", marginTop: "1.4rem", maxWidth: 720 }}>
               <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--accent-gold)", marginBottom: 8 }}>
@@ -179,9 +203,26 @@ function EtfInner() {
                 <Stat label="Net Assets" value={big(data.totals?.netAssets)} sub="per latest N-PORT filing" />
                 <Stat label="Holdings" value={String(data.totals?.count ?? "—")} sub="positions reported" />
                 <Stat label="Dividend Yield" value={q?.yieldPct != null ? `${q.yieldPct.toFixed(2)}%` : "—"}
-                  sub={q?.ttmDividend ? `$${q.ttmDividend.toFixed(2)} trailing 12m` : undefined} tone="good" />
-                <Stat label="Top 10 Weight" value={`${data.top.slice(0, 10).reduce((a: number, h: any) => a + h.weightPct, 0).toFixed(1)}%`}
-                  sub="concentration in largest positions" />
+                  sub={q?.ttmDividend ? `$${q.ttmDividend.toFixed(2)} TTM · ${q.payoutsPerYear ?? "?"}×/yr` : undefined} tone="good" />
+                <Stat label="Top 10 Weight" value={`${(data.totals?.top10Weight ?? 0).toFixed(1)}%`}
+                  sub="concentration in largest names" />
+                <Stat label="Effective Holdings" value={data.totals?.effectiveHoldings != null ? String(Math.round(data.totals.effectiveHoldings)) : "—"}
+                  sub="equal-weight equivalent (1/Σw²)" />
+              </div>
+              <div style={{ height: 8 }} />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10 }}>
+                <Stat label="Largest Position" value={data.totals?.largestWeight != null ? `${data.totals.largestWeight.toFixed(2)}%` : "—"}
+                  sub={data.totals?.largestName ?? undefined} />
+                <Stat label="Securities on Loan" value={data.totals?.onLoanPct != null ? `${data.totals.onLoanPct.toFixed(2)}%` : "—"}
+                  sub="lent out for income" />
+                {data.totals?.shortPct > 0 && (
+                  <Stat label="Short Exposure" value={`${data.totals.shortPct.toFixed(1)}%`} sub="short positions" tone="bad" />
+                )}
+                {data.fairValue?.[0] && (
+                  <Stat label="Priced at Market (L1)"
+                    value={`${(data.fairValue.find((f: any) => f.key === "Level 1")?.weightPct ?? 0).toFixed(1)}%`}
+                    sub="quoted prices vs modelled" tone="good" />
+                )}
                 <Stat label="Report Date" value={fund?.reportDate ?? "—"} sub="SEC N-PORT as-of" />
               </div>
 

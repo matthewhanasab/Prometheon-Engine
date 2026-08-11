@@ -12,6 +12,7 @@ const NAV = [
   { href: "/portfolio",     label: "My Portfolio" },
   { href: "/compare",       label: "Compare Stocks" },
   { href: "/etf",           label: "ETF Hub" },
+  { href: "/etf/compare",   label: "Compare ETFs" },
   { href: "/charts",        label: "Charts" },
   { href: "/financials",    label: "Financials" },
   { href: "/covered-calls", label: "Covered Calls" },
@@ -33,10 +34,16 @@ const DIRECT = [
   { href: "/research",  label: "Research" },
   { href: "/compare",   label: "Compare" },
   { href: "/charts",    label: "Charts" },
-  { href: "/etf",       label: "ETFs" },
   { href: "/portfolio", label: "Portfolio" },
 ];
 const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
+  {
+    label: "ETFs",
+    items: [
+      { href: "/etf",         label: "ETF Hub" },
+      { href: "/etf/compare", label: "Compare ETFs" },
+    ],
+  },
   {
     label: "Analysis",
     items: [

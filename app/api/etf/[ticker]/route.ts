@@ -65,36 +65,91 @@ export async function GET(
   const key = process.env.MARKETSTACK_KEY;
   if (!key) return NextResponse.json({ error: "Marketstack key not configured" }, { status: 500 });
 
-  const [holdRaw, eodRaw, infoRaw, divRaw] = await Promise.all([
+  const anchorFor = (y: number) => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - y);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const [holdRaw, eodRaw, infoRaw, divRaw, anchor10Raw] = await Promise.all([
     get(`${MS}/etfholdings?access_key=${key}&ticker=${t}`),
-    get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=2`, 1800),
+    // Five years of daily closes: powers the chart AND the 1/3/5-year returns,
+    // and its newest two rows give the live quote + prior close.
+    get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(5)}&limit=1400`, 1800),
     get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
-    get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=8`),
+    get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=20`),
+    get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(10)}&sort=ASC&limit=1`),
   ]);
 
-  // ── Live quote (works for every ETF, N-PORT or not) ──
-  const eod = (Array.isArray(eodRaw?.data) ? eodRaw.data : []).filter((r: any) => numOf(r.close) > 0);
-  const price = eod[0] ? numOf(eod[0].close) : null;
-  const prev = eod[1] ? numOf(eod[1].close) : null;
-  const changePct = price && prev ? ((price - prev) / prev) * 100 : null;
+  // ── Price series (ascending) — chart + returns + 52-week stats ──
+  const series = (Array.isArray(eodRaw?.data) ? eodRaw.data : [])
+    .map((r: any) => ({
+      date: String(r.date ?? "").slice(0, 10),
+      close: numOf(r.close),
+      adj: numOf(r.adj_close ?? r.close),
+      high: numOf(r.high),
+      low: numOf(r.low),
+    }))
+    .filter((r: any) => r.date && r.close > 0)
+    .sort((a: any, b: any) => a.date.localeCompare(b.date));
+
+  const last = series[series.length - 1] ?? null;
+  const prevBar = series[series.length - 2] ?? null;
+  const price = last ? last.close : null;
+  const changePct = price && prevBar ? ((price - prevBar.close) / prevBar.close) * 100 : null;
+
+  const yearBars = series.slice(-252);
+  const week52High = yearBars.length ? Math.max(...yearBars.map((r: any) => r.high || r.close)) : null;
+  const week52Low = yearBars.length ? Math.min(...yearBars.map((r: any) => r.low || r.close)) : null;
+  const pos52 =
+    week52High != null && week52Low != null && week52High > week52Low && price != null
+      ? ((price - week52Low) / (week52High - week52Low)) * 100
+      : null;
+
+  // Thinned chart series (adjusted) for transport.
+  const step = Math.max(1, Math.floor(series.length / 260));
+  const chart = series.filter((_: any, i: number) => i % step === 0).map((r: any) => ({ date: r.date, price: r.adj }));
+
+  // Long-horizon total returns on adjusted closes.
+  const anchorFromSeries = (fromDate: string) => series.find((r: any) => r.date >= fromDate) ?? null;
+  const lastAdj = last ? last.adj : null;
+  const retOf = (row: { adj: number } | null, years: number) => {
+    if (!row || !(row.adj > 0) || lastAdj == null) return null;
+    return { years, totalPct: ((lastAdj - row.adj) / row.adj) * 100, cagrPct: (Math.pow(lastAdj / row.adj, 1 / years) - 1) * 100 };
+  };
+  const anchor10 = (Array.isArray(anchor10Raw?.data) ? anchor10Raw.data : [])[0];
+  const returns = [
+    retOf(anchorFromSeries(anchorFor(1)), 1),
+    retOf(anchorFromSeries(anchorFor(3)), 3),
+    retOf(anchorFromSeries(anchorFor(5)), 5),
+    anchor10 && numOf(anchor10.adj_close ?? anchor10.close) > 0
+      ? retOf({ adj: numOf(anchor10.adj_close ?? anchor10.close) }, 10)
+      : null,
+  ].filter(Boolean);
 
   const info = Array.isArray(infoRaw?.data) ? infoRaw.data[0] : infoRaw?.data;
-  const name =
-    typeof info?.name === "string" ? info.name.replace(/&amp;/g, "&") : t;
+  const name = typeof info?.name === "string" ? info.name.replace(/&amp;/g, "&") : t;
 
   const divs = (Array.isArray(divRaw?.data) ? divRaw.data : [])
     .map((r: any) => ({ date: String(r.date ?? "").slice(0, 10), amount: numOf(r.dividend) }))
     .filter((d: any) => d.amount > 0);
   const ttmCutoff = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
   const ttmDiv = divs.filter((d: any) => d.date >= ttmCutoff).reduce((a: number, d: any) => a + d.amount, 0);
+  const payFreq = divs.filter((d: any) => d.date >= ttmCutoff).length;
 
   const quote = {
     price,
     changePct,
-    date: eod[0] ? String(eod[0].date).slice(0, 10) : null,
+    date: last ? last.date : null,
     name,
+    week52High,
+    week52Low,
+    pos52,
     ttmDividend: ttmDiv || null,
     yieldPct: ttmDiv > 0 && price ? (ttmDiv / price) * 100 : null,
+    payoutsPerYear: payFreq || null,
+    returns,
+    chart,
   };
 
   // ── Holdings ──
@@ -128,9 +183,30 @@ export async function GET(
       country: h.invested_country ?? null,
       assetCategory: h.asset_category ?? null,
       payoff: h.payoff_profile ?? null,
+      fairLevel: h.fair_value_level ?? null,
+      onLoan: h.loan_by_fund === "Y",
     }))
     .filter((h: any) => h.valueUsd > 0)
     .sort((a: any, b: any) => b.valueUsd - a.valueUsd);
+
+  // ── Concentration ──
+  // Herfindahl over holding weights → effective number of holdings (1/HHI):
+  // how many equally-weighted names the fund "behaves like". VOO has 500
+  // holdings but an effective count near 120 because the megacaps dominate.
+  const hhi = holdings.reduce((a: number, h: any) => a + (h.weightPct / 100) ** 2, 0);
+  const effectiveHoldings = hhi > 0 ? 1 / hhi : null;
+  const top10 = holdings.slice(0, 10).reduce((a: number, h: any) => a + h.weightPct, 0);
+
+  // ── Novel N-PORT cuts ──
+  // Securities lent out for income — a small extra-return source, and a
+  // counterparty-risk signal when large.
+  const onLoanValue = holdings.filter((h: any) => h.onLoan).reduce((a: number, h: any) => a + h.valueUsd, 0);
+  // Fair-value hierarchy: Level 1 = quoted market prices (most liquid),
+  // Level 3 = unobservable/estimated (least). A fund heavy in Level 3 is a
+  // liquidity flag.
+  const shortValue = holdings
+    .filter((h: any) => String(h.payoff).toLowerCase() === "short")
+    .reduce((a: number, h: any) => a + Math.abs(h.valueUsd), 0);
 
   const bucket = (keyOf: (h: any) => string | null, labels?: Record<string, string>) => {
     const m = new Map<string, number>();
@@ -156,9 +232,24 @@ export async function GET(
       isin: attrs.isin ?? null,
       reportDate: attrs.date_report_period ?? null,
     },
-    totals: { netAssets: total, count: holdings.length },
+    totals: {
+      netAssets: total,
+      count: holdings.length,
+      top10Weight: top10,
+      effectiveHoldings,
+      largestWeight: holdings[0]?.weightPct ?? null,
+      largestName: holdings[0]?.name ?? null,
+      onLoanPct: total > 0 ? (onLoanValue / total) * 100 : 0,
+      shortPct: total > 0 ? (shortValue / total) * 100 : 0,
+    },
     top: holdings.slice(0, 25),
+    // Full lightweight list only when asked (the Compare page needs every
+    // holding to compute overlap; the Hub doesn't).
+    full: req.nextUrl.searchParams.get("full")
+      ? holdings.map((h: any) => ({ id: h.cusip || h.isin || h.name, name: h.name, weightPct: h.weightPct }))
+      : undefined,
     countries: bucket((h) => h.country),
     categories: bucket((h) => h.assetCategory, ASSET_LABELS),
+    fairValue: bucket((h) => (h.fairLevel ? `Level ${h.fairLevel}` : "Unclassified")),
   });
 }

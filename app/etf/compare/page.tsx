@@ -1,0 +1,219 @@
+"use client";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import CompanyLogo from "@/components/CompanyLogo";
+
+// Compare ETFs. The headline is the overlap matrix — how much two funds hold
+// in common — because that's the question index investors actually have:
+// "am I diversifying, or buying the same basket twice?"
+const SANS = "'Public Sans', sans-serif";
+const SERIF = "'Space Grotesk', Georgia, serif";
+const MONO = "'Spline Sans Mono', monospace";
+const CARD: React.CSSProperties = { background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22 };
+const COLORS = ["#3B82F6", "var(--accent-gold)", "#22C55E", "#A78BFA"];
+const MAX = 4;
+
+const money = (n: any) => (n == null || !isFinite(n) ? "—" : `$${Number(n).toFixed(2)}`);
+const pctS = (n: any, d = 1) => (n == null || !isFinite(n) ? "—" : `${n >= 0 ? "+" : ""}${Number(n).toFixed(d)}%`);
+const big = (n: any) => {
+  if (n == null || !isFinite(n)) return "—";
+  const a = Math.abs(n);
+  if (a >= 1e12) return `$${(a / 1e12).toFixed(2)}T`;
+  if (a >= 1e9) return `$${(a / 1e9).toFixed(1)}B`;
+  if (a >= 1e6) return `$${(a / 1e6).toFixed(1)}M`;
+  return `$${a.toFixed(0)}`;
+};
+const ret = (f: any, y: number) => f.returns?.find((r: any) => r.years === y)?.totalPct ?? null;
+
+// Overlap heat: green = independent (low overlap), red = redundant (high).
+function overlapColor(pct: number): string {
+  if (pct >= 70) return "var(--negative)";
+  if (pct >= 30) return "var(--accent-gold)";
+  return "var(--positive)";
+}
+
+function CompareInner() {
+  const search = useSearchParams();
+  const [tickers, setTickers] = useState<string[]>(["", "", "", ""]);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const booted = useRef(false);
+
+  const setT = (i: number, v: string) => setTickers((p) => p.map((x, idx) => (idx === i ? v : x)));
+
+  async function run(list: string[]) {
+    const want = list.map((s) => s.trim().toUpperCase()).filter(Boolean).slice(0, MAX);
+    if (want.length < 2) { setError("Enter at least two ETF tickers."); return; }
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch(`/api/etf-compare?t=${want.join(",")}`);
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? "Request failed");
+      setData(json);
+    } catch (e: any) {
+      setError(e?.message ?? "Failed"); setData(null);
+    } finally { setLoading(false); }
+  }
+
+  useEffect(() => {
+    if (booted.current) return;
+    booted.current = true;
+    const q = (search.get("t") ?? "VOO,VTI,SCHD").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
+    setTickers([...q, "", "", "", ""].slice(0, MAX));
+    run(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const funds: any[] = data?.funds ?? [];
+  const overlaps: any[] = data?.overlaps ?? [];
+  const ov = (a: string, b: string) =>
+    overlaps.find((o) => (o.a === a && o.b === b) || (o.a === b && o.b === a))?.pct ?? null;
+
+  const ROWS: { label: string; get: (f: any) => string; color?: (f: any) => string }[] = [
+    { label: "Price", get: (f) => money(f.price) },
+    { label: "Dividend Yield", get: (f) => (f.yieldPct != null ? `${f.yieldPct.toFixed(2)}%` : "—"), color: () => "var(--positive)" },
+    { label: "Net Assets", get: (f) => big(f.netAssets) },
+    { label: "Holdings", get: (f) => (f.count != null ? String(f.count) : "—") },
+    { label: "Effective Holdings", get: (f) => (f.effectiveHoldings != null ? String(Math.round(f.effectiveHoldings)) : "—") },
+    { label: "Top-10 Weight", get: (f) => (f.top10Weight != null ? `${f.top10Weight.toFixed(1)}%` : "—") },
+    { label: "Largest Position", get: (f) => (f.largestWeight != null ? `${f.largestWeight.toFixed(2)}%` : "—") },
+    { label: "1-Year Return", get: (f) => pctS(ret(f, 1), 0), color: (f) => (ret(f, 1) >= 0 ? "var(--positive)" : "var(--negative)") },
+    { label: "3-Year Return", get: (f) => pctS(ret(f, 3), 0), color: (f) => (ret(f, 3) >= 0 ? "var(--positive)" : "var(--negative)") },
+    { label: "5-Year Return", get: (f) => pctS(ret(f, 5), 0), color: (f) => (ret(f, 5) >= 0 ? "var(--positive)" : "var(--negative)") },
+    { label: "Securities on Loan", get: (f) => (f.onLoanPct != null ? `${f.onLoanPct.toFixed(2)}%` : "—") },
+  ];
+
+  const withHoldings = funds.filter((f) => f.holdingsAvailable);
+
+  return (
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
+      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
+        Compare ETFs
+      </h1>
+      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
+      <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1.2rem" }}>
+        Side-by-side yield, returns and concentration — plus how much the funds actually hold in common.
+      </div>
+
+      <form onSubmit={(e) => { e.preventDefault(); run(tickers); }} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: "1.4rem" }}>
+        {Array.from({ length: MAX }, (_, i) => (
+          <input key={i} value={tickers[i] ?? ""} onChange={(e) => setT(i, e.target.value.toUpperCase())}
+            placeholder={i < 2 ? ["VOO", "VTI"][i] : `ETF ${i + 1}`}
+            style={{ width: 92, background: "var(--bg-elevated)", border: `1px solid ${tickers[i] ? COLORS[i] : "var(--border)"}`, borderRadius: 22, padding: "9px 12px", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.82rem", outline: "none", textTransform: "uppercase" }} />
+        ))}
+        <button type="submit" disabled={loading}
+          style={{ background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22, padding: "9px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", opacity: loading ? 0.7 : 1 }}>
+          {loading ? "…" : "Compare"}
+        </button>
+      </form>
+
+      {error && <p style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</p>}
+
+      {data && !loading && (
+        <>
+          {/* Overview cards */}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: "1.8rem" }}>
+            {funds.map((f, i) => (
+              <div key={f.ticker} style={{ ...CARD, flex: 1, minWidth: 180, borderTop: `3px solid ${COLORS[i]}`, padding: "14px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <CompanyLogo ticker={f.ticker} size={26} />
+                  <Link href={`/etf?ticker=${f.ticker}`} style={{ fontFamily: MONO, fontWeight: 700, color: COLORS[i], textDecoration: "none" }}>{f.ticker}</Link>
+                </div>
+                <div style={{ fontSize: "0.78rem", fontWeight: 500, lineHeight: 1.3, marginBottom: 6 }}>{f.name}</div>
+                <div style={{ fontFamily: MONO, fontSize: "1.2rem", fontWeight: 600 }}>{money(f.price)}</div>
+                <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 4 }}>
+                  {f.holdingsAvailable ? `${f.count} holdings · ${big(f.netAssets)}` : "holdings not published"}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Overlap matrix — the headline feature */}
+          {withHoldings.length >= 2 && (
+            <>
+              <div style={{ fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.9rem" }}>
+                Holdings Overlap
+                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.62rem", marginLeft: 10 }}>
+                  share of net assets held in common
+                </span>
+              </div>
+              <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginBottom: "0.8rem" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: MONO, fontSize: "0.82rem" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ padding: "10px 14px" }} />
+                      {withHoldings.map((f) => (
+                        <th key={f.ticker} style={{ padding: "10px 14px", textAlign: "center", color: "var(--accent-gold)", fontWeight: 700 }}>{f.ticker}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {withHoldings.map((fa) => (
+                      <tr key={fa.ticker} style={{ borderTop: "1px solid var(--border)" }}>
+                        <td style={{ padding: "10px 14px", color: "var(--accent-gold)", fontWeight: 700 }}>{fa.ticker}</td>
+                        {withHoldings.map((fb) => {
+                          if (fa.ticker === fb.ticker)
+                            return <td key={fb.ticker} style={{ padding: "10px 14px", textAlign: "center", color: "var(--text-muted)" }}>—</td>;
+                          const p = ov(fa.ticker, fb.ticker);
+                          return (
+                            <td key={fb.ticker} style={{ padding: "10px 14px", textAlign: "center", fontWeight: 700, color: p != null ? overlapColor(p) : "var(--text-muted)" }}>
+                              {p != null ? `${p.toFixed(0)}%` : "—"}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginBottom: "1.8rem", lineHeight: 1.6 }}>
+                <span style={{ color: "var(--positive)", fontWeight: 600 }}>Green</span> = mostly independent baskets ·{" "}
+                <span style={{ color: "var(--accent-gold)", fontWeight: 600 }}>gold</span> = partial ·{" "}
+                <span style={{ color: "var(--negative)", fontWeight: 600 }}>red</span> = largely the same fund. Computed as the
+                sum of the smaller weight for every security both funds hold.
+              </div>
+            </>
+          )}
+
+          {/* Side-by-side metrics */}
+          <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: MONO, fontSize: "0.8rem" }}>
+              <thead>
+                <tr style={{ background: "var(--bg-primary)" }}>
+                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", minWidth: 150 }}>Metric</th>
+                  {funds.map((f, i) => (
+                    <th key={f.ticker} style={{ textAlign: "right", padding: "9px 14px", color: COLORS[i], fontWeight: 700 }}>{f.ticker}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {ROWS.map((row, ri) => (
+                  <tr key={row.label} style={{ background: ri % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)", borderTop: "1px solid var(--border)" }}>
+                    <td style={{ padding: "8px 14px", fontFamily: SANS, fontSize: "0.75rem", color: "var(--text-secondary)" }}>{row.label}</td>
+                    {funds.map((f) => (
+                      <td key={f.ticker} style={{ padding: "8px 14px", textAlign: "right", color: f.holdingsAvailable || /Price|Yield|Return/.test(row.label) ? (row.color?.(f) ?? "var(--text-primary)") : "var(--text-muted)" }}>
+                        {row.get(f)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "1.2rem", lineHeight: 1.6 }}>
+            Holdings and concentration from SEC N-PORT filings (as-of each fund&apos;s report date); price, yield and
+            returns from marketstack. Effective holdings = 1 / Σ(weight²), the number of equally-weighted names the
+            fund behaves like.
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function EtfComparePage() {
+  return <Suspense fallback={null}><CompareInner /></Suspense>;
+}
