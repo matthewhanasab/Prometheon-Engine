@@ -26,9 +26,19 @@ const fmt = (n: number | null | undefined, d = 2) =>
 const money = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "N/A" : `$${fmt(n)}`);
 const pct = (n: number | null | undefined, d = 2) =>
   n == null || !Number.isFinite(n) ? "N/A" : `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
-const compact = (n: number | null | undefined) =>
-  n == null || !Number.isFinite(n) ? "N/A"
-    : n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K` : String(Math.round(n));
+// Trillions matter here: a $1.3T market cap rendered in billions reads
+// "1306.9B", which no one parses at a glance. Negatives are handled too —
+// net cash positions come through as negative net debt.
+const compact = (n: number | null | undefined) => {
+  if (n == null || !Number.isFinite(n)) return "N/A";
+  const s = n < 0 ? "-" : "";
+  const a = Math.abs(n);
+  if (a >= 1e12) return `${s}${(a / 1e12).toFixed(2)}T`;
+  if (a >= 1e9) return `${s}${(a / 1e9).toFixed(1)}B`;
+  if (a >= 1e6) return `${s}${(a / 1e6).toFixed(1)}M`;
+  if (a >= 1e3) return `${s}${(a / 1e3).toFixed(1)}K`;
+  return `${s}${Math.round(a)}`;
+};
 
 function SectionLabel({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
@@ -78,6 +88,109 @@ function Grid({ cols = 5, children }: { cols?: number; children: React.ReactNode
   return (
     <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(min(150px, 44vw), 1fr))`, gap: 10 }}>
       {children}
+    </div>
+  );
+}
+
+// ── Benchmark rows ─────────────────────────────────────────────────────────
+// Label on the left, the figure in the middle, and — the part that makes the
+// number mean something — a typical range on the right, so you can tell a
+// 396× P/E from a 22× one without knowing the norms by heart.
+
+type Bench = {
+  label: string;
+  value: string;
+  /** Typical range, e.g. [20, 28]. Omit when a metric has no meaningful norm. */
+  range?: [number, number];
+  /** Raw figure used to grade against `range`. */
+  raw?: number | null;
+  /** true when a higher figure is better (margins, growth); false for multiples. */
+  higherBetter?: boolean;
+  /** Overrides the auto-generated benchmark text. */
+  note?: string;
+  unit?: "x" | "%" | "";
+  na?: boolean;
+  naReason?: string;
+};
+
+const ACCENTS: Record<string, string> = {
+  valuation: "var(--accent-gold)",
+  growth: "#3B82F6",
+  margins: "#22C55E",
+  health: "#A78BFA",
+};
+
+function benchText(b: Bench): string {
+  if (b.note) return b.note;
+  if (!b.range) return "";
+  const [lo, hi] = b.range;
+  const f = (n: number) => (b.unit === "%" ? `${n}%` : b.unit === "x" ? `${n}` : `${n}`);
+  return `Many stocks land at ${f(lo)}–${f(hi)}${b.unit === "x" ? "×" : ""}`;
+}
+
+/** Grade a figure against its typical range: better / typical / worse. */
+function grade(b: Bench): "good" | "mid" | "bad" | null {
+  if (b.raw == null || !Number.isFinite(b.raw) || !b.range) return null;
+  const [lo, hi] = b.range;
+  const higher = b.higherBetter ?? false;
+  if (b.raw >= lo && b.raw <= hi) return "mid";
+  if (higher) return b.raw > hi ? "good" : "bad";
+  return b.raw < lo ? "good" : "bad";
+}
+
+function BenchRow({ b, accent }: { b: Bench; accent: string }) {
+  const g = grade(b);
+  const valueColor = b.na
+    ? "var(--accent-gold)"
+    : g === "good" ? "var(--positive)"
+    : g === "bad" ? "var(--negative)"
+    : "var(--text-primary)";
+  return (
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "minmax(140px, 1.15fr) minmax(80px, 0.75fr) minmax(150px, 1.5fr)",
+      alignItems: "center", gap: 14,
+      padding: "9px 14px",
+      borderBottom: "1px solid var(--border)",
+    }}>
+      {/* label pill */}
+      <div style={{
+        fontFamily: SANS, fontSize: "0.63rem", fontWeight: 700,
+        textTransform: "uppercase", letterSpacing: "0.09em",
+        color: "var(--text-primary)",
+        background: "var(--bg-elevated)",
+        borderLeft: `3px solid ${accent}`,
+        borderRadius: "6px",
+        padding: "7px 11px",
+      }}>
+        {b.label}
+      </div>
+
+      {/* figure */}
+      <div style={{
+        fontFamily: MONO, fontSize: b.na ? "0.66rem" : "1.05rem", fontWeight: 700,
+        color: valueColor, textAlign: "right", lineHeight: 1.25,
+      }}>
+        {b.na ? "Not available" : b.value}
+      </div>
+
+      {/* benchmark */}
+      <div style={{
+        fontFamily: SANS, fontSize: "0.63rem", fontWeight: 500,
+        textTransform: "uppercase", letterSpacing: "0.07em",
+        color: "var(--text-muted)",
+        borderBottom: "1px solid var(--border)", paddingBottom: 4,
+      }}>
+        {b.na ? (b.naReason ?? "Needs analyst estimates") : benchText(b)}
+      </div>
+    </div>
+  );
+}
+
+function BenchGroup({ rows, accent }: { rows: Bench[]; accent: string }) {
+  return (
+    <div style={{ ...CARD, padding: "2px 0", marginBottom: 10, overflowX: "auto" }}>
+      {rows.map((b) => <BenchRow key={b.label} b={b} accent={accent} />)}
     </div>
   );
 }
@@ -256,6 +369,11 @@ function MarketstackResearchInner() {
               <span style={{ fontFamily: MONO, fontSize: "1rem", fontWeight: 500, color: (q.change ?? 0) >= 0 ? "var(--positive)" : "var(--negative)" }}>
                 {(q.change ?? 0) >= 0 ? "▲" : "▼"} ${Math.abs(q.change ?? 0).toFixed(2)} ({pct(q.changePct)})
               </span>
+              {fun?.marketCap != null && (
+                <span style={{ fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-secondary)" }}>
+                  Mkt cap <strong style={{ fontFamily: MONO, color: "var(--text-primary)" }}>{compact(fun.marketCap)}</strong>
+                </span>
+              )}
               <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>as of {q.date}</span>
               <span style={{ marginLeft: "auto", alignSelf: "center" }}>
                 <ShareCardButton
@@ -327,60 +445,67 @@ function MarketstackResearchInner() {
               <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>SEC EDGAR · TTM through {fun.asOf}</span>}>
                 Mandatory Metrics
               </SectionLabel>
-              <Grid cols={5}>
-                {(() => { const [sub, tn] = peTone(fun.peRatio); return <MCard label="TTM P/E Ratio" value={mult(fun.peRatio)} sub={sub} tone={tn} />; })()}
-                <MCard label="Forward P/E" na sub="Needs analyst EPS estimates" />
-                <MCard label="Fwd EPS Growth" na sub="Needs analyst EPS estimates" />
-                <MCard label="Revenue Growth" value={pctOf(fun.revenueGrowth, 1)}
-                  sub={fun.revenueGrowth == null ? "No data" : fun.revenueGrowth > 0.1 ? "Rapid growth" : fun.revenueGrowth > 0 ? "Modest growth" : "Revenue declining"}
-                  tone={fun.revenueGrowth == null ? "default" : fun.revenueGrowth > 0.1 ? "good" : fun.revenueGrowth > 0 ? "neutral" : "bad"} />
-                <MCard label="Total Revenue" value={compact(fun.revenue)} sub="Trailing twelve months" />
-              </Grid>
-              <div style={{ height: 8 }} />
-              <Grid cols={5}>
-                {(() => { const [sub, tn] = marginTone(fun.grossMargin, "gross"); return <MCard label="Gross Margin" value={pctOf(fun.grossMargin)} sub={sub} tone={tn} />; })()}
-                {(() => { const [sub, tn] = marginTone(fun.operatingMargin, "operating"); return <MCard label="Operating Margin" value={pctOf(fun.operatingMargin)} sub={sub} tone={tn} />; })()}
-                {(() => { const [sub, tn] = marginTone(fun.netMargin, "net"); return <MCard label="Net Margin" value={pctOf(fun.netMargin)} sub={sub} tone={tn} />; })()}
-                <MCard label="Price / Sales" value={mult(fun.ps)}
-                  sub={fun.ps == null ? "No data" : fun.ps < 3 ? "Cheap vs revenue" : fun.ps < 8 ? "Fair P/S" : "Rich valuation"}
-                  tone={fun.ps == null ? "default" : fun.ps < 3 ? "good" : fun.ps < 8 ? "neutral" : "bad"} />
-                <MCard label="EPS (TTM)" value={fun.eps != null ? money(fun.eps) : "N/A"}
-                  sub={fun.epsGrowth != null ? `${pctOf(fun.epsGrowth, 1)} YoY` : undefined} />
-              </Grid>
+
+              {/* Valuation multiples */}
+              <BenchGroup accent={ACCENTS.valuation} rows={[
+                { label: "TTM P/E", value: mult(fun.peRatio), raw: fun.peRatio, range: [20, 28], unit: "x" },
+                { label: "Forward P/E", value: "", na: true },
+                { label: "TTM P/S", value: mult(fun.ps), raw: fun.ps, range: [1.8, 2.6], unit: "x" },
+                { label: "Forward P/S", value: "", na: true },
+                { label: "PEG Ratio", value: mult(fun.pegRatio), raw: fun.pegRatio, range: [1, 2], unit: "x",
+                  note: fun.pegRatio == null ? "Needs positive EPS growth" : undefined },
+              ]} />
+
+              {/* Growth */}
+              <BenchGroup accent={ACCENTS.growth} rows={[
+                { label: "TTM EPS Growth", value: pctOf(fun.epsGrowth, 1),
+                  raw: fun.epsGrowth != null ? fun.epsGrowth * 100 : null, range: [8, 12], unit: "%", higherBetter: true },
+                { label: "Next Yr EPS Growth", value: "", na: true },
+                { label: "TTM Rev Growth", value: pctOf(fun.revenueGrowth, 1),
+                  raw: fun.revenueGrowth != null ? fun.revenueGrowth * 100 : null, range: [4.5, 6.5], unit: "%", higherBetter: true },
+                { label: "Next Yr Rev Growth", value: "", na: true },
+                { label: "Total Revenue", value: compact(fun.revenue), note: "Trailing twelve months" },
+              ]} />
+
+              {/* Margins */}
+              <BenchGroup accent={ACCENTS.margins} rows={[
+                { label: "Gross Margin", value: pctOf(fun.grossMargin),
+                  raw: fun.grossMargin != null ? fun.grossMargin * 100 : null, range: [40, 48], unit: "%", higherBetter: true },
+                { label: "Operating Margin", value: pctOf(fun.operatingMargin),
+                  raw: fun.operatingMargin != null ? fun.operatingMargin * 100 : null, range: [12, 18], unit: "%", higherBetter: true },
+                { label: "Net Margin", value: pctOf(fun.netMargin),
+                  raw: fun.netMargin != null ? fun.netMargin * 100 : null, range: [8, 10], unit: "%", higherBetter: true },
+                { label: "EPS (TTM)", value: fun.eps != null ? money(fun.eps) : "N/A",
+                  note: fun.epsGrowth != null ? `${pctOf(fun.epsGrowth, 1)} year over year` : "Diluted, trailing twelve months" },
+              ]} />
 
               {/* ── Advanced Metrics ── */}
               <SectionLabel>Advanced Metrics</SectionLabel>
-              <Grid cols={5}>
-                <MCard label="PEG Ratio" value={mult(fun.pegRatio)}
-                  sub={fun.pegRatio == null ? "Needs positive EPS growth" : fun.pegRatio < 1 ? "Growth at a discount" : fun.pegRatio < 2 ? "Fairly priced" : "Expensive vs growth"}
-                  tone={fun.pegRatio == null ? "default" : fun.pegRatio < 1 ? "good" : fun.pegRatio < 2 ? "neutral" : "bad"} />
-                {(() => { const [sub, tn] = roeTone(fun.roe); return <MCard label="Return on Equity" value={pctOf(fun.roe)} sub={sub} tone={tn} />; })()}
-                <MCard label="Price / Book" value={mult(fun.pb)}
-                  sub={fun.pb == null ? "No data" : fun.pb < 3 ? "Near book value" : "Premium to book"}
-                  tone={fun.pb == null ? "default" : fun.pb < 3 ? "good" : "bad"} />
-                <MCard label="Price / FCF" value={mult(fun.pfcf)}
-                  sub={fun.pfcf == null ? "No data" : fun.pfcf < 20 ? "Cheap on cash flow" : "Expensive on FCF"}
-                  tone={fun.pfcf == null ? "default" : fun.pfcf < 20 ? "good" : "bad"} />
-                <MCard label="FCF Yield" value={pctOf(fun.fcfYield, 1)}
-                  sub={fun.fcf != null ? `${compact(fun.fcf)} free cash flow` : undefined}
-                  tone={fun.fcfYield == null ? "default" : fun.fcfYield > 0.05 ? "good" : "neutral"} />
-              </Grid>
-              <div style={{ height: 8 }} />
-              <Grid cols={5}>
-                <MCard label="Dividend Yield" value={div?.yieldPct != null ? `${div.yieldPct.toFixed(2)}%` : "N/A"}
-                  sub={div?.yieldPct == null ? "No dividend" : div.yieldPct > 3 ? "High yield" : div.yieldPct > 1 ? "Moderate yield" : "Token dividend"} />
-                {(() => { const [sub, tn] = deTone(fun.debtToEquity); return <MCard label="Debt / Equity" value={mult(fun.debtToEquity)} sub={sub} tone={tn} />; })()}
-                <MCard label="Current Ratio" value={mult(fun.currentRatio)}
-                  sub={fun.currentRatio == null ? "No data" : fun.currentRatio > 1.5 ? "Strong liquidity" : fun.currentRatio >= 1 ? "Adequate liquidity" : "Tight liquidity"}
-                  tone={fun.currentRatio == null ? "default" : fun.currentRatio > 1.5 ? "good" : fun.currentRatio >= 1 ? "neutral" : "bad"} />
-                <MCard label="Net Debt / Cash"
-                  value={fun.netDebt == null ? "N/A" : `${compact(Math.abs(fun.netDebt))} ${fun.netDebt >= 0 ? "net debt" : "net cash"}`}
-                  sub={fun.longTermInvestments ? `excl. ${compact(fun.longTermInvestments)} LT securities` : `${compact(fun.cash)} cash + ST inv.`}
-                  tone={fun.netDebt == null ? "default" : fun.netDebt < 0 ? "good" : "neutral"} />
-                <MCard label="Operating CF" value={compact(fun.ocf)}
-                  sub={fun.capex != null ? `less ${compact(fun.capex)} capex` : undefined}
-                  tone={fun.ocf != null && fun.ocf > 0 ? "good" : "default"} />
-              </Grid>
+
+              <BenchGroup accent={ACCENTS.valuation} rows={[
+                { label: "Return on Equity", value: pctOf(fun.roe),
+                  raw: fun.roe != null ? fun.roe * 100 : null, range: [12, 18], unit: "%", higherBetter: true },
+                { label: "Price / Book", value: mult(fun.pb), raw: fun.pb, range: [2, 4], unit: "x" },
+                { label: "Price / FCF", value: mult(fun.pfcf), raw: fun.pfcf, range: [15, 25], unit: "x" },
+                { label: "FCF Yield", value: pctOf(fun.fcfYield, 1),
+                  raw: fun.fcfYield != null ? fun.fcfYield * 100 : null, range: [3, 6], unit: "%", higherBetter: true },
+                { label: "Dividend Yield", value: div?.yieldPct != null ? `${div.yieldPct.toFixed(2)}%` : "N/A",
+                  raw: div?.yieldPct ?? null, range: [1.5, 3], unit: "%", higherBetter: true,
+                  note: div?.yieldPct == null ? "Pays no dividend" : undefined },
+              ]} />
+
+              <BenchGroup accent={ACCENTS.health} rows={[
+                { label: "Debt / Equity", value: mult(fun.debtToEquity), raw: fun.debtToEquity, range: [0.5, 1.5], unit: "x" },
+                { label: "Current Ratio", value: mult(fun.currentRatio),
+                  raw: fun.currentRatio, range: [1.5, 3], unit: "x", higherBetter: true },
+                { label: "Net Debt / Cash",
+                  value: fun.netDebt == null ? "N/A" : `${compact(Math.abs(fun.netDebt))} ${fun.netDebt >= 0 ? "debt" : "cash"}`,
+                  note: fun.longTermInvestments
+                    ? `Excludes ${compact(fun.longTermInvestments)} long-term securities`
+                    : `${compact(fun.cash)} cash + short-term investments` },
+                { label: "Operating Cash Flow", value: compact(fun.ocf),
+                  note: fun.capex != null ? `Less ${compact(fun.capex)} capital expenditure` : "Trailing twelve months" },
+              ]} />
 
               {/* ── Quality & Fair Value ── */}
               <SectionLabel>Quality &amp; Fair Value</SectionLabel>
