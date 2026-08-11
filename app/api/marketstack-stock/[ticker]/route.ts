@@ -16,7 +16,6 @@ const MS = "https://api.marketstack.com/v2";
 
 // Business plan = 500k req/mo, so caching is about speed, not rationing.
 const DAY = 86400;
-const QUOTE_TTL = 120; // latest quote + intraday go stale fast
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -106,7 +105,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
-  const limited = guard(req, 11);
+  const limited = guard(req, 8);
   if (limited) return limited;
   const { ticker } = await params;
   const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
@@ -149,18 +148,20 @@ export async function GET(
   // dropped: the eod series' newest row is the same data, one call cheaper.
   // Ratings and submissions sit at the end of the list where traffic is
   // thinnest — they're the endpoints most prone to 429.
-  const [eodRes, intradayRes, infoRes, divRes, splitRes, tickRes, ...tailRes] =
+  // Only the 10- and 15-year return anchors need dedicated fetches — the 1/3/5
+  // year anchors are read out of the 5-year daily series we already pull below,
+  // saving three upstream calls per uncached load. (Intraday was dropped along
+  // with the research page's intraday panel; the header price is the last EOD.)
+  const longHorizons = [10, 15];
+  const [eodRes, infoRes, divRes, splitRes, tickRes, ...tailRes] =
     await pool(
       [
         () => get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=400`),
-        // A full session of minute bars, not a single bar: same API cost, and it
-        // powers both the live quote and the intraday chart.
-        () => get(`${MS}/intraday?access_key=${key}&symbols=${t}&interval=1min&limit=400`, QUOTE_TTL),
         () => get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
         () => get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`),
         () => get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
         () => get(`${MS}/tickers/${t}?access_key=${key}`),
-        ...horizons.map((y) => () =>
+        ...longHorizons.map((y) => () =>
           get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(y)}&sort=ASC&limit=1`)
         ),
         // Five years of daily closes for the ticker and for SPY, sampled to
@@ -179,11 +180,11 @@ export async function GET(
       ],
       2
     );
-  const anchorRes = tailRes.slice(0, horizons.length);
-  const stock5yRes = tailRes[horizons.length];
-  const spy5yRes = tailRes[horizons.length + 1];
-  const ratingsRes = tailRes[horizons.length + 2];
-  const subsRes = tailRes[horizons.length + 3];
+  const longAnchorRes = tailRes.slice(0, longHorizons.length);
+  const stock5yRes = tailRes[longHorizons.length];
+  const spy5yRes = tailRes[longHorizons.length + 1];
+  const ratingsRes = tailRes[longHorizons.length + 2];
+  const subsRes = tailRes[longHorizons.length + 3];
 
   // ── EOD series (newest-first). Filter marketstack's occasional close=0 rows. ──
   const eod = rows(eodRes.data)
@@ -215,19 +216,37 @@ export async function GET(
     : null;
   const avgVol = yearWindow.reduce((a, r) => a + r.volume, 0) / (yearWindow.length || 1);
 
+  // Ascending 5-year daily series (adj_close) — the source for the 1/3/5-year
+  // return anchors, so those no longer need their own API calls.
+  const stock5yAsc = rows(stock5yRes?.data)
+    .map((r) => ({ date: String(r.date ?? "").slice(0, 10), close: Number(r.adj_close ?? r.close ?? 0) }))
+    .filter((r) => r.date && r.close > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  // First bar on or after a target date — mirrors the old anchor query
+  // (date_from=…&sort=ASC&limit=1).
+  const anchorFromSeries = (fromDate: string): { date: string; close: number } | null =>
+    stock5yAsc.find((r) => r.date >= fromDate) ?? null;
+
   // ── Long-horizon returns (the 15-year entitlement, made visible) ──
-  const longReturns = horizons.map((y, i) => {
-    const row = rows(anchorRes[i]?.data)[0];
-    // adj_close, not close: raw closes across a split make old anchors look
-    // 2-10x too expensive (KO's 2011 close is pre-2012-split).
-    const c = row ? Number(row.adj_close ?? row.close) : 0;
+  const longReturns = horizons.map((y) => {
+    let row: { date: string; close: number } | null;
+    if (y <= 5) {
+      row = anchorFromSeries(anchorFor(y));
+    } else {
+      const raw = rows(longAnchorRes[longHorizons.indexOf(y)]?.data)[0];
+      // adj_close, not close: raw closes across a split make old anchors look
+      // 2-10x too expensive (KO's 2011 close is pre-2012-split).
+      row = raw ? { date: String(raw.date ?? "").slice(0, 10), close: Number(raw.adj_close ?? raw.close) } : null;
+    }
+    const c = row ? row.close : 0;
     if (!(c > 0)) return { years: y, available: false as const };
     const total = ((last.close - c) / c) * 100;
     const cagr = (Math.pow(last.close / c, 1 / y) - 1) * 100;
     return {
       years: y,
       available: true as const,
-      fromDate: String(row.date ?? "").slice(0, 10),
+      fromDate: row!.date,
       fromPrice: c,
       totalPct: total,
       cagrPct: cagr,
@@ -281,57 +300,6 @@ export async function GET(
     }))
     .filter((r) => r.date && r.price > 0)
     .sort((a, b) => a.date.localeCompare(b.date));
-
-  // ── Real-time IEX intraday.
-  //
-  // Field trap: `open`/`close` on an intraday bar are the SESSION's open/close,
-  // identical on every bar — charting them draws a flat line. The actual
-  // per-minute traded price is `marketstack_last`. The `last`/`bid`/`ask` quote
-  // fields only populate while the market is open, so they're a bonus, not the
-  // basis. ──
-  const pos = (v: any): number | null => {
-    const n = num(v);
-    return n != null && n > 0 ? n : null;
-  };
-  const iRows = rows(intradayRes.data);
-  const iSeries = iRows
-    .map((r) => ({
-      t: String(r.date ?? ""),
-      p: pos(r.marketstack_last) ?? pos(r.last) ?? pos(r.mid),
-      v: num(r.volume),
-    }))
-    .filter((r) => r.p != null && r.t)
-    .sort((a, b) => a.t.localeCompare(b.t));
-
-  const iq = iRows[0];
-  const newest = iSeries[iSeries.length - 1];
-  // Session boundary = the most recent bar's calendar day, so after-hours the
-  // panel shows the last complete session rather than mixing two days.
-  const sessionDay = newest ? newest.t.slice(0, 10) : null;
-  const session = sessionDay ? iSeries.filter((r) => r.t.slice(0, 10) === sessionDay) : [];
-  const sessionPrices = session.map((r) => r.p as number);
-
-  const intraday = newest
-    ? {
-        last: newest.p,
-        time: newest.t.replace("T", " ").slice(0, 16),
-        sessionDate: sessionDay,
-        sessionHigh: sessionPrices.length ? Math.max(...sessionPrices) : null,
-        sessionLow: sessionPrices.length ? Math.min(...sessionPrices) : null,
-        sessionOpen: session.length ? session[0].p : null,
-        volume: session.length ? Math.max(...session.map((r) => r.v ?? 0)) : null,
-        bars: session.length,
-        // Quote-book fields, live-hours only.
-        bid: iq ? pos(iq.bid_price) : null,
-        ask: iq ? pos(iq.ask_price) : null,
-        bidSize: iq ? pos(iq.bid_size) : null,
-        askSize: iq ? pos(iq.ask_size) : null,
-        // Thinned for transport; enough points for a smooth line.
-        series: session
-          .filter((_, i) => i % Math.max(1, Math.ceil(session.length / 200)) === 0)
-          .map((r) => ({ t: r.t.slice(11, 16), p: r.p })),
-      }
-    : null;
 
   // ── Profile ──
   const infoRaw = infoRes.data?.data;
@@ -465,7 +433,6 @@ export async function GET(
       pos52,
       avgVol,
     },
-    intraday,
     price: priceSeries,
     capm: {
       rf,
@@ -496,7 +463,6 @@ export async function GET(
       isin: tickMeta?.isin ?? null,
       errors: {
         ratings: ratingsRes.err,
-        intraday: intradayRes.err,
         profile: infoRes.err,
       },
     },

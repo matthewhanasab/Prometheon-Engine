@@ -21,34 +21,6 @@ const CARD: React.CSSProperties = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
 };
 
-const PICKS = ["AAPL", "NVDA", "MSFT", "KO", "SPY", "IREN"];
-
-/** Inline area chart — keeps the intraday panel dependency-free. */
-function Sparkline({ series, up }: { series: { d: string; c: number }[]; up: boolean }) {
-  if (series.length < 2) return null;
-  const W = 1000, H = 200, PAD = 4;
-  const vals = series.map((p) => p.c);
-  const min = Math.min(...vals), max = Math.max(...vals);
-  const span = max - min || 1;
-  const x = (i: number) => (i / (series.length - 1)) * W;
-  const y = (v: number) => PAD + (1 - (v - min) / span) * (H - PAD * 2);
-  const line = series.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.c).toFixed(1)}`).join(" ");
-  const stroke = up ? "var(--positive)" : "var(--negative)";
-  const gid = up ? "msIntraUp" : "msIntraDown";
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: 200, display: "block" }}>
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stroke} stopOpacity="0.28" />
-          <stop offset="100%" stopColor={stroke} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={`${line} L${W},${H} L0,${H} Z`} fill={`url(#${gid})`} />
-      <path d={line} fill="none" stroke={stroke} strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-    </svg>
-  );
-}
-
 const fmt = (n: number | null | undefined, d = 2) =>
   n == null || !Number.isFinite(n) ? "N/A" : n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const money = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "N/A" : `$${fmt(n)}`);
@@ -178,15 +150,9 @@ function MarketstackResearchInner() {
   const cons = data?.consensus;
   const div = data?.dividends;
   const fun = data?.fundamentals;
-  const intra = data?.intraday;
   const capm = data?.capm;
   const priceSeries: { date: string; price: number }[] = data?.price ?? [];
   const chartWindow = sliceRange<{ date: string; price: number }>(priceSeries, range);
-  // "Live" = the newest bar is within ~15 minutes of now. Off-hours the same
-  // panel still renders, labelled as the last completed session.
-  const marketLive = intra?.time
-    ? Date.now() - Date.parse(intra.time.replace(" ", "T") + ":00Z") < 15 * 60_000
-    : false;
 
   return (
     <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
@@ -208,17 +174,6 @@ function MarketstackResearchInner() {
           {loading ? "Loading…" : "Analyze"}
         </button>
       </form>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: "1.2rem" }}>
-        {PICKS.map((t) => (
-          <button key={t} type="button" onClick={() => load(t)}
-            style={{
-              background: data?.ticker === t ? "var(--accent-gold)" : "var(--bg-elevated)",
-              color: data?.ticker === t ? "var(--on-accent)" : "var(--text-secondary)",
-              border: "1px solid var(--border)", borderRadius: 999, padding: "4px 12px",
-              fontFamily: MONO, fontSize: "0.7rem", cursor: "pointer",
-            }}>{t}</button>
-        ))}
-      </div>
 
       {loading && <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", padding: "30px 0" }}>Loading {input}…</div>}
       {error && <div style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</div>}
@@ -274,52 +229,7 @@ function MarketstackResearchInner() {
                 />
               </span>
             </div>
-            {intra?.last != null && (
-              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 10, fontFamily: MONO, fontSize: "0.72rem", color: "var(--text-secondary)" }}>
-                <span style={{ color: "var(--accent-gold)", fontWeight: 700, fontFamily: SANS, fontSize: "0.58rem", textTransform: "uppercase", letterSpacing: "0.1em", alignSelf: "center" }}>
-                  {marketLive ? "● Live · IEX" : "Last session · IEX"}
-                </span>
-                <span>last {money(intra.last)}</span>
-                {intra.bid != null && <span>bid {money(intra.bid)}{intra.bidSize ? ` ×${intra.bidSize}` : ""}</span>}
-                {intra.ask != null && <span>ask {money(intra.ask)}{intra.askSize ? ` ×${intra.askSize}` : ""}</span>}
-                {intra.time && <span style={{ color: "var(--text-muted)" }}>{intra.time} UTC</span>}
-              </div>
-            )}
           </div>
-
-          {/* ── Intraday (marketstack real-time IEX) ── */}
-          {intra?.series?.length > 1 && (
-            <>
-              <SectionLabel right={
-                <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
-                  {intra.bars} one-minute bars · {intra.sessionDate}
-                </span>
-              }>
-                {marketLive ? "Intraday — Live" : "Intraday — Last Session"}
-              </SectionLabel>
-              <div style={{ ...CARD, padding: "16px 8px 10px" }}>
-                <Sparkline
-                  series={intra.series.map((x: any) => ({ d: x.t, c: x.p }))}
-                  up={(intra.last ?? 0) >= (intra.sessionOpen ?? 0)}
-                />
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 14px 0", fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-muted)" }}>
-                  <span>{intra.series[0]?.t}</span>
-                  <span style={{ color: (intra.last ?? 0) >= (intra.sessionOpen ?? 0) ? "var(--positive)" : "var(--negative)", fontWeight: 600 }}>
-                    {intra.sessionOpen ? pct(((intra.last - intra.sessionOpen) / intra.sessionOpen) * 100) : ""} on session
-                  </span>
-                  <span>{intra.series[intra.series.length - 1]?.t} UTC</span>
-                </div>
-              </div>
-              <div style={{ height: 10 }} />
-              <Grid cols={5}>
-                <MCard label="Last Trade" value={money(intra.last)} sub={marketLive ? "live" : "session close"} />
-                <MCard label="Session Open" value={money(intra.sessionOpen)} />
-                <MCard label="Session High" value={money(intra.sessionHigh)} tone="good" />
-                <MCard label="Session Low" value={money(intra.sessionLow)} tone="bad" />
-                <MCard label="Session Volume" value={compact(intra.volume)} />
-              </Grid>
-            </>
-          )}
 
           {/* ── Price Chart ── */}
           <SectionLabel right={
