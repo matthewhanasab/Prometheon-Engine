@@ -1,7 +1,10 @@
 "use client";
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import {
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+} from "recharts";
 import CompanyLogo from "@/components/CompanyLogo";
 
 // Compare ETFs. The headline is the overlap matrix — how much two funds hold
@@ -71,9 +74,22 @@ function CompareInner() {
   const ov = (a: string, b: string) =>
     overlaps.find((o) => (o.a === a && o.b === b) || (o.a === b && o.b === a))?.pct ?? null;
 
+  // Best (lowest) expense ratio among funds that have one — starred.
+  const cheapest = Math.min(...funds.map((f) => (f.expenseRatio != null ? f.expenseRatio : Infinity)));
+
   const ROWS: { label: string; get: (f: any) => string; color?: (f: any) => string }[] = [
     { label: "Price", get: (f) => money(f.price) },
+    {
+      label: "Expense Ratio",
+      get: (f) => (f.expenseRatio != null ? `${f.expenseRatio.toFixed(2)}%${f.expenseRatio === cheapest ? " ★" : ""}` : "—"),
+      color: (f) => (f.expenseRatio != null && f.expenseRatio === cheapest ? "var(--positive)" : f.expenseRatio != null && f.expenseRatio > 0.4 ? "var(--negative)" : "var(--text-primary)"),
+    },
+    {
+      label: "Cost per $10k / yr",
+      get: (f) => (f.expenseRatio != null ? `$${(f.expenseRatio * 100).toFixed(0)}` : "—"),
+    },
     { label: "Dividend Yield", get: (f) => (f.yieldPct != null ? `${f.yieldPct.toFixed(2)}%` : "—"), color: () => "var(--positive)" },
+    { label: "Yield After Fees", get: (f) => (f.netYieldPct != null ? `${f.netYieldPct.toFixed(2)}%` : "—") },
     { label: "Net Assets", get: (f) => big(f.netAssets) },
     { label: "Holdings", get: (f) => (f.count != null ? String(f.count) : "—") },
     { label: "Effective Holdings", get: (f) => (f.effectiveHoldings != null ? String(Math.round(f.effectiveHoldings)) : "—") },
@@ -86,6 +102,31 @@ function CompareInner() {
   ];
 
   const withHoldings = funds.filter((f) => f.holdingsAvailable);
+
+  // Performance race: each fund's % return from a common start date, so the
+  // lines all begin at 0 and diverge. Aligned on the intersection of dates
+  // (a date missing for one fund would otherwise render as a gap).
+  const perfData = useMemo(() => {
+    const series = funds.map((f) => f.chart ?? []).filter((c) => c.length > 5);
+    if (series.length < 2 || series.length !== funds.length) return [];
+    const maps = funds.map((f) => new Map((f.chart ?? []).map((p: any) => [p.date, p.price])));
+    // Common window starts at the latest first-date across funds (younger ETFs
+    // shorten the race so everyone is measured over the same span).
+    const starts = funds.map((f) => f.chart?.[0]?.date ?? "9999");
+    const commonStart = starts.reduce((a: string, b: string) => (a > b ? a : b), "0000");
+    const dates = (funds[0].chart ?? [])
+      .map((p: any) => p.date)
+      .filter((d: string) => d >= commonStart && maps.every((m) => m.has(d)));
+    const bases = maps.map((m) => m.get(dates[0]) as number);
+    return dates.map((d: string) => {
+      const row: any = { date: d };
+      funds.forEach((f, i) => {
+        const v = maps[i].get(d) as number;
+        if (v != null && bases[i]) row[f.ticker] = ((v - bases[i]) / bases[i]) * 100;
+      });
+      return row;
+    });
+  }, [funds]);
 
   return (
     <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
@@ -129,6 +170,37 @@ function CompareInner() {
               </div>
             ))}
           </div>
+
+          {/* Performance race */}
+          {perfData.length > 10 && (
+            <>
+              <div style={{ fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.9rem" }}>
+                Performance
+                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.62rem", marginLeft: 10 }}>
+                  % return, dividend-adjusted, over the shared window
+                </span>
+              </div>
+              <div style={{ ...CARD, padding: "18px 14px 8px", marginBottom: "1.8rem" }}>
+                <ResponsiveContainer width="100%" height={320}>
+                  <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                    <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                    <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: MONO }} axisLine={false} tickLine={false}
+                      tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
+                    <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: MONO }} axisLine={false} tickLine={false} width={52} />
+                    <Tooltip
+                      labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
+                      contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: MONO, fontSize: 12 }}
+                      formatter={(v: any, name: any) => [`${Number(v) >= 0 ? "+" : ""}${Number(v).toFixed(1)}%`, name]}
+                    />
+                    <Legend wrapperStyle={{ fontFamily: MONO, fontSize: 13 }} />
+                    {funds.map((f, i) => (
+                      <Line key={f.ticker} type="monotone" dataKey={f.ticker} stroke={COLORS[i]} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
 
           {/* Overlap matrix — the headline feature */}
           {withHoldings.length >= 2 && (

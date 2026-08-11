@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
+import { expenseRatioFor } from "@/lib/etfExpenseRatios";
 
 // ETF fund data: holdings, allocation, and a live quote.
 //
@@ -137,6 +138,7 @@ export async function GET(
   const ttmDiv = divs.filter((d: any) => d.date >= ttmCutoff).reduce((a: number, d: any) => a + d.amount, 0);
   const payFreq = divs.filter((d: any) => d.date >= ttmCutoff).length;
 
+  const expenseRatio = expenseRatioFor(t);
   const quote = {
     price,
     changePct,
@@ -148,6 +150,9 @@ export async function GET(
     ttmDividend: ttmDiv || null,
     yieldPct: ttmDiv > 0 && price ? (ttmDiv / price) * 100 : null,
     payoutsPerYear: payFreq || null,
+    expenseRatio,
+    // Net yield after the fund's fee — what the dividend actually delivers.
+    netYieldPct: ttmDiv > 0 && price && expenseRatio != null ? (ttmDiv / price) * 100 - expenseRatio : null,
     returns,
     chart,
   };

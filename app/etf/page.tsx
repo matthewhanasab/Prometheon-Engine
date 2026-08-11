@@ -204,6 +204,9 @@ function EtfInner() {
                 <Stat label="Holdings" value={String(data.totals?.count ?? "—")} sub="positions reported" />
                 <Stat label="Dividend Yield" value={q?.yieldPct != null ? `${q.yieldPct.toFixed(2)}%` : "—"}
                   sub={q?.ttmDividend ? `$${q.ttmDividend.toFixed(2)} TTM · ${q.payoutsPerYear ?? "?"}×/yr` : undefined} tone="good" />
+                <Stat label="Expense Ratio" value={q?.expenseRatio != null ? `${q.expenseRatio.toFixed(2)}%` : "—"}
+                  sub={q?.expenseRatio != null ? `$${(q.expenseRatio * 100).toFixed(0)}/yr per $10k` : "not in reference table"}
+                  tone={q?.expenseRatio != null && q.expenseRatio <= 0.1 ? "good" : q?.expenseRatio != null && q.expenseRatio > 0.4 ? "bad" : undefined} />
                 <Stat label="Top 10 Weight" value={`${(data.totals?.top10Weight ?? 0).toFixed(1)}%`}
                   sub="concentration in largest names" />
                 <Stat label="Effective Holdings" value={data.totals?.effectiveHoldings != null ? String(Math.round(data.totals.effectiveHoldings)) : "—"}
