@@ -100,7 +100,8 @@ async function projectOne(ticker: string, cik: string): Promise<Entry | null> {
   }
   while (next < now) next = addDays(next, 365);
 
-  const name = String(sub.name ?? ticker).replace(/&amp;/g, "&").replace(/\s*\/[A-Z]{2}\/?\s*$/, "").trim();
+  // SEC appends state/registrant tags to some names ("… CORP /NEW", "… /DE/").
+  const name = String(sub.name ?? ticker).replace(/&amp;/g, "&").replace(/\s*\/[A-Z]{2,4}\/?\s*$/, "").trim();
   return { ticker, name, cik, last, next, regular };
 }
 
