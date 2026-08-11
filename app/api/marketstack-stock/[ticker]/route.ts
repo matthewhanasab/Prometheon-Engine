@@ -127,6 +127,21 @@ export async function GET(
   const cikPromise = resolveCik(t);
   const factsPromise = cikPromise.then((cik) => (cik ? fetchFacts(cik) : null));
 
+  // Cheap validity gate BEFORE the full fanout. A single eod probe: if the
+  // symbol returns no data (garbage-ticker enumeration — AAAA, AAAB, …), bail
+  // after ONE upstream call instead of ~11. Legit tickers pay nothing extra —
+  // the pooled eod below hits the exact same URL and is served from the Next
+  // fetch cache. This caps quota-burn from the infinite garbage-symbol space,
+  // which per-instance rate limiting alone can't (a distributed burst spreads
+  // across serverless instances and resets each one's counter).
+  const probe = await get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=400`);
+  if (!rows(probe.data).some((r) => Number(r.close) > 0)) {
+    return NextResponse.json(
+      { error: probe.err ? `No price data (${probe.err})` : "Ticker not found" },
+      { status: 404 }
+    );
+  }
+
   // Everything marketstack goes through ONE pool at concurrency 2 — their
   // per-second limit is strict enough that a burst of 4 parallel calls gets
   // some of them 429'd. Cached responses resolve in ~5ms, so a warm load
