@@ -7,12 +7,11 @@ import {
 } from "recharts";
 import CompanyLogo from "@/components/CompanyLogo";
 
-import TradingViewWidget from "@/components/TradingViewWidget";
-
 // Earnings — Market Stack edition.
 //
 // Two halves, from two sources that carry no licensing cost:
-//   • upcoming calendar → TradingView events widget
+//   • upcoming calendar → next expected report dates, projected from each
+//     company's real SEC 8-K (item 2.02) earnings-announcement history
 //   • reported results  → SEC EDGAR, quarter by quarter, as filed
 // Consensus estimates (and therefore beat/miss surprises) need an analyst feed
 // no marketstack tier carries, so this page reports actuals only.
@@ -51,6 +50,121 @@ function Label({ children, hint }: { children: React.ReactNode; hint?: string })
 
 type Pt = { date: string; label: string; value: number };
 
+type CalEntry = { ticker: string; name: string; cik: string; last: string; next: string; regular: boolean };
+
+const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+function parseISO(iso: string) { return new Date(iso + "T00:00:00Z"); }
+function fmtDay(iso: string) {
+  const d = parseISO(iso);
+  return `${WEEKDAY[d.getUTCDay()]}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+function relDays(iso: string) {
+  const now = new Date(); now.setUTCHours(0, 0, 0, 0);
+  const n = Math.round((parseISO(iso).getTime() - now.getTime()) / 864e5);
+  if (n <= 0) return "due";
+  if (n === 1) return "tomorrow";
+  if (n < 7) return `in ${n}d`;
+  if (n < 30) return `in ${Math.round(n / 7)}w`;
+  return `in ${Math.round(n / 30)}mo`;
+}
+
+// Upcoming earnings — market-wide list of the next expected report date for a
+// spread of widely-followed companies. Dates are projected from each company's
+// actual SEC 8-K (item 2.02) filing cadence; the endpoint does the derivation.
+// Tickers, dates, icons — clicking a row loads that company's history below.
+function UpcomingEarnings({ onPick }: { onPick: (t: string) => void }) {
+  const [entries, setEntries] = useState<CalEntry[] | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/earnings-calendar")
+      .then((r) => r.json())
+      .then((j) => { if (alive) { if (j?.entries) setEntries(j.entries); else setFailed(true); } })
+      .catch(() => { if (alive) setFailed(true); });
+    return () => { alive = false; };
+  }, []);
+
+  // Group by calendar month for light dividers.
+  const groups: { key: string; label: string; rows: CalEntry[] }[] = [];
+  for (const e of entries ?? []) {
+    const d = parseISO(e.next);
+    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+    const label = `${MONTHS_LONG[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+    let g = groups.find((x) => x.key === key);
+    if (!g) { g = { key, label, rows: [] }; groups.push(g); }
+    g.rows.push(e);
+  }
+
+  return (
+    <>
+      <Label hint="expected dates, projected from SEC 8-K (item 2.02) filing history">Upcoming Earnings</Label>
+      {failed && (
+        <div style={{ ...CARD, padding: "18px 20px", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+          Calendar not available with current data.
+        </div>
+      )}
+      {!entries && !failed && (
+        <div style={{ ...CARD, padding: "8px 6px" }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderTop: i ? "1px solid var(--border)" : "none" }}>
+              <div style={{ width: 26, height: 26, borderRadius: 8, background: "var(--bg-elevated)" }} />
+              <div style={{ width: 54, height: 12, borderRadius: 4, background: "var(--bg-elevated)" }} />
+              <div style={{ flex: 1 }} />
+              <div style={{ width: 90, height: 12, borderRadius: 4, background: "var(--bg-elevated)" }} />
+            </div>
+          ))}
+        </div>
+      )}
+      {entries && entries.length > 0 && (
+        <div style={{ ...CARD, padding: "6px 0", overflow: "hidden" }}>
+          {groups.map((g) => (
+            <div key={g.key}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "10px 16px 6px",
+                fontFamily: SANS, fontSize: "0.56rem", fontWeight: 700, textTransform: "uppercase",
+                letterSpacing: "0.13em", color: "var(--text-muted)",
+              }}>
+                <span>{g.label}</span>
+                <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
+                <span style={{ fontWeight: 500 }}>{g.rows.length}</span>
+              </div>
+              {g.rows.map((e) => (
+                <button key={e.ticker} type="button" onClick={() => onPick(e.ticker)}
+                  title={`${e.name} · last reported ${fmtDay(e.last)}`}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 12,
+                    padding: "9px 16px", background: "transparent", border: "none",
+                    borderTop: "1px solid var(--border)", cursor: "pointer", textAlign: "left",
+                  }}
+                  onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--bg-elevated)")}
+                  onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}
+                >
+                  <CompanyLogo ticker={e.ticker} size={26} fallback />
+                  <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: "0.82rem", minWidth: 56, color: "var(--text-primary)" }}>{e.ticker}</span>
+                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "0.76rem", color: "var(--text-muted)" }}>{e.name}</span>
+                  <span style={{ fontFamily: MONO, fontSize: "0.8rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{fmtDay(e.next)}</span>
+                  <span style={{
+                    fontFamily: MONO, fontSize: "0.6rem", fontWeight: 600, color: "var(--accent-gold)",
+                    background: "color-mix(in srgb, var(--accent-gold) 14%, transparent)",
+                    borderRadius: 999, padding: "2px 8px", minWidth: 52, textAlign: "center", whiteSpace: "nowrap",
+                  }}>{relDays(e.next)}</span>
+                </button>
+              ))}
+            </div>
+          ))}
+          <div style={{ fontSize: "0.64rem", color: "var(--text-muted)", padding: "10px 16px 8px", borderTop: "1px solid var(--border)" }}>
+            Expected dates are projected from each company&apos;s real SEC 8-K (item 2.02) earnings-announcement cadence — not official company-announced dates. Hover a row for its last confirmed report.
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function EarningsInner() {
   const search = useSearchParams();
   const [input, setInput] = useState(search.get("ticker") ?? "AAPL");
@@ -79,6 +193,22 @@ function EarningsInner() {
     load(search.get("ticker") ?? "AAPL");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const companyRef = useRef<HTMLDivElement>(null);
+  const pendingScroll = useRef(false);
+  function pick(t: string) {
+    pendingScroll.current = true;
+    load(t);
+  }
+  // Scroll to the company section only once its content has actually loaded —
+  // the app scrolls inside an inner container, so a fixed timeout races the
+  // loading-collapse; keying off data + loading lands it every time.
+  useEffect(() => {
+    if (!loading && data && pendingScroll.current) {
+      pendingScroll.current = false;
+      companyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [loading, data]);
 
   const s = data?.series;
   const eps: Pt[] = s?.eps?.q ?? [];
@@ -116,6 +246,10 @@ function EarningsInner() {
         Reported results by quarter, as filed with the SEC — plus the upcoming release calendar.
       </div>
 
+      <UpcomingEarnings onPick={pick} />
+
+      <div ref={companyRef} style={{ scrollMarginTop: 12 }} />
+      <Label hint="look up any company's as-filed history">Company History</Label>
       <form onSubmit={(e) => { e.preventDefault(); load(); }} style={{ display: "flex", gap: 10, maxWidth: 360, marginBottom: "0.7rem" }}>
         <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Type a ticker…"
           style={{ flex: 1, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, padding: "10px 14px", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.85rem", outline: "none" }} />
@@ -209,13 +343,6 @@ function EarningsInner() {
           </div>
         </>
       )}
-
-      <Label hint="TradingView widget">Upcoming Release Calendar</Label>
-      <TradingViewWidget
-        widget="events"
-        height={520}
-        config={{ importanceFilter: "-1,0,1", countryFilter: "us,eu,gb,jp,cn" }}
-      />
     </div>
   );
 }

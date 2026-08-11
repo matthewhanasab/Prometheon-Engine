@@ -170,12 +170,26 @@ async function drawCard({ stock, window: win, rangeLabel, stats: customStats }: 
     ctx.beginPath(); ctx.arc(ex, ey, 11, 0, Math.PI * 2);
     ctx.fillStyle = winUp ? "rgba(74,222,128,0.25)" : "rgba(248,113,113,0.25)"; ctx.fill();
 
-    // range % badge over the chart
+    // range % badge over the chart — placed in whichever LEFT corner the line
+    // isn't occupying (a downtrend starts high on the left, an uptrend low) and
+    // set on a rounded backdrop so it stays legible over the area fill. Without
+    // this it sat top-left always and collided with the line's origin — and the
+    // top axis label — on every down period.
     const pct = ((pts[pts.length - 1].price - pts[0].price) / pts[0].price) * 100;
     ctx.font = "700 24px 'Spline Sans Mono'";
     const badge = `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}% ${rangeLabel}`;
+    const [, lineStartY] = xy(0);
+    const badgeAtTop = lineStartY > CY + CH / 2; // line starts low → the top corner is clear
+    const badgeBaseline = badgeAtTop ? CY + 26 : CY + CH - 6;
+    const bw = ctx.measureText(badge).width;
+    ctx.save();
+    ctx.fillStyle = "rgba(10,15,27,0.5)";
+    ctx.beginPath();
+    ctx.roundRect(CX, badgeBaseline - 24, bw + 20, 33, 9);
+    ctx.fill();
+    ctx.restore();
     ctx.fillStyle = lineColor;
-    ctx.fillText(badge, CX + 4, CY + 18);
+    ctx.fillText(badge, CX + 10, badgeBaseline);
 
     // hi/lo labels right side
     ctx.font = "500 15px 'Spline Sans Mono'";
