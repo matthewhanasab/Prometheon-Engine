@@ -82,6 +82,52 @@ function Grid({ cols = 5, children }: { cols?: number; children: React.ReactNode
   );
 }
 
+// ── Skeleton preview shown before a ticker is entered ──────────────────────
+// Mirrors the real page's top layout so visitors see the shape of what they'll
+// get. Dimmed placeholder cards, no data.
+function SkCard({ label }: { label: string }) {
+  return (
+    <div style={{ ...CARD, padding: "14px 16px", opacity: 0.55 }}>
+      <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 8 }}>{label}</div>
+      <div style={{ height: 15, width: "62%", borderRadius: 6, background: "var(--bg-elevated)" }} />
+      <div style={{ height: 8, width: "40%", borderRadius: 6, background: "var(--bg-elevated)", marginTop: 8, opacity: 0.7 }} />
+    </div>
+  );
+}
+
+function EmptyPreview() {
+  const skGrid = (labels: string[]) => (
+    <Grid cols={5}>{labels.map((l) => <SkCard key={l} label={l} />)}</Grid>
+  );
+  return (
+    <div style={{ marginTop: "0.5rem" }}>
+      <SectionLabel>Price Chart</SectionLabel>
+      <div style={{ ...CARD, height: 300, opacity: 0.5, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: "var(--text-muted)" }}>
+          Enter a ticker to load the interactive price chart
+        </span>
+      </div>
+
+      <SectionLabel>Quick Stats</SectionLabel>
+      {skGrid(["52-Wk High", "52-Wk Low", "52-Wk Position", "Beta", "Analyst Target"])}
+
+      <SectionLabel>Long-Term Performance</SectionLabel>
+      {skGrid(["1-Year Return", "3-Year Return", "5-Year Return", "10-Year Return", "15-Year Return"])}
+
+      <SectionLabel>Mandatory Metrics</SectionLabel>
+      {skGrid(["TTM P/E Ratio", "Forward P/E", "Fwd EPS Growth", "Revenue Growth", "Total Revenue"])}
+      <div style={{ height: 8 }} />
+      {skGrid(["Gross Margin", "Operating Margin", "Net Margin", "Price / Sales", "EPS (TTM)"])}
+
+      <SectionLabel>Advanced Metrics</SectionLabel>
+      {skGrid(["PEG Ratio", "Return on Equity", "Price / Book", "Price / FCF", "FCF Yield"])}
+
+      <SectionLabel>Quality &amp; Fair Value</SectionLabel>
+      {skGrid(["Piotroski F-Score", "Altman Z-Score", "DCF Fair Value"])}
+    </div>
+  );
+}
+
 const pctOf = (n: number | null | undefined, d = 2) =>
   n == null || !Number.isFinite(n) ? "N/A" : `${(n * 100).toFixed(d)}%`;
 const mult = (n: number | null | undefined) =>
@@ -162,8 +208,8 @@ function MarketstackResearchInner() {
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
       <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1.4rem" }}>
-        The research page, rebuilt on <strong>marketstack</strong> data — 15-year history, live IEX quotes,
-        analyst ratings, SEC filings, full dividend record.
+        Type in a ticker to get started — valuation, growth, quality, analyst ratings, dividends,
+        and SEC filings fill in automatically.
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); load(); }} style={{ display: "flex", gap: 10, maxWidth: 380, marginBottom: "0.7rem" }}>
@@ -177,6 +223,8 @@ function MarketstackResearchInner() {
 
       {loading && <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", padding: "30px 0" }}>Loading {input}…</div>}
       {error && <div style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</div>}
+
+      {!data && !loading && !error && <EmptyPreview />}
 
       {data && q && !loading && (
         <>
