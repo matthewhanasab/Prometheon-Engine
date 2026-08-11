@@ -1,5 +1,14 @@
 import NotAvailable from "@/components/NotAvailable";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Congress Trades",
+  description: "Congressional stock trading disclosures. Not currently available on Prometheon Engine.",
+  robots: { index: false, follow: true },
+};
+
+
 export default function CongressPage() {
   return (
     <NotAvailable

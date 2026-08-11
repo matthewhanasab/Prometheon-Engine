@@ -1,5 +1,14 @@
 import NotAvailable from "@/components/NotAvailable";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Fair Value Graph",
+  description: "Analyst-estimate fair value graph. Not currently available on Prometheon Engine.",
+  robots: { index: false, follow: true },
+};
+
+
 export default function FairValuePage() {
   return (
     <NotAvailable

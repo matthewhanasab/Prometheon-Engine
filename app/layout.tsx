@@ -5,19 +5,40 @@ import AccessibilityWidget from "@/components/AccessibilityWidget";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://prometheonengine.com"),
-  title: "Prometheon Engine",
-  description: "Every number that matters. One software. Stock research, portfolio tracking, options screeners, congress trades, and more.",
+  title: {
+    default: "Prometheon Engine — Free Stock Research & Financial Analysis",
+    template: "%s · Prometheon Engine",
+  },
+  description:
+    "Free stock research and analysis: fundamentals, valuation, financial statements, dividend history, SEC filings, insider trades, earnings, and options screeners — every number that matters in one place.",
+  applicationName: "Prometheon Engine",
+  keywords: [
+    "stock research", "stock analysis", "financial statements", "stock valuation",
+    "dividend history", "SEC filings", "insider trading", "earnings calendar",
+    "options screener", "covered calls", "cash-secured puts", "stock screener",
+    "P/E ratio", "free cash flow", "compare stocks", "portfolio tracker",
+  ],
+  authors: [{ name: "Prometheon Engine" }],
+  creator: "Prometheon Engine",
+  category: "finance",
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
   openGraph: {
-    title: "Prometheon Engine",
-    description: "Every number that matters. One software.",
+    title: "Prometheon Engine — Free Stock Research & Financial Analysis",
+    description: "Every number that matters. One software. Fundamentals, valuation, statements, dividends, SEC filings, and options — free.",
     url: "https://prometheonengine.com",
     siteName: "Prometheon Engine",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Prometheon Engine" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Prometheon Engine — stock research platform" }],
     type: "website",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Prometheon Engine",
+    title: "Prometheon Engine — Free Stock Research & Financial Analysis",
     description: "Every number that matters. One software.",
     images: ["/og.png"],
   },
@@ -28,6 +49,51 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" style={{ height: "100%" }} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Structured data: Organization + WebSite (with a sitelinks search box
+            targeting ticker research) + WebApplication for rich results. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://prometheonengine.com/#org",
+                  name: "Prometheon Engine",
+                  url: "https://prometheonengine.com",
+                  logo: "https://prometheonengine.com/logo_icon_sq.png",
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://prometheonengine.com/#website",
+                  url: "https://prometheonengine.com",
+                  name: "Prometheon Engine",
+                  description: "Free stock research and financial analysis.",
+                  publisher: { "@id": "https://prometheonengine.com/#org" },
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: {
+                      "@type": "EntryPoint",
+                      urlTemplate: "https://prometheonengine.com/research?ticker={ticker}",
+                    },
+                    "query-input": "required name=ticker",
+                  },
+                },
+                {
+                  "@type": "WebApplication",
+                  name: "Prometheon Engine",
+                  url: "https://prometheonengine.com",
+                  applicationCategory: "FinanceApplication",
+                  operatingSystem: "Web",
+                  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+                  description:
+                    "Stock research: fundamentals, valuation, financial statements, dividends, SEC filings, insider trades, earnings, and options screeners.",
+                },
+              ],
+            }),
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600;700&family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />

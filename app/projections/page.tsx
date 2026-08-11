@@ -1,5 +1,14 @@
 import NotAvailable from "@/components/NotAvailable";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Projections",
+  description: "Analyst forward projections. Not currently available on Prometheon Engine.",
+  robots: { index: false, follow: true },
+};
+
+
 export default function ProjectionsPage() {
   return (
     <NotAvailable
