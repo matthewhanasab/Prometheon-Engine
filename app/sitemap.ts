@@ -14,6 +14,7 @@ const ROUTES: { path: string; priority: number; freq: MetadataRoute.Sitemap[numb
   { path: "/dividends", priority: 0.7, freq: "daily" },
   { path: "/earnings", priority: 0.7, freq: "daily" },
   { path: "/screener", priority: 0.7, freq: "daily" },
+  { path: "/etf", priority: 0.8, freq: "daily" },
   { path: "/macro", priority: 0.7, freq: "daily" },
   { path: "/movers", priority: 0.6, freq: "hourly" },
   { path: "/insider", priority: 0.6, freq: "daily" },
