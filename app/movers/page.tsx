@@ -1,12 +1,10 @@
 "use client";
 
 import TradingViewWidget from "@/components/TradingViewWidget";
+import StockHeatmap from "@/components/StockHeatmap";
 
-// Market Movers, Market Stack edition.
-//
-// marketstack has no gainers/losers/most-active endpoint. TradingView's
-// hotlists widget provides exactly that, and the heatmap on the main site is
-// already a TradingView embed — so this page ports cleanly.
+// Market Movers. All panels are TradingView embeds — hotlists (gainers/losers/
+// most-active), the S&P 500 heatmap, and a market-wide overview.
 const SANS = "'Public Sans', sans-serif";
 const SERIF = "'Space Grotesk', Georgia, serif";
 
@@ -42,6 +40,9 @@ export default function MsMoversPage() {
         height={480}
         config={{ dataSource: "AllUSAStocks", exchange: "US", showChart: true, showSymbolLogo: true }}
       />
+
+      <Label hint="S&amp;P 500 by market cap · sized &amp; colored by daily move">Heatmap</Label>
+      <StockHeatmap height={620} />
 
       <Label hint="indices, futures, bonds, forex">Market Overview</Label>
       <TradingViewWidget
