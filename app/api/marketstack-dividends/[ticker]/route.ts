@@ -46,7 +46,7 @@ export async function GET(
   const adjustFor = (date: string) =>
     splits.reduce((f: number, s: any) => (s.date > date ? f * s.factor : f), 1);
 
-  const divs = (Array.isArray(divRaw?.data) ? divRaw.data : [])
+  const divsAll = (Array.isArray(divRaw?.data) ? divRaw.data : [])
     .map((r: any) => {
       const date = String(r.date ?? "").slice(0, 10);
       const raw = Number(r.dividend ?? 0);
@@ -60,6 +60,10 @@ export async function GET(
       };
     })
     .filter((r: any) => r.amount > 0 && r.date);
+  // Full history is kept unfiltered here: a one-off outlier can be a real
+  // special dividend (Microsoft's $3.08 in November 2004), and the history
+  // chart should show what was actually paid.
+  const divs = divsAll;
   if (!divs.length) {
     return NextResponse.json({ ticker: t, count: 0, yearly: [], upcoming: [], recent: [] });
   }

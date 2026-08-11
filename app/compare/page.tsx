@@ -40,62 +40,130 @@ function fmtLarge(n: number | null | undefined) {
 
 type MetricDef = {
   label: string;
-  key: ((s: any) => number | null) | null; // null ⇒ unavailable on marketstack
+  key: ((s: any) => number | null) | null; // null ⇒ not available with current data
   fmt: (v: number | null) => string;
   lowerIsBetter?: boolean;
+  /** Typical range shown on the right, e.g. "20–28". */
+  bench?: string;
+  /** Colour band for the label pill. */
+  accent?: string;
 };
 
-const SECTIONS: { title: string; metrics: MetricDef[] }[] = [
+const ACCENTS = {
+  valuation: "var(--accent-gold)",
+  eps: "#F59E0B",
+  revenue: "#3B82F6",
+  margins: "#22C55E",
+  other: "#A78BFA",
+};
+
+// Metric bands, matching the reference comparison layout: valuation multiples,
+// EPS growth, revenue growth, margins, then advanced cuts. Benchmarks are the
+// "many stocks trade at …" ranges, so a figure can be judged without knowing
+// the norms by heart. Rows needing analyst estimates carry key: null.
+const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] }[] }[] = [
   {
-    title: "VALUATION",
-    metrics: [
-      { label: "P/E Ratio", key: (s) => s.peRatio, fmt: fmtX, lowerIsBetter: true },
-      { label: "Fwd P/E", key: null, fmt: () => "", lowerIsBetter: true },
-      { label: "PEG", key: (s) => s.peg, fmt: fmtX, lowerIsBetter: true },
-      { label: "P/S", key: (s) => s.ps, fmt: fmtX, lowerIsBetter: true },
-      { label: "P/B", key: (s) => s.pb, fmt: fmtX, lowerIsBetter: true },
-      { label: "P/FCF", key: (s) => s.pFcf, fmt: fmtX, lowerIsBetter: true },
-      { label: "FCF Yield", key: (s) => s.fcfYield, fmt: (v) => fmtPct(v, true), lowerIsBetter: false },
+    title: "MANDATORY METRICS",
+    groups: [
+      {
+        accent: ACCENTS.valuation,
+        metrics: [
+          { label: "TTM P/E", key: (s) => s.peRatio, fmt: fmtX, lowerIsBetter: true, bench: "20–28" },
+          { label: "Forward P/E", key: null, fmt: () => "", bench: "18–26" },
+          { label: "2-Year Forward P/E", key: null, fmt: () => "", bench: "16–24" },
+        ],
+      },
+      {
+        accent: ACCENTS.eps,
+        metrics: [
+          { label: "TTM EPS Growth", key: (s) => s.epsGrowthTtm, fmt: fmtPct, bench: "8–12%" },
+          { label: "Current Yr Exp EPS Growth", key: null, fmt: () => "", bench: "8–12%" },
+          { label: "Next Year EPS Growth", key: null, fmt: () => "", bench: "8–12%" },
+        ],
+      },
+      {
+        accent: ACCENTS.revenue,
+        metrics: [
+          { label: "TTM Revenue Growth", key: (s) => s.revenueGrowth, fmt: fmtPct, bench: "4.5–6.5%" },
+          { label: "Current Yr Exp Rev Growth", key: null, fmt: () => "", bench: "4.5–6.5%" },
+          { label: "Next Year Revenue Growth", key: null, fmt: () => "", bench: "4.5–6.5%" },
+        ],
+      },
+      {
+        accent: ACCENTS.margins,
+        metrics: [
+          { label: "Gross Margin", key: (s) => s.grossMargin, fmt: fmtPct, bench: "40–48%" },
+          { label: "Net Margin", key: (s) => s.netMargin, fmt: fmtPct, bench: "8–10%" },
+          { label: "TTM P/S Ratio", key: (s) => s.ps, fmt: fmtX, lowerIsBetter: true, bench: "1.8–2.6" },
+          { label: "Forward P/S Ratio", key: null, fmt: () => "", bench: "1.8–2.6" },
+        ],
+      },
     ],
   },
   {
-    title: "GROWTH",
-    metrics: [
-      { label: "EPS Growth (fwd)", key: null, fmt: () => "", lowerIsBetter: false },
-      { label: "EPS Growth (TTM)", key: (s) => s.epsGrowthTtm, fmt: fmtPct, lowerIsBetter: false },
-      { label: "Revenue Growth (YoY)", key: (s) => s.revenueGrowth, fmt: fmtPct, lowerIsBetter: false },
+    title: "ADVANCED METRICS",
+    groups: [
+      {
+        accent: ACCENTS.eps,
+        metrics: [
+          { label: "Last Year EPS Growth", key: (s) => s.lastYearEpsGrowth, fmt: fmtPct, bench: "8–12%" },
+          { label: "TTM vs NTM EPS Growth", key: null, fmt: () => "", bench: "8–12%" },
+          { label: "Current Qtr EPS Growth vs Prev Year", key: (s) => s.currentQuarterEpsGrowth, fmt: fmtPct, bench: "8–12%" },
+          { label: "2-Year Stack Exp EPS Growth", key: null, fmt: () => "", bench: "16–25%" },
+        ],
+      },
+      {
+        accent: ACCENTS.revenue,
+        metrics: [
+          { label: "Last Year Rev Growth", key: (s) => s.lastYearRevGrowth, fmt: fmtPct, bench: "4.5–6.5%" },
+          { label: "TTM vs NTM Rev Growth", key: null, fmt: () => "", bench: "4.5–6.5%" },
+          { label: "Current Qtr Rev Growth vs Prev Year", key: (s) => s.currentQuarterRevGrowth, fmt: fmtPct, bench: "4.5–6.5%" },
+          { label: "2-Year Stack Exp Rev Growth", key: null, fmt: () => "", bench: "9–13%" },
+        ],
+      },
+      {
+        accent: ACCENTS.other,
+        metrics: [
+          { label: "PEG Ratio", key: (s) => s.peg, fmt: fmtX, lowerIsBetter: true, bench: "1–1.5" },
+          { label: "Return on Equity", key: (s) => s.roe, fmt: fmtPct, bench: "15–21%" },
+          { label: "Price to Book", key: (s) => s.pb, fmt: fmtX, lowerIsBetter: true, bench: "3–4" },
+          { label: "Price to Free Cash Flow", key: (s) => s.pFcf, fmt: fmtX, lowerIsBetter: true, bench: "20–25" },
+          { label: "Free Cash Flow Yield", key: (s) => s.fcfYield, fmt: (v) => fmtPct(v, true), bench: "3–6%" },
+          { label: "Dividend Yield", key: (s) => s.divYield, fmt: (v) => fmtPct(v, true), bench: "1.5–2.1%" },
+          { label: "Dividend Payout Ratio", key: (s) => s.payoutRatio, fmt: (v) => fmtPct(v, true), bench: "32–42%" },
+        ],
+      },
     ],
   },
   {
-    title: "PROFITABILITY",
-    metrics: [
-      { label: "Gross Margin", key: (s) => s.grossMargin, fmt: fmtPct, lowerIsBetter: false },
-      { label: "Op Margin", key: (s) => s.opMargin, fmt: fmtPct, lowerIsBetter: false },
-      { label: "Net Margin", key: (s) => s.netMargin, fmt: fmtPct, lowerIsBetter: false },
-      { label: "ROE", key: (s) => s.roe, fmt: fmtPct, lowerIsBetter: false },
-    ],
-  },
-  {
-    title: "HEALTH",
-    metrics: [
-      { label: "D/E Ratio", key: (s) => s.debtEquity, fmt: fmtX, lowerIsBetter: true },
-      { label: "Current Ratio", key: (s) => s.currentRatio, fmt: fmtX, lowerIsBetter: false },
-      { label: "Net Debt", key: (s) => s.netDebt, fmt: fmtLarge, lowerIsBetter: true },
-      { label: "Op Cash Flow", key: (s) => s.operatingCF, fmt: fmtLarge, lowerIsBetter: false },
-      { label: "Piotroski F-Score", key: (s) => s.fScore, fmt: (v) => (v == null ? "N/A" : `${v} / 9`), lowerIsBetter: false },
-      { label: "Altman Z-Score", key: (s) => s.altmanZ, fmt: (v) => fmt(v, 1), lowerIsBetter: false },
-    ],
-  },
-  {
-    title: "OTHER",
-    metrics: [
-      { label: "Beta", key: (s) => s.beta, fmt: (v) => fmt(v, 2), lowerIsBetter: true },
-      { label: "Div Yield", key: (s) => s.divYield, fmt: (v) => fmtPct(v, true), lowerIsBetter: false },
-      { label: "1Y Return", key: (s) => s.ret1Y, fmt: (v) => fmtPct(v, true), lowerIsBetter: false },
-      { label: "5Y Return", key: (s) => s.ret5Y, fmt: (v) => fmtPct(v, true), lowerIsBetter: false },
+    title: "QUALITY, RISK & RETURNS",
+    groups: [
+      {
+        accent: ACCENTS.margins,
+        metrics: [
+          { label: "Operating Margin", key: (s) => s.opMargin, fmt: fmtPct },
+          { label: "Piotroski F-Score", key: (s) => s.fScore, fmt: (v) => (v == null ? "N/A" : `${v} / 9`), bench: "7–9 is strong" },
+          { label: "Altman Z-Score", key: (s) => s.altmanZ, fmt: (v) => fmt(v, 1), bench: "Above 3 is safe" },
+        ],
+      },
+      {
+        accent: ACCENTS.other,
+        metrics: [
+          { label: "Debt / Equity", key: (s) => s.debtEquity, fmt: fmtX, lowerIsBetter: true, bench: "0.5–1.5" },
+          { label: "Current Ratio", key: (s) => s.currentRatio, fmt: fmtX, bench: "1.5–3.0" },
+          { label: "Net Debt", key: (s) => s.netDebt, fmt: fmtLarge, lowerIsBetter: true },
+          { label: "Operating Cash Flow", key: (s) => s.operatingCF, fmt: fmtLarge },
+          { label: "Beta", key: (s) => s.beta, fmt: (v) => fmt(v, 2), lowerIsBetter: true, bench: "1.0 = market" },
+          { label: "1-Year Return", key: (s) => s.ret1Y, fmt: (v) => fmtPct(v, true) },
+          { label: "5-Year Return", key: (s) => s.ret5Y, fmt: (v) => fmtPct(v, true) },
+        ],
+      },
     ],
   },
 ];
+
+/** Every metric across all groups — used by the scorecard and best-value logic. */
+const ALL_METRICS = SECTIONS.flatMap((s) => s.groups.flatMap((g) => g.metrics));
 
 /** Flatten the /api/marketstack-stock payload into the shape the table reads. */
 function normalize(j: any) {
@@ -117,6 +185,11 @@ function normalize(j: any) {
     fcfYield: f.fcfYield != null ? f.fcfYield * 100 : null,
     epsGrowthTtm: f.epsGrowth ?? null,
     revenueGrowth: f.revenueGrowth ?? null,
+    lastYearEpsGrowth: f.lastYearEpsGrowth ?? null,
+    lastYearRevGrowth: f.lastYearRevGrowth ?? null,
+    currentQuarterEpsGrowth: f.currentQuarterEpsGrowth ?? null,
+    currentQuarterRevGrowth: f.currentQuarterRevGrowth ?? null,
+    payoutRatio: j.dividends?.payoutRatioPct ?? null,
     grossMargin: f.grossMargin ?? null,
     opMargin: f.operatingMargin ?? null,
     netMargin: f.netMargin ?? null,
@@ -262,13 +335,21 @@ function CompareInner() {
     return best;
   };
 
-  const scorecard = SECTIONS.filter((s) => s.title !== "OTHER").map((sec) => {
-    const scored = sec.metrics.filter((m) => m.key);
+  // Scorecard bands, named for what they actually measure rather than the
+  // table's section headings.
+  const SCORE_BANDS: { title: string; pick: (m: MetricDef) => boolean }[] = [
+    { title: "VALUATION", pick: (m) => /P\/E|P\/S|PEG|Price to Book|Price to Free/i.test(m.label) },
+    { title: "GROWTH", pick: (m) => /Growth/i.test(m.label) },
+    { title: "PROFITABILITY", pick: (m) => /Margin|Return on Equity|Free Cash Flow Yield/i.test(m.label) },
+    { title: "HEALTH", pick: (m) => /Debt|Current Ratio|Cash Flow$|F-Score|Z-Score/i.test(m.label) },
+  ];
+  const scorecard = SCORE_BANDS.map((band) => {
+    const scored = ALL_METRICS.filter((m) => m.key && band.pick(m));
     const wins = stocks.map(() => 0);
     scored.forEach((m) => { const b = bestIdx(m); if (b >= 0) wins[b]++; });
-    const top = Math.max(...wins);
+    const top = Math.max(...wins, 0);
     const tied = wins.filter((w) => w === top).length > 1 || top === 0;
-    return { title: sec.title, wins, winnerIdx: tied ? -1 : wins.indexOf(top), total: scored.length };
+    return { title: band.title, wins, winnerIdx: tied ? -1 : wins.indexOf(top), total: scored.length };
   });
 
   return (
@@ -378,47 +459,73 @@ function CompareInner() {
                       {s.ticker}
                     </th>
                   ))}
+                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 150 }}>
+                    Typical Range
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {SECTIONS.map((section) => (
                   <React.Fragment key={section.title}>
                     <tr style={{ background: "var(--bg-elevated)" }}>
-                      <td colSpan={stocks.length + 1} style={{ padding: "6px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)" }}>
+                      <td colSpan={stocks.length + 2} style={{ padding: "6px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)" }}>
                         {section.title}
                       </td>
                     </tr>
-                    {section.metrics.map((metric, mi) => {
-                      const best = bestIdx(metric);
-                      const unavailable = !metric.key;
-                      return (
-                        <tr key={metric.label} style={{ background: mi % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
-                          <td style={{ padding: "8px 14px", fontFamily: SANS, fontSize: "0.78rem", borderBottom: "1px solid var(--border)", color: unavailable ? "var(--text-muted)" : "var(--text-primary)" }}>
-                            {metric.label}
-                          </td>
-                          {unavailable ? (
-                            <td colSpan={stocks.length} style={{ textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)" }}>
-                              <span style={{ fontFamily: SANS, fontSize: "0.7rem", fontWeight: 600, color: "var(--accent-gold)" }}>
-                                Not available with current data
-                              </span>
-                            </td>
-                          ) : (
-                            stocks.map((s, si) => {
-                              const val = metric.key!(s);
-                              const isBest = si === best && val != null;
-                              return (
-                                <td key={s.ticker} style={{ textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
-                                  <span style={{ color: isBest ? "var(--positive)" : "var(--text-secondary)", fontWeight: isBest ? 600 : undefined }}>
-                                    {isBest && <span style={{ color: "var(--accent-gold)", marginRight: 4 }}>★</span>}
-                                    {metric.fmt(val)}
+                    {section.groups.map((group, gi) =>
+                      group.metrics.map((metric, mi) => {
+                        const best = bestIdx(metric);
+                        const unavailable = !metric.key;
+                        // A blank row between colour bands, mirroring the
+                        // grouped blocks in the reference layout.
+                        const firstOfGroup = mi === 0 && gi > 0;
+                        return (
+                          <React.Fragment key={metric.label}>
+                            {firstOfGroup && (
+                              <tr><td colSpan={stocks.length + 2} style={{ height: 8, background: "var(--bg-primary)" }} /></tr>
+                            )}
+                            <tr style={{ background: mi % 2 === 0 ? "var(--bg-surface)" : "var(--bg-primary)" }}>
+                              <td style={{
+                                padding: "8px 14px", fontFamily: SANS, fontSize: "0.76rem",
+                                borderBottom: "1px solid var(--border)",
+                                borderLeft: `3px solid ${group.accent}`,
+                                color: unavailable ? "var(--text-muted)" : "var(--text-primary)",
+                              }}>
+                                {metric.label}
+                              </td>
+                              {unavailable ? (
+                                <td colSpan={stocks.length} style={{ textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)" }}>
+                                  <span style={{ fontFamily: SANS, fontSize: "0.68rem", fontWeight: 600, color: "var(--accent-gold)" }}>
+                                    Not available with current data
                                   </span>
                                 </td>
-                              );
-                            })
-                          )}
-                        </tr>
-                      );
-                    })}
+                              ) : (
+                                stocks.map((s, si) => {
+                                  const val = metric.key!(s);
+                                  const isBest = si === best && val != null;
+                                  return (
+                                    <td key={s.ticker} style={{ textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
+                                      <span style={{ color: isBest ? "var(--positive)" : "var(--text-secondary)", fontWeight: isBest ? 600 : undefined }}>
+                                        {isBest && <span style={{ color: "var(--accent-gold)", marginRight: 4 }}>★</span>}
+                                        {metric.fmt(val)}
+                                      </span>
+                                    </td>
+                                  );
+                                })
+                              )}
+                              <td style={{
+                                padding: "8px 14px", borderBottom: "1px solid var(--border)",
+                                fontFamily: SANS, fontSize: "0.63rem", fontWeight: 500,
+                                textTransform: "uppercase", letterSpacing: "0.07em",
+                                color: "var(--text-muted)", whiteSpace: "nowrap",
+                              }}>
+                                {metric.bench ? `Many stocks: ${metric.bench}` : ""}
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        );
+                      })
+                    )}
                   </React.Fragment>
                 ))}
               </tbody>

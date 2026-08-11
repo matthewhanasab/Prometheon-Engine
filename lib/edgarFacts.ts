@@ -825,6 +825,29 @@ export function deriveFundamentals(f: Facts, price: number | null) {
   const avgEquity = equity != null && equityPrior != null ? (equity + equityPrior) / 2 : equity;
   const revenueGrowth = revenue != null && revenuePrior ? revenue / revenuePrior - 1 : null;
   const epsGrowth = eps != null && epsPrior && epsPrior > 0 ? eps / epsPrior - 1 : null;
+
+  // ── Additional growth cuts for the comparison table ──
+  // Fiscal-year-over-fiscal-year (the last completed 10-K vs the one before),
+  // which is a different question from TTM growth: it's what the company
+  // actually reported for its last full year.
+  const growthOf = (s: Period[]): number | null => {
+    if (s.length < 2) return null;
+    const cur = s[s.length - 1].val, prev = s[s.length - 2].val;
+    return prev > 0 ? cur / prev - 1 : null;
+  };
+  const lastYearEpsGrowth = growthOf(f.annual(C.epsDiluted));
+  const lastYearRevGrowth = growthOf(f.annual(C.revenue));
+
+  // Most recent quarter against the SAME quarter a year earlier — four periods
+  // back, not one, so seasonal businesses aren't compared to their off-season.
+  const qYoY = (aliases: string[]): number | null => {
+    const q = f.quarterlyComplete(aliases);
+    if (q.length < 5) return null;
+    const cur = q[q.length - 1].val, yrAgo = q[q.length - 5].val;
+    return yrAgo > 0 ? cur / yrAgo - 1 : null;
+  };
+  const currentQuarterEpsGrowth = qYoY(C.epsDiluted);
+  const currentQuarterRevGrowth = qYoY(C.revenue);
   const peRatio = price != null && eps != null && eps > 0 ? price / eps : null;
   const pegRatio = peRatio != null && epsGrowth != null && epsGrowth > 0 ? peRatio / (epsGrowth * 100) : null;
 
@@ -841,6 +864,10 @@ export function deriveFundamentals(f: Facts, price: number | null) {
     netIncomeGrowth: netIncome != null && netIncomePrior ? netIncome / netIncomePrior - 1 : null,
     eps,
     epsGrowth,
+    lastYearEpsGrowth,
+    lastYearRevGrowth,
+    currentQuarterEpsGrowth,
+    currentQuarterRevGrowth,
     peRatio,
     pegRatio,
     ps: safeDiv(marketCap, revenue),

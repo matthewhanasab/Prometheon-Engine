@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
 import { get10YTreasury } from "@/lib/fred";
 import { guard } from "@/lib/rateLimit";
+import { dropDividendOutliers } from "@/lib/dividends";
 
 // Full research-page aggregator running exclusively on marketstack (Business
 // plan). Endpoint audit for this key, verified 2026-08-02:
@@ -357,7 +358,7 @@ export async function GET(
     .slice(0, 25);
 
   // ── Dividends ──
-  const divs = rows(divRes.data)
+  const divsRaw = rows(divRes.data)
     .map((r) => ({
       date: String(r.date ?? "").slice(0, 10),
       amount: Number(r.dividend ?? 0),
@@ -366,11 +367,23 @@ export async function GET(
       freq: r.distr_freq ?? null,
     }))
     .filter((r) => r.amount > 0);
+  // The record itself stays intact — a lone outlier can be a genuine special
+  // dividend (Microsoft's $3.08 in November 2004), and the history should show
+  // what was actually paid. The bad-print guard is applied ONLY to the trailing
+  // -twelve-month total, where a rogue value visibly corrupts the headline
+  // yield and payout ratio (NVIDIA's bad $0.25 print put its payout at 4.3%
+  // instead of ~0.5%). Trade-off accepted: a real special dividend inside the
+  // last year would be left out of those two ratios, which understates rather
+  // than wildly overstates.
+  const divs = divsRaw;
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = divs.filter((d) => d.date > today);
   const past = divs.filter((d) => d.date <= today);
   const ttmCutoff = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
-  const ttmTotal = past.filter((d) => d.date >= ttmCutoff).reduce((a, d) => a + d.amount, 0);
+  const { kept: ttmClean, dropped: droppedDivs } = dropDividendOutliers(divsRaw);
+  const ttmTotal = ttmClean
+    .filter((d) => d.date <= today && d.date >= ttmCutoff)
+    .reduce((a, d) => a + d.amount, 0);
 
   // ── Splits ──
   const splits = rows(splitRes.data).map((r) => ({
@@ -453,7 +466,15 @@ export async function GET(
       oldest: divs.length ? divs[divs.length - 1].date : null,
       ttmTotal,
       yieldPct: ttmTotal > 0 && last.close > 0 ? (ttmTotal / last.close) * 100 : null,
+      // Share of earnings paid out: TTM dividends per share ÷ TTM diluted EPS.
+      // Needs both halves, so it's assembled here rather than inside the
+      // EDGAR-only fundamentals derivation.
+      payoutRatioPct:
+        ttmTotal > 0 && fundamentals?.eps != null && fundamentals.eps > 0
+          ? (ttmTotal / fundamentals.eps) * 100
+          : null,
       freq: divs.find((d) => d.freq)?.freq ?? null,
+      excludedOutliers: droppedDivs.length,
     },
     splits,
     fundamentals,
