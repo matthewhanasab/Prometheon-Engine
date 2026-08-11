@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/rateLimit";
 import { getInsiderTrades } from "@/lib/sec";
 
 // Insider trading (SEC Form 4), parsed straight from EDGAR filings.
@@ -28,6 +29,8 @@ function shape(sym: string, rows: any[]) {
 }
 
 export async function GET(req: NextRequest) {
+  const limited = guard(req, 6);
+  if (limited) return limited;
   const symbol = req.nextUrl.searchParams.get("symbol");
   try {
     if (symbol) {

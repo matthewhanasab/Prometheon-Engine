@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
 import { get10YTreasury } from "@/lib/fred";
+import { guard } from "@/lib/rateLimit";
 
 // Full research-page aggregator running exclusively on marketstack (Business
 // plan). Endpoint audit for this key, verified 2026-08-02:
@@ -53,8 +54,17 @@ async function get(url: string, ttl = DAY): Promise<{ data: any; err: string | n
     await sleep(1200 + i * 1300);
     out = await getOnce(url, ttl);
   }
-  if (out.err === "rate_limit_reached") failCache.set(url, Date.now());
-  else failCache.delete(url);
+  if (out.err === "rate_limit_reached") {
+    // Bound the map: prune expired entries before it can grow without limit
+    // under distinct-URL churn (many tickers hitting the limit).
+    if (failCache.size > 2000) {
+      const cutoff = Date.now() - FAIL_TTL;
+      for (const [k, ts] of failCache) if (ts < cutoff) failCache.delete(k);
+    }
+    failCache.set(url, Date.now());
+  } else {
+    failCache.delete(url);
+  }
   return out;
 }
 
@@ -93,9 +103,11 @@ const num = (v: any): number | null => {
 };
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
+  const limited = guard(req, 11);
+  if (limited) return limited;
   const { ticker } = await params;
   const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   const key = process.env.MARKETSTACK_KEY;

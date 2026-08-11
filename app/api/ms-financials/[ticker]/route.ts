@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/rateLimit";
 import { fetchFacts, deriveStatements, resolveCik } from "@/lib/edgarFacts";
 
 // Financial statements for the Market Stack edition, straight from SEC EDGAR
@@ -11,6 +12,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
+  const limited = guard(req, 2);
+  if (limited) return limited;
   const { ticker } = await params;
   const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   const period = req.nextUrl.searchParams.get("period") === "quarterly" ? "quarterly" : "annual";

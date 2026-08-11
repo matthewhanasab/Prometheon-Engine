@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/rateLimit";
 import { fetchFacts, deriveChartSeries, resolveCik } from "@/lib/edgarFacts";
 
 // Charts data for the Market Stack edition.
@@ -25,9 +26,11 @@ async function get(url: string, ttl = 86400): Promise<any> {
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
+  const limited = guard(req, 3);
+  if (limited) return limited;
   const { ticker } = await params;
   const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   const key = process.env.MARKETSTACK_KEY;

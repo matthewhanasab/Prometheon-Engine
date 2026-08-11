@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/rateLimit";
 import { fetchFacts, resolveCik, Facts, C } from "@/lib/edgarFacts";
 
 // Options inputs for the Market Stack edition.
@@ -76,9 +77,11 @@ function projectEarnings(facts: Facts): { date: string | null; estimated: boolea
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
+  const limited = guard(req, 4);
+  if (limited) return limited;
   const { ticker } = await params;
   const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   const key = process.env.MARKETSTACK_KEY;
