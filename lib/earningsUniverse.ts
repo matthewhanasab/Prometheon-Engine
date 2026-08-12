@@ -75,17 +75,28 @@ export async function resolveUniverse(which: UniverseKey): Promise<Company[]> {
   const idx = await secIndex();
   if (!idx) return [];
 
-  const out = new Map<string, Company>();
+  // Fund order is preserved deliberately, with each fund's own names sorted.
+  // VOO comes first, so an "all" scan replays the already-warm S&P 500 from
+  // cache and spends its whole time budget on the mid- and small-caps it hasn't
+  // seen. Sorting the union alphabetically instead interleaved them, and every
+  // pass re-walked the same large-caps before reaching anything new.
+  const seen = new Set<string>();
+  const ordered: Company[] = [];
   for (const fund of UNIVERSE_FUNDS[which]) {
     const raw = await json(`${MS}/etfholdings?access_key=${key}&ticker=${fund}`, 86400);
     const holdings = raw?.output?.holdings;
     if (!Array.isArray(holdings)) continue;
+    const batch = new Map<string, Company>();
     for (const h of holdings) {
       const name = (h.investment_security ?? h)?.name;
       if (!name || name === "N/A") continue;
       const hit = idx.byExact.get(normalizeCompanyName(name)) ?? idx.bySorted.get(companyNameKey(name));
-      if (hit) out.set(hit.ticker, hit);
+      if (hit && !seen.has(hit.ticker)) batch.set(hit.ticker, hit);
+    }
+    for (const c of [...batch.values()].sort((a, b) => a.ticker.localeCompare(b.ticker))) {
+      seen.add(c.ticker);
+      ordered.push(c);
     }
   }
-  return [...out.values()].sort((a, b) => a.ticker.localeCompare(b.ticker));
+  return ordered;
 }
