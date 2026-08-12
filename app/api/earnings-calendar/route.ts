@@ -219,15 +219,26 @@ export async function GET(req: NextRequest) {
     })
   );
 
+  const complete = !ranOut && done >= companies.length;
+
   entries.sort((a, b) => (a.next < b.next ? -1 : a.next > b.next ? 1 : a.ticker.localeCompare(b.ticker)));
 
   return NextResponse.json(
     {
       universe: which,
       asOf: today(),
-      progress: { done, total: companies.length, complete: !ranOut && done >= companies.length },
+      progress: { done, total: companies.length, complete },
       entries,
     },
-    { headers: { "Cache-Control": "public, max-age=0, s-maxage=21600, stale-while-revalidate=86400" } }
+    {
+      // Only a finished scan may be cached. Caching a partial one froze the
+      // All Stocks universe at 319/1335 for six hours — every poll was served
+      // the same truncated response from the CDN, so it could never finish.
+      headers: {
+        "Cache-Control": complete
+          ? "public, max-age=0, s-maxage=21600, stale-while-revalidate=86400"
+          : "public, max-age=0, s-maxage=0, must-revalidate",
+      },
+    }
   );
 }
