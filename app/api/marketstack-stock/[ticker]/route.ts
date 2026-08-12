@@ -3,6 +3,7 @@ import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
 import { get10YTreasury } from "@/lib/fred";
 import { guard } from "@/lib/rateLimit";
 import { dropDividendOutliers } from "@/lib/dividends";
+import { forwardEstimate } from "@/lib/forwardEstimates";
 
 // Full research-page aggregator running exclusively on marketstack (Business
 // plan). Endpoint audit for this key, verified 2026-08-02:
@@ -459,6 +460,14 @@ export async function GET(
     longReturns,
     consensus,
     analysts,
+    // Forward view. `forward` is a trend projection off SEC-filed results — no
+    // analyst-consensus EPS feed exists in this stack — while `consensus` above
+    // carries the real licensed forward input (analyst price targets).
+    forward: forwardEstimate(last.close, fundamentals?.eps, {
+      currentQuarterEpsGrowth: fundamentals?.currentQuarterEpsGrowth,
+      epsGrowth: fundamentals?.epsGrowth,
+      lastYearEpsGrowth: fundamentals?.lastYearEpsGrowth,
+    }),
     dividends: {
       recent: past.slice(0, 24),
       upcoming,

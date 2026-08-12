@@ -4,6 +4,9 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import CompanyLogo from "@/components/CompanyLogo";
 import PriceChart from "@/components/PriceChart";
+import TradingViewChart from "@/components/TradingViewChart";
+import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
+import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
 
 // ETF Hub. Holdings come from SEC N-PORT filings (via marketstack), so the
 // portfolio is as-of a quarterly report date rather than live — that date is
@@ -28,7 +31,7 @@ const big = (n: any) => {
   return `$${a.toFixed(0)}`;
 };
 
-function SectionLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
+function SectionLabel({ children, hint, right }: { children: React.ReactNode; hint?: string; right?: React.ReactNode }) {
   return (
     <div style={{
       display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap",
@@ -38,6 +41,7 @@ function SectionLabel({ children, hint }: { children: React.ReactNode; hint?: st
     }}>
       <span>{children}</span>
       {hint && <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.62rem" }}>{hint}</span>}
+      {right && <span style={{ marginLeft: "auto", alignSelf: "center" }}>{right}</span>}
     </div>
   );
 }
@@ -76,6 +80,13 @@ function EtfInner() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [range, setRange] = useState<RangeKey>("1Y");
+  const [chartMode, setChartMode] = useState<ChartMode>("builtin");
+  // Full holdings are fetched on demand — a broad fund carries hundreds of rows
+  // and the default view only needs 25.
+  const [allHoldings, setAllHoldings] = useState<any[] | null>(null);
+  const [allFor, setAllFor] = useState<string | null>(null);
+  const [loadingAll, setLoadingAll] = useState(false);
   const booted = useRef(false);
 
   async function load(sym?: string) {
@@ -157,8 +168,19 @@ function EtfInner() {
           {/* Price chart + returns work for EVERY ETF, holdings or not */}
           {q?.chart?.length > 1 && (
             <>
-              <SectionLabel hint="dividend-adjusted · up to 5 years">Price</SectionLabel>
-              <PriceChart data={q.chart} label="5Y" />
+              <SectionLabel
+                hint="dividend-adjusted"
+                right={
+                  <div style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    {/* TradingView ships its own timeframe controls */}
+                    {chartMode === "builtin" && <RangeToggle range={range} onChange={setRange} />}
+                    <ChartModeToggle mode={chartMode} onChange={setChartMode} />
+                  </div>
+                }
+              >Price</SectionLabel>
+              {chartMode === "builtin"
+                ? <PriceChart data={sliceRange(q.chart ?? [], range)} label={range} />
+                : <TradingViewChart ticker={data.ticker} />}
             </>
           )}
           {q?.returns?.length > 0 && (
@@ -239,7 +261,12 @@ function EtfInner() {
                 accurate while an actively-managed fund may have moved on. Price and yield above are current.
               </div>
 
-              <SectionLabel hint={`${data.totals?.count} positions · showing largest 25`}>Top Holdings</SectionLabel>
+              {(() => {
+                const showingAll = allFor === data.ticker && allHoldings;
+                const rows = showingAll ? allHoldings! : data.top;
+                return (
+              <>
+              <SectionLabel hint={`${data.totals?.count} positions · showing ${showingAll ? `all ${rows.length}` : `largest ${data.top.length}`}`}>Top Holdings</SectionLabel>
               <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
                   <thead>
@@ -252,7 +279,7 @@ function EtfInner() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.top.map((h: any, i: number) => (
+                    {rows.map((h: any, i: number) => (
                       <tr key={`${h.cusip ?? h.name}-${i}`} style={{ borderTop: "1px solid var(--border)" }}>
                         <td style={{ padding: "8px 14px", fontFamily: MONO, color: "var(--text-muted)" }}>{i + 1}</td>
                         <td style={{ padding: "8px 10px", fontWeight: 600 }}>{h.name}</td>
@@ -263,7 +290,7 @@ function EtfInner() {
                         <td style={{ padding: "8px 14px" }}>
                           <div style={{ height: 5, background: "var(--bg-elevated)", borderRadius: 999, overflow: "hidden", minWidth: 90 }}>
                             <div style={{
-                              width: `${Math.min(100, (h.weightPct / (data.top[0]?.weightPct || 1)) * 100)}%`,
+                              width: `${Math.min(100, (h.weightPct / (rows[0]?.weightPct || 1)) * 100)}%`,
                               height: "100%", background: "var(--accent-gold)", borderRadius: 999,
                             }} />
                           </div>
@@ -273,6 +300,36 @@ function EtfInner() {
                   </tbody>
                 </table>
               </div>
+
+              {data.totals?.count > data.top.length && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
+                  <button
+                    type="button"
+                    disabled={loadingAll}
+                    onClick={async () => {
+                      if (showingAll) { setAllHoldings(null); setAllFor(null); return; }
+                      setLoadingAll(true);
+                      try {
+                        const res = await fetch(`/api/etf/${data.ticker}?all=1`);
+                        const json = await res.json();
+                        if (Array.isArray(json?.all)) { setAllHoldings(json.all); setAllFor(data.ticker); }
+                      } catch { /* leave the top-25 view in place */ }
+                      finally { setLoadingAll(false); }
+                    }}
+                    style={{
+                      background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                      color: "var(--text-secondary)", borderRadius: 999, padding: "9px 22px",
+                      fontFamily: SANS, fontSize: "0.66rem", fontWeight: 700, textTransform: "uppercase",
+                      letterSpacing: "0.1em", cursor: loadingAll ? "wait" : "pointer", opacity: loadingAll ? 0.6 : 1,
+                    }}
+                  >
+                    {loadingAll ? "Loading…" : showingAll ? "Show top 25" : `See all ${data.totals.count} holdings`}
+                  </button>
+                </div>
+              )}
+              </>
+                );
+              })()}
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 92vw), 1fr))", gap: 14 }}>
                 <div>

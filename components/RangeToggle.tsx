@@ -22,16 +22,19 @@ export function sliceRange<T extends { date: string }>(data: T[], range: RangeKe
   return out.length >= 2 ? out : data.slice(-2);
 }
 
-export default function RangeToggle({ range, onChange }: {
+export default function RangeToggle({ range, onChange, ranges = RANGES }: {
   range: RangeKey;
   onChange: (r: RangeKey) => void;
+  /** Restrict the offered windows to what the caller's data actually covers —
+   *  a 5Y button over a 1-year series would silently mislabel the chart. */
+  ranges?: RangeKey[];
 }) {
   return (
     <div style={{
       display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)",
       borderRadius: 999, padding: 3, gap: 2,
     }}>
-      {RANGES.map(r => (
+      {ranges.map(r => (
         <button
           key={r}
           type="button"

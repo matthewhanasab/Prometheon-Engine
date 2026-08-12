@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import CompareChart from "@/components/CompareChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
+import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 import CompanyLogo from "@/components/CompanyLogo";
 
 
@@ -14,7 +15,10 @@ import CompanyLogo from "@/components/CompanyLogo";
 // five ticker slots, overview cards, performance race, category scorecard and
 // starred metric table. Metrics that need analyst estimates carry an explicit
 // "Not available with current data" marker instead of being silently dropped.
-const COLORS = ["#3B82F6", "var(--accent-gold)", "#22C55E", "#A78BFA", "#F97316"];
+// Literal, not themed: --accent-gold resolves to a blue (#3b6eeb light /
+// #6B9CFF dark) despite the name, so using it here made ticker 2's line
+// indistinguishable from ticker 1's on the performance race.
+const COLORS = ["#3B82F6", "#F59E0B", "#22C55E", "#A78BFA", "#EF4444"];
 const MAX_TICKERS = 5;
 const SANS = "'Public Sans', sans-serif";
 const MONO = "'Spline Sans Mono', monospace";
@@ -47,6 +51,8 @@ type MetricDef = {
   bench?: string;
   /** Colour band for the label pill. */
   accent?: string;
+  /** Value comes from our trend projection, not analyst consensus. */
+  modeled?: boolean;
 };
 
 const ACCENTS = {
@@ -69,8 +75,8 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
         accent: ACCENTS.valuation,
         metrics: [
           { label: "TTM P/E", key: (s) => s.peRatio, fmt: fmtX, lowerIsBetter: true, bench: "20–28" },
-          { label: "Forward P/E", key: null, fmt: () => "", bench: "18–26" },
-          { label: "2-Year Forward P/E", key: null, fmt: () => "", bench: "16–24" },
+          { label: "Forward P/E", key: (s) => s.forwardPe, fmt: fmtX, lowerIsBetter: true, bench: "18–26", modeled: true },
+          { label: "2-Year Forward P/E", key: (s) => s.forwardPe2y, fmt: fmtX, lowerIsBetter: true, bench: "16–24", modeled: true },
         ],
       },
       {
@@ -107,9 +113,9 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
         accent: ACCENTS.eps,
         metrics: [
           { label: "Last Year EPS Growth", key: (s) => s.lastYearEpsGrowth, fmt: fmtPct, bench: "8–12%" },
-          { label: "TTM vs NTM EPS Growth", key: null, fmt: () => "", bench: "8–12%" },
+          { label: "TTM vs NTM EPS Growth", key: (s) => s.forwardEpsGrowth, fmt: fmtPct, bench: "8–12%", modeled: true },
           { label: "Current Qtr EPS Growth vs Prev Year", key: (s) => s.currentQuarterEpsGrowth, fmt: fmtPct, bench: "8–12%" },
-          { label: "2-Year Stack Exp EPS Growth", key: null, fmt: () => "", bench: "16–25%" },
+          { label: "2-Year Stack Exp EPS Growth", key: (s) => s.forwardEpsGrowth2y, fmt: fmtPct, bench: "16–25%", modeled: true },
         ],
       },
       {
@@ -168,8 +174,15 @@ const ALL_METRICS = SECTIONS.flatMap((s) => s.groups.flatMap((g) => g.metrics));
 /** Flatten the /api/marketstack-stock payload into the shape the table reads. */
 function normalize(j: any) {
   const f = j.fundamentals ?? {};
+  const fw = j.forward ?? null;
   const r = (yrs: number) => j.longReturns?.find((x: any) => x.years === yrs && x.available)?.totalPct ?? null;
   return {
+    // Projected off SEC-filed results, not analyst consensus — rows using these
+    // are flagged `modeled` so the table never passes them off as estimates.
+    forwardPe: fw?.pe ?? null,
+    forwardPe2y: fw?.eps2y && j.quote?.price ? j.quote.price / fw.eps2y : null,
+    forwardEpsGrowth: fw?.growth ?? null,
+    forwardEpsGrowth2y: fw?.growth != null ? Math.pow(1 + fw.growth, 2) - 1 : null,
     ticker: j.ticker,
     name: j.profile?.name ?? j.ticker,
     sector: j.profile?.sector ?? null,
@@ -267,6 +280,7 @@ function CompareInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chartMode, setChartMode] = useState<ChartMode>("builtin");
+  const [range, setRange] = useState<RangeKey>("1Y");
   const booted = useRef(false);
 
   const setTicker = (i: number, v: string) =>
@@ -305,7 +319,9 @@ function CompareInner() {
   const perfData = React.useMemo(() => {
     if (stocks.length < 2) return [];
     const cutoff = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
-    const windows = stocks.map((s) => (s.price1Y ?? []).filter((p: any) => p.date >= cutoff));
+    const windows = stocks.map((s) =>
+      sliceRange<any>((s.price1Y ?? []).filter((p: any) => p.date >= cutoff), range)
+    );
     if (windows.some((w) => w.length < 10)) return [];
     const maps = windows.map((w) => new Map(w.map((p: any) => [p.date, p.price])));
     const bases = windows.map((w) => w[0].price);
@@ -322,7 +338,7 @@ function CompareInner() {
       });
       return row;
     });
-  }, [stocks]);
+  }, [stocks, range]);
 
   const bestIdx = (m: MetricDef): number => {
     if (!m.key) return -1;
@@ -399,9 +415,15 @@ function CompareInner() {
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "20px 16px", marginBottom: "2rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
                 <div style={{ fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>
-                  1-Year Performance — % Return
+                  Performance — % Return
                 </div>
-                <ChartModeToggle mode={chartMode} onChange={setChartMode} />
+                <div style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  {/* Only windows the 1-year series actually covers */}
+                  {chartMode === "builtin" && (
+                    <RangeToggle range={range} onChange={setRange} ranges={["1M", "3M", "6M", "YTD", "1Y"]} />
+                  )}
+                  <ChartModeToggle mode={chartMode} onChange={setChartMode} />
+                </div>
               </div>
               {chartMode === "builtin" ? (
                 <ResponsiveContainer width="100%" height={340}>
@@ -492,6 +514,16 @@ function CompareInner() {
                                 color: unavailable ? "var(--text-muted)" : "var(--text-primary)",
                               }}>
                                 {metric.label}
+                                {metric.modeled && (
+                                  <span
+                                    title="Projected from SEC-filed results by Prometheon's trend model — not analyst consensus."
+                                    style={{
+                                      marginLeft: 7, fontFamily: MONO, fontSize: "0.6rem", fontWeight: 700,
+                                      color: "var(--text-muted)", border: "1px solid var(--border)",
+                                      borderRadius: 999, padding: "1px 6px", cursor: "help", whiteSpace: "nowrap",
+                                    }}
+                                  >~est</span>
+                                )}
                               </td>
                               {unavailable ? (
                                 <td colSpan={stocks.length} style={{ textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)" }}>

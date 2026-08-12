@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import CompanyLogo from "@/components/CompanyLogo";
 import TradingViewChart from "@/components/TradingViewChart";
 import PriceChart from "@/components/PriceChart";
@@ -279,6 +280,10 @@ function MarketstackResearchInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<RangeKey>("1Y");
+  // ETF ownership scans a couple of dozen funds' full portfolios, so it's
+  // fetched separately once the main payload has landed — it never delays the
+  // page. null = still loading, [] = genuinely held by none of them.
+  const [etfHolders, setEtfHolders] = useState<any>(null);
   const [chartMode, setChartMode] = useState<ChartMode>("builtin");
   const loadedOnce = useRef(false);
 
@@ -304,9 +309,25 @@ function MarketstackResearchInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Kick the ETF scan off after the main payload resolves, passing the company
+  // name we already have so the endpoint skips its own lookup.
+  useEffect(() => {
+    const t = data?.ticker;
+    if (!t) { setEtfHolders(null); return; }
+    let alive = true;
+    setEtfHolders(null);
+    const nm = data?.profile?.name ? `?name=${encodeURIComponent(data.profile.name)}` : "";
+    fetch(`/api/stock-etfs/${t}${nm}`)
+      .then((r) => r.json())
+      .then((j) => { if (alive) setEtfHolders(Array.isArray(j?.matches) ? j : { matches: [], failed: true }); })
+      .catch(() => { if (alive) setEtfHolders({ matches: [], failed: true }); });
+    return () => { alive = false; };
+  }, [data?.ticker, data?.profile?.name]);
+
   const q = data?.quote;
   const prof = data?.profile;
   const cons = data?.consensus;
+  const fwd = data?.forward;
   const div = data?.dividends;
   const fun = data?.fundamentals;
   const capm = data?.capm;
@@ -661,17 +682,120 @@ function MarketstackResearchInner() {
             </>
           )}
 
-          {/* ── Consensus Estimates ── */}
-          <SectionLabel>Consensus Estimates — EPS &amp; Revenue</SectionLabel>
-          <NASection reason="Marketstack's companyratings endpoint returns price targets and buy/hold/sell ratings, but no forward EPS or revenue estimates. This is the same gap that blocks Forward P/E and Fwd EPS Growth above." />
+          {/* ── Forward Outlook ── */}
+          {fwd && (
+            <>
+              <SectionLabel right={
+                <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
+                  projection · {fwd.confidence} confidence
+                </span>
+              }>Forward Outlook — Projected</SectionLabel>
+              <Grid cols={5}>
+                <MCard label="Fwd EPS (NTM)" value={money(fwd.eps)}
+                  sub={q?.price && fun?.eps ? `from ${money(fun.eps)} TTM` : undefined} />
+                <MCard label="Forward P/E" value={fwd.pe != null ? `${fwd.pe.toFixed(1)}×` : "N/A"}
+                  sub={fwd.peCompressionPct != null ? `${pct(fwd.peCompressionPct, 1)} vs trailing` : undefined}
+                  tone={fwd.pe != null && fun?.peRatio != null && fwd.pe < fun.peRatio ? "good" : "default"} />
+                <MCard label="2-Yr Fwd EPS" value={money(fwd.eps2y)} />
+                <MCard label="Applied Growth" value={pct(fwd.growth * 100, 1)}
+                  tone={fwd.growth > 0 ? "good" : "bad"} />
+                <MCard label="Forward PEG" value={fwd.peg != null ? fwd.peg.toFixed(2) : "N/A"}
+                  sub={fwd.peg != null ? (fwd.peg < 1 ? "under 1 — cheap vs growth" : undefined) : undefined}
+                  tone={fwd.peg != null && fwd.peg < 1.5 ? "good" : "default"} />
+              </Grid>
+              <div style={{ ...CARD, marginTop: 12, padding: "14px 16px", fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                <strong style={{ color: "var(--text-primary)" }}>This is a projection, not analyst consensus.</strong>{" "}
+                No estimates feed exists in the current data stack, so these figures extrapolate {data.ticker}&apos;s
+                own SEC-filed earnings trajectory forward: a weighted blend of{" "}
+                {fwd.inputs.map((i: any, n: number) => (
+                  <span key={i.label}>
+                    {n > 0 ? ", " : ""}
+                    <span style={{ fontFamily: MONO, color: "var(--text-primary)" }}>{i.label} {pct(i.growth * 100, 1)}</span>
+                  </span>
+                ))}
+                {" "}— damped toward the mean and capped at ±50% a year. Treat it as the trend&apos;s own
+                implication, and weigh it against the analyst price targets below.
+              </div>
+            </>
+          )}
 
           {/* ── Ownership Breakdown ── */}
           <SectionLabel>Ownership Breakdown</SectionLabel>
           <NASection reason="No institutional/insider ownership endpoint. This is buildable from SEC EDGAR 13F and Form 4 filings (free, public domain) but needs a parsing layer — it isn't a marketstack feature." />
 
           {/* ── ETF Ownership ── */}
-          <SectionLabel>ETF Ownership</SectionLabel>
-          <NASection reason="The etfholdings endpoint is listed on the Business plan but returns &quot;No data is available for this ticker at the moment&quot; — tested against SPY and QQQ. Worth raising with their support." />
+          <SectionLabel right={
+            etfHolders?.matches?.length ? (
+              <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
+                found in {etfHolders.matches.length} of {etfHolders.scanned} funds scanned
+              </span>
+            ) : undefined
+          }>ETF Ownership</SectionLabel>
+          {!etfHolders ? (
+            <div style={{ ...CARD, padding: "8px 0" }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 16px", borderTop: i ? "1px solid var(--border)" : "none" }}>
+                  <div style={{ width: 26, height: 26, borderRadius: 8, background: "var(--bg-elevated)" }} />
+                  <div style={{ width: 58, height: 12, borderRadius: 4, background: "var(--bg-elevated)" }} />
+                  <div style={{ flex: 1 }} />
+                  <div style={{ width: 72, height: 12, borderRadius: 4, background: "var(--bg-elevated)" }} />
+                </div>
+              ))}
+            </div>
+          ) : etfHolders.matches.length === 0 ? (
+            <NASection reason={
+              etfHolders.failed
+                ? "The ETF holdings scan didn't complete for this ticker."
+                : `${data.ticker} doesn't appear in any of the ${etfHolders.scanned ?? ""} major ETF portfolios scanned. Holdings come from quarterly SEC N-PORT filings, so a very recent index addition may not show up yet.`
+            } />
+          ) : (
+            <>
+              <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.77rem" }}>
+                  <thead>
+                    <tr style={{ color: "var(--text-secondary)", fontFamily: SANS, fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      <th style={{ textAlign: "left", padding: "9px 14px", fontWeight: 600 }}>ETF</th>
+                      <th style={{ textAlign: "left", padding: "9px 10px", fontWeight: 600 }}>Fund</th>
+                      <th style={{ textAlign: "right", padding: "9px 10px", fontWeight: 600 }}>Weight</th>
+                      <th style={{ textAlign: "right", padding: "9px 10px", fontWeight: 600 }}>Rank</th>
+                      <th style={{ textAlign: "right", padding: "9px 10px", fontWeight: 600 }}>Value Held</th>
+                      <th style={{ textAlign: "left", padding: "9px 14px", fontWeight: 600, minWidth: 100 }}>Share of Fund</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {etfHolders.matches.map((m: any) => (
+                      <tr key={m.ticker} style={{ borderTop: "1px solid var(--border)" }}>
+                        <td style={{ padding: "8px 14px" }}>
+                          <Link href={`/etf?ticker=${m.ticker}`} style={{ fontFamily: MONO, fontWeight: 700, color: "var(--accent-gold)", textDecoration: "none" }}>
+                            {m.ticker}
+                          </Link>
+                        </td>
+                        <td style={{ padding: "8px 10px", color: "var(--text-secondary)" }}>
+                          {m.label}
+                          <span style={{ marginLeft: 8, fontSize: "0.6rem", color: "var(--text-muted)", border: "1px solid var(--border)", borderRadius: 999, padding: "1px 7px" }}>{m.category}</span>
+                        </td>
+                        <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: MONO, fontWeight: 700, color: "var(--accent-gold)" }}>{m.weightPct.toFixed(2)}%</td>
+                        <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: MONO, color: "var(--text-muted)" }}>{m.rank ? `#${m.rank}` : "—"}</td>
+                        <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: MONO, color: "var(--text-secondary)" }}>{compact(m.valueUsd)}</td>
+                        <td style={{ padding: "8px 14px" }}>
+                          <div style={{ height: 5, background: "var(--bg-elevated)", borderRadius: 999, overflow: "hidden", minWidth: 80 }}>
+                            <div style={{
+                              width: `${Math.min(100, (m.weightPct / (etfHolders.matches[0]?.weightPct || 1)) * 100)}%`,
+                              height: "100%", background: "var(--accent-gold)", borderRadius: 999,
+                            }} />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 10 }}>
+                Weights are as-of each fund&apos;s latest quarterly SEC N-PORT filing, matched on registrant name.
+                Only a curated set of major funds is scanned, so this is a representative sample, not every ETF holding {data.ticker}.
+              </div>
+            </>
+          )}
 
           {/* ── Earnings Call Transcripts ── */}
           <SectionLabel>Earnings Call Transcripts</SectionLabel>

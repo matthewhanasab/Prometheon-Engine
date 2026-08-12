@@ -107,9 +107,10 @@ export async function GET(
       ? ((price - week52Low) / (week52High - week52Low)) * 100
       : null;
 
-  // Thinned chart series (adjusted) for transport.
-  const step = Math.max(1, Math.floor(series.length / 260));
-  const chart = series.filter((_: any, i: number) => i % step === 0).map((r: any) => ({ date: r.date, price: r.adj }));
+  // Full daily series (adjusted, so a split doesn't draw a cliff). Kept at full
+  // resolution rather than thinned because the page's range toggle slices this
+  // client-side — a thinned 5-year series leaves a 1M window with ~7 points.
+  const chart = series.map((r: any) => ({ date: r.date, price: r.adj }));
 
   // Long-horizon total returns on adjusted closes.
   const anchorFromSeries = (fromDate: string) => series.find((r: any) => r.date >= fromDate) ?? null;
@@ -248,6 +249,9 @@ export async function GET(
       shortPct: total > 0 ? (shortValue / total) * 100 : 0,
     },
     top: holdings.slice(0, 25),
+    // Every position, for the page's "see all" toggle. Opt-in because a broad
+    // fund can carry thousands of rows and the default view shows 25.
+    all: req.nextUrl.searchParams.get("all") ? holdings : undefined,
     // Full lightweight list only when asked (the Compare page needs every
     // holding to compute overlap; the Hub doesn't).
     full: req.nextUrl.searchParams.get("full")

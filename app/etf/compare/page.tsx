@@ -6,6 +6,9 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
 import CompanyLogo from "@/components/CompanyLogo";
+import CompareChart from "@/components/CompareChart";
+import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
+import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 
 // Compare ETFs. The headline is the overlap matrix — how much two funds hold
 // in common — because that's the question index investors actually have:
@@ -14,7 +17,11 @@ const SANS = "'Public Sans', sans-serif";
 const SERIF = "'Space Grotesk', Georgia, serif";
 const MONO = "'Spline Sans Mono', monospace";
 const CARD: React.CSSProperties = { background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22 };
-const COLORS = ["#3B82F6", "var(--accent-gold)", "#22C55E", "#A78BFA"];
+// Series colours must be distinguishable from each other, so they're literal
+// rather than themed: --accent-gold resolves to a blue (#3b6eeb light /
+// #6B9CFF dark) despite the name, which made fund 2 indistinguishable from
+// fund 1 on the performance race.
+const COLORS = ["#3B82F6", "#F59E0B", "#22C55E", "#A78BFA"];
 const MAX = 4;
 
 const money = (n: any) => (n == null || !isFinite(n) ? "—" : `$${Number(n).toFixed(2)}`);
@@ -42,6 +49,8 @@ function CompareInner() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [range, setRange] = useState<RangeKey>("1Y");
+  const [chartMode, setChartMode] = useState<ChartMode>("builtin");
   const booted = useRef(false);
 
   const setT = (i: number, v: string) => setTickers((p) => p.map((x, idx) => (idx === i ? v : x)));
@@ -107,14 +116,17 @@ function CompareInner() {
   // lines all begin at 0 and diverge. Aligned on the intersection of dates
   // (a date missing for one fund would otherwise render as a gap).
   const perfData = useMemo(() => {
-    const series = funds.map((f) => f.chart ?? []).filter((c) => c.length > 5);
+    // Slice to the selected timeframe FIRST, then rebase — so every range
+    // starts its lines at 0 and shows the return over that window specifically.
+    const charts = funds.map((f) => sliceRange(f.chart ?? [], range));
+    const series = charts.filter((c) => c.length > 5);
     if (series.length < 2 || series.length !== funds.length) return [];
-    const maps = funds.map((f) => new Map((f.chart ?? []).map((p: any) => [p.date, p.price])));
+    const maps = charts.map((c) => new Map(c.map((p: any) => [p.date, p.price])));
     // Common window starts at the latest first-date across funds (younger ETFs
     // shorten the race so everyone is measured over the same span).
-    const starts = funds.map((f) => f.chart?.[0]?.date ?? "9999");
+    const starts = charts.map((c) => c[0]?.date ?? "9999");
     const commonStart = starts.reduce((a: string, b: string) => (a > b ? a : b), "0000");
-    const dates = (funds[0].chart ?? [])
+    const dates = charts[0]
       .map((p: any) => p.date)
       .filter((d: string) => d >= commonStart && maps.every((m) => m.has(d)));
     const bases = maps.map((m) => m.get(dates[0]) as number);
@@ -126,7 +138,7 @@ function CompareInner() {
       });
       return row;
     });
-  }, [funds]);
+  }, [funds, range]);
 
   return (
     <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
@@ -172,15 +184,23 @@ function CompareInner() {
           </div>
 
           {/* Performance race */}
-          {perfData.length > 10 && (
+          {(perfData.length > 10 || chartMode === "tv") && (
             <>
-              <div style={{ fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.9rem" }}>
-                Performance
-                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.62rem", marginLeft: 10 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.9rem" }}>
+                <span>Performance</span>
+                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.62rem" }}>
                   % return, dividend-adjusted, over the shared window
+                </span>
+                <span style={{ marginLeft: "auto", alignSelf: "center", display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  {/* TradingView ships its own timeframe controls */}
+                  {chartMode === "builtin" && <RangeToggle range={range} onChange={setRange} />}
+                  <ChartModeToggle mode={chartMode} onChange={setChartMode} />
                 </span>
               </div>
               <div style={{ ...CARD, padding: "18px 14px 8px", marginBottom: "1.8rem" }}>
+                {chartMode === "tv" ? (
+                  <CompareChart tickers={funds.map((f: any) => f.ticker)} />
+                ) : (
                 <ResponsiveContainer width="100%" height={320}>
                   <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
@@ -198,6 +218,7 @@ function CompareInner() {
                     ))}
                   </LineChart>
                 </ResponsiveContainer>
+                )}
               </div>
             </>
           )}
