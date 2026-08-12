@@ -16,13 +16,31 @@ const SUFFIXES =
  */
 export function normalizeCompanyName(raw: string | null | undefined): string {
   if (!raw) return "";
-  let s = raw.replace(/&amp;/g, "&").toLowerCase();
+  let s = raw.replace(/&amp;/g, "&").toLowerCase().trim();
+  // EDGAR appends registrant tags to its own titles: "ENTERGY CORP /DE/",
+  // "HUNTINGTON BANCSHARES INC /MD/". Strip before punctuation removal, or
+  // "/DE/" survives as a stray "de" token.
+  s = s.replace(/\/[a-z]{2,4}\/?\s*$/, "");
   s = s.replace(/[^a-z0-9& ]/g, " ");
   s = s.replace(/\band\b/g, "&");          // unify "and" / "&" before stripping
   s = s.replace(SUFFIXES, " ");
   s = s.replace(/\s+/g, " ").trim();
   s = s.replace(/\s*&\s*$/, "").trim();    // a dangling "&" left by a stripped suffix
-  return s;
+  // "U.S. Bancorp" → "u s bancorp"; rejoin split initials so it meets "us bancorp".
+  s = s.replace(/\b([a-z])\s+(?=[a-z]\b)/g, "$1");
+  return s.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Order-insensitive fallback key. EDGAR files some registrants surname-first
+ * ("SCHWAB CHARLES CORP") while funds report them as trading names ("Charles
+ * Schwab Corp"). Only used when the exact key misses, since sorting tokens
+ * loses information and could in principle collide.
+ */
+export function companyNameKey(raw: string | null | undefined): string {
+  const n = normalizeCompanyName(raw);
+  if (!n) return "";
+  return n.split(" ").filter(Boolean).sort().join(" ");
 }
 
 export type UniverseEntry = { ticker: string; label: string; category: string };

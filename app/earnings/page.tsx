@@ -50,115 +50,199 @@ function Label({ children, hint }: { children: React.ReactNode; hint?: string })
 
 type Pt = { date: string; label: string; value: number };
 
-type CalEntry = { ticker: string; name: string; cik: string; last: string; next: string; regular: boolean };
+type Session = "bmo" | "amc" | "other";
+type CalEntry = {
+  ticker: string; name: string; last: string; next: string;
+  session: Session; regular: boolean;
+};
+type Universe = "sp500" | "all";
 
-const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DAY_NAMES = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
 const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function parseISO(iso: string) { return new Date(iso + "T00:00:00Z"); }
-function fmtDay(iso: string) {
+const parseISO = (iso: string) => new Date(iso + "T00:00:00Z");
+const isoOf = (d: Date) => d.toISOString().slice(0, 10);
+function addDaysISO(iso: string, n: number) {
+  const d = parseISO(iso); d.setUTCDate(d.getUTCDate() + n); return isoOf(d);
+}
+/** Monday of the week containing `iso`. */
+function mondayOf(iso: string) {
   const d = parseISO(iso);
-  return `${WEEKDAY[d.getUTCDay()]}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
-}
-function relDays(iso: string) {
-  const now = new Date(); now.setUTCHours(0, 0, 0, 0);
-  const n = Math.round((parseISO(iso).getTime() - now.getTime()) / 864e5);
-  if (n <= 0) return "due";
-  if (n === 1) return "tomorrow";
-  if (n < 7) return `in ${n}d`;
-  if (n < 30) return `in ${Math.round(n / 7)}w`;
-  return `in ${Math.round(n / 30)}mo`;
+  const dow = d.getUTCDay();             // 0 = Sunday
+  const back = dow === 0 ? 6 : dow - 1;  // Sunday belongs to the week just gone
+  return addDaysISO(iso, -back);
 }
 
-// Upcoming earnings — market-wide list of the next expected report date for a
-// spread of widely-followed companies. Dates are projected from each company's
-// actual SEC 8-K (item 2.02) filing cadence; the endpoint does the derivation.
-// Tickers, dates, icons — clicking a row loads that company's history below.
+// Upcoming earnings, as a trading-week calendar: one column per weekday, split
+// into the two sessions companies actually report in. Which session comes from
+// the acceptance timestamp on each company's past 8-K item 2.02 filings —
+// before 9:30 ET is a pre-open release, 16:00 ET or later is post-close.
 function UpcomingEarnings({ onPick }: { onPick: (t: string) => void }) {
-  const [entries, setEntries] = useState<CalEntry[] | null>(null);
+  const [universe, setUniverse] = useState<Universe>("sp500");
+  const [byUniverse, setByUniverse] = useState<Record<string, CalEntry[]>>({});
+  const [progress, setProgress] = useState<{ done: number; total: number; complete: boolean } | null>(null);
   const [failed, setFailed] = useState(false);
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const [weekStart, setWeekStart] = useState(() => mondayOf(new Date().toISOString().slice(0, 10)));
 
+  // The scan can exceed a single request from cold, so keep polling while the
+  // API reports itself incomplete — each round resumes further through the
+  // universe and returns a fuller set.
   useEffect(() => {
     let alive = true;
-    fetch("/api/earnings-calendar")
-      .then((r) => r.json())
-      .then((j) => { if (alive) { if (j?.entries) setEntries(j.entries); else setFailed(true); } })
-      .catch(() => { if (alive) setFailed(true); });
+    setFailed(false);
+    (async () => {
+      for (let round = 0; round < 6; round++) {
+        try {
+          const res = await fetch(`/api/earnings-calendar?universe=${universe}`);
+          const j = await res.json();
+          if (!alive) return;
+          if (!Array.isArray(j?.entries)) { setFailed(true); return; }
+          setByUniverse((prev) => ({ ...prev, [universe]: j.entries }));
+          setProgress(j.progress ?? null);
+          if (j.progress?.complete) return;
+        } catch {
+          if (alive) setFailed(true);
+          return;
+        }
+      }
+    })();
     return () => { alive = false; };
-  }, []);
+  }, [universe]);
 
-  // Group by calendar month for light dividers.
-  const groups: { key: string; label: string; rows: CalEntry[] }[] = [];
-  for (const e of entries ?? []) {
-    const d = parseISO(e.next);
-    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
-    const label = `${MONTHS_LONG[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-    let g = groups.find((x) => x.key === key);
-    if (!g) { g = { key, label, rows: [] }; groups.push(g); }
-    g.rows.push(e);
-  }
+  const entries = byUniverse[universe];
+  const loading = !entries;
+
+  const days = Array.from({ length: 5 }, (_, i) => addDaysISO(weekStart, i));
+  const weekEnd = days[4];
+  const inWeek = (entries ?? []).filter((e) => e.next >= weekStart && e.next <= weekEnd);
+  // Two visible sessions; the rare intraday filing rides with the after-close
+  // group rather than being dropped, and its tooltip says so.
+  const bucket = (day: string, s: "bmo" | "amc") =>
+    inWeek
+      .filter((e) => e.next === day && (s === "bmo" ? e.session === "bmo" : e.session !== "bmo"))
+      .sort((a, b) => a.ticker.localeCompare(b.ticker));
+
+  const label = (() => {
+    const d = parseISO(weekStart);
+    return `WEEK OF ${MONTHS_LONG[d.getUTCMonth()].toUpperCase()} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+  })();
+
+  const navBtn: React.CSSProperties = {
+    background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)",
+    borderRadius: 999, padding: "7px 14px", fontFamily: SANS, fontSize: "0.62rem", fontWeight: 700,
+    letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", whiteSpace: "nowrap",
+  };
 
   return (
     <>
-      <Label hint="expected dates, projected from SEC 8-K (item 2.02) filing history">Upcoming Earnings</Label>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", margin: "1.6rem 0 0.9rem" }}>
+        <div style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 600, letterSpacing: "-0.01em", color: "var(--text-primary)" }}>
+          {label}
+        </div>
+
+        <div style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
+          {([["sp500", "S&P 500"], ["all", "All Stocks"]] as const).map(([k, lab]) => (
+            <button key={k} type="button" onClick={() => setUniverse(k)}
+              style={{
+                padding: "5px 13px", borderRadius: 999, border: "none", cursor: "pointer",
+                fontFamily: SANS, fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em",
+                background: universe === k ? "var(--accent-gold)" : "transparent",
+                color: universe === k ? "var(--on-accent)" : "var(--text-secondary)",
+              }}>{lab}</button>
+          ))}
+        </div>
+
+        <div style={{ marginLeft: "auto", display: "inline-flex", gap: 8, alignItems: "center" }}>
+          <button type="button" style={navBtn} onClick={() => setWeekStart((w) => addDaysISO(w, -7))}>◀ Prev</button>
+          <button type="button" style={navBtn} onClick={() => setWeekStart(mondayOf(todayISO))}>This week</button>
+          <button type="button" style={navBtn} onClick={() => setWeekStart((w) => addDaysISO(w, 7))}>Next ▶</button>
+        </div>
+      </div>
+
+      {progress && !progress.complete && !failed && (
+        <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginBottom: 8, fontFamily: MONO }}>
+          Scanning SEC filings — {progress.done} of {progress.total} companies…
+        </div>
+      )}
       {failed && (
         <div style={{ ...CARD, padding: "18px 20px", fontSize: "0.8rem", color: "var(--text-muted)" }}>
           Calendar not available with current data.
         </div>
       )}
-      {!entries && !failed && (
-        <div style={{ ...CARD, padding: "8px 6px" }}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderTop: i ? "1px solid var(--border)" : "none" }}>
-              <div style={{ width: 26, height: 26, borderRadius: 8, background: "var(--bg-elevated)" }} />
-              <div style={{ width: 54, height: 12, borderRadius: 4, background: "var(--bg-elevated)" }} />
-              <div style={{ flex: 1 }} />
-              <div style={{ width: 90, height: 12, borderRadius: 4, background: "var(--bg-elevated)" }} />
-            </div>
-          ))}
+
+      {!failed && (
+        <div style={{ overflowX: "auto", paddingBottom: 4 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(184px, 1fr))", gap: 10, minWidth: 940 }}>
+            {days.map((day, i) => {
+              const isToday = day === todayISO;
+              const d = parseISO(day);
+              const cols: [string, CalEntry[]][] = [
+                ["Before Open", bucket(day, "bmo")],
+                ["After Close", bucket(day, "amc")],
+              ];
+              return (
+                <div key={day} style={{ ...CARD, padding: 0, overflow: "hidden", borderColor: isToday ? "var(--accent-gold)" : "var(--border)" }}>
+                  <div style={{
+                    padding: "10px 12px", textAlign: "center",
+                    background: isToday ? "var(--accent-gold)" : "var(--bg-elevated)",
+                    color: isToday ? "var(--on-accent)" : "var(--text-primary)",
+                    fontFamily: SANS, fontSize: "0.62rem", fontWeight: 800, letterSpacing: "0.12em",
+                  }}>
+                    {DAY_NAMES[i]}
+                    <div style={{ fontFamily: MONO, fontSize: "0.6rem", fontWeight: 500, opacity: 0.75, letterSpacing: 0, marginTop: 2 }}>
+                      {MONTHS[d.getUTCMonth()]} {d.getUTCDate()}
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border)" }}>
+                    {cols.map(([heading, list]) => (
+                      <div key={heading} style={{ background: "var(--bg-surface)", padding: "8px 6px", minHeight: 96 }}>
+                        <div style={{
+                          fontFamily: SANS, fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase",
+                          letterSpacing: "0.09em", color: "var(--text-muted)", textAlign: "center", marginBottom: 6,
+                        }}>{heading}</div>
+                        {loading ? (
+                          Array.from({ length: 3 }).map((_, k) => (
+                            <div key={k} style={{ height: 26, borderRadius: 7, background: "var(--bg-elevated)", marginBottom: 4 }} />
+                          ))
+                        ) : list.length === 0 ? (
+                          <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.62rem", paddingTop: 10 }}>—</div>
+                        ) : (
+                          list.map((e) => (
+                            <button key={e.ticker} type="button" onClick={() => onPick(e.ticker)}
+                              title={`${e.name} — expected ${e.next}, ${e.session === "bmo" ? "before open" : e.session === "amc" ? "after close" : "filed during market hours"} (last reported ${e.last})`}
+                              style={{
+                                width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                                gap: 6, marginBottom: 4, padding: "4px 5px", cursor: "pointer",
+                                background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8,
+                              }}>
+                              <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: "0.68rem", color: "var(--text-primary)" }}>
+                                {e.ticker}
+                              </span>
+                              {/* No monogram fallback here: the ticker is already
+                                  the label, so a "ND" tile beside "NDSN" just
+                                  reads as doubled text. */}
+                              <CompanyLogo ticker={e.ticker} size={20} />
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
-      {entries && entries.length > 0 && (
-        <div style={{ ...CARD, padding: "6px 0", overflow: "hidden" }}>
-          {groups.map((g) => (
-            <div key={g.key}>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px 16px 6px",
-                fontFamily: SANS, fontSize: "0.56rem", fontWeight: 700, textTransform: "uppercase",
-                letterSpacing: "0.13em", color: "var(--text-muted)",
-              }}>
-                <span>{g.label}</span>
-                <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
-                <span style={{ fontWeight: 500 }}>{g.rows.length}</span>
-              </div>
-              {g.rows.map((e) => (
-                <button key={e.ticker} type="button" onClick={() => onPick(e.ticker)}
-                  title={`${e.name} · last reported ${fmtDay(e.last)}`}
-                  style={{
-                    width: "100%", display: "flex", alignItems: "center", gap: 12,
-                    padding: "9px 16px", background: "transparent", border: "none",
-                    borderTop: "1px solid var(--border)", cursor: "pointer", textAlign: "left",
-                  }}
-                  onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--bg-elevated)")}
-                  onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}
-                >
-                  <CompanyLogo ticker={e.ticker} size={26} fallback />
-                  <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: "0.82rem", minWidth: 56, color: "var(--text-primary)" }}>{e.ticker}</span>
-                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "0.76rem", color: "var(--text-muted)" }}>{e.name}</span>
-                  <span style={{ fontFamily: MONO, fontSize: "0.8rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{fmtDay(e.next)}</span>
-                  <span style={{
-                    fontFamily: MONO, fontSize: "0.6rem", fontWeight: 600, color: "var(--accent-gold)",
-                    background: "color-mix(in srgb, var(--accent-gold) 14%, transparent)",
-                    borderRadius: 999, padding: "2px 8px", minWidth: 52, textAlign: "center", whiteSpace: "nowrap",
-                  }}>{relDays(e.next)}</span>
-                </button>
-              ))}
-            </div>
-          ))}
-          <div style={{ fontSize: "0.64rem", color: "var(--text-muted)", padding: "10px 16px 8px", borderTop: "1px solid var(--border)" }}>
-            Expected dates are projected from each company&apos;s real SEC 8-K (item 2.02) earnings-announcement cadence — not official company-announced dates. Hover a row for its last confirmed report.
-          </div>
+
+      {!loading && !failed && (
+        <div style={{ fontSize: "0.64rem", color: "var(--text-muted)", marginTop: 10, lineHeight: 1.6 }}>
+          {inWeek.length} {universe === "sp500" ? "S&P 500" : "S&P 1500"} companies expected this week.
+          Dates and sessions are <strong>projected</strong> from each company&apos;s own SEC 8-K (item 2.02)
+          filing history — they are not company-announced dates, so a firm that shifts its schedule will move.
+          Index membership comes from the holdings of the funds tracking it, as filed on Form N-PORT.
         </div>
       )}
     </>
@@ -246,6 +330,7 @@ function EarningsInner() {
         Reported results by quarter, as filed with the SEC — plus the upcoming release calendar.
       </div>
 
+      <Label hint="expected dates &amp; sessions, projected from SEC 8-K (item 2.02) filing history">Upcoming Earnings</Label>
       <UpcomingEarnings onPick={pick} />
 
       <div ref={companyRef} style={{ scrollMarginTop: 12 }} />
