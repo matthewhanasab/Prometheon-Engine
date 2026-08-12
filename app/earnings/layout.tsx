@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 
+const DESC =
+  "Weekly earnings calendar for the S&P 500 and the broader US market — expected report dates derived from each company's SEC 8-K filing history.";
+
 export const metadata: Metadata = {
-  title: "Earnings — Reported Results & Calendar",
-  description: "Reported EPS, revenue, and net income by quarter with year-over-year growth, plus the upcoming earnings and economic calendar.",
+  title: "Earnings Calendar — Upcoming Report Dates",
+  description: DESC,
   alternates: { canonical: "/earnings" },
   openGraph: {
-    title: "Earnings — Reported Results & Calendar · Prometheon Engine",
-    description: "Reported EPS, revenue, and net income by quarter with year-over-year growth, plus the upcoming earnings and economic calendar.",
+    title: "Earnings Calendar — Upcoming Report Dates · Prometheon Engine",
+    description: DESC,
     url: "https://prometheonengine.com/earnings",
   },
 };
