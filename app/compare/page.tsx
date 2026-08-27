@@ -20,6 +20,8 @@ import CompanyLogo from "@/components/CompanyLogo";
 // indistinguishable from ticker 1's on the performance race.
 const COLORS = ["#3B82F6", "#F59E0B", "#22C55E", "#A78BFA", "#EF4444"];
 const MAX_TICKERS = 5;
+// Shown when no ?t= is given, so /compare opens on a worked example.
+const DEFAULT_TICKERS = "AAPL,MSFT,GOOGL";
 const SANS = "'Public Sans', sans-serif";
 const MONO = "'Spline Sans Mono', monospace";
 const SERIF = "'Space Grotesk', Georgia, serif";
@@ -276,9 +278,12 @@ function EmptyHint({ title, desc }: { title: string; desc: string }) {
 function CompareInner() {
   const search = useSearchParams();
   // Seeded from the URL at first render rather than written back in an effect,
-  // so a deep link paints its tickers immediately and a bare visit starts empty.
+  // so the tickers paint before their data arrives. A bare visit falls back to
+  // a default trio so the page demonstrates itself instead of opening empty;
+  // those three stay hot in the edge cache precisely because they're the
+  // default, so the fallback costs a cache hit rather than a cold fetch.
   const deepLink = React.useMemo(
-    () => (search.get("t") ?? "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean).slice(0, MAX_TICKERS),
+    () => (search.get("t") ?? DEFAULT_TICKERS).split(",").map((s) => s.trim().toUpperCase()).filter(Boolean).slice(0, MAX_TICKERS),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );

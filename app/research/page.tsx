@@ -18,6 +18,8 @@ import TradingViewWidget, { tvSymbol } from "@/components/TradingViewWidget";
 const MONO = "'Spline Sans Mono', monospace";
 const SANS = "'Public Sans', sans-serif";
 const SERIF = "'Space Grotesk', Georgia, serif";
+// Loaded when no ?ticker= is given, so /research opens on a worked example.
+const DEFAULT_TICKER = "AAPL";
 const CARD: React.CSSProperties = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
 };
@@ -301,11 +303,14 @@ function MarketstackResearchInner() {
     } finally { setLoading(false); }
   }
 
+  // A bare visit opens on a default ticker rather than the empty skeleton, so
+  // the page shows what it does without the visitor having to type first. Being
+  // the default keeps it hot in the edge cache, so it costs a cache hit.
+  // EmptyPreview still covers the gap until the payload lands.
   useEffect(() => {
     if (loadedOnce.current) return;
     loadedOnce.current = true;
-    const t = search.get("ticker");
-    if (t) load(t);
+    load(search.get("ticker") ?? DEFAULT_TICKER);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
