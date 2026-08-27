@@ -496,5 +496,13 @@ export async function GET(
         profile: infoRes.err,
       },
     },
+  }, {
+    // Every upstream call here is fetched with a 24h revalidate, so the payload
+    // is already a daily snapshot — an edge cache in front of it adds no
+    // staleness the data doesn't already have. Without this the function re-ran
+    // on every single load: ~500ms warm, ~6s cold, per visitor, per ticker.
+    // The window is kept shorter than the other snapshot routes' 6h because
+    // this one carries the quote the header prints.
+    headers: { "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" },
   });
 }
