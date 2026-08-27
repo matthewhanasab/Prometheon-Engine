@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:earnings": "node scripts/build-earnings-calendar.mjs"
+    "build:earnings": "node scripts/build-earnings-calendar.mjs",
+    "build:congress": "node scripts/build-congress-trades.mjs --years 2026,2025"
   },
   "dependencies": {
     "next": "16.2.9",
@@ -23,6 +24,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "unpdf": "^1.8.1"
   }
 }
