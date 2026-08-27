@@ -2,10 +2,10 @@
 import { useState, useEffect } from "react";
 
 export default function ThemeToggle({ floating = false }: { floating?: boolean }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
 
   useEffect(() => {
-    const t = (document.documentElement.dataset.theme as "light" | "dark") || "light";
+    const t = (document.documentElement.dataset.theme as "light" | "dark") || "dark";
     setTheme(t);
   }, []);
 

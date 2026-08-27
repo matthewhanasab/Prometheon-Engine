@@ -275,7 +275,16 @@ function EmptyHint({ title, desc }: { title: string; desc: string }) {
 
 function CompareInner() {
   const search = useSearchParams();
-  const [tickers, setTickers] = useState<string[]>(["", "", "", "", ""]);
+  // Seeded from the URL at first render rather than written back in an effect,
+  // so a deep link paints its tickers immediately and a bare visit starts empty.
+  const deepLink = React.useMemo(
+    () => (search.get("t") ?? "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean).slice(0, MAX_TICKERS),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+  const [tickers, setTickers] = useState<string[]>(
+    () => [...deepLink, "", "", "", "", ""].slice(0, MAX_TICKERS)
+  );
   const [stocks, setStocks] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -305,13 +314,18 @@ function CompareInner() {
     } finally { setLoading(false); }
   }
 
+  // Only a ?t= deep link auto-runs. Arriving at /compare with nothing to compare
+  // used to fetch AAPL and MSFT anyway, which spent two upstream round trips on
+  // a pair the visitor never asked for and hid the empty state below. Bare
+  // visits now land on the placeholders, matching the research page.
   useEffect(() => {
     if (booted.current) return;
     booted.current = true;
-    const q = (search.get("t") ?? "AAPL,MSFT").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
-    const padded = [...q, "", "", "", "", ""].slice(0, MAX_TICKERS);
-    setTickers(padded);
-    run(q);
+    if (!deepLink.length) return;
+    // run() flips loading state on its first line; scheduling it keeps that out
+    // of the effect body so the initial paint isn't a cascading render.
+    const id = setTimeout(() => run(deepLink), 0);
+    return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
