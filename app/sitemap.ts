@@ -21,6 +21,7 @@ const ROUTES: { path: string; priority: number; freq: MetadataRoute.Sitemap[numb
   { path: "/insider", priority: 0.6, freq: "daily" },
   { path: "/congress", priority: 0.6, freq: "daily" },
   { path: "/sec", priority: 0.6, freq: "daily" },
+  { path: "/options-chain", priority: 0.7, freq: "hourly" },
   { path: "/covered-calls", priority: 0.6, freq: "daily" },
   { path: "/puts", priority: 0.6, freq: "daily" },
   { path: "/portfolio", priority: 0.6, freq: "weekly" },

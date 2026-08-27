@@ -325,11 +325,13 @@ function CompareInner() {
   // visits now land on the placeholders, matching the research page.
   useEffect(() => {
     if (booted.current) return;
-    booted.current = true;
     if (!deepLink.length) return;
     // run() flips loading state on its first line; scheduling it keeps that out
-    // of the effect body so the initial paint isn't a cascading render.
-    const id = setTimeout(() => run(deepLink), 0);
+    // of the effect body so the initial paint isn't a cascading render. The
+    // guard is set when the timer fires rather than up front — setting it here
+    // would let StrictMode's mount/cleanup/mount cancel the scheduled run and
+    // then skip it, which only shows up in development.
+    const id = setTimeout(() => { booted.current = true; run(deepLink); }, 0);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

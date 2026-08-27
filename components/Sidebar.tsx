@@ -58,6 +58,7 @@ const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
   {
     label: "Options",
     items: [
+      { href: "/options-chain", label: "Options Chain" },
       { href: "/covered-calls", label: "Covered Calls" },
       { href: "/puts",          label: "Cash-Secured Puts" },
     ],
