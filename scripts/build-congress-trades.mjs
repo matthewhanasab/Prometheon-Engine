@@ -28,8 +28,12 @@
 //            tables with a dedicated ticker column — cleaner than the House
 //            PDFs. Reports under /search/view/paper/ are scans and are skipped.
 //
-// Skipped paper filings are counted and reported in the snapshot so the page
-// can be honest about coverage rather than silently implying completeness.
+// Two kinds of filing yield no rows, and both are expected rather than failures:
+// paper scans (no text layer), and filings that disclose only bonds, municipal
+// debt, hedge funds or private stock — assets with no ticker. Roughly a third of
+// House PTRs are the latter, dominated by Treasury and muni holdings. Both are
+// counted and reported in the snapshot so the page can state its coverage
+// instead of silently implying completeness.
 //
 // Run:  node scripts/build-congress-trades.mjs [--years 2026,2025] [--limit N]
 // Out:  data/congress-trades.json

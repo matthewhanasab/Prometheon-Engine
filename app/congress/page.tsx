@@ -26,8 +26,10 @@ interface CongressTrade {
 interface Coverage {
   housePtrTotal: number;
   housePaperSkipped: number;
+  houseEmpty: number;
   senatePtrTotal: number;
   senatePaperSkipped: number;
+  senateEmpty: number;
   tradesParsed: number;
   members: number;
   tickers: number;
@@ -326,7 +328,9 @@ export default function CongressPage() {
             from {data.coverage.housePtrTotal.toLocaleString("en-US")} House and {data.coverage.senatePtrTotal.toLocaleString("en-US")} Senate
             periodic transaction reports.{" "}
             {(data.coverage.housePaperSkipped + data.coverage.senatePaperSkipped).toLocaleString("en-US")} filings
-            submitted on paper are excluded — those are scans with no text to read.
+            submitted on paper are excluded — those are scans with no text to read, and{" "}
+            {(data.coverage.houseEmpty + data.coverage.senateEmpty).toLocaleString("en-US")} disclosed only
+            bonds, funds or private holdings, which carry no ticker.
             Amounts are the ranges the STOCK Act requires; exact values are never disclosed, and the totals above use
             range midpoints. Rows marked <span style={{ color: "var(--negative)" }}>*</span> carry dates the filing
             itself got wrong — shown as filed rather than corrected. Snapshot generated {new Date(data.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}.{" "}
