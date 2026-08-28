@@ -333,6 +333,9 @@ function MarketstackResearchInner() {
   const prof = data?.profile;
   const cons = data?.consensus;
   const fwd = data?.forward;
+  // Analyst consensus, kept distinct from `fwd` — that one is our own trend
+  // projection off filed results, this is what the covering analysts publish.
+  const cf = data?.consensusForward;
   const div = data?.dividends;
   const fun = data?.fundamentals;
   const capm = data?.capm;
@@ -475,9 +478,12 @@ function MarketstackResearchInner() {
               {/* Valuation multiples */}
               <BenchGroup accent={ACCENTS.valuation} rows={[
                 { label: "TTM P/E", value: mult(fun.peRatio), raw: fun.peRatio, range: [20, 28], unit: "x" },
-                { label: "Forward P/E", value: "", na: true },
+                cf?.pe != null
+                  ? { label: "Forward P/E", value: mult(cf.pe), raw: cf.pe, range: [18, 26], unit: "x",
+                      note: `Analyst consensus · next 12 months${cf.analysts ? ` · ${cf.analysts} estimates` : ""}` }
+                  : { label: "Forward P/E", value: "", na: true },
                 { label: "TTM P/S", value: mult(fun.ps), raw: fun.ps, range: [1.8, 2.6], unit: "x" },
-                { label: "Forward P/S", value: "", na: true },
+                { label: "Forward P/S", value: "", na: true, naReason: "Needs revenue estimates" },
                 { label: "PEG Ratio", value: mult(fun.pegRatio), raw: fun.pegRatio, range: [1, 2], unit: "x",
                   note: fun.pegRatio == null ? "Needs positive EPS growth" : undefined },
               ]} />
@@ -486,10 +492,14 @@ function MarketstackResearchInner() {
               <BenchGroup accent={ACCENTS.growth} rows={[
                 { label: "TTM EPS Growth", value: pctOf(fun.epsGrowth, 1),
                   raw: fun.epsGrowth != null ? fun.epsGrowth * 100 : null, range: [8, 12], unit: "%", higherBetter: true },
-                { label: "Next Yr EPS Growth", value: "", na: true },
+                cf?.nextYearEpsGrowth != null
+                  ? { label: "Next Yr EPS Growth", value: pctOf(cf.nextYearEpsGrowth, 1),
+                      raw: cf.nextYearEpsGrowth * 100, range: [8, 12], unit: "%", higherBetter: true,
+                      note: `Consensus ${cf.currentYearLabel} → ${cf.nextYearLabel}${cf.analysts ? ` · ${cf.analysts} estimates` : ""}` }
+                  : { label: "Next Yr EPS Growth", value: "", na: true },
                 { label: "TTM Rev Growth", value: pctOf(fun.revenueGrowth, 1),
                   raw: fun.revenueGrowth != null ? fun.revenueGrowth * 100 : null, range: [4.5, 6.5], unit: "%", higherBetter: true },
-                { label: "Next Yr Rev Growth", value: "", na: true },
+                { label: "Next Yr Rev Growth", value: "", na: true, naReason: "Needs revenue estimates" },
                 { label: "Total Revenue", value: compact(fun.revenue), note: "Trailing twelve months" },
               ]} />
 

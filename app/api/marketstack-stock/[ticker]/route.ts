@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
 import { get10YTreasury } from "@/lib/fred";
 import { guard } from "@/lib/rateLimit";
+import { fetchConsensusEps } from "@/lib/analystEstimates";
 import { dropDividendOutliers } from "@/lib/dividends";
 import { forwardEstimate } from "@/lib/forwardEstimates";
 
@@ -127,6 +128,12 @@ export async function GET(
   // SEC's own ticker map, cached 24h.
   const cikPromise = resolveCik(t);
   const factsPromise = cikPromise.then((cik) => (cik ? fetchFacts(cik) : null));
+
+  // Analyst consensus starts here too. It's a single call to a different host,
+  // so it costs nothing against the marketstack pool and is awaited only at the
+  // end — a failure returns null rather than taking the response down, since
+  // every other metric on the page stands without it.
+  const consensusPromise = fetchConsensusEps(t).catch(() => null);
 
   // Cheap validity gate BEFORE the full fanout. A single eod probe: if the
   // symbol returns no data (garbage-ticker enumeration — AAAA, AAAB, …), bail
@@ -460,9 +467,21 @@ export async function GET(
     longReturns,
     consensus,
     analysts,
-    // Forward view. `forward` is a trend projection off SEC-filed results — no
-    // analyst-consensus EPS feed exists in this stack — while `consensus` above
-    // carries the real licensed forward input (analyst price targets).
+    // Forward view, from two different kinds of source kept deliberately apart.
+    // `consensusForward` is what analysts actually publish; `forward` below is
+    // our own projection off SEC-filed results. They will disagree, and the UI
+    // must never present the second as the first.
+    consensusForward: await (async () => {
+      const c = await consensusPromise;
+      if (!c) return null;
+      const px = last.close;
+      return {
+        ...c,
+        // Forward P/E on next-twelve-month consensus, not on a fiscal year that
+        // may be days from closing.
+        pe: c.ntmEps != null && c.ntmEps > 0 && px > 0 ? px / c.ntmEps : null,
+      };
+    })(),
     forward: forwardEstimate(last.close, fundamentals?.eps, {
       currentQuarterEpsGrowth: fundamentals?.currentQuarterEpsGrowth,
       epsGrowth: fundamentals?.epsGrowth,
