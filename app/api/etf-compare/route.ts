@@ -96,5 +96,12 @@ export async function GET(req: NextRequest) {
   // Strip the heavy full-holdings arrays before returning.
   funds.forEach((f: any) => delete f._full);
 
-  return NextResponse.json({ funds, overlaps });
+  return NextResponse.json({ funds, overlaps }, {
+    // Assembling this means a full holdings pull per fund plus the pairwise
+    // overlap, which measured ~8s uncached — and the route was returning
+    // must-revalidate, so every visitor paid it. Holdings are published daily
+    // and the returns are computed off end-of-day closes, so an edge cache adds
+    // no staleness the data doesn't already have.
+    headers: { "Cache-Control": "public, max-age=0, s-maxage=21600, stale-while-revalidate=86400" },
+  });
 }
