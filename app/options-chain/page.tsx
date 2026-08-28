@@ -127,9 +127,10 @@ function Detail({ c, spot, onClose }: { c: Contract; spot: number | null; onClos
           </div>
         </div>
         <button onClick={onClose} style={{
-          background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)",
-          borderRadius: 999, padding: "4px 12px", fontSize: "0.7rem", cursor: "pointer", fontFamily: SANS,
-        }}>Close</button>
+          background: "var(--accent-gold)", border: "none", color: "var(--on-accent)",
+          borderRadius: 999, padding: "8px 18px", fontSize: "0.72rem", fontWeight: 700,
+          cursor: "pointer", fontFamily: SANS, whiteSpace: "nowrap",
+        }}>← Back to chain</button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 20 }}>
@@ -208,10 +209,23 @@ function ChainTable({
     return () => cancelAnimationFrame(id);
   }, [calls, puts]);
 
+  // Both header rows stick. Only the lower one did before, so scrolling into the
+  // chain took the Calls/Puts labels away and left two mirrored blocks of
+  // numbers with nothing saying which was which.
+  const BAND_H = 26;
+  const thBand: React.CSSProperties = {
+    ...LABEL, padding: "6px 8px", height: BAND_H, whiteSpace: "nowrap",
+    position: "sticky", top: 0, zIndex: 2, background: "var(--bg-primary)",
+    fontSize: "0.62rem", fontWeight: 700,
+  };
   const th: React.CSSProperties = {
     ...LABEL, padding: "7px 8px", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
-    position: "sticky", top: 0, background: "var(--bg-primary)", textAlign: "right",
+    position: "sticky", top: BAND_H, zIndex: 2, background: "var(--bg-primary)", textAlign: "right",
   };
+  // A single rule down the strike column separates the two books at any scroll
+  // position, so the side is legible without reading the header.
+  const callEdge: React.CSSProperties = { borderRight: "1px solid var(--border)" };
+  const putEdge: React.CSSProperties = { borderLeft: "1px solid var(--border)" };
   const td: React.CSSProperties = {
     padding: "5px 8px", fontFamily: MONO, fontSize: "0.74rem", textAlign: "right", whiteSpace: "nowrap",
   };
@@ -232,14 +246,20 @@ function ChainTable({
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th colSpan={5} style={{ ...th, textAlign: "left", color: "var(--positive)" }}>Calls</th>
-              <th style={{ ...th, textAlign: "center" }}>Strike</th>
-              <th colSpan={5} style={{ ...th, textAlign: "left", color: "var(--negative)" }}>Puts</th>
+              <th colSpan={5} style={{ ...thBand, ...callEdge, textAlign: "center", color: "var(--positive)" }}>
+                ▲ Calls — right to buy
+              </th>
+              <th style={{ ...thBand, textAlign: "center", color: "var(--text-secondary)" }}>Strike</th>
+              <th colSpan={5} style={{ ...thBand, ...putEdge, textAlign: "center", color: "var(--negative)" }}>
+                ▼ Puts — right to sell
+              </th>
             </tr>
             <tr>
-              <th style={th}>OI</th><th style={th}>Vol</th><th style={th}>IV</th><th style={th}>Delta</th><th style={th}>Bid/Ask</th>
+              <th style={th}>OI</th><th style={th}>Vol</th><th style={th}>IV</th><th style={th}>Delta</th>
+              <th style={{ ...th, ...callEdge }}>Bid/Ask</th>
               <th style={{ ...th, textAlign: "center" }} />
-              <th style={th}>Bid/Ask</th><th style={th}>Delta</th><th style={th}>IV</th><th style={th}>Vol</th><th style={th}>OI</th>
+              <th style={{ ...th, ...putEdge, textAlign: "left" }}>Bid/Ask</th>
+              <th style={th}>Delta</th><th style={th}>IV</th><th style={th}>Vol</th><th style={th}>OI</th>
             </tr>
           </thead>
           <tbody>
@@ -257,14 +277,14 @@ function ChainTable({
                   {cell(c, "volume", int)}
                   {cell(c, "iv", (v) => pct(v))}
                   {cell(c, "delta", (v) => plain(v, 3))}
-                  <td style={{ ...td, cursor: c ? "pointer" : "default", color: c && selected === c.symbol ? "var(--accent-gold)" : undefined }}
+                  <td style={{ ...td, ...callEdge, cursor: c ? "pointer" : "default", color: c && selected === c.symbol ? "var(--accent-gold)" : undefined }}
                     onClick={() => c && onPick(c)}>
                     {c ? `${money(c.bid)}/${money(c.ask)}` : "—"}
                   </td>
                   <td style={{ ...td, textAlign: "center", fontWeight: 600, color: atm ? "var(--accent-gold)" : "var(--text-primary)" }}>
                     {k}
                   </td>
-                  <td style={{ ...td, textAlign: "left", cursor: p ? "pointer" : "default", color: p && selected === p.symbol ? "var(--accent-gold)" : undefined }}
+                  <td style={{ ...td, ...putEdge, textAlign: "left", cursor: p ? "pointer" : "default", color: p && selected === p.symbol ? "var(--accent-gold)" : undefined }}
                     onClick={() => p && onPick(p)}>
                     {p ? `${money(p.bid)}/${money(p.ask)}` : "—"}
                   </td>
@@ -290,6 +310,13 @@ function OptionsChainInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<Contract | null>(null);
+  // The chain is scrolled when a row is clicked, so the detail would otherwise
+  // open below the fold on the view it replaces.
+  const pick = useCallback((c: Contract) => {
+    setPicked(c);
+    document.querySelector(".main-content")?.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0 });
+  }, []);
   const booted = React.useRef(false);
 
   const load = useCallback(async (ticker: string, expiry?: string) => {
@@ -352,6 +379,10 @@ function OptionsChainInner() {
 
       {chain && (
         <>
+          {picked ? (
+            <Detail c={picked} spot={chain.spot} onClose={() => setPicked(null)} />
+          ) : (
+            <>
           <div style={{ ...LABEL, borderBottom: "1px solid var(--border)", paddingBottom: "0.45rem", marginBottom: "0.7rem" }}>
             Expiry
           </div>
@@ -368,10 +399,10 @@ function OptionsChainInner() {
             ))}
           </div>
 
-          {picked && <Detail c={picked} spot={chain.spot} onClose={() => setPicked(null)} />}
-
           <ChainTable calls={chain.calls} puts={chain.puts} spot={chain.spot}
-            onPick={setPicked} selected={picked?.symbol ?? null} />
+            onPick={pick} selected={null} />
+            </>
+          )}
 
           <div style={{ marginTop: "1.2rem", fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
             Quotes and greeks are published by Cboe and are delayed at least 15 minutes
