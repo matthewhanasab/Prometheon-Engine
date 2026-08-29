@@ -75,18 +75,46 @@ async function get(url: string, ttl = DAY): Promise<{ data: any; err: string | n
 // Next.js data cache — a fully-cached page load still took ~4.5s of pure sleep.
 // A pool lets cached responses stream through instantly; only genuinely
 // rate-limited calls pay for waiting, via get()'s backoff retries.
-async function pool<T>(jobs: (() => Promise<T>)[], limit = 4): Promise<T[]> {
+//
+// Concurrency is adaptive rather than fixed. A fixed 2 was chosen because a
+// burst of 4 drew 429s, but it costs every uncached load dearly: ten
+// ticker-specific calls two at a time is five sequential rounds at ~0.9s each,
+// which is most of the ~6s an uncached ticker measured end to end. Guessing a
+// higher fixed number just moves the risk.
+//
+// So it opens at `limit` and collapses to serial the moment a call reports the
+// upstream limit — `onLimited` inspects each result, and once it trips, every
+// worker but the first retires. Where the plan tolerates the burst the fan-out
+// is several times faster; where it doesn't, the tail runs at the old pace
+// having spent one rate-limited call to find out, which get()'s backoff and
+// negative cache already handle.
+async function pool<T>(
+  jobs: (() => Promise<T>)[],
+  limit = 4,
+  onLimited?: (r: T) => boolean
+): Promise<T[]> {
   const results: T[] = new Array(jobs.length);
   let next = 0;
-  async function worker() {
+  let throttled = false;
+  async function worker(id: number) {
     while (next < jobs.length) {
+      // Worker 0 always carries on, so the queue still drains once throttled.
+      if (throttled && id > 0) return;
       const idx = next++;
-      results[idx] = await jobs[idx]();
+      const r = await jobs[idx]();
+      results[idx] = r;
+      if (!throttled && onLimited?.(r)) throttled = true;
     }
   }
-  await Promise.all(Array.from({ length: Math.min(limit, jobs.length) }, worker));
+  await Promise.all(
+    Array.from({ length: Math.min(limit, jobs.length) }, (_, i) => worker(i))
+  );
   return results;
 }
+
+/** Shape returned by get(); used to spot an upstream rate-limit response. */
+const hitRateLimit = (r: { err: string | null }): boolean =>
+  typeof r?.err === "string" && r.err.startsWith("rate_limit_reached");
 
 const rows = (d: any): any[] =>
   Array.isArray(d?.data) ? d.data.filter((r: any) => r && typeof r === "object") : [];
@@ -142,7 +170,14 @@ export async function GET(
   // fetch cache. This caps quota-burn from the infinite garbage-symbol space,
   // which per-instance rate limiting alone can't (a distributed burst spreads
   // across serverless instances and resets each one's counter).
-  const probe = await get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=400`);
+  // The probe doubles as the five-year pull rather than being a separate
+  // request: it used to fetch its own 400-row window, whose URL the fan-out
+  // then repeated as a cache hit — one upstream call, but still a full
+  // round trip before anything else could start. Fetching the five-year series
+  // here means the gate costs nothing extra, and the recent window is sliced
+  // out of it below rather than fetched again.
+  const eodUrl = `${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(5)}&limit=1400`;
+  const probe = await get(eodUrl);
   if (!rows(probe.data).some((r) => Number(r.close) > 0)) {
     return NextResponse.json(
       { error: probe.err ? `No price data (${probe.err})` : "Ticker not found" },
@@ -162,10 +197,9 @@ export async function GET(
   // saving three upstream calls per uncached load. (Intraday was dropped along
   // with the research page's intraday panel; the header price is the last EOD.)
   const longHorizons = [10, 15];
-  const [eodRes, infoRes, divRes, splitRes, tickRes, ...tailRes] =
+  const [infoRes, divRes, splitRes, tickRes, ...tailRes] =
     await pool(
       [
-        () => get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=400`),
         () => get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
         () => get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`),
         () => get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
@@ -173,11 +207,13 @@ export async function GET(
         ...longHorizons.map((y) => () =>
           get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(y)}&sort=ASC&limit=1`)
         ),
-        // Five years of daily closes for the ticker and for SPY, sampled to
-        // month-ends for the beta regression. Published betas (Yahoo et al.) use
-        // 5-year monthly; a 1-year daily window is a different statistic and
-        // produced a nonsensical negative beta for defensive names like KO.
-        () => get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(5)}&limit=1400`),
+        // SPY's five-year daily series, sampled to month-ends for the beta
+        // regression. Published betas (Yahoo et al.) use 5-year monthly; a
+        // 1-year daily window is a different statistic and produced a
+        // nonsensical negative beta for defensive names like KO. The ticker's
+        // own five-year series isn't fetched here — the probe above already is
+        // that call. This one is shared by every ticker, so it's a cache hit
+        // after the day's first request.
         () => get(`${MS}/eod?access_key=${key}&symbols=SPY&date_from=${anchorFor(5)}&limit=1400`),
         () => get(`${MS}/companyratings?access_key=${key}&ticker=${t}`),
         async () => {
@@ -187,13 +223,17 @@ export async function GET(
             : { data: null, err: "no CIK" };
         },
       ],
-      2
+      4,
+      hitRateLimit
     );
   const longAnchorRes = tailRes.slice(0, longHorizons.length);
-  const stock5yRes = tailRes[longHorizons.length];
-  const spy5yRes = tailRes[longHorizons.length + 1];
-  const ratingsRes = tailRes[longHorizons.length + 2];
-  const subsRes = tailRes[longHorizons.length + 3];
+  // The probe IS the ticker's five-year pull, so both the recent window and the
+  // beta regression read from it rather than re-requesting the same series.
+  const eodRes = probe;
+  const stock5yRes = probe;
+  const spy5yRes = tailRes[longHorizons.length];
+  const ratingsRes = tailRes[longHorizons.length + 1];
+  const subsRes = tailRes[longHorizons.length + 2];
 
   // ── EOD series (newest-first). Filter marketstack's occasional close=0 rows. ──
   const eod = rows(eodRes.data)
