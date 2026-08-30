@@ -99,8 +99,20 @@ export async function GET(
       }
     : null;
 
+  // A rate-limited ratings call must NOT be cached for an hour. marketstack
+  // answers rate_limit_reached under load, and with the full window a single
+  // unlucky request freezes "no analyst data" into the edge for everyone until
+  // it expires — which is what made AAPL and KO look permanently empty while
+  // MSFT and NVDA were fine. A short window lets the next request try again.
+  const degraded = !consensus || ratingsRes.err != null;
   return NextResponse.json(
-    { ticker: t, consensus, analysts, consensusForward, errors: { ratings: ratingsRes.err } },
-    { headers: { "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" } }
+    { ticker: t, consensus, analysts, consensusForward, degraded, errors: { ratings: ratingsRes.err } },
+    {
+      headers: {
+        "Cache-Control": degraded
+          ? "public, max-age=0, s-maxage=30"
+          : "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    }
   );
 }
