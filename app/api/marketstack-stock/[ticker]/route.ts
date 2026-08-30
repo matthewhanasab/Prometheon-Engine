@@ -4,6 +4,7 @@ import { get10YTreasury } from "@/lib/fred";
 import { guard } from "@/lib/rateLimit";
 import { dropDividendOutliers } from "@/lib/dividends";
 import { forwardEstimate } from "@/lib/forwardEstimates";
+import { msGet as get, hitRateLimit } from "@/lib/marketstack";
 
 // Full research-page aggregator running exclusively on marketstack (Business
 // plan). Endpoint audit for this key, verified 2026-08-02:
@@ -16,58 +17,6 @@ import { forwardEstimate } from "@/lib/forwardEstimates";
 //   etfholdings                 ✗ "no data at the moment" for SPY/QQQ
 const MS = "https://api.marketstack.com/v2";
 
-// Business plan = 500k req/mo, so caching is about speed, not rationing.
-const DAY = 86400;
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-async function getOnce(url: string, ttl: number): Promise<{ data: any; err: string | null }> {
-  try {
-    const res = await fetch(url, { next: { revalidate: ttl } });
-    const json = await res.json().catch(() => null);
-    if (json && typeof json === "object" && "error" in json) {
-      const e: any = (json as any).error;
-      return { data: null, err: (e?.code || e?.message || String(e)) as string };
-    }
-    if (!res.ok) return { data: null, err: `HTTP ${res.status}` };
-    return { data: json, err: null };
-  } catch (e: any) {
-    return { data: null, err: String(e?.message ?? e) };
-  }
-}
-
-// Failed upstream calls are never stored in the Next.js data cache, so without
-// this a rate-limited endpoint re-pays its full retry backoff on EVERY page
-// load — including fully-cached ones. A short negative cache turns a failing
-// endpoint into a fast miss instead of a 6-second stall.
-const failCache: Map<string, number> =
-  ((globalThis as any).__msFailCache ??= new Map<string, number>());
-const FAIL_TTL = 90_000;
-
-async function get(url: string, ttl = DAY): Promise<{ data: any; err: string | null }> {
-  const failedAt = failCache.get(url);
-  if (failedAt && Date.now() - failedAt < FAIL_TTL) {
-    return { data: null, err: "rate_limit_reached (recent, skipped)" };
-  }
-  let out = await getOnce(url, ttl);
-  // marketstack enforces a strict per-second rate limit; short paced retries.
-  for (let i = 0; i < 2 && out.err === "rate_limit_reached"; i++) {
-    await sleep(1200 + i * 1300);
-    out = await getOnce(url, ttl);
-  }
-  if (out.err === "rate_limit_reached") {
-    // Bound the map: prune expired entries before it can grow without limit
-    // under distinct-URL churn (many tickers hitting the limit).
-    if (failCache.size > 2000) {
-      const cutoff = Date.now() - FAIL_TTL;
-      for (const [k, ts] of failCache) if (ts < cutoff) failCache.delete(k);
-    }
-    failCache.set(url, Date.now());
-  } else {
-    failCache.delete(url);
-  }
-  return out;
-}
 
 // Concurrency-limited pool with NO fixed sleeps. The old approach paced fixed
 // 1.1s gaps between batches, which ran even when every response came from the
@@ -110,10 +59,6 @@ async function pool<T>(
   );
   return results;
 }
-
-/** Shape returned by get(); used to spot an upstream rate-limit response. */
-const hitRateLimit = (r: { err: string | null }): boolean =>
-  typeof r?.err === "string" && r.err.startsWith("rate_limit_reached");
 
 const rows = (d: any): any[] =>
   Array.isArray(d?.data) ? d.data.filter((r: any) => r && typeof r === "object") : [];

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
 import { fetchConsensusEps } from "@/lib/analystEstimates";
+import { msGet } from "@/lib/marketstack";
 
 // Analyst view for a ticker: price-target consensus, the rating list, and
 // forward multiples off consensus EPS.
@@ -19,23 +20,6 @@ import { fetchConsensusEps } from "@/lib/analystEstimates";
 // slow 10%. The page now paints from the main route and fills these in when
 // they land — the same treatment ETF ownership already gets.
 const MS = "https://api.marketstack.com/v2";
-const DAY = 86400;
-
-async function get(url: string, ttl = DAY): Promise<{ data: Record<string, unknown> | null; err: string | null }> {
-  try {
-    const res = await fetch(url, { next: { revalidate: ttl } });
-    const json = await res.json().catch(() => null);
-    if (json && typeof json === "object" && "error" in json) {
-      const e = (json as { error?: { code?: string; message?: string } }).error;
-      return { data: null, err: String(e?.code || e?.message || e) };
-    }
-    if (!res.ok) return { data: null, err: `HTTP ${res.status}` };
-    return { data: json, err: null };
-  } catch (e) {
-    return { data: null, err: e instanceof Error ? e.message : String(e) };
-  }
-}
-
 const num = (v: unknown): number | null => {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
@@ -71,9 +55,9 @@ export async function GET(
     : null;
 
   const [ratingsRes, estimate, eodRes] = await Promise.all([
-    key ? get(`${MS}/companyratings?access_key=${key}&ticker=${t}`) : Promise.resolve({ data: null, err: "no key" }),
+    key ? msGet(`${MS}/companyratings?access_key=${key}&ticker=${t}`) : Promise.resolve({ data: null, err: "no key" }),
     fetchConsensusEps(t).catch(() => null),
-    eodUrl ? get(eodUrl) : Promise.resolve({ data: null, err: "no key" }),
+    eodUrl ? msGet(eodUrl) : Promise.resolve({ data: null, err: "no key" }),
   ]);
 
   const ratingsOut = (ratingsRes.data as any)?.result?.output;
