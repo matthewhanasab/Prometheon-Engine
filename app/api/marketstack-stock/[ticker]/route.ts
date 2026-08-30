@@ -140,6 +140,18 @@ export async function GET(
   if (limited) return limited;
   const { ticker } = await params;
   const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
+
+  // Per-stage timings, returned only for ?debug=timings. Cheap enough to leave
+  // in: without the flag the numbers are collected and dropped, and having them
+  // measurable on production is the only way to find the real long pole — the
+  // route can't be profiled locally without upstream keys.
+  const t0 = Date.now();
+  const marks: Record<string, number> = {};
+  const timed = <R,>(label: string, fn: () => Promise<R>) => async (): Promise<R> => {
+    const s0 = Date.now();
+    try { return await fn(); } finally { marks[label] = Date.now() - s0; }
+  };
+  const wantTimings = req.nextUrl.searchParams.get("debug") === "timings";
   const key = process.env.MARKETSTACK_KEY;
   if (!key) return NextResponse.json({ error: "Marketstack key not configured" }, { status: 500 });
 
@@ -155,13 +167,13 @@ export async function GET(
   // doesn't count against marketstack's rate limit). The CIK comes from the
   // SEC's own ticker map, cached 24h.
   const cikPromise = resolveCik(t);
-  const factsPromise = cikPromise.then((cik) => (cik ? fetchFacts(cik) : null));
+  const factsPromise = timed("sec_facts", () => cikPromise.then((cik) => (cik ? fetchFacts(cik) : null)))();
 
   // Analyst consensus starts here too. It's a single call to a different host,
   // so it costs nothing against the marketstack pool and is awaited only at the
   // end — a failure returns null rather than taking the response down, since
   // every other metric on the page stands without it.
-  const consensusPromise = fetchConsensusEps(t).catch(() => null);
+  const consensusPromise = timed("consensus", () => fetchConsensusEps(t).catch(() => null))();
 
   // Cheap validity gate BEFORE the full fanout. A single eod probe: if the
   // symbol returns no data (garbage-ticker enumeration — AAAA, AAAB, …), bail
@@ -177,7 +189,7 @@ export async function GET(
   // here means the gate costs nothing extra, and the recent window is sliced
   // out of it below rather than fetched again.
   const eodUrl = `${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(5)}&limit=1400`;
-  const probe = await get(eodUrl);
+  const probe = await timed("probe_eod_5y", () => get(eodUrl))();
   if (!rows(probe.data).some((r) => Number(r.close) > 0)) {
     return NextResponse.json(
       { error: probe.err ? `No price data (${probe.err})` : "Ticker not found" },
@@ -200,13 +212,13 @@ export async function GET(
   const [infoRes, divRes, splitRes, tickRes, ...tailRes] =
     await pool(
       [
-        () => get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
-        () => get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`),
-        () => get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
-        () => get(`${MS}/tickers/${t}?access_key=${key}`),
-        ...longHorizons.map((y) => () =>
+        timed("tickerinfo", () => get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`)),
+        timed("dividends", () => get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`)),
+        timed("splits", () => get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`)),
+        timed("tickers", () => get(`${MS}/tickers/${t}?access_key=${key}`)),
+        ...longHorizons.map((y) => timed(`anchor_${y}y`, () =>
           get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(y)}&sort=ASC&limit=1`)
-        ),
+        )),
         // SPY's five-year daily series, sampled to month-ends for the beta
         // regression. Published betas (Yahoo et al.) use 5-year monthly; a
         // 1-year daily window is a different statistic and produced a
@@ -214,14 +226,14 @@ export async function GET(
         // own five-year series isn't fetched here — the probe above already is
         // that call. This one is shared by every ticker, so it's a cache hit
         // after the day's first request.
-        () => get(`${MS}/eod?access_key=${key}&symbols=SPY&date_from=${anchorFor(5)}&limit=1400`),
-        () => get(`${MS}/companyratings?access_key=${key}&ticker=${t}`),
-        async () => {
+        timed("spy_5y", () => get(`${MS}/eod?access_key=${key}&symbols=SPY&date_from=${anchorFor(5)}&limit=1400`)),
+        timed("ratings", () => get(`${MS}/companyratings?access_key=${key}&ticker=${t}`)),
+        timed("submissions", async () => {
           const cik = await cikPromise;
           return cik
             ? get(`${MS}/submissions?access_key=${key}&cik_code=${cik}`)
             : { data: null, err: "no CIK" };
-        },
+        }),
       ],
       4,
       hitRateLimit
@@ -555,6 +567,7 @@ export async function GET(
         profile: infoRes.err,
       },
     },
+    ...(wantTimings ? { timings: { ...marks, total_ms: Date.now() - t0 } } : {}),
   }, {
     // Every upstream call here is fetched with a 24h revalidate, so the payload
     // is already a daily snapshot — an edge cache in front of it adds no
