@@ -286,6 +286,10 @@ function MarketstackResearchInner() {
   // fetched separately once the main payload has landed — it never delays the
   // page. null = still loading, [] = genuinely held by none of them.
   const [etfHolders, setEtfHolders] = useState<any>(null);
+  // Analyst ratings and consensus estimates are the two slowest upstream calls
+  // in the stack (~3.8s and ~2.2s cold, measured), and nothing above the fold
+  // needs them — so they load after the main payload instead of holding it up.
+  const [analystData, setAnalystData] = useState<any>(null);
   const [chartMode, setChartMode] = useState<ChartMode>("builtin");
   const loadedOnce = useRef(false);
 
@@ -314,6 +318,18 @@ function MarketstackResearchInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const tk = data?.ticker;
+    if (!tk) { setAnalystData(null); return; }
+    let alive = true;
+    setAnalystData(null);
+    fetch(`/api/stock-analysts/${tk}`)
+      .then((r) => r.json())
+      .then((j) => { if (alive) setAnalystData(j); })
+      .catch(() => { if (alive) setAnalystData({ consensus: null, consensusForward: null }); });
+    return () => { alive = false; };
+  }, [data?.ticker]);
+
   // Kick the ETF scan off after the main payload resolves, passing the company
   // name we already have so the endpoint skips its own lookup.
   useEffect(() => {
@@ -331,11 +347,11 @@ function MarketstackResearchInner() {
 
   const q = data?.quote;
   const prof = data?.profile;
-  const cons = data?.consensus;
+  const cons = analystData?.consensus;
   const fwd = data?.forward;
   // Analyst consensus, kept distinct from `fwd` — that one is our own trend
   // projection off filed results, this is what the covering analysts publish.
-  const cf = data?.consensusForward;
+  const cf = analystData?.consensusForward;
   const div = data?.dividends;
   const fun = data?.fundamentals;
   const capm = data?.capm;

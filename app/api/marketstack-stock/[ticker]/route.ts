@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
 import { get10YTreasury } from "@/lib/fred";
 import { guard } from "@/lib/rateLimit";
-import { fetchConsensusEps } from "@/lib/analystEstimates";
 import { dropDividendOutliers } from "@/lib/dividends";
 import { forwardEstimate } from "@/lib/forwardEstimates";
 
@@ -127,11 +126,6 @@ function decode(s: any): any {
     .replace(/&nbsp;/g, " ");
 }
 
-const num = (v: any): number | null => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-};
-
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
@@ -168,12 +162,6 @@ export async function GET(
   // SEC's own ticker map, cached 24h.
   const cikPromise = resolveCik(t);
   const factsPromise = timed("sec_facts", () => cikPromise.then((cik) => (cik ? fetchFacts(cik) : null)))();
-
-  // Analyst consensus starts here too. It's a single call to a different host,
-  // so it costs nothing against the marketstack pool and is awaited only at the
-  // end — a failure returns null rather than taking the response down, since
-  // every other metric on the page stands without it.
-  const consensusPromise = timed("consensus", () => fetchConsensusEps(t).catch(() => null))();
 
   // Cheap validity gate BEFORE the full fanout. A single eod probe: if the
   // symbol returns no data (garbage-ticker enumeration — AAAA, AAAB, …), bail
@@ -227,7 +215,6 @@ export async function GET(
         // that call. This one is shared by every ticker, so it's a cache hit
         // after the day's first request.
         timed("spy_5y", () => get(`${MS}/eod?access_key=${key}&symbols=SPY&date_from=${anchorFor(5)}&limit=1400`)),
-        timed("ratings", () => get(`${MS}/companyratings?access_key=${key}&ticker=${t}`)),
         timed("submissions", async () => {
           const cik = await cikPromise;
           return cik
@@ -244,8 +231,7 @@ export async function GET(
   const eodRes = probe;
   const stock5yRes = probe;
   const spy5yRes = tailRes[longHorizons.length];
-  const ratingsRes = tailRes[longHorizons.length + 1];
-  const subsRes = tailRes[longHorizons.length + 2];
+  const subsRes = tailRes[longHorizons.length + 1];
 
   // ── EOD series (newest-first). Filter marketstack's occasional close=0 rows. ──
   const eod = rows(eodRes.data)
@@ -388,35 +374,12 @@ export async function GET(
       }
     : null;
 
-  // ── Analyst ratings ──
-  const ratingsOut = ratingsRes.data?.result?.output;
-  const cons = ratingsOut?.analyst_consensus;
-  const analystList = Array.isArray(ratingsOut?.analysts) ? ratingsOut.analysts : [];
-  const consensus = cons
-    ? {
-        avgTarget: num(cons.analyst_average),
-        highTarget: num(cons.analyst_highest),
-        lowTarget: num(cons.analyst_lowest),
-        analysts: num(cons.analysts_number),
-        buy: num(cons.buy) ?? 0,
-        hold: num(cons.hold) ?? 0,
-        sell: num(cons.sell) ?? 0,
-        asOf: cons.consensus_date ?? null,
-      }
-    : null;
-  const analysts = analystList
-    .map((a: any) => ({
-      name: decode(a?.analyst_name) ?? null,
-      firm: decode(a?.analyst_firm) ?? null,
-      rating: a?.rating?.rated ?? null,
-      action: a?.rating?.conclusion ?? null,
-      target: num(a?.rating?.price_target),
-      date: a?.rating?.date_rating ?? null,
-    }))
-    .filter((a: any) => a.name && a.date)
-    .sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)))
-    .slice(0, 25);
-
+  // Analyst ratings and consensus estimates are NOT assembled here. Timed on
+  // production, companyratings alone ran ~3.8s on a cold ticker and consensus
+  // ~2.2s, against ~600ms for everything else — so the whole payload waited on
+  // the two slowest calls in the stack for a section nothing above the fold
+  // needs. Both moved to /api/stock-analysts, which the page loads after this
+  // one lands.
   // ── Dividends ──
   const divsRaw = rows(divRes.data)
     .map((r) => ({
@@ -517,23 +480,10 @@ export async function GET(
       actual1Y: longReturns.find((r) => r.years === 1 && r.available)?.totalPct ?? null,
     },
     longReturns,
-    consensus,
-    analysts,
-    // Forward view, from two different kinds of source kept deliberately apart.
-    // `consensusForward` is what analysts actually publish; `forward` below is
-    // our own projection off SEC-filed results. They will disagree, and the UI
-    // must never present the second as the first.
-    consensusForward: await (async () => {
-      const c = await consensusPromise;
-      if (!c) return null;
-      const px = last.close;
-      return {
-        ...c,
-        // Forward P/E on next-twelve-month consensus, not on a fiscal year that
-        // may be days from closing.
-        pe: c.ntmEps != null && c.ntmEps > 0 && px > 0 ? px / c.ntmEps : null,
-      };
-    })(),
+    // consensus, analysts and consensusForward are served by
+    // /api/stock-analysts — see the note above the fan-out.
+    // `forward` below is our own trend projection off SEC-filed results and
+    // must never be presented as analyst consensus.
     forward: forwardEstimate(last.close, fundamentals?.eps, {
       currentQuarterEpsGrowth: fundamentals?.currentQuarterEpsGrowth,
       epsGrowth: fundamentals?.epsGrowth,
@@ -563,7 +513,6 @@ export async function GET(
       cik,
       isin: tickMeta?.isin ?? null,
       errors: {
-        ratings: ratingsRes.err,
         profile: infoRes.err,
       },
     },
