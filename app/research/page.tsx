@@ -479,7 +479,8 @@ function MarketstackResearchInner() {
                   sub={`${pct(r.cagrPct, 1)}/yr · from ${money(r.fromPrice)} (${String(r.fromDate).slice(0, 4)})`}
                   tone={r.totalPct >= 0 ? "good" : "bad"} />
               ) : (
-                <MCard key={r.years} label={`${r.years}-Year Return`} value="—" sub="not listed that long" />
+                <MCard key={r.years} label={`${r.years}-Year Return`} value="—"
+                  sub={r.listedFrom ? `listed ${String(r.listedFrom).slice(0, 4)}` : "not listed that long"} />
               )
             )}
           </Grid>

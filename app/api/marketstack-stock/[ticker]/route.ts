@@ -233,8 +233,23 @@ export async function GET(
     }
     const c = row ? row.close : 0;
     if (!(c > 0)) return { years: y, available: false as const };
+
+    // A horizon longer than the listing history is NOT a return over that
+    // horizon. Asking for a 15-year anchor on a 2021 IPO returns the first day
+    // it traded, and reporting that as a 15-year figure understated IREN's
+    // 4.8-year run as a 2.8%/yr fifteen-year CAGR — the same +51% appeared as
+    // the 5-, 10- and 15-year row at three different annualisations. The span
+    // is measured against what actually exists, and short ones say so.
+    const spanYears =
+      (Date.parse(last.date) - Date.parse(row!.date)) / (365.25 * 86400000);
+    if (!(spanYears > 0)) return { years: y, available: false as const };
+    if (spanYears < y * 0.9) {
+      return { years: y, available: false as const, listedFrom: row!.date };
+    }
+
     const total = ((last.close - c) / c) * 100;
-    const cagr = (Math.pow(last.close / c, 1 / y) - 1) * 100;
+    // Annualised over the real elapsed span, not the nominal horizon.
+    const cagr = (Math.pow(last.close / c, 1 / spanYears) - 1) * 100;
     return {
       years: y,
       available: true as const,
