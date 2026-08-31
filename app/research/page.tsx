@@ -349,6 +349,7 @@ function MarketstackResearchInner() {
   const prof = data?.profile;
   const cons = analystData?.consensus;
   const fwd = data?.forward;
+  const fwdRev = data?.forwardRevenue;
   // Analyst consensus, kept distinct from `fwd` — that one is our own trend
   // projection off filed results, this is what the covering analysts publish.
   const cf = analystData?.consensusForward;
@@ -500,17 +501,23 @@ function MarketstackResearchInner() {
                       note: `Analyst consensus · next 12 months${cf.analysts ? ` · ${cf.analysts} estimates` : ""}` }
                   : { label: "Forward P/E", value: "", na: true },
                 { label: "TTM P/S", value: mult(fun.ps), raw: fun.ps, range: [1.8, 2.6], unit: "x" },
-                // Forward P/S without a revenue estimate, via an identity rather
-                // than a guess: P/S = P/E x net margin, because both sides are
-                // per-share and share the same future share count — so buybacks
-                // don't break it the way they'd break inferring revenue growth
-                // from EPS growth. The one assumption is that margin holds, and
-                // the row says so rather than implying consensus revenue.
+                // Two bases, best first, each labelled so they can't be mistaken
+                // for one another. Preferred: P/S = P/E x net margin, an
+                // identity that holds at the forward date regardless of
+                // buybacks, quoting real consensus EPS. It requires a positive
+                // margin though, and breaks exactly where it'd be most useful —
+                // a loss-maker's negative margin yields a negative P/S. So a
+                // company still losing money falls back to its own projected
+                // revenue, which keeps growing through losses.
                 cf?.pe != null && fun.netMargin != null && fun.netMargin > 0
                   ? { label: "Forward P/S", value: mult(cf.pe * fun.netMargin),
                       raw: cf.pe * fun.netMargin, range: [1.8, 2.6], unit: "x",
                       note: `Consensus EPS at today's ${pctOf(fun.netMargin, 1)} net margin` }
-                  : { label: "Forward P/S", value: "", na: true, naReason: "Needs consensus EPS and net margin" },
+                  : fun.ps != null && fwdRev?.growth != null && fwdRev.growth > -1
+                  ? { label: "Forward P/S", value: mult(fun.ps / (1 + fwdRev.growth)),
+                      raw: fun.ps / (1 + fwdRev.growth), range: [1.8, 2.6], unit: "x",
+                      note: `Projected from revenue trend — not consensus` }
+                  : { label: "Forward P/S", value: "", na: true, naReason: "Needs revenue or a positive margin" },
                 { label: "PEG Ratio", value: mult(fun.pegRatio), raw: fun.pegRatio, range: [1, 2], unit: "x",
                   note: fun.pegRatio == null ? "Needs positive EPS growth" : undefined },
               ]} />
@@ -526,10 +533,16 @@ function MarketstackResearchInner() {
                   : { label: "Next Yr EPS Growth", value: "", na: true },
                 { label: "TTM Rev Growth", value: pctOf(fun.revenueGrowth, 1),
                   raw: fun.revenueGrowth != null ? fun.revenueGrowth * 100 : null, range: [4.5, 6.5], unit: "%", higherBetter: true },
-                // Deliberately not derived from EPS growth: buybacks and margin
-                // shifts both drive a wedge between the two, so equating them
-                // would be wrong for most large caps rather than merely rough.
-                { label: "Next Yr Rev Growth", value: "", na: true, naReason: "Needs consensus revenue — not free anywhere" },
+                // Not derived from EPS growth — buybacks and margin shifts drive
+                // a wedge between the two, so equating them would be wrong
+                // rather than rough. This is revenue's own trend carried
+                // forward, and the note keeps it distinct from the consensus
+                // figure on the EPS row directly above.
+                fwdRev?.growth != null
+                  ? { label: "Next Yr Rev Growth", value: pctOf(fwdRev.growth, 1),
+                      raw: fwdRev.growth * 100, range: [4.5, 6.5], unit: "%", higherBetter: true,
+                      note: `Projected from revenue trend · ${fwdRev.confidence} confidence — not consensus` }
+                  : { label: "Next Yr Rev Growth", value: "", na: true, naReason: "No usable revenue history" },
                 { label: "Total Revenue", value: compact(fun.revenue), note: "Trailing twelve months" },
               ]} />
 

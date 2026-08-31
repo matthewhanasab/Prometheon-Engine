@@ -120,3 +120,87 @@ export function forwardEstimate(
     basis: "Prometheon trend model — projected from SEC-filed results, not analyst consensus.",
   };
 }
+
+// ── Revenue ──────────────────────────────────────────────────────────────────
+//
+// Same shape as the EPS projection above, and the same warning: this is the
+// company's own trajectory carried forward, NOT analyst consensus. Consensus
+// revenue isn't published free anywhere — Nasdaq's forecast rows carry EPS
+// only, its revenue endpoint returns historical actuals, and the feeds that do
+// carry it are paid. So where forward P/E can quote real estimates, anything
+// revenue-forward is a projection and has to be labelled as one.
+//
+// It earns its place because the alternative is a blank row on every
+// loss-making company. Forward P/S can be derived from consensus EPS and net
+// margin while margin is positive, but that identity breaks exactly when it's
+// most interesting — IREN's TTM margin is -99%, so a margin-based forward P/S
+// would come out negative. Revenue keeps growing through losses, so projecting
+// it covers the cases the identity can't.
+//
+// Tuned apart from earnings deliberately: revenue is far stickier than EPS, so
+// it's damped less, and the ceiling is higher because young companies genuinely
+// compound revenue at rates no mature earnings base sustains.
+export type RevenueProjection = {
+  /** Blended annual revenue growth applied (decimal). */
+  growth: number;
+  /** Next-twelve-month revenue projection. */
+  revenue: number;
+  inputs: { label: string; growth: number; weight: number }[];
+  confidence: "high" | "medium" | "low";
+  basis: string;
+};
+
+type RevSignals = {
+  currentQuarterRevGrowth?: number | null;
+  revenueGrowth?: number | null;
+  lastYearRevGrowth?: number | null;
+};
+
+const REV_WEIGHTS: { key: keyof RevSignals; label: string; weight: number }[] = [
+  { key: "currentQuarterRevGrowth", label: "Latest quarter YoY", weight: 0.5 },
+  { key: "revenueGrowth", label: "TTM vs prior TTM", weight: 0.3 },
+  { key: "lastYearRevGrowth", label: "Last fiscal year", weight: 0.2 },
+];
+
+const REV_DAMPING = 0.85;
+const REV_MIN_GROWTH = -0.4;
+const REV_MAX_GROWTH = 1.0;
+
+export function revenueProjection(
+  ttmRevenue: number | null | undefined,
+  signals: RevSignals
+): RevenueProjection | null {
+  if (!isNum(ttmRevenue) || ttmRevenue <= 0) return null;
+
+  const inputs: { label: string; growth: number; weight: number }[] = [];
+  let weighted = 0;
+  let totalWeight = 0;
+  for (const { key, label, weight } of REV_WEIGHTS) {
+    const g = signals[key];
+    // Same guard as earnings: a near-zero prior base produces meaningless rates.
+    if (!isNum(g) || Math.abs(g) > 3) continue;
+    inputs.push({ label, growth: g, weight });
+    weighted += g * weight;
+    totalWeight += weight;
+  }
+  if (!totalWeight) return null;
+
+  const blended = weighted / totalWeight;
+  const growth = Math.max(REV_MIN_GROWTH, Math.min(REV_MAX_GROWTH, blended * REV_DAMPING));
+
+  const spread = inputs.length > 1
+    ? Math.max(...inputs.map((i) => i.growth)) - Math.min(...inputs.map((i) => i.growth))
+    : Infinity;
+  const confidence: RevenueProjection["confidence"] =
+    inputs.length >= 3 && spread < 0.25 ? "high"
+    : inputs.length >= 2 && spread < 0.6 ? "medium"
+    : "low";
+
+  return {
+    growth,
+    revenue: ttmRevenue * (1 + growth),
+    inputs,
+    confidence,
+    basis: "Prometheon trend model — projected from SEC-filed revenue, not analyst consensus.",
+  };
+}

@@ -3,7 +3,7 @@ import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
 import { get10YTreasury } from "@/lib/fred";
 import { guard } from "@/lib/rateLimit";
 import { dropDividendOutliers } from "@/lib/dividends";
-import { forwardEstimate } from "@/lib/forwardEstimates";
+import { forwardEstimate, revenueProjection } from "@/lib/forwardEstimates";
 import { msGet as get, hitRateLimit } from "@/lib/marketstack";
 
 // Full research-page aggregator running exclusively on marketstack (Business
@@ -444,6 +444,15 @@ export async function GET(
     // /api/stock-analysts — see the note above the fan-out.
     // `forward` below is our own trend projection off SEC-filed results and
     // must never be presented as analyst consensus.
+    // Revenue carried forward off the company's own filings. Consensus revenue
+    // isn't free anywhere, so this is a projection and says so — it exists so
+    // the revenue rows aren't blank on every loss-making company, where the
+    // margin identity behind forward P/S can't work.
+    forwardRevenue: revenueProjection(fundamentals?.revenue, {
+      currentQuarterRevGrowth: fundamentals?.currentQuarterRevGrowth,
+      revenueGrowth: fundamentals?.revenueGrowth,
+      lastYearRevGrowth: fundamentals?.lastYearRevGrowth,
+    }),
     forward: forwardEstimate(last.close, fundamentals?.eps, {
       currentQuarterEpsGrowth: fundamentals?.currentQuarterEpsGrowth,
       epsGrowth: fundamentals?.epsGrowth,
