@@ -20,6 +20,17 @@ const SANS = "'Public Sans', sans-serif";
 const SERIF = "'Space Grotesk', Georgia, serif";
 // Loaded when no ?ticker= is given, so /research opens on a worked example.
 const DEFAULT_TICKER = "AAPL";
+
+type Holder = { name: string; shares: number };
+type OwnershipPayload = {
+  cusip?: string;
+  found: boolean;
+  quarter?: string;
+  reason?: string;
+  shares?: number;
+  filers?: number;
+  top?: Holder[];
+};
 const CARD: React.CSSProperties = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
 };
@@ -290,6 +301,9 @@ function MarketstackResearchInner() {
   // in the stack (~3.8s and ~2.2s cold, measured), and nothing above the fold
   // needs them — so they load after the main payload instead of holding it up.
   const [analystData, setAnalystData] = useState<any>(null);
+  // 13F institutional ownership, keyed by CUSIP off the ISIN marketstack gives
+  // us. Loaded after the main payload like the other secondary panels.
+  const [ownership, setOwnership] = useState<OwnershipPayload | null>(null);
   const [chartMode, setChartMode] = useState<ChartMode>("builtin");
   const loadedOnce = useRef(false);
 
@@ -317,6 +331,25 @@ function MarketstackResearchInner() {
     load(search.get("ticker") ?? DEFAULT_TICKER);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Derived rather than reset inside the effect: tagging the payload with the
+  // CUSIP it came from means a ticker change reads as "not ready yet" without a
+  // synchronous setState, and stale numbers can't flash on the next company.
+  const cusip = (() => {
+    const isin: string | undefined = data?.meta?.isin;
+    return isin && /^US[0-9A-Z]{9}\d$/.test(isin) ? isin.slice(2, 11) : null;
+  })();
+  const ownershipReady = cusip != null && ownership?.cusip === cusip ? ownership : null;
+
+  useEffect(() => {
+    if (!cusip) return;
+    let alive = true;
+    fetch(`/api/ownership/${cusip}`)
+      .then((r) => r.json())
+      .then((j) => { if (alive) setOwnership({ ...j, cusip }); })
+      .catch(() => { if (alive) setOwnership({ found: false, cusip }); });
+    return () => { alive = false; };
+  }, [cusip]);
 
   useEffect(() => {
     const tk = data?.ticker;
@@ -778,8 +811,65 @@ function MarketstackResearchInner() {
           )}
 
           {/* ── Ownership Breakdown ── */}
-          <SectionLabel>Ownership Breakdown</SectionLabel>
-          <NASection reason="No institutional/insider ownership endpoint. This is buildable from SEC EDGAR 13F and Form 4 filings (free, public domain) but needs a parsing layer — it isn't a marketstack feature." />
+          <SectionLabel right={
+            ownershipReady?.found ? (
+              <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
+                SEC Form 13F · {ownershipReady.quarter}
+              </span>
+            ) : undefined
+          }>Ownership Breakdown</SectionLabel>
+
+          {!ownershipReady ? (
+            <div style={{ ...CARD, padding: "18px 20px", opacity: 0.6 }}>
+              <div style={{ fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-muted)" }}>Loading 13F filings…</div>
+            </div>
+          ) : !ownershipReady.found ? (
+            <NASection reason={ownershipReady.reason ?? "No institutional positions reported for this security in the latest quarter."} />
+          ) : (
+            <>
+              <Grid cols={3}>
+                <MCard label="Institutional Ownership"
+                  value={fun?.shares && ownershipReady.shares ? pct((ownershipReady.shares / fun.shares) * 100, 1) : compact(ownershipReady.shares)}
+                  sub={fun?.shares ? `${compact(ownershipReady.shares)} of ${compact(fun.shares)} shares` : "shares held"}
+                  tone="default" />
+                <MCard label="Institutions Holding" value={(ownershipReady.filers ?? 0).toLocaleString("en-US")}
+                  sub="managers filing 13F" />
+                <MCard label="Top 10 Concentration"
+                  value={pct(
+                    ((ownershipReady.top ?? []).reduce((a: number, h: Holder) => a + h.shares, 0) / (ownershipReady.shares || 1)) * 100, 1
+                  )}
+                  sub="of institutional shares" />
+              </Grid>
+
+              <div style={{ ...CARD, padding: "6px 0", marginTop: 10 }}>
+                {ownershipReady.top!.map((h: Holder, i: number) => (
+                  <div key={h.name + i} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                    padding: "9px 16px", borderTop: i ? "1px solid var(--border)" : "none",
+                  }}>
+                    <span style={{ fontFamily: SANS, fontSize: "0.76rem" }}>
+                      <span style={{ fontFamily: MONO, color: "var(--text-muted)", marginRight: 10 }}>{i + 1}</span>
+                      {h.name}
+                    </span>
+                    <span style={{ fontFamily: MONO, fontSize: "0.76rem", whiteSpace: "nowrap" }}>
+                      {compact(h.shares)}
+                      {fun?.shares ? (
+                        <span style={{ color: "var(--text-muted)", fontSize: "0.68rem" }}>
+                          {" "}· {((h.shares / fun.shares) * 100).toFixed(2)}%
+                        </span>
+                      ) : null}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 8, lineHeight: 1.6 }}>
+                Positions reported on Form 13F for the quarter ended {ownershipReady.quarter}, deduplicated by filer
+                and with options excluded. 13F covers institutional managers over $100M only — insider and retail
+                holdings aren&rsquo;t in this data, so this is not a full float breakdown.
+              </div>
+            </>
+          )}
 
           {/* ── ETF Ownership ── */}
           <SectionLabel right={
