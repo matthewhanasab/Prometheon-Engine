@@ -829,15 +829,18 @@ function MarketstackResearchInner() {
             <>
               <Grid cols={3}>
                 <MCard label="Institutional Ownership"
-                  value={fun?.shares && ownershipReady.shares ? pct((ownershipReady.shares / fun.shares) * 100, 1) : compact(ownershipReady.shares)}
+                  value={fun?.shares && ownershipReady.shares
+                    ? `${((ownershipReady.shares / fun.shares) * 100).toFixed(1)}%`
+                    : compact(ownershipReady.shares)}
                   sub={fun?.shares ? `${compact(ownershipReady.shares)} of ${compact(fun.shares)} shares` : "shares held"}
                   tone="default" />
                 <MCard label="Institutions Holding" value={(ownershipReady.filers ?? 0).toLocaleString("en-US")}
                   sub="managers filing 13F" />
                 <MCard label="Top 10 Concentration"
-                  value={pct(
-                    ((ownershipReady.top ?? []).reduce((a: number, h: Holder) => a + h.shares, 0) / (ownershipReady.shares || 1)) * 100, 1
-                  )}
+                  value={`${(
+                    ((ownershipReady.top ?? []).reduce((a: number, h: Holder) => a + h.shares, 0) /
+                      (ownershipReady.shares || 1)) * 100
+                  ).toFixed(1)}%`}
                   sub="of institutional shares" />
               </Grid>
 
