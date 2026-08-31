@@ -828,12 +828,26 @@ function MarketstackResearchInner() {
           ) : (
             <>
               <Grid cols={3}>
-                <MCard label="Institutional Ownership"
-                  value={fun?.shares && ownershipReady.shares
-                    ? `${((ownershipReady.shares / fun.shares) * 100).toFixed(1)}%`
-                    : compact(ownershipReady.shares)}
-                  sub={fun?.shares ? `${compact(ownershipReady.shares)} of ${compact(fun.shares)} shares` : "shares held"}
-                  tone="default" />
+                {/* A share count can be missing or wrong — filers with multiple
+                    classes stop tagging it, and a stale one produced Visa at
+                    312% and Mastercard at 626% institutional. Anything above
+                    100% means the denominator is untrustworthy, not that the
+                    holdings are, so the shares are shown instead of a ratio
+                    that would be plainly false. */}
+                {(() => {
+                  const held = ownershipReady.shares ?? 0;
+                  const outstanding = fun?.shares ?? null;
+                  const ratio = outstanding ? (held / outstanding) * 100 : null;
+                  const usable = ratio != null && ratio > 0 && ratio <= 100;
+                  return (
+                    <MCard label="Institutional Ownership"
+                      value={usable ? `${ratio!.toFixed(1)}%` : compact(held)}
+                      sub={usable
+                        ? `${compact(held)} of ${compact(outstanding)} shares`
+                        : "shares held · share count unavailable"}
+                      tone="default" />
+                  );
+                })()}
                 <MCard label="Institutions Holding" value={(ownershipReady.filers ?? 0).toLocaleString("en-US")}
                   sub="managers filing 13F" />
                 <MCard label="Top 10 Concentration"

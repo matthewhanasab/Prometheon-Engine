@@ -788,7 +788,28 @@ export function deriveFundamentals(f: Facts, price: number | null) {
   const eps = epsUsable ? epsTagged : safeDiv(netIncome, dilutedShares);
   const epsPrior = epsUsable ? epsTaggedPrior : safeDiv(netIncomePrior, dilutedSharesPrior);
 
-  const shares = f.latestInstant(C.sharesOutstanding) ?? dilutedShares;
+  // Share count, in falling order of directness — and freshness-checked the
+  // same way EPS above is, because the cover-page tag goes stale silently.
+  //
+  // dei:EntityCommonStockSharesOutstanding stops being reported without
+  // dimensions once a filer has multiple share classes: Visa's series ends in
+  // 2010 at 469M and never resumes, so the count — and market cap derived from
+  // it — was sixteen years out of date while looking perfectly plausible.
+  // Mastercard came out at 123M against a real ~890M, Nike at 855M against
+  // ~1.48B. Nothing about the value itself says it's stale; only its date does.
+  //
+  // The weighted-average diluted count is the next best thing, and where a
+  // filer doesn't tag that either (Visa tags no diluted share count at all),
+  // net income over diluted EPS recovers it by definition.
+  const sharesEnd = f.instant(C.sharesOutstanding).slice(-1)[0]?.end;
+  const sharesFresh =
+    sharesEnd != null && Date.parse(sharesEnd) > Date.now() - 400 * 864e5;
+  const impliedShares =
+    eps != null && eps !== 0 && netIncome != null ? Math.abs(netIncome / eps) : null;
+  const shares =
+    (sharesFresh ? f.latestInstant(C.sharesOutstanding) : null) ??
+    dilutedShares ??
+    impliedShares;
   const marketCap = price != null && shares != null ? price * shares : null;
 
   const equity = f.latestInstant(C.equity);
