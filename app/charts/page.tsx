@@ -137,7 +137,11 @@ function SegmentChart({ b, filed }: { b: SegBreakdown; filed?: string | null }) 
               cursor={{ fill: "var(--bg-elevated)" }}
               contentStyle={{ background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 12, fontFamily: MONO, fontSize: "0.72rem" }}
               formatter={(v: any) => [`${compactUsd(Number(v))} · ${((Number(v) / total) * 100).toFixed(1)}%`, "Revenue"]} />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+            {/* A base fill and no animation, matching every other chart here:
+                recharts 3 renders an empty bar group without a fill of its own,
+                and an animated chart mounted below the fold finishes its
+                transition before layout and settles at zero width. */}
+            <Bar dataKey="value" fill="var(--accent-gold)" radius={[0, 4, 4, 0]} isAnimationActive={false}>
               {b.slices.map((_, i) => <Cell key={i} fill={SEG_COLORS[i % SEG_COLORS.length]} />)}
             </Bar>
           </BarChart>

@@ -71,7 +71,11 @@ export function prettyMember(raw: string): string {
     // "WearablesHomeandAccessories": the conjunction is lowercase and glued to
     // the word before it, so camel-splitting alone yields "Homeand".
     .replace(/([a-z])and([A-Z])/g, "$1 and $2")
+    // "OEMAndOther": an acronym runs straight into the next word, so the
+    // lowercase-then-uppercase split alone yields "OEMAnd Other".
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/\bAnd\b/g, "and")
     .replace(/\bUs\b/g, "US")
     .replace(/\bLinked In\b/g, "LinkedIn")
     .replace(/\bNon US\b/g, "Non-US")
