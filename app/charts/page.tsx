@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  ResponsiveContainer, BarChart, Bar, LineChart, Line, AreaChart, Area,
+  ResponsiveContainer, BarChart, Bar, Cell, LineChart, Line, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine,
 } from "recharts";
 
@@ -99,6 +99,62 @@ function SectionLabel({ children, ticker, companyName }: {
 }
 
 /** Whole-chart placeholder for series marketstack/EDGAR can't supply. */
+type SegSlice = { label: string; value: number };
+type SegBreakdown = { periodEnd: string; slices: SegSlice[]; coverage: number | null };
+type SegmentsPayload = {
+  found: boolean;
+  reason?: string;
+  ticker?: string;
+  filed?: string | null;
+  product?: SegBreakdown | null;
+  geography?: SegBreakdown | null;
+  segment?: SegBreakdown | null;
+};
+
+const SEG_COLORS = ["#3DE68C", "#5BD1EF", "#22C55E", "#14B8A6", "#7E9887", "#A78BFA", "#F59E0B"];
+
+const compactUsd = (n: number) =>
+  n >= 1e12 ? `$${(n / 1e12).toFixed(2)}T`
+  : n >= 1e9 ? `$${(n / 1e9).toFixed(1)}B`
+  : n >= 1e6 ? `$${(n / 1e6).toFixed(0)}M`
+  : `$${n.toFixed(0)}`;
+
+/** Horizontal bars: segment names are words, and words read better on the y-axis. */
+function SegmentChart({ b, filed }: { b: SegBreakdown; filed?: string | null }) {
+  const total = b.slices.reduce((a, x) => a + x.value, 0);
+  const partial = b.coverage != null && b.coverage < 0.95;
+  return (
+    <>
+      <div style={CARD_STYLE}>
+        <ResponsiveContainer width="100%" height={Math.max(220, b.slices.length * 46)}>
+          <BarChart data={b.slices} layout="vertical" margin={{ top: 12, right: 60, left: 8, bottom: 6 }}>
+            <CartesianGrid stroke="var(--border)" strokeDasharray="2 4" horizontal={false} />
+            <XAxis type="number" tickFormatter={(v: any) => compactUsd(Number(v))}
+              tick={{ fontFamily: MONO, fontSize: 10, fill: "var(--text-muted)" }} />
+            <YAxis type="category" dataKey="label" width={150}
+              tick={{ fontFamily: SANS, fontSize: 11, fill: "var(--text-secondary)" }} />
+            <Tooltip
+              cursor={{ fill: "var(--bg-elevated)" }}
+              contentStyle={{ background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 12, fontFamily: MONO, fontSize: "0.72rem" }}
+              formatter={(v: any) => [`${compactUsd(Number(v))} · ${((Number(v) / total) * 100).toFixed(1)}%`, "Revenue"]} />
+            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+              {b.slices.map((_, i) => <Cell key={i} fill={SEG_COLORS[i % SEG_COLORS.length]} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div style={{ fontFamily: SANS, fontSize: "0.66rem", color: "var(--text-muted)", margin: "6px 2px 0", lineHeight: 1.6 }}>
+        Fiscal year ended {b.periodEnd}{filed ? `, as filed ${filed}` : ""} · {compactUsd(total)} across {b.slices.length} lines.
+        {partial && (
+          <> <span style={{ color: "var(--negative)" }}>
+            These lines cover {Math.round((b.coverage ?? 0) * 100)}% of revenue — the filer doesn&rsquo;t break out the rest.
+          </span></>
+        )}
+      </div>
+    </>
+  );
+}
+
 function NAChart({ reason }: { reason: string }) {
   return (
     <div style={{ ...CARD_STYLE, borderStyle: "dashed", padding: "26px 22px", opacity: 0.7 }}>
@@ -119,6 +175,20 @@ function ChartsInner() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Segment revenue comes from the 10-K's XBRL instance, which is a whole
+  // filing (1.4MB for Apple, 15MB for JPMorgan) — loaded after the page paints
+  // so nothing else waits on it.
+  const [segments, setSegments] = useState<SegmentsPayload | null>(null);
+  const segReady = segments?.ticker === ticker ? segments : null;
+  useEffect(() => {
+    if (!ticker) return;
+    let alive = true;
+    fetch(`/api/segments/${ticker}`)
+      .then((r) => r.json())
+      .then((j) => { if (alive) setSegments({ ...j, ticker }); })
+      .catch(() => { if (alive) setSegments({ found: false, ticker }); });
+    return () => { alive = false; };
+  }, [ticker]);
   const inputRef = useRef<HTMLInputElement>(null);
   const booted = useRef(false);
 
@@ -340,11 +410,31 @@ function ChartsInner() {
 
           {/* 12. Revenue by Product */}
           <SectionLabel ticker={ticker} companyName={company}>Revenue by Product</SectionLabel>
-          <NAChart reason="Segment revenue lives in XBRL as dimensional facts (broken out along a product axis). The SEC's companyfacts API returns consolidated figures only, and marketstack has no segment endpoint — so neither source exposes this split." />
+          {!segReady ? (
+            <NAChart reason="Reading the annual report's XBRL instance…" />
+          ) : segReady.product ? (
+            <SegmentChart b={segReady.product} filed={segReady.filed} />
+          ) : (
+            <NAChart reason={segReady.reason ?? "This filer discloses no product-level revenue split in its latest annual report."} />
+          )}
 
           {/* 13. Revenue by Geography */}
           <SectionLabel ticker={ticker} companyName={company}>Revenue by Geography</SectionLabel>
-          <NAChart reason="Same as product segments — geographic revenue is a dimensional XBRL breakdown that the companyfacts API doesn't return." />
+          {!segReady ? (
+            <NAChart reason="Reading the annual report's XBRL instance…" />
+          ) : segReady.geography ? (
+            <SegmentChart b={segReady.geography} filed={segReady.filed} />
+          ) : (
+            <NAChart reason={segReady.reason ?? "This filer discloses no geographic revenue split in its latest annual report."} />
+          )}
+
+          {/* 13b. Revenue by Reportable Segment — present when the filer defines them */}
+          {segReady?.segment && (
+            <>
+              <SectionLabel ticker={ticker} companyName={company}>Revenue by Reportable Segment</SectionLabel>
+              <SegmentChart b={segReady.segment} filed={segReady.filed} />
+            </>
+          )}
 
           {/* 14. Current Assets vs Liabilities */}
           <SectionLabel ticker={ticker} companyName={company}>Current Assets vs Liabilities</SectionLabel>
