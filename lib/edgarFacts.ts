@@ -20,6 +20,13 @@ type RawFact = {
 
 export type Period = { end: string; start?: string; val: number; fy?: number; fp?: string };
 
+/** Shape of a companyfacts payload, as far as anything here needs it. */
+type ConceptNode = { units?: Record<string, RawFact[]> };
+type FactsJson = {
+  entityName?: string;
+  facts?: Record<string, Record<string, ConceptNode>>;
+};
+
 const days = (a: string, b: string) =>
   Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 
@@ -379,17 +386,113 @@ export async function resolveCik(ticker: string): Promise<string | null> {
   }
 }
 
-export async function fetchFacts(cik: string): Promise<Facts | null> {
+async function fetchFactsJson(cik: string): Promise<FactsJson | null> {
   try {
     const res = await fetch(FACTS_URL(cik), {
       headers: { "User-Agent": SEC_UA, Accept: "application/json" },
       next: { revalidate: 21600 }, // filings land a few times a year; 6h is plenty
     });
     if (!res.ok) return null;
-    return new Facts(await res.json());
+    return await res.json();
   } catch {
     return null;
   }
+}
+
+/** Duration facts a registrant has for its top-line, across revenue aliases. */
+function revenueRowCount(json: FactsJson): number {
+  const us = json?.facts?.["us-gaap"] ?? {};
+  let n = 0;
+  for (const alias of C.revenue) {
+    const units = us[alias]?.units;
+    if (!units) continue;
+    const arr = units[Object.keys(units)[0]] ?? [];
+    n += arr.filter((x) => x?.start).length;
+  }
+  return n;
+}
+
+/**
+ * Find the registrant that filed as this company BEFORE a reorganisation.
+ *
+ * A holding-company reorganisation moves the ticker to a brand-new CIK that
+ * succeeds to the old one's reporting obligations but starts with an empty XBRL
+ * history. SEC's ticker map points at the successor immediately, so XOM began
+ * resolving to "ExxonMobil Holdings Corp" — two months old, one 10-Q, four
+ * revenue rows — and every fundamental on the page went blank.
+ *
+ * The succession filing (8-K12B) doesn't name the predecessor in any structured
+ * field, and the successor carries no formerNames. What does identify it is the
+ * entityName in its own companyfacts, which stays the operating company's name
+ * ("Exxon Mobil Corporation"), so EDGAR's company search resolves the CIK that
+ * has actually been filing 10-Ks under that name.
+ */
+async function findPredecessorCik(entityName: string, excludeCik: string): Promise<string | null> {
+  // EDGAR matches on the REGISTERED name as a prefix, and registrants are filed
+  // in abbreviated form — "EXXON MOBIL CORP", never "Exxon Mobil Corporation".
+  // Searching the full entityName therefore returns nothing, so the corporate
+  // suffix is dropped before asking.
+  const name = String(entityName || "")
+    .replace(/[^A-Za-z0-9 ]/g, " ")
+    .replace(/\b(corporation|corp|incorporated|inc|company|co|limited|ltd|plc|holdings|holding|group|nv|sa|ag)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (name.length < 4) return null;
+  try {
+    const url =
+      "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=10-K&dateb=&owner=include&count=10&output=atom" +
+      `&company=${encodeURIComponent(name)}`;
+    const res = await fetch(url, { headers: { "User-Agent": SEC_UA }, next: { revalidate: 86400 } });
+    if (!res.ok) return null;
+    const xml = await res.text();
+    const want = excludeCik.replace(/^0+/, "");
+    for (const m of xml.matchAll(/CIK=(\d{10})/g)) {
+      if (m[1].replace(/^0+/, "") !== want) return m[1];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** Concatenate two companyfacts payloads, newer values winning on a tie. */
+function mergeFactsJson(primary: FactsJson, older: FactsJson): FactsJson {
+  const out: FactsJson = { facts: { "us-gaap": {}, dei: {} } };
+  for (const tax of ["us-gaap", "dei"] as const) {
+    const a: Record<string, ConceptNode> = older?.facts?.[tax] ?? {};
+    const b: Record<string, ConceptNode> = primary?.facts?.[tax] ?? {};
+    const concepts = new Set([...Object.keys(a), ...Object.keys(b)]);
+    for (const concept of concepts) {
+      const ua = a[concept]?.units ?? {};
+      const ub = b[concept]?.units ?? {};
+      const units: Record<string, RawFact[]> = {};
+      for (const u of new Set([...Object.keys(ua), ...Object.keys(ub)])) {
+        units[u] = [...(ua[u] ?? []), ...(ub[u] ?? [])];
+      }
+      out.facts![tax][concept] = { ...(a[concept] ?? {}), ...(b[concept] ?? {}), units };
+    }
+  }
+  return out;
+}
+
+export async function fetchFacts(cik: string): Promise<Facts | null> {
+  const json = await fetchFactsJson(cik);
+  if (!json) return null;
+
+  // A registrant with almost no top-line history is the signature of a
+  // succession, not of a company without revenue. Everything downstream needs
+  // four consecutive quarters, so without the predecessor the whole page is
+  // blank. The lookup costs two extra SEC calls and only runs in that case.
+  if (revenueRowCount(json) < 8) {
+    const prevCik = await findPredecessorCik(json?.entityName ?? "", cik);
+    if (prevCik) {
+      const older = await fetchFactsJson(prevCik);
+      if (older && revenueRowCount(older) > revenueRowCount(json)) {
+        return new Facts(mergeFactsJson(json, older));
+      }
+    }
+  }
+  return new Facts(json);
 }
 
 const safeDiv = (a: number | null, b: number | null): number | null =>
