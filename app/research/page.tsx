@@ -67,14 +67,20 @@ function SectionLabel({ children, right }: { children: React.ReactNode; right?: 
   );
 }
 
-function MCard({ label, value, sub, tone = "default", na = false }: {
+function MCard({ label, value, sub, tone = "default", na = false, loading = false }: {
   label: string; value?: string; sub?: string; tone?: "good" | "bad" | "neutral" | "default"; na?: boolean;
+  loading?: boolean;
 }) {
   const color = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : "var(--text-primary)";
   return (
     <div style={{ ...CARD, padding: "14px 16px", opacity: na ? 0.6 : 1 }}>
       <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 5 }}>{label}</div>
-      {na ? (
+      {loading ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="spinner" style={{ width: 13, height: 13 }} />
+          <span style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)" }}>Loading…</span>
+        </div>
+      ) : na ? (
         <div style={{ fontFamily: SANS, fontSize: "0.72rem", fontWeight: 600, color: "var(--accent-gold)", lineHeight: 1.35 }}>
           Not available with current data
         </div>
@@ -125,6 +131,8 @@ type Bench = {
   unit?: "x" | "%" | "";
   na?: boolean;
   naReason?: string;
+  /** Waiting on a slower secondary request — NOT the same as unavailable. */
+  loading?: boolean;
 };
 
 const ACCENTS: Record<string, string> = {
@@ -154,7 +162,7 @@ function grade(b: Bench): "good" | "mid" | "bad" | null {
 
 function BenchRow({ b, accent }: { b: Bench; accent: string }) {
   const g = grade(b);
-  const valueColor = b.na
+  const valueColor = b.na || b.loading
     ? "var(--accent-gold)"
     : g === "good" ? "var(--positive)"
     : g === "bad" ? "var(--negative)"
@@ -182,10 +190,16 @@ function BenchRow({ b, accent }: { b: Bench; accent: string }) {
 
       {/* figure */}
       <div style={{
-        fontFamily: MONO, fontSize: b.na ? "0.66rem" : "1.05rem", fontWeight: 700,
+        fontFamily: MONO, fontSize: b.na || b.loading ? "0.66rem" : "1.05rem", fontWeight: 700,
         color: valueColor, textAlign: "right", lineHeight: 1.25,
+        display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 7,
       }}>
-        {b.na ? "Not available" : b.value}
+        {b.loading ? (
+          <>
+            <span className="spinner" style={{ width: 11, height: 11 }} />
+            <span style={{ color: "var(--text-muted)" }}>Loading</span>
+          </>
+        ) : b.na ? "Not available" : b.value}
       </div>
 
       {/* benchmark */}
@@ -195,7 +209,7 @@ function BenchRow({ b, accent }: { b: Bench; accent: string }) {
         color: "var(--text-muted)",
         borderBottom: "1px solid var(--border)", paddingBottom: 4,
       }}>
-        {b.na ? (b.naReason ?? "Needs analyst estimates") : benchText(b)}
+        {b.loading ? "Fetching analyst consensus" : b.na ? (b.naReason ?? "Needs analyst estimates") : benchText(b)}
       </div>
     </div>
   );
@@ -386,6 +400,11 @@ function MarketstackResearchInner() {
   // Analyst consensus, kept distinct from `fwd` — that one is our own trend
   // projection off filed results, this is what the covering analysts publish.
   const cf = analystData?.consensusForward;
+  // Analyst ratings and consensus load after the main payload, so a row that
+  // depends on them is "not here yet" during that window — not "not available".
+  // Conflating the two told visitors a metric didn't exist when it was seconds
+  // from arriving.
+  const analystsPending = analystData == null;
   const div = data?.dividends;
   const fun = data?.fundamentals;
   const capm = data?.capm;
@@ -497,7 +516,8 @@ function MarketstackResearchInner() {
               sub={q.pos52 != null ? (q.pos52 > 70 ? "Near 52-wk high" : q.pos52 < 30 ? "Near 52-wk low" : "Mid-range") : undefined} />
             <MCard label="Beta" value={capm?.beta != null ? capm.beta.toFixed(2) : "N/A"}
               sub={capm?.beta == null ? "Insufficient overlap" : capm.beta > 1.3 ? "High volatility" : capm.beta < 0.8 ? "Low volatility" : "Market-like beta"} />
-            <MCard label="Analyst Target" value={cons?.avgTarget != null ? money(cons.avgTarget) : "N/A"}
+            <MCard label="Analyst Target" loading={analystsPending}
+              value={cons?.avgTarget != null ? money(cons.avgTarget) : "N/A"}
               sub={cons?.avgTarget != null && q.price ? `${pct(((cons.avgTarget - q.price) / q.price) * 100, 1)} upside` : undefined}
               tone={cons?.avgTarget != null && cons.avgTarget > q.price ? "good" : "default"} />
           </Grid>
@@ -532,6 +552,8 @@ function MarketstackResearchInner() {
                 cf?.pe != null
                   ? { label: "Forward P/E", value: mult(cf.pe), raw: cf.pe, range: [18, 26], unit: "x",
                       note: `Analyst consensus · next 12 months${cf.analysts ? ` · ${cf.analysts} estimates` : ""}` }
+                  : analystsPending
+                  ? { label: "Forward P/E", value: "", loading: true }
                   : { label: "Forward P/E", value: "", na: true },
                 { label: "TTM P/S", value: mult(fun.ps), raw: fun.ps, range: [1.8, 2.6], unit: "x" },
                 // Two bases, best first, each labelled so they can't be mistaken
@@ -542,7 +564,9 @@ function MarketstackResearchInner() {
                 // a loss-maker's negative margin yields a negative P/S. So a
                 // company still losing money falls back to its own projected
                 // revenue, which keeps growing through losses.
-                cf?.pe != null && fun.netMargin != null && fun.netMargin > 0
+                analystsPending && fun.netMargin != null && fun.netMargin > 0
+                  ? { label: "Forward P/S", value: "", loading: true }
+                  : cf?.pe != null && fun.netMargin != null && fun.netMargin > 0
                   ? { label: "Forward P/S", value: mult(cf.pe * fun.netMargin),
                       raw: cf.pe * fun.netMargin, range: [1.8, 2.6], unit: "x",
                       note: `Consensus EPS at today's ${pctOf(fun.netMargin, 1)} net margin` }
@@ -559,7 +583,9 @@ function MarketstackResearchInner() {
               <BenchGroup accent={ACCENTS.growth} rows={[
                 { label: "TTM EPS Growth", value: pctOf(fun.epsGrowth, 1),
                   raw: fun.epsGrowth != null ? fun.epsGrowth * 100 : null, range: [8, 12], unit: "%", higherBetter: true },
-                cf?.nextYearEpsGrowth != null
+                analystsPending && cf?.nextYearEpsGrowth == null
+                  ? { label: "Next Yr EPS Growth", value: "", loading: true }
+                  : cf?.nextYearEpsGrowth != null
                   ? { label: "Next Yr EPS Growth", value: pctOf(cf.nextYearEpsGrowth, 1),
                       raw: cf.nextYearEpsGrowth * 100, range: [8, 12], unit: "%", higherBetter: true,
                       note: `Consensus ${cf.currentYearLabel} → ${cf.nextYearLabel}${cf.analysts ? ` · ${cf.analysts} estimates` : ""}` }
