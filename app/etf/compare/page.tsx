@@ -165,24 +165,55 @@ function CompareInner() {
       {error && <p style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</p>}
 
       {/* Comparing several funds means a holdings pull each plus the pairwise
-          overlap, so the first uncached load takes seconds. Nothing rendered
-          during that wait except a "…" on the button, which reads as a broken
-          page rather than a busy one. */}
+          overlap, so the first uncached load takes seconds. A dashed box with
+          the word "Loading" in it reads as a broken panel — movement is what
+          actually says "working", so the placeholders animate and the header
+          states what is being fetched and why it is slow. */}
       {(loading || (!data && !error)) && (
         <>
+          {loading && (
+            <div style={{
+              ...CARD, display: "flex", alignItems: "center", gap: 14,
+              padding: "16px 18px", marginBottom: 14,
+              borderColor: "var(--border-active)",
+            }}>
+              <span className="spinner" style={{ width: 20, height: 20, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-gold)" }}>
+                  Comparing {tickers.filter(Boolean).length} funds…
+                </div>
+                <div style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 3 }}>
+                  Pulling every holding in each fund to compute the overlap. First load for a new
+                  set takes a few seconds; after that it&rsquo;s instant.
+                </div>
+              </div>
+            </div>
+          )}
+
           {[
             { t: "Overview", d: "Price, assets, yield and expense ratio for each fund." },
             { t: "Performance", d: "1, 3, 5 and 10-year total return and CAGR, charted together." },
             { t: "Holdings overlap", d: "How much of each pair of funds is the same underlying stock." },
             { t: "Top holdings", d: "Largest positions in each fund, side by side." },
-          ].map((s) => (
-            <div key={s.t} style={{ ...CARD, border: "1px dashed var(--border)", padding: "16px 18px", marginBottom: 12, opacity: 0.7 }}>
-              <div style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 5 }}>
+          ].map((s, i) => (
+            <div key={s.t} style={{
+              ...CARD,
+              border: loading ? "1px solid var(--border)" : "1px dashed var(--border)",
+              padding: "16px 18px", marginBottom: 12,
+              opacity: loading ? 1 : 0.7,
+            }}>
+              <div style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 9 }}>
                 {s.t}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                {loading ? "Loading…" : s.d}
-              </div>
+              {loading ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div className={`skeleton-bar skeleton-d${(i % 3) + 1}`} style={{ height: 13, width: "72%" }} />
+                  <div className={`skeleton-bar skeleton-d${((i + 1) % 3) + 1}`} style={{ height: 13, width: "48%" }} />
+                  <div className={`skeleton-bar skeleton-d${((i + 2) % 3) + 1}`} style={{ height: 13, width: "60%" }} />
+                </div>
+              ) : (
+                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{s.d}</div>
+              )}
             </div>
           ))}
         </>

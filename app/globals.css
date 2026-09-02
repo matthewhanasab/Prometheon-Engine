@@ -98,3 +98,35 @@ body:has(.landing) .main-content { padding: 0 !important; }
     width: 100%;
   }
 }
+
+/* ── Loading skeletons ──
+   Used where a panel waits on a slow upstream call (ETF comparison pulls full
+   holdings per fund plus the pairwise overlap). A dashed box with the word
+   "Loading" reads as a broken panel; movement is what says "working". */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.30; }
+  50%      { opacity: 0.75; }
+}
+.skeleton-bar {
+  background: var(--bg-elevated);
+  border-radius: 6px;
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+.skeleton-d1 { animation-delay: 0.12s; }
+.skeleton-d2 { animation-delay: 0.24s; }
+.skeleton-d3 { animation-delay: 0.36s; }
+
+@keyframes spinnerRotate { to { transform: rotate(360deg); } }
+.spinner {
+  display: inline-block;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent-gold);
+  animation: spinnerRotate 0.7s linear infinite;
+}
+
+/* Respect a reduced-motion preference: keep the state legible, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bar, .spinner { animation: none; }
+  .skeleton-bar { opacity: 0.5; }
+}
