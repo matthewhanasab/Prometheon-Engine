@@ -445,16 +445,6 @@ function MarketstackResearchInner() {
               <CompanyLogo ticker={data.ticker} size={58} />
               <div style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 500 }}>{prof?.name ?? data.ticker}</div>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              {[data.ticker, prof?.exchange, prof?.sector, prof?.industry].filter(Boolean).map((v: string) => (
-                <span key={v} style={{ fontSize: "0.6rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "2px 8px" }}>{v}</span>
-              ))}
-              {data.meta?.cik && (
-                <span style={{ fontSize: "0.6rem", fontWeight: 500, letterSpacing: "0.08em", color: "var(--text-muted)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "2px 8px", fontFamily: MONO }}>
-                  CIK {Number(data.meta.cik)}
-                </span>
-              )}
-            </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, alignItems: "center" }}>
               <span style={{ fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-muted)", marginRight: 2 }}>Peers</span>
               <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--accent-gold)", background: "var(--bg-elevated)", border: "1px dashed var(--border)", borderRadius: 999, padding: "3px 9px" }}>
