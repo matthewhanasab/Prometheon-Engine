@@ -409,8 +409,7 @@ function OptionsChainInner() {
             {chain.asOf && <> — newest print in this file is {chain.asOf.replace("T", " ").slice(0, 16)}</>}.
             Delta, gamma, theta, vega, rho and implied volatility come from the exchange rather than being
             modelled here, unlike the Black-Scholes figures on{" "}
-            <Link href="/covered-calls" style={{ color: "var(--accent-gold)", textDecoration: "none" }}>Covered Calls</Link> and{" "}
-            <Link href="/puts" style={{ color: "var(--accent-gold)", textDecoration: "none" }}>Cash-Secured Puts</Link>.
+            <Link href="/covered-calls" style={{ color: "var(--accent-gold)", textDecoration: "none" }}>Covered Calls</Link>.
           </div>
         </>
       )}

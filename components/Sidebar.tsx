@@ -16,7 +16,6 @@ const NAV = [
   { href: "/charts",        label: "Charts" },
   { href: "/financials",    label: "Financials" },
   { href: "/covered-calls", label: "Covered Calls" },
-  { href: "/puts",          label: "Cash-Secured Puts" },
   { href: "/dividends",     label: "Dividends" },
   { href: "/projections",   label: "Projections" },
   { href: "/earnings",      label: "Earnings" },
@@ -60,7 +59,6 @@ const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
     items: [
       { href: "/options-chain", label: "Options Chain" },
       { href: "/covered-calls", label: "Covered Calls" },
-      { href: "/puts",          label: "Cash-Secured Puts" },
     ],
   },
   {

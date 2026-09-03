@@ -23,7 +23,6 @@ const ROUTES: { path: string; priority: number; freq: MetadataRoute.Sitemap[numb
   { path: "/sec", priority: 0.6, freq: "daily" },
   { path: "/options-chain", priority: 0.7, freq: "hourly" },
   { path: "/covered-calls", priority: 0.6, freq: "daily" },
-  { path: "/puts", priority: 0.6, freq: "daily" },
   { path: "/portfolio", priority: 0.6, freq: "weekly" },
   { path: "/calculator", priority: 0.5, freq: "monthly" },
 ];
