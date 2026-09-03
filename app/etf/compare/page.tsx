@@ -111,6 +111,11 @@ function CompareInner() {
   ];
 
   const withHoldings = funds.filter((f) => f.holdingsAvailable);
+  // Overlap needs the constituents of BOTH funds, so a fund whose provider
+  // doesn't publish holdings can't appear in the matrix. Silently dropping it
+  // makes the table look like it lost a column for no reason — these are named
+  // underneath instead.
+  const withoutHoldings = funds.filter((f) => !f.holdingsAvailable);
 
   // Performance race: each fund's % return from a common start date, so the
   // lines all begin at 0 and diverge. Aligned on the intersection of dates
@@ -321,6 +326,18 @@ function CompareInner() {
                 <span style={{ color: "var(--accent-gold)", fontWeight: 600 }}>gold</span> = partial ·{" "}
                 <span style={{ color: "var(--negative)", fontWeight: 600 }}>red</span> = largely the same fund. Computed as the
                 sum of the smaller weight for every security both funds hold.
+                {withoutHoldings.length > 0 && (
+                  <>
+                    {" "}
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      {withoutHoldings.map((f) => f.ticker).join(", ")}{" "}
+                      {withoutHoldings.length === 1 ? "is" : "are"} not shown here — the fund
+                      {withoutHoldings.length === 1 ? "" : "s"} don&rsquo;t publish holdings, and overlap
+                      can only be computed where both baskets are known. Every other metric below still
+                      covers {withoutHoldings.length === 1 ? "it" : "them"}.
+                    </span>
+                  </>
+                )}
               </div>
             </>
           )}
