@@ -330,11 +330,13 @@ function CompareInner() {
                   <>
                     {" "}
                     <span style={{ color: "var(--text-secondary)" }}>
-                      {withoutHoldings.map((f) => f.ticker).join(", ")}{" "}
-                      {withoutHoldings.length === 1 ? "is" : "are"} not shown here — the fund
-                      {withoutHoldings.length === 1 ? "" : "s"} don&rsquo;t publish holdings, and overlap
-                      can only be computed where both baskets are known. Every other metric below still
-                      covers {withoutHoldings.length === 1 ? "it" : "them"}.
+                      {`${withoutHoldings.map((f) => f.ticker).join(", ")} ${
+                        withoutHoldings.length === 1
+                          ? "is not shown here — that fund doesn’t"
+                          : "are not shown here — those funds don’t"
+                      } publish holdings, and overlap can only be computed where both baskets are known. Every other metric below still covers ${
+                        withoutHoldings.length === 1 ? "it" : "them"
+                      }.`}
                     </span>
                   </>
                 )}
