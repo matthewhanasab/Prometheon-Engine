@@ -95,7 +95,13 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
         accent: ACCENTS.revenue,
         metrics: [
           { label: "TTM Revenue Growth", key: (s) => s.revenueGrowth, fmt: fmtPct, bench: "4.5–6.5%" },
-          { label: "Current Yr Exp Rev Growth", key: (s) => s.projRevGrowth, fmt: fmtPct, bench: "4.5–6.5%", modeled: true },
+          // The trend model produces ONE forward rate — next twelve months off
+          // TTM — so it can't distinguish the year in progress from the year
+          // after. Pointing this row at it too printed the same figure under
+          // two labels, implying two estimates where there is one. A
+          // fiscal-year-to-date expectation needs consensus revenue, which
+          // isn't obtainable free.
+          { label: "Current Yr Exp Rev Growth", key: null, fmt: () => "", bench: "4.5–6.5%" },
           { label: "Next Year Revenue Growth", key: (s) => s.projRevGrowth, fmt: fmtPct, bench: "4.5–6.5%", modeled: true },
         ],
       },
