@@ -55,6 +55,8 @@ type MetricDef = {
   accent?: string;
   /** Value comes from our trend projection, not analyst consensus. */
   modeled?: boolean;
+  /** Value comes from published analyst consensus, not our projection. */
+  consensus?: boolean;
 };
 
 const ACCENTS = {
@@ -85,16 +87,16 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
         accent: ACCENTS.eps,
         metrics: [
           { label: "TTM EPS Growth", key: (s) => s.epsGrowthTtm, fmt: fmtPct, bench: "8–12%" },
-          { label: "Current Yr Exp EPS Growth", key: null, fmt: () => "", bench: "8–12%" },
-          { label: "Next Year EPS Growth", key: null, fmt: () => "", bench: "8–12%" },
+          { label: "Current Yr Exp EPS Growth", key: (s) => s.consCurrentYearEpsGrowth, fmt: fmtPct, bench: "8–12%", consensus: true },
+          { label: "Next Year EPS Growth", key: (s) => s.consNextYearEpsGrowth, fmt: fmtPct, bench: "8–12%", consensus: true },
         ],
       },
       {
         accent: ACCENTS.revenue,
         metrics: [
           { label: "TTM Revenue Growth", key: (s) => s.revenueGrowth, fmt: fmtPct, bench: "4.5–6.5%" },
-          { label: "Current Yr Exp Rev Growth", key: null, fmt: () => "", bench: "4.5–6.5%" },
-          { label: "Next Year Revenue Growth", key: null, fmt: () => "", bench: "4.5–6.5%" },
+          { label: "Current Yr Exp Rev Growth", key: (s) => s.projRevGrowth, fmt: fmtPct, bench: "4.5–6.5%", modeled: true },
+          { label: "Next Year Revenue Growth", key: (s) => s.projRevGrowth, fmt: fmtPct, bench: "4.5–6.5%", modeled: true },
         ],
       },
       {
@@ -103,7 +105,7 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
           { label: "Gross Margin", key: (s) => s.grossMargin, fmt: fmtPct, bench: "40–48%" },
           { label: "Net Margin", key: (s) => s.netMargin, fmt: fmtPct, bench: "8–10%" },
           { label: "TTM P/S Ratio", key: (s) => s.ps, fmt: fmtX, lowerIsBetter: true, bench: "1.8–2.6" },
-          { label: "Forward P/S Ratio", key: null, fmt: () => "", bench: "1.8–2.6" },
+          { label: "Forward P/S Ratio", key: (s) => s.consForwardPs, fmt: fmtX, lowerIsBetter: true, bench: "1.8–2.6", consensus: true },
         ],
       },
     ],
@@ -124,9 +126,9 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
         accent: ACCENTS.revenue,
         metrics: [
           { label: "Last Year Rev Growth", key: (s) => s.lastYearRevGrowth, fmt: fmtPct, bench: "4.5–6.5%" },
-          { label: "TTM vs NTM Rev Growth", key: null, fmt: () => "", bench: "4.5–6.5%" },
+          { label: "TTM vs NTM Rev Growth", key: (s) => s.projRevGrowth, fmt: fmtPct, bench: "4.5–6.5%", modeled: true },
           { label: "Current Qtr Rev Growth vs Prev Year", key: (s) => s.currentQuarterRevGrowth, fmt: fmtPct, bench: "4.5–6.5%" },
-          { label: "2-Year Stack Exp Rev Growth", key: null, fmt: () => "", bench: "9–13%" },
+          { label: "2-Year Stack Exp Rev Growth", key: (s) => s.projRevGrowth2y, fmt: fmtPct, bench: "9–13%", modeled: true },
         ],
       },
       {
@@ -174,6 +176,8 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
 const ALL_METRICS = SECTIONS.flatMap((s) => s.groups.flatMap((g) => g.metrics));
 
 /** Flatten the /api/marketstack-stock payload into the shape the table reads. */
+type NormalizedStock = ReturnType<typeof normalize>;
+
 function normalize(j: any) {
   const f = j.fundamentals ?? {};
   const fw = j.forward ?? null;
@@ -185,6 +189,12 @@ function normalize(j: any) {
     forwardPe2y: fw?.eps2y && j.quote?.price ? j.quote.price / fw.eps2y : null,
     forwardEpsGrowth: fw?.growth ?? null,
     forwardEpsGrowth2y: fw?.growth != null ? Math.pow(1 + fw.growth, 2) - 1 : null,
+    // Revenue carried forward off the company's own filings (see
+    // lib/forwardEstimates.ts) — a projection, flagged as one.
+    projRevGrowth: j.forwardRevenue?.growth ?? null,
+    projRevGrowth2y:
+      j.forwardRevenue?.growth != null ? Math.pow(1 + j.forwardRevenue.growth, 2) - 1 : null,
+    epsTtm: f.eps ?? null,
     ticker: j.ticker,
     name: j.profile?.name ?? j.ticker,
     sector: j.profile?.sector ?? null,
@@ -314,6 +324,45 @@ function CompareInner() {
         })
       );
       setStocks(out);
+
+      // Analyst consensus lives on its own route because it's the slowest pair
+      // of calls in the stack. Fetching it after the table has rendered keeps
+      // the comparison as fast as it was, and the consensus rows fill in.
+      Promise.all(
+        want.map((t) =>
+          fetch(`/api/stock-analysts/${t}`)
+            .then((r) => r.json())
+            .then((a) => ({ t, cf: a?.consensusForward ?? null }))
+            .catch(() => ({ t, cf: null }))
+        )
+      ).then((rows) => {
+        const byTicker = new Map(rows.map((r) => [r.t, r.cf]));
+        setStocks((prev) =>
+          prev.map((s: NormalizedStock) => {
+            const cf = byTicker.get(s.ticker);
+            if (!cf) return s;
+            return {
+              ...s,
+              consNextYearEpsGrowth: cf.nextYearEpsGrowth ?? null,
+              // Consensus for the year in progress, measured against the
+              // trailing twelve months — the base a reader is looking at.
+              consCurrentYearEpsGrowth:
+                cf.currentYearEps != null && s.epsTtm != null && s.epsTtm > 0
+                  ? cf.currentYearEps / s.epsTtm - 1
+                  : null,
+              // P/S = P/E x net margin holds at the forward date regardless of
+              // buybacks; it needs a positive margin, so a loss-maker falls
+              // back to its own projected revenue instead.
+              consForwardPs:
+                cf.pe != null && s.netMargin != null && s.netMargin > 0
+                  ? cf.pe * s.netMargin
+                  : s.ps != null && s.projRevGrowth != null && s.projRevGrowth > -1
+                  ? s.ps / (1 + s.projRevGrowth)
+                  : null,
+            };
+          })
+        );
+      });
     } catch (e: any) {
       setError(e?.message ?? "Failed to load"); setStocks([]);
     } finally { setLoading(false); }
@@ -535,6 +584,16 @@ function CompareInner() {
                                 color: unavailable ? "var(--text-muted)" : "var(--text-primary)",
                               }}>
                                 {metric.label}
+                                {metric.consensus && (
+                                  <span
+                                    title="Published analyst consensus, aggregated across covering analysts — not a projection."
+                                    style={{
+                                      marginLeft: 7, fontFamily: MONO, fontSize: "0.6rem", fontWeight: 700,
+                                      color: "var(--accent-gold)", border: "1px solid var(--border-active)",
+                                      borderRadius: 999, padding: "1px 6px", cursor: "help", whiteSpace: "nowrap",
+                                    }}
+                                  >cons</span>
+                                )}
                                 {metric.modeled && (
                                   <span
                                     title="Projected from SEC-filed results by Prometheon's trend model — not analyst consensus."
