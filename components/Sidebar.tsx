@@ -8,7 +8,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 // Flat list — used by the mobile drawer
 const NAV = [
   { href: "/research",      label: "Stock Research" },
-  { href: "/fairvalue",     label: "Fair Value Graph" },
   { href: "/portfolio",     label: "My Portfolio" },
   { href: "/compare",       label: "Compare Stocks" },
   { href: "/etf",           label: "ETF Hub" },
@@ -46,7 +45,6 @@ const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
   {
     label: "Analysis",
     items: [
-      { href: "/fairvalue",   label: "Fair Value Graph" },
       { href: "/financials",  label: "Financials" },
       { href: "/projections", label: "Projections" },
       { href: "/earnings",    label: "Earnings" },

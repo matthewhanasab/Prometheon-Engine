@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 const BASE = "https://prometheonengine.com";
 
 // Public, indexable routes. The "Not available with current data" placeholder
-// pages (etf, fairvalue, projections) are intentionally excluded —
+// pages (etf, projections) are intentionally excluded —
 // they're thin content and marked noindex in their layouts.
 const ROUTES: { path: string; priority: number; freq: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "/", priority: 1.0, freq: "weekly" },

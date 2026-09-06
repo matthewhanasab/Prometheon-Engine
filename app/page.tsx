@@ -213,7 +213,6 @@ const SHOWCASE = [
 // ── Feature grid ──────────────────────────────────────────────────────────────
 const FEATURES = [
   { href: "/research?ticker=AAPL", title: "Stock Research",       desc: "40+ metrics, analyst consensus, insider and institutional activity — one page per ticker." },
-  { href: "/fairvalue?ticker=AMGN", title: "Fair Value Graph",     desc: "20 years of price plotted over the value earnings justify — spot over- and undervaluation at a glance." },
   { href: "/charts?ticker=NVDA", title: "Financial Charts",     desc: "Quarterly revenue, margins, EPS, FCF and analyst forecasts, visualized." },
   { href: "/compare?t=AAPL,MSFT", title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, and health." },
   { href: "/screener",      title: "Screener",             desc: "Filter the market by sector, size, valuation, and profitability." },

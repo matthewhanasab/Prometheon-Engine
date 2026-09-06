@@ -170,19 +170,6 @@ html[data-a11y-cursor="big"], html[data-a11y-cursor="big"] * {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'%3E%3Cpath d='M4 2l16 11.5-6.6.9 3.8 6.7-3 1.7-3.8-6.8-4.9 4.5z' fill='white' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") 3 2, auto !important;
 }
 
-/* Fair Value Graph series (validated per-surface) */
-:root {
-  --fv-line:     #BC5F04;
-  --fv-fill:     rgba(24, 154, 85, 0.22);
-  --fv-fill-est: rgba(24, 154, 85, 0.10);
-  --fv-top:      rgba(24, 154, 85, 0.12);
-}
-:root[data-theme="dark"] {
-  --fv-line:     #F09A4A;
-  --fv-fill:     rgba(74, 222, 128, 0.16);
-  --fv-fill-est: rgba(74, 222, 128, 0.07);
-  --fv-top:      rgba(74, 222, 128, 0.09);
-}
 
 :root[data-theme="dark"] {
   --bg-primary:    #0C1220;
