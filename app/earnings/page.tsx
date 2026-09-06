@@ -35,12 +35,21 @@ function mondayOf(iso: string) {
   return addDaysISO(iso, -(dow === 0 ? 6 : dow - 1));
 }
 
+// The grid runs Monday to Friday, so on a weekend "this week" is a week whose
+// every column is already in the past — opening there showed a board of dashes
+// and looked broken. Weekends roll forward to the week that's still ahead.
+function currentWeekStart(iso: string) {
+  const dow = parseISO(iso).getUTCDay();
+  const monday = mondayOf(iso);
+  return dow === 0 || dow === 6 ? addDaysISO(monday, 7) : monday;
+}
+
 function EarningsInner() {
   const [universe, setUniverse] = useState<Universe>("sp500");
   const [cache, setCache] = useState<Record<string, Entry[]>>({});
   const [failed, setFailed] = useState(false);
   const todayISO = new Date().toISOString().slice(0, 10);
-  const [weekStart, setWeekStart] = useState(() => mondayOf(new Date().toISOString().slice(0, 10)));
+  const [weekStart, setWeekStart] = useState(() => currentWeekStart(new Date().toISOString().slice(0, 10)));
 
   useEffect(() => {
     if (cache[universe]) return;
@@ -104,7 +113,7 @@ function EarningsInner() {
 
         <div style={{ marginLeft: "auto", display: "inline-flex", gap: 8 }}>
           <button type="button" style={navBtn} onClick={() => setWeekStart((w) => addDaysISO(w, -7))}>◀ Prev</button>
-          <button type="button" style={navBtn} onClick={() => setWeekStart(mondayOf(todayISO))}>This week</button>
+          <button type="button" style={navBtn} onClick={() => setWeekStart(currentWeekStart(todayISO))}>This week</button>
           <button type="button" style={navBtn} onClick={() => setWeekStart((w) => addDaysISO(w, 7))}>Next ▶</button>
         </div>
       </div>

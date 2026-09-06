@@ -432,7 +432,56 @@ function MarketstackResearchInner() {
         </button>
       </form>
 
-      {loading && <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", padding: "30px 0" }}>Loading {input}…</div>}
+      {/* A one-line "Loading AAPL…" left the rest of the page blank for the
+          seconds an uncached ticker takes, which reads as nothing happening.
+          The skeleton mirrors the real layout — header, chart, then the metric
+          grids — so the shape of what's coming is visible while it loads. */}
+      {loading && (
+        <div style={{ marginTop: "0.5rem" }}>
+          <div style={{
+            ...CARD, borderColor: "var(--border-active)", display: "flex", alignItems: "center",
+            gap: 14, padding: "16px 18px", marginBottom: 16,
+          }}>
+            <span className="spinner" style={{ width: 20, height: 20, flexShrink: 0 }} />
+            <div>
+              <div style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-gold)" }}>
+                Analyzing {input}…
+              </div>
+              <div style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 3 }}>
+                Pulling prices, SEC filings and fundamentals. First load for a ticker takes a few
+                seconds; after that it&rsquo;s instant.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ ...CARD, padding: "16px 18px", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div className="skeleton-bar" style={{ width: 58, height: 58, borderRadius: 14, flexShrink: 0 }} />
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 9 }}>
+                <div className="skeleton-bar" style={{ height: 20, width: "38%" }} />
+                <div className="skeleton-bar skeleton-d1" style={{ height: 13, width: "22%" }} />
+              </div>
+            </div>
+          </div>
+
+          <SectionLabel>Price Chart</SectionLabel>
+          <div className="skeleton-bar" style={{ ...CARD, height: 300, marginBottom: 4 }} />
+
+          {["Quick Stats", "Mandatory Metrics", "Advanced Metrics"].map((label, gi) => (
+            <div key={label}>
+              <SectionLabel>{label}</SectionLabel>
+              <Grid cols={5}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} style={{ ...CARD, padding: "14px 16px" }}>
+                    <div className={`skeleton-bar skeleton-d${(i % 3) + 1}`} style={{ height: 9, width: "58%" }} />
+                    <div className={`skeleton-bar skeleton-d${((i + gi) % 3) + 1}`} style={{ height: 17, width: "44%", marginTop: 10 }} />
+                  </div>
+                ))}
+              </Grid>
+            </div>
+          ))}
+        </div>
+      )}
       {error && <div style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</div>}
 
       {!data && !loading && !error && <EmptyPreview />}
