@@ -120,7 +120,15 @@ function project(sub, today) {
 }
 
 async function main() {
-  const key = envKey();
+  // --refresh re-projects dates for the universe already in the snapshot,
+  // instead of rebuilding it from ETF holdings.
+  //
+  // The universe needs a marketstack key; the dates don't — they come from SEC
+  // submissions. Index membership drifts slowly while the projections go stale
+  // in weeks, so tying a date refresh to having the key made the calendar
+  // decay whenever the key wasn't to hand. This keeps the two independent.
+  const refreshOnly = process.argv.includes("--refresh");
+  const key = refreshOnly ? null : envKey();
   const today = new Date().toISOString().slice(0, 10);
 
   process.stdout.write("Resolving SEC ticker map… ");
@@ -145,7 +153,30 @@ async function main() {
 
   const seen = new Set();
   const companies = [];
-  for (const f of FUNDS) {
+
+  if (refreshOnly) {
+    const prev = JSON.parse(readFileSync(resolve(ROOT, "data/earnings-calendar.json"), "utf8"));
+    for (const e of prev.entries ?? []) {
+      const hit = byExact.get(norm(e.name)) ?? bySorted.get(sortedKey(e.name));
+      // The snapshot carries no CIK, so each ticker is re-resolved through the
+      // SEC map; a name that no longer matches is looked up by ticker instead.
+      const cik = hit?.cik ?? [...Object.values(map)].find(
+        (r) => String(r?.ticker).toUpperCase() === e.ticker
+      )?.cik_str;
+      if (!cik) continue;
+      if (seen.has(e.ticker)) continue;
+      seen.add(e.ticker);
+      companies.push({
+        ticker: e.ticker,
+        cik: String(cik).padStart(10, "0"),
+        name: e.name,
+        tag: e.sp500 ? "sp500" : "other",
+      });
+    }
+    console.log(`Universe: ${companies.length} companies carried over from the previous snapshot\n`);
+  }
+
+  for (const f of refreshOnly ? [] : FUNDS) {
     const raw = await getJson(`${MS}/etfholdings?access_key=${key}&ticker=${f.ticker}`);
     const holdings = raw?.output?.holdings ?? [];
     let matched = 0;
@@ -162,11 +193,17 @@ async function main() {
     }
     console.log(`${f.ticker}: ${holdings.length} holdings → ${matched} resolved`);
   }
-  console.log(`Universe: ${companies.length} companies\n`);
+  if (!refreshOnly) console.log(`Universe: ${companies.length} companies\n`);
 
   const entries = [];
   let done = 0, failed = 0;
-  const CONC = 5;
+  // SEC asks for no more than 10 requests/second. Five workers with no pacing
+  // burst past that across ~750 companies, and sustained 403s exhausted even
+  // the five-try backoff — a refresh dropped 181 companies whose CIKs fetch
+  // perfectly well one at a time. Three workers with a quarter-second gap sits
+  // near 7/s and holds.
+  const CONC = 3;
+  const PACE_MS = 250;
   let idx = 0;
   await Promise.all(
     Array.from({ length: CONC }, async () => {
@@ -176,6 +213,7 @@ async function main() {
           "User-Agent": SEC_UA, Accept: "application/json",
         });
         done++;
+        await sleep(PACE_MS);
         if (done % 50 === 0) process.stdout.write(`  ${done}/${companies.length} (${entries.length} dated)\n`);
         if (!sub) { failed++; continue; }
         const p = project(sub, today);
