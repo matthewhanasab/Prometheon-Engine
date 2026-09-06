@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchFacts, deriveFundamentals, resolveCik } from "@/lib/edgarFacts";
 import { get10YTreasury } from "@/lib/fred";
 import { guard } from "@/lib/rateLimit";
-import { dropDividendOutliers } from "@/lib/dividends";
+import { dropDividendOutliers, projectNextExDate } from "@/lib/dividends";
 import { forwardEstimate, revenueProjection } from "@/lib/forwardEstimates";
 import { msGet as get, hitRateLimit } from "@/lib/marketstack";
 
@@ -461,6 +461,9 @@ export async function GET(
     dividends: {
       recent: past.slice(0, 24),
       upcoming,
+      // Declared payments only go a few weeks out, so between declarations
+      // `upcoming` is empty for a company on a perfectly regular schedule.
+      projectedNext: upcoming.length ? null : projectNextExDate(past),
       count: divs.length,
       oldest: divs.length ? divs[divs.length - 1].date : null,
       ttmTotal,

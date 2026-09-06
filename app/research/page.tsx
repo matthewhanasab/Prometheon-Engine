@@ -1051,6 +1051,9 @@ function MarketstackResearchInner() {
                 <MCard label="Frequency" value={div.freq === "q" ? "Quarterly" : div.freq === "m" ? "Monthly" : div.freq === "s" ? "Semi-Annual" : div.freq ?? "N/A"} />
                 {div.upcoming?.length > 0
                   ? <MCard label="Next Ex-Date" value={div.upcoming[0].date} sub={`${money(div.upcoming[0].amount)}${div.upcoming[0].paymentDate ? ` · pays ${div.upcoming[0].paymentDate}` : ""}`} tone="good" />
+                  : div.projectedNext
+                  ? <MCard label="Next Ex-Date" value={`~ ${div.projectedNext.date}`}
+                      sub={`expected · ${div.projectedNext.basis} cadence, not yet declared`} />
                   : <MCard label="Next Ex-Date" value="Not declared" />}
                 <MCard label="History Depth" value={String(div.count)} sub={`back to ${String(div.oldest).slice(0, 4)}`} />
               </Grid>

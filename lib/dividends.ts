@@ -48,3 +48,60 @@ export function dropDividendOutliers(
     dropped: rows.filter((r) => dropped.has(r)),
   };
 }
+
+/**
+ * Expected next ex-dividend date, projected from the payment cadence.
+ *
+ * A company that pays quarterly only declares its next dividend a few weeks
+ * ahead, so between declarations the upcoming list is legitimately empty — and
+ * the page said "Not declared", which reads like missing data rather than a
+ * company that simply hasn't announced yet. Apple, J&J and P&G all showed it
+ * simultaneously while Coca-Cola, mid-cycle, did not.
+ *
+ * The cadence is the median gap across recent ex-dates rather than the mean, so
+ * one special dividend or a shifted quarter doesn't drag the estimate. Returns
+ * null when the history is too short or too irregular to project honestly, and
+ * never returns a date in the past.
+ */
+export function projectNextExDate(
+  recent: DividendRow[],
+  today = new Date().toISOString().slice(0, 10)
+): { date: string; basis: "quarterly" | "monthly" | "semiannual" | "annual" | "irregular" } | null {
+  const dates = recent
+    .map((d) => d.date)
+    .filter(Boolean)
+    .sort()
+    .slice(-9);
+  if (dates.length < 3) return null;
+
+  const gaps: number[] = [];
+  for (let i = 1; i < dates.length; i++) {
+    const g = Math.round((Date.parse(dates[i]) - Date.parse(dates[i - 1])) / 86400000);
+    if (g > 20 && g < 400) gaps.push(g);
+  }
+  if (gaps.length < 2) return null;
+
+  const sorted = [...gaps].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+
+  // A payer whose gaps scatter isn't on a schedule worth projecting.
+  const spread = sorted[sorted.length - 1] - sorted[0];
+  if (spread > median * 0.8) return null;
+
+  const basis =
+    median <= 45 ? "monthly"
+    : median <= 135 ? "quarterly"
+    : median <= 250 ? "semiannual"
+    : median <= 400 ? "annual"
+    : "irregular";
+  if (basis === "irregular") return null;
+
+  // Step forward from the last known ex-date until the projection is ahead of
+  // today — a stale history shouldn't produce a date that has already passed.
+  let t = Date.parse(dates[dates.length - 1]);
+  const todayMs = Date.parse(today);
+  for (let i = 0; i < 12 && t <= todayMs; i++) t += median * 86400000;
+  if (t <= todayMs) return null;
+
+  return { date: new Date(t).toISOString().slice(0, 10), basis };
+}

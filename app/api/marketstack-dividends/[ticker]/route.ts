@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
+import { projectNextExDate } from "@/lib/dividends";
 
 // Full dividend record for the Market Stack edition's Dividends page.
 // marketstack returns complete history even on cheap tiers (KO → 1977).
@@ -107,6 +108,7 @@ export async function GET(
     growthStreak,
     yearly,
     upcoming,
+    projectedNext: upcoming.length ? null : projectNextExDate(past),
     recent: past.slice(0, 60),
   });
 }

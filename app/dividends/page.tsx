@@ -109,6 +109,9 @@ function DividendsInner() {
             <Stat label="Growth Streak" value={`${data.growthStreak} yrs`} sub="consecutive annual raises" tone={data.growthStreak >= 5 ? "good" : undefined} />
             {data.upcoming?.length > 0
               ? <Stat label="Next Ex-Date" value={data.upcoming[0].date} sub={`$${data.upcoming[0].amount}${data.upcoming[0].paymentDate ? ` · pays ${data.upcoming[0].paymentDate}` : ""}`} tone="good" />
+              : data.projectedNext
+              ? <Stat label="Next Ex-Date" value={`~ ${data.projectedNext.date}`}
+                  sub={`expected · ${data.projectedNext.basis} cadence, not yet declared`} />
               : <Stat label="Next Ex-Date" value="Not declared" />}
           </div>
 
