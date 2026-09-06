@@ -7,23 +7,32 @@ async function fetchFred(
   extra: Record<string, string> = {}
 ): Promise<{ date: string; value: number }[]> {
   const key = process.env.FRED_KEY ?? "";
+  // FRED applies `limit` AFTER sorting, so ascending order returns the OLDEST
+  // observations in the range — the dashboard was showing the first 60 months
+  // from 2018, which is why the Fed funds rate read 4.10% (December 2022), the
+  // 10-year read 3.62% (December 2022) and VIX read 12.6 (November 2019). The
+  // series was never updating; it was pinned to the start of the window.
+  //
+  // Newest-first is fetched instead, then reversed so every consumer still
+  // sees ascending order — computeYoY walks backwards for the year-ago value
+  // and the charts plot left to right.
   const params = new URLSearchParams({
     series_id: series,
     api_key: key,
     file_type: "json",
-    sort_order: "asc",
+    sort_order: "desc",
     limit: "60",
-    observation_start: "2018-01-01",
     ...extra,
   });
-  const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 21600 } });
+  const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 3600 } });
   const data = await res.json();
   return (data.observations ?? [])
     .map((o: { date: string; value: string }) => ({
       date: o.date,
       value: parseFloat(o.value),
     }))
-    .filter((o: { date: string; value: number }) => !isNaN(o.value));
+    .filter((o: { date: string; value: number }) => !isNaN(o.value))
+    .reverse();
 }
 
 function computeYoY(
@@ -58,7 +67,7 @@ async function fetchLatestFred(series: string): Promise<number | null> {
     limit: "5",
   });
   try {
-    const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 21600 } });
+    const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 3600 } });
     const data = await res.json();
     const obs = (data.observations ?? []).find((o: { value: string }) => o.value !== ".");
     return obs ? parseFloat(obs.value) : null;
@@ -77,7 +86,7 @@ async function fetchMarkets(): Promise<any[]> {
     try {
       const res = await fetch(
         `https://api.marketstack.com/v2/eod?access_key=${key}&symbols=${s}&limit=2`,
-        { next: { revalidate: 21600 } }
+        { next: { revalidate: 3600 } }
       );
       const j = await res.json().catch(() => null);
       const rows = (Array.isArray(j?.data) ? j.data : []).filter((r: any) => Number(r?.close) > 0);
@@ -142,7 +151,7 @@ export async function GET() {
     fetchFred("UMCSENT"),
     fetchFred("VIXCLS", { limit: "500" }),
     fetchMarkets(),
-    fetch("https://api.alternative.me/fng/?limit=30", { next: { revalidate: 21600 } }),
+    fetch("https://api.alternative.me/fng/?limit=30", { next: { revalidate: 3600 } }),
     ...YIELD_SERIES.map((s) => fetchLatestFred(s.series)),
   ]);
 
@@ -190,5 +199,13 @@ export async function GET() {
     markets: Array.isArray(markets) ? markets : [],
     yieldCurve,
     fearGreed,
+    asOf: new Date().toISOString(),
+  }, {
+    // The route was returning must-revalidate, so every visitor re-ran the
+    // whole fan-out. An hour at the edge matches the upstream refresh: FRED
+    // publishes daily at most and the index quotes are end-of-day, so nothing
+    // here changes faster than that — and stale-while-revalidate means a
+    // visitor after the hour gets the cached copy immediately while it renews.
+    headers: { "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=21600" },
   });
 }
