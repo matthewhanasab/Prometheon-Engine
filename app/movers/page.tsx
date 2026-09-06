@@ -34,15 +34,15 @@ export default function MsMoversPage() {
         Today&apos;s biggest gainers, losers and most-active names, plus a market-wide snapshot.
       </div>
 
+      <Label hint="S&amp;P 500 by market cap · sized &amp; colored by daily move">Heatmap</Label>
+      <StockHeatmap height={620} />
+
       <Label hint="gainers · losers · most active">Hotlists</Label>
       <TradingViewWidget
         widget="hotlists"
         height={480}
         config={{ dataSource: "AllUSAStocks", exchange: "US", showChart: true, showSymbolLogo: true }}
       />
-
-      <Label hint="S&amp;P 500 by market cap · sized &amp; colored by daily move">Heatmap</Label>
-      <StockHeatmap height={620} />
 
       <Label hint="indices, futures, bonds, forex">Market Overview</Label>
       <TradingViewWidget

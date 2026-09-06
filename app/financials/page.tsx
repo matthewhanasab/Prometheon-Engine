@@ -21,6 +21,17 @@ type RowDef = {
   section?: string;
 };
 
+// Period-over-period change. Columns run newest-first, so the comparison for
+// column i is against i+1. Sign is meaningless off a negative or zero base —
+// a swing from a loss to a profit isn't a percentage — so those return null
+// rather than a number that looks precise and means nothing.
+function growthAt(vals: (number | null)[], i: number): number | null {
+  const cur = vals[i];
+  const prev = vals[i + 1];
+  if (cur == null || prev == null || prev === 0 || prev < 0) return null;
+  return (cur - prev) / prev;
+}
+
 const INCOME_ROWS: RowDef[] = [
   { label: "Revenue", field: "revenue", bold: true },
   { label: "Cost of Revenue", field: "costOfRevenue", invertColor: true },
@@ -128,6 +139,9 @@ function FinancialsInner() {
   }
 
   const ROWS = tab === "income" ? INCOME_ROWS : tab === "balance" ? BALANCE_ROWS : CASHFLOW_ROWS;
+  // On by default: the statement is what changed, not just what the level is.
+  // Toggleable because a dense balance sheet reads better without it.
+  const [showGrowth, setShowGrowth] = useState(true);
   const periods: { date: string; label: string }[] = data?.periods ?? [];
   const rows: Record<string, (number | null)[]> = data?.rows ?? {};
 
@@ -173,6 +187,10 @@ function FinancialsInner() {
         }}>{loading ? "Loading…" : "Load"}</button>
 
         <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
+          <button type="button" onClick={() => setShowGrowth((g) => !g)} style={chip(showGrowth)}
+            title="Show period-over-period change under each figure">
+            Growth %
+          </button>
           <button type="button" onClick={() => switchPeriod("annual")} style={chip(period === "annual")}>Annual</button>
           <button type="button" onClick={() => switchPeriod("quarterly")} style={chip(period === "quarterly")}>Quarterly</button>
         </div>
@@ -258,6 +276,22 @@ function FinancialsInner() {
                               color: v == null ? "var(--text-muted)" : negative ? tone : "var(--text-primary)",
                             }}>
                               {row.isEps ? fmtEps(v) : fmtMoney(v)}
+                              {showGrowth && (() => {
+                                const g = growthAt(vals, i);
+                                if (g == null) return null;
+                                // Cost lines are flagged invertColor because rising is bad
+                                // there — the same flag steers the growth colour, so an
+                                // expense growing 20% doesn't read as good news.
+                                const good = row.invertColor ? g < 0 : g > 0;
+                                return (
+                                  <div style={{
+                                    fontFamily: MONO, fontSize: "0.6rem", fontWeight: 600, marginTop: 2,
+                                    color: g === 0 ? "var(--text-muted)" : good ? "var(--positive)" : "var(--negative)",
+                                  }}>
+                                    {g > 0 ? "+" : ""}{(g * 100).toFixed(1)}%
+                                  </div>
+                                );
+                              })()}
                             </td>
                           );
                         })
