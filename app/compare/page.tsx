@@ -470,6 +470,44 @@ function CompareInner() {
       </form>
       {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
 
+      {/* A "Loading…" beside the button left the whole page blank while several
+          tickers were fetched, which reads as nothing happening. The sections
+          that are coming are shown instead, animated so the wait is legible as
+          work rather than as an empty page. */}
+      {loading && (
+        <>
+          <div style={{
+            background: "var(--bg-surface)", border: "1px solid var(--border-active)",
+            borderRadius: 22, display: "flex", alignItems: "center", gap: 14,
+            padding: "16px 18px", marginBottom: 14,
+          }}>
+            <span className="spinner" style={{ width: 20, height: 20, flexShrink: 0 }} />
+            <div>
+              <div style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-gold)" }}>
+                Comparing {tickers.filter(Boolean).length} stocks…
+              </div>
+              <div style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 3 }}>
+                Pulling prices, SEC fundamentals and analyst consensus for each. First load for a
+                new set takes a few seconds; after that it&rsquo;s instant.
+              </div>
+            </div>
+          </div>
+
+          {["Side-by-Side Overview", "1-Year Performance Race", "Category Scorecard", "Metric Comparison Table"].map((t, i) => (
+            <div key={t} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "16px 18px", marginBottom: 12 }}>
+              <div style={{ fontFamily: SANS, fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 9 }}>
+                {t}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className={`skeleton-bar skeleton-d${(i % 3) + 1}`} style={{ height: 13, width: "70%" }} />
+                <div className={`skeleton-bar skeleton-d${((i + 1) % 3) + 1}`} style={{ height: 13, width: "45%" }} />
+                <div className={`skeleton-bar skeleton-d${((i + 2) % 3) + 1}`} style={{ height: 13, width: "58%" }} />
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
       {!loading && stocks.length === 0 && !error && (
         <>
           <EmptyHint title="Side-by-Side Overview" desc="Price, market cap, and daily move for each ticker, color-coded per company." />
