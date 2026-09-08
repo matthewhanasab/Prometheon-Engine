@@ -30,8 +30,11 @@ export type ConsensusEstimate = {
   currentYearEps: number | null;
   /** Consensus EPS for the following fiscal year. */
   nextYearEps: number | null;
-  /** Growth from current to next fiscal year (decimal). */
+  /** Growth from current to next fiscal year (decimal). Null off a negative
+   *  base, where a percentage is meaningless. */
   nextYearEpsGrowth: number | null;
+  /** Set when both years are losses: "improving" narrows, "worsening" deepens. */
+  lossTrend: "improving" | "worsening" | null;
   /** Fiscal-year labels as published, e.g. "Sep 2026". */
   currentYearLabel: string | null;
   nextYearLabel: string | null;
@@ -108,10 +111,20 @@ export async function fetchConsensusEps(ticker: string): Promise<ConsensusEstima
     next?.eps != null ? w * cur.eps! + (1 - w) * next.eps
     : cur.eps;
 
+  // Growth is only meaningful off a positive base. Dividing by |cur| when the
+  // company is losing money turns a narrowing loss into apparent earnings
+  // growth: Roblox at -$1.39 improving to -$1.30 came out as "+6.5% EPS
+  // growth", and Lucid at -$12.15 to -$6.50 as "+46.5%" — figures that read
+  // like a profitable company compounding. The direction is real and worth
+  // showing, but not as a percentage.
+  const curEps = cur.eps;
+  const nextEps = next?.eps ?? null;
+  const bothNegative = curEps != null && curEps < 0 && nextEps != null && nextEps < 0;
   const growth =
-    next?.eps != null && cur.eps != null && cur.eps !== 0
-      ? (next.eps - cur.eps) / Math.abs(cur.eps)
-      : null;
+    nextEps != null && curEps != null && curEps > 0 ? (nextEps - curEps) / curEps : null;
+  const lossTrend: ConsensusEstimate["lossTrend"] = bothNegative
+    ? (nextEps! > curEps! ? "improving" : "worsening")
+    : null;
 
   const counts = [cur.n, next?.n ?? null].filter((n): n is number => n != null);
 
@@ -120,6 +133,7 @@ export async function fetchConsensusEps(ticker: string): Promise<ConsensusEstima
     currentYearEps: cur.eps,
     nextYearEps: next?.eps ?? null,
     nextYearEpsGrowth: growth,
+    lossTrend,
     currentYearLabel: cur.label,
     nextYearLabel: next?.label ?? null,
     analysts: counts.length ? Math.min(...counts) : null,

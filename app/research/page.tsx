@@ -593,6 +593,13 @@ function MarketstackResearchInner() {
                       note: `Analyst consensus · next 12 months${cf.analysts ? ` · ${cf.analysts} estimates` : ""}` }
                   : analystsPending
                   ? { label: "Forward P/E", value: "", loading: true }
+                  // Estimates can exist and still give no multiple: a company
+                  // consensus expects to lose money has no meaningful P/E.
+                  // Saying "needs analyst estimates" beside a row quoting eight
+                  // of them was simply wrong about why.
+                  : cf?.ntmEps != null && cf.ntmEps <= 0
+                  ? { label: "Forward P/E", value: "", na: true,
+                      naReason: `Consensus expects a loss (${money(cf.ntmEps)}/sh) — no meaningful multiple` }
                   : { label: "Forward P/E", value: "", na: true },
                 { label: "TTM P/S", value: mult(fun.ps), raw: fun.ps, range: [1.8, 2.6], unit: "x" },
                 // Two bases, best first, each labelled so they can't be mistaken
@@ -624,6 +631,10 @@ function MarketstackResearchInner() {
                   raw: fun.epsGrowth != null ? fun.epsGrowth * 100 : null, range: [8, 12], unit: "%", higherBetter: true },
                 analystsPending && cf?.nextYearEpsGrowth == null
                   ? { label: "Next Yr EPS Growth", value: "", loading: true }
+                  : cf?.lossTrend
+                  ? { label: "Next Yr EPS Growth",
+                      value: `${money(cf.currentYearEps)} → ${money(cf.nextYearEps)}`,
+                      note: `Consensus ${cf.currentYearLabel} → ${cf.nextYearLabel} · loss ${cf.lossTrend === "improving" ? "narrowing" : "widening"}${cf.analysts ? ` · ${cf.analysts} estimates` : ""}` }
                   : cf?.nextYearEpsGrowth != null
                   ? { label: "Next Yr EPS Growth", value: pctOf(cf.nextYearEpsGrowth, 1),
                       raw: cf.nextYearEpsGrowth * 100, range: [8, 12], unit: "%", higherBetter: true,

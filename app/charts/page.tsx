@@ -277,13 +277,27 @@ function ChartsInner() {
   };
 
   // Paired series for the two-line / two-bar charts.
+  // Built from the union of both series rather than by pairing them.
+  //
+  // Requiring a gross margin for every row emptied the whole chart whenever a
+  // filer doesn't report gross profit: Roblox has 26 quarters of net margin and
+  // zero of gross, so the pairing filtered every row out and the panel went
+  // blank — hiding data that was right there. Banks, utilities and payment
+  // networks have the same shape.
   const marginRows = React.useMemo(() => {
     if (!s) return [];
-    const gm = new Map((s.grossMargin as Pt[]).map((p) => [p.date, p.value]));
-    return (s.netMargin as Pt[])
-      .map((p) => ({ label: p.label, net: p.value, gross: gm.get(p.date) ?? null }))
-      .filter((r) => r.gross != null);
+    const g = (s.grossMargin as Pt[]) ?? [];
+    const n = (s.netMargin as Pt[]) ?? [];
+    const gm = new Map(g.map((p) => [p.date, p.value]));
+    const nm = new Map(n.map((p) => [p.date, p.value]));
+    const labelFor = new Map<string, string>();
+    for (const p of [...g, ...n]) labelFor.set(p.date, p.label);
+    return [...labelFor.keys()]
+      .sort()
+      .map((d) => ({ label: labelFor.get(d)!, gross: gm.get(d) ?? null, net: nm.get(d) ?? null }));
   }, [s]);
+  const hasGrossMargin = marginRows.some((r) => r.gross != null);
+  const hasNetMargin = marginRows.some((r) => r.net != null);
 
   const liquidityRows = React.useMemo(() => {
     if (!s) return [];
@@ -362,7 +376,9 @@ function ChartsInner() {
           <div style={CARD_STYLE}>{barChart(pick(s.operatingIncome, ttmOpInc), yTickMoney, "Operating Income")}</div>
 
           {/* 4. Gross & Net Margin */}
-          <SectionLabel ticker={ticker} companyName={company}>Gross &amp; Net Margin</SectionLabel>
+          <SectionLabel ticker={ticker} companyName={company}>
+            {hasGrossMargin ? "Gross & Net Margin" : "Net Margin"}
+          </SectionLabel>
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <LineChart data={marginRows} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
@@ -371,11 +387,19 @@ function ChartsInner() {
                 <YAxis tickFormatter={pctTick} tick={Y_TICK} axisLine={false} tickLine={false} width={85} />
                 <Tooltip {...TOOLTIP_STYLE} formatter={(v: any, n: any) => [`${Number(v).toFixed(1)}%`, n === "gross" ? "Gross Margin" : "Net Margin"]} />
                 <Legend wrapperStyle={{ fontFamily: MONO, fontSize: 13 }} formatter={(v) => (v === "gross" ? "Gross Margin" : "Net Margin")} />
-                <Line type="monotone" dataKey="gross" stroke="var(--accent-gold)" strokeWidth={2.5} dot={false} isAnimationActive={false} />
+                {hasGrossMargin && (
+                  <Line type="monotone" dataKey="gross" stroke="var(--accent-gold)" strokeWidth={2.5} dot={false} isAnimationActive={false} />
+                )}
                 <Line type="monotone" dataKey="net" stroke="#22C55E" strokeWidth={2.5} dot={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
+          {!hasGrossMargin && hasNetMargin && (
+            <div style={{ fontFamily: SANS, fontSize: "0.66rem", color: "var(--text-muted)", margin: "6px 2px 0" }}>
+              This filer doesn&rsquo;t report gross profit, so only net margin is shown — common for
+              banks, utilities and payment networks, where cost of revenue isn&rsquo;t a line they keep.
+            </div>
+          )}
 
           {/* 5. EPS */}
           <SectionLabel ticker={ticker} companyName={company}>Earnings Per Share (EPS)</SectionLabel>
