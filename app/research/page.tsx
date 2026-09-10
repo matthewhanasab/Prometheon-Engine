@@ -809,6 +809,59 @@ function MarketstackResearchInner() {
                 } tone={cons.buy > cons.hold + cons.sell ? "good" : "neutral"} />
               </Grid>
 
+              {/* Where the current price sits inside the range of published
+                  targets. The average alone says "analysts see $213" without
+                  saying how much they disagree — a $142-to-$300 spread and a
+                  $205-to-$220 spread mean very different things about the same
+                  average. */}
+              {cons.avgTarget != null && cons.lowTarget != null && cons.highTarget != null && q.price ? (() => {
+                const lo = Math.min(cons.lowTarget, q.price);
+                const hi = Math.max(cons.highTarget, q.price);
+                const span = hi - lo;
+                if (!(span > 0)) return null;
+                const at = (v: number) => ((v - lo) / span) * 100;
+                const up = cons.avgTarget >= q.price;
+                const mark = (v: number, label: string, color: string, above: boolean) => (
+                  <div style={{ position: "absolute", left: `${at(v)}%`, top: 0, transform: "translateX(-50%)" }}>
+                    <div style={{ width: 2, height: 26, background: color, margin: "0 auto" }} />
+                    <div style={{
+                      fontFamily: MONO, fontSize: "0.66rem", fontWeight: 700, color, whiteSpace: "nowrap",
+                      marginTop: above ? 0 : 4, textAlign: "center",
+                    }}>
+                      {money(v)}
+                      <div style={{ fontFamily: SANS, fontSize: "0.52rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>
+                        {label}
+                      </div>
+                    </div>
+                  </div>
+                );
+                return (
+                  <div style={{ ...CARD, padding: "18px 20px 12px", marginTop: 12 }}>
+                    <div style={{ position: "relative", height: 62 }}>
+                      {/* the full span of published targets */}
+                      <div style={{ position: "absolute", left: 0, right: 0, top: 11, height: 4, borderRadius: 999, background: "var(--bg-elevated)" }} />
+                      {/* distance from today's price to the average target */}
+                      <div style={{
+                        position: "absolute", top: 11, height: 4, borderRadius: 999,
+                        left: `${Math.min(at(q.price), at(cons.avgTarget))}%`,
+                        width: `${Math.abs(at(cons.avgTarget) - at(q.price))}%`,
+                        background: up ? "var(--positive)" : "var(--negative)",
+                      }} />
+                      {mark(q.price, "Current", "var(--text-primary)", false)}
+                      {mark(cons.avgTarget, "Avg target", up ? "var(--positive)" : "var(--negative)", false)}
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-muted)" }}>
+                      <span>Low {money(cons.lowTarget)}</span>
+                      <span>
+                        {cons.analysts ?? "?"} analysts · spread{" "}
+                        {(((cons.highTarget - cons.lowTarget) / cons.avgTarget) * 100).toFixed(0)}% of the average
+                      </span>
+                      <span>High {money(cons.highTarget)}</span>
+                    </div>
+                  </div>
+                );
+              })() : null}
+
               {/* buy/hold/sell bar */}
               {cons.buy + cons.hold + cons.sell > 0 && (
                 <div style={{ display: "flex", height: 10, borderRadius: 999, overflow: "hidden", marginTop: 10, border: "1px solid var(--border)" }}>
@@ -818,7 +871,7 @@ function MarketstackResearchInner() {
                 </div>
               )}
 
-              {data.analysts?.length > 0 && (
+              {analystData?.analysts?.length > 0 && (
                 <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12, maxHeight: 380, overflowY: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
                     <thead>
@@ -831,7 +884,7 @@ function MarketstackResearchInner() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.analysts.map((a: any, i: number) => (
+                      {analystData.analysts.map((a: any, i: number) => (
                         <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
                           <td style={{ padding: "7px 14px", fontWeight: 600 }}>{a.name}</td>
                           <td style={{ padding: "7px 10px", color: "var(--text-secondary)", fontSize: "0.72rem" }}>{a.firm}</td>
