@@ -1,0 +1,86 @@
+# Keeps the precomputed data snapshots from going stale.
+#
+# The earnings calendar decayed within weeks of every manual refresh — the
+# projections drift as companies file, and nobody remembers to re-run a script.
+# Congress trades and 13F ownership have the same shape: correct on the day
+# they're built, then quietly ageing. All three are key-free (SEC, House and
+# Senate publish them openly), so a scheduled runner can rebuild them and push,
+# and Vercel deploys the commit.
+#
+# Cadences match how each source moves: earnings projections weekly, congress
+# filings weekly (45-day STOCK Act window means new ones land constantly), 13F
+# quarterly plus 45 days for the filing deadline — but a monthly check is cheap
+# and catches the new quarter within weeks rather than months.
+name: Refresh data snapshots
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # Mondays 06:00 UTC — earnings + congress
+    - cron: "0 7 1 * *"   # 1st of the month 07:00 UTC — 13F ownership
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which snapshot(s) to rebuild"
+        type: choice
+        default: weekly
+        options: [weekly, ownership, all]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-snapshots
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Decide what to rebuild
+        id: plan
+        run: |
+          # Monthly cron = ownership; weekly cron = earnings + congress;
+          # manual dispatch = whatever was chosen.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "target=${{ inputs.target }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 7 1 * *" ]; then
+            echo "target=ownership" >> "$GITHUB_OUTPUT"
+          else
+            echo "target=weekly" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Earnings calendar
+        if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
+        run: npm run refresh:earnings
+
+      - name: Congress trades
+        if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
+        run: npm run build:congress
+
+      - name: Institutional ownership (13F)
+        if: steps.plan.outputs.target == 'ownership' || steps.plan.outputs.target == 'all'
+        run: npm run build:ownership
+
+      - name: Commit and push if anything changed
+        run: |
+          git config user.name  "snapshot-refresh[bot]"
+          git config user.email "snapshot-refresh@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Snapshots unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit -m "Refresh data snapshots (${{ steps.plan.outputs.target }})
+
+Scheduled rebuild: $(git diff --cached --stat | tail -1)"
+          git push
