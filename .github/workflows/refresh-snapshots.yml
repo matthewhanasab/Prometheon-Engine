@@ -80,7 +80,8 @@ jobs:
             echo "Snapshots unchanged; nothing to commit."
             exit 0
           fi
-          git commit -m "Refresh data snapshots (${{ steps.plan.outputs.target }})
-
-Scheduled rebuild: $(git diff --cached --stat | tail -1)"
+          # Two -m flags rather than a multi-line string: a line starting at
+          # column 1 inside a block scalar is parsed as a new YAML key.
+          git commit -m "Refresh data snapshots (${{ steps.plan.outputs.target }})" \
+                     -m "Scheduled rebuild: $(git diff --cached --stat | tail -1)"
           git push
