@@ -22,6 +22,11 @@ const SERIF = "'Space Grotesk', Georgia, serif";
 const DEFAULT_TICKER = "AAPL";
 
 type Holder = { name: string; shares: number };
+type InsiderTrade = {
+  insider: string | null; role: string | null; type: string | null;
+  shares: number | null; price: number | null; value: number | null;
+  transactionDate: string | null;
+};
 type OwnershipPayload = {
   cusip?: string;
   found: boolean;
@@ -318,6 +323,10 @@ function MarketstackResearchInner() {
   // 13F institutional ownership, keyed by CUSIP off the ISIN marketstack gives
   // us. Loaded after the main payload like the other secondary panels.
   const [ownership, setOwnership] = useState<OwnershipPayload | null>(null);
+  // Form 4 insider transactions, parsed from the filer's own SEC filings by
+  // /api/insider. Tagged with the ticker it answers for so a switch reads as
+  // "not here yet" rather than showing the previous company's insiders.
+  const [insiders, setInsiders] = useState<{ ticker: string; trades: InsiderTrade[] } | null>(null);
   const [chartMode, setChartMode] = useState<ChartMode>("builtin");
   const loadedOnce = useRef(false);
 
@@ -354,6 +363,18 @@ function MarketstackResearchInner() {
     return isin && /^US[0-9A-Z]{9}\d$/.test(isin) ? isin.slice(2, 11) : null;
   })();
   const ownershipReady = cusip != null && ownership?.cusip === cusip ? ownership : null;
+  const insidersReady = data?.ticker && insiders?.ticker === data.ticker ? insiders : null;
+
+  useEffect(() => {
+    const tk = data?.ticker;
+    if (!tk) return;
+    let alive = true;
+    fetch(`/api/insider?symbol=${tk}`)
+      .then((r) => r.json())
+      .then((j) => { if (alive) setInsiders({ ticker: tk, trades: Array.isArray(j?.trades) ? j.trades : [] }); })
+      .catch(() => { if (alive) setInsiders({ ticker: tk, trades: [] }); });
+    return () => { alive = false; };
+  }, [data?.ticker]);
 
   useEffect(() => {
     if (!cusip) return;
@@ -1091,17 +1112,67 @@ function MarketstackResearchInner() {
             </>
           )}
 
-          {/* ── Earnings Call Transcripts ── */}
-          <SectionLabel>Earnings Call Transcripts</SectionLabel>
-          <NASection reason="Marketstack does not offer transcripts at any tier." />
+          {/* ── Insider Activity ──
+              Transcripts and a separate Institutional Holders box used to sit
+              here too. Transcripts have no free source and the box could never
+              fill, and Institutional Holders repeated what Ownership Breakdown
+              already shows — a "not available" directly beneath a section
+              displaying exactly that data. Both gone. Insider trades, though,
+              were always available from /api/insider and simply never wired. */}
+          <SectionLabel right={
+            insidersReady && insidersReady.trades.length > 0 ? (
+              <Link href={`/insider?ticker=${data.ticker}`} style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--accent-gold)", textDecoration: "none" }}>
+                full history →
+              </Link>
+            ) : undefined
+          }>Insider Activity — Form 4</SectionLabel>
 
-          {/* ── Insider Activity ── */}
-          <SectionLabel>Insider Activity — Form 4</SectionLabel>
-          <NASection reason="Form 4 filings are listed in the SEC Filings section below (via the submissions endpoint), but marketstack provides no parsed insider transactions — no buy/sell direction, share counts, or values." />
-
-          {/* ── Institutional Holders ── */}
-          <SectionLabel>Institutional Holders</SectionLabel>
-          <NASection reason="No 13F holdings endpoint. Same as Ownership Breakdown: available free from SEC EDGAR, but requires building the parser." />
+          {!insidersReady ? (
+            <div style={{ ...CARD, padding: "18px 20px", display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="spinner" style={{ width: 14, height: 14 }} />
+              <span style={{ fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-muted)" }}>Reading Form 4 filings…</span>
+            </div>
+          ) : insidersReady.trades.length === 0 ? (
+            <div style={{ ...CARD, padding: "18px 20px", fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-muted)" }}>
+              No insider transactions in this filer&rsquo;s recent Form 4s.
+            </div>
+          ) : (
+            <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
+                <thead>
+                  <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Date</th>
+                    <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Insider</th>
+                    <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Role</th>
+                    <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Type</th>
+                    <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Shares</th>
+                    <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Price</th>
+                    <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {insidersReady.trades.slice(0, 12).map((t, i) => {
+                    const buy = (t.type ?? "").toUpperCase().startsWith("B");
+                    const sell = (t.type ?? "").toUpperCase().startsWith("S");
+                    return (
+                      <tr key={i} style={{ background: i % 2 ? "var(--bg-surface)" : "transparent" }}>
+                        <td style={{ padding: "8px 14px", fontFamily: MONO, whiteSpace: "nowrap", color: "var(--text-secondary)" }}>{t.transactionDate ?? "—"}</td>
+                        <td style={{ padding: "8px 10px", fontFamily: SANS }}>{t.insider ?? "—"}</td>
+                        <td style={{ padding: "8px 10px", fontFamily: SANS, color: "var(--text-secondary)", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.role ?? "—"}</td>
+                        <td style={{ padding: "8px 10px", fontFamily: SANS, fontWeight: 600, color: buy ? "var(--positive)" : sell ? "var(--negative)" : "var(--text-secondary)" }}>{t.type ?? "—"}</td>
+                        <td style={{ padding: "8px 10px", fontFamily: MONO, textAlign: "right" }}>{t.shares != null ? t.shares.toLocaleString("en-US") : "—"}</td>
+                        <td style={{ padding: "8px 10px", fontFamily: MONO, textAlign: "right" }}>{t.price != null ? money(t.price) : "—"}</td>
+                        <td style={{ padding: "8px 14px", fontFamily: MONO, textAlign: "right" }}>{t.value != null ? `$${compact(t.value)}` : "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", padding: "8px 14px 4px", lineHeight: 1.5 }}>
+                Parsed from the filer&rsquo;s own SEC Form 4 filings. A buy with no price is usually a grant or award, not an open-market purchase.
+              </div>
+            </div>
+          )}
 
           {/* ── Dividends ── */}
           <SectionLabel right={div?.count ? <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>{div.count} records since {div.oldest}</span> : undefined}>
