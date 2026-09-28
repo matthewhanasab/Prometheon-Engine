@@ -1047,13 +1047,20 @@ function MarketstackResearchInner() {
             ) : undefined
           }>ETF Ownership</SectionLabel>
           {!etfHolders ? (
+            /* This scan reads a couple of dozen funds' full portfolios, so it
+               is the slowest panel on the page. Static grey boxes looked like
+               empty rows; the pulse and the spinner line say it's working. */
             <div style={{ ...CARD, padding: "8px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px 8px", fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)" }}>
+                <span className="spinner" style={{ width: 13, height: 13, flexShrink: 0 }} />
+                Scanning fund portfolios for {data.ticker}…
+              </div>
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 16px", borderTop: i ? "1px solid var(--border)" : "none" }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 8, background: "var(--bg-elevated)" }} />
-                  <div style={{ width: 58, height: 12, borderRadius: 4, background: "var(--bg-elevated)" }} />
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 16px", borderTop: "1px solid var(--border)" }}>
+                  <div className={`skeleton-bar skeleton-d${(i % 3) + 1}`} style={{ width: 26, height: 26, borderRadius: 8 }} />
+                  <div className={`skeleton-bar skeleton-d${((i + 1) % 3) + 1}`} style={{ width: 58, height: 12 }} />
                   <div style={{ flex: 1 }} />
-                  <div style={{ width: 72, height: 12, borderRadius: 4, background: "var(--bg-elevated)" }} />
+                  <div className={`skeleton-bar skeleton-d${((i + 2) % 3) + 1}`} style={{ width: 72, height: 12 }} />
                 </div>
               ))}
             </div>
