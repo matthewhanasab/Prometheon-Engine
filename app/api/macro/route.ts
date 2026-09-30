@@ -24,7 +24,7 @@ async function fetchFred(
     limit: "60",
     ...extra,
   });
-  const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 3600 } });
+  const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 900 } });
   const data = await res.json();
   return (data.observations ?? [])
     .map((o: { date: string; value: string }) => ({
@@ -67,10 +67,29 @@ async function fetchLatestFred(series: string): Promise<number | null> {
     limit: "5",
   });
   try {
-    const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 900 } });
     const data = await res.json();
     const obs = (data.observations ?? []).find((o: { value: string }) => o.value !== ".");
     return obs ? parseFloat(obs.value) : null;
+  } catch { return null; }
+}
+
+// Latest observation WITH its date. The headline cards need both: a number on
+// a macro dashboard means little without saying which day or month it is for.
+async function fetchLatestPoint(series: string): Promise<{ date: string; value: number } | null> {
+  const key = process.env.FRED_KEY ?? "";
+  const params = new URLSearchParams({
+    series_id: series,
+    api_key: key,
+    file_type: "json",
+    sort_order: "desc",
+    limit: "5",
+  });
+  try {
+    const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 900 } });
+    const data = await res.json();
+    const obs = (data.observations ?? []).find((o: { value: string }) => o.value !== ".");
+    return obs ? { date: obs.date, value: parseFloat(obs.value) } : null;
   } catch { return null; }
 }
 
@@ -86,7 +105,7 @@ async function fetchMarkets(): Promise<any[]> {
     try {
       const res = await fetch(
         `https://api.marketstack.com/v2/eod?access_key=${key}&symbols=${s}&limit=2`,
-        { next: { revalidate: 3600 } }
+        { next: { revalidate: 900 } }
       );
       const j = await res.json().catch(() => null);
       const rows = (Array.isArray(j?.data) ? j.data : []).filter((r: any) => Number(r?.close) > 0);
@@ -151,9 +170,36 @@ export async function GET() {
     fetchFred("UMCSENT"),
     fetchFred("VIXCLS", { limit: "500" }),
     fetchMarkets(),
-    fetch("https://api.alternative.me/fng/?limit=30", { next: { revalidate: 3600 } }),
+    fetch("https://api.alternative.me/fng/?limit=30", { next: { revalidate: 900 } }),
     ...YIELD_SERIES.map((s) => fetchLatestFred(s.series)),
   ]);
+
+  // Daily counterparts of the three monthly rate series.
+  //
+  // FEDFUNDS, GS10 and GS2 are MONTHLY AVERAGES, published only after the month
+  // closes. They're right for a five-year chart and wrong for a headline: in
+  // late September 2026 they still read 3.63% / 4.68% / 4.22% — August's
+  // averages — while the effective funds rate was 3.88% and the 10-year 5.24%.
+  // A whole month of rate moves, including a change in the Fed's target, was
+  // invisible until the following month's release.
+  const [dff, targetLower, targetUpper, dgs10, dgs2] = await Promise.all([
+    fetchLatestPoint("DFF"),
+    fetchLatestPoint("DFEDTARL"),
+    fetchLatestPoint("DFEDTARU"),
+    fetchLatestPoint("DGS10"),
+    fetchLatestPoint("DGS2"),
+  ]);
+
+  // The chart keeps its monthly history and gains one current point on the
+  // right edge, so the line ends where rates actually are rather than where
+  // last month averaged. One shared date for the three, since the chart joins
+  // them on it and the daily series can differ by a business day.
+  const latestDates = [dff?.date, dgs10?.date, dgs2?.date].filter(Boolean) as string[];
+  const liveDate = latestDates.length ? latestDates.reduce((a, b) => (a > b ? a : b)) : null;
+  const withLive = (series: { date: string; value: number }[], pt: { value: number } | null) =>
+    pt && liveDate && series.length && liveDate > series[series.length - 1].date
+      ? [...series, { date: liveDate, value: pt.value }]
+      : series;
 
   const markets = marketsRes;
   const spread = spreadRaw.slice(-300);
@@ -183,10 +229,20 @@ export async function GET() {
   } catch { /* leave null */ }
 
   return NextResponse.json({
+    // Current readings for the headline cards, each with the day it is for.
+    latest: {
+      fedFunds: dff,
+      target:
+        targetLower && targetUpper
+          ? { lower: targetLower.value, upper: targetUpper.value, date: targetUpper.date }
+          : null,
+      y10: dgs10,
+      y2: dgs2,
+    },
     fred: {
-      ffr,
-      gs10,
-      gs2,
+      ffr: withLive(ffr, dff),
+      gs10: withLive(gs10, dgs10),
+      gs2: withLive(gs2, dgs2),
       spread,
       cpiYoy,
       pceYoy,
@@ -202,10 +258,10 @@ export async function GET() {
     asOf: new Date().toISOString(),
   }, {
     // The route was returning must-revalidate, so every visitor re-ran the
-    // whole fan-out. An hour at the edge matches the upstream refresh: FRED
-    // publishes daily at most and the index quotes are end-of-day, so nothing
-    // here changes faster than that — and stale-while-revalidate means a
-    // visitor after the hour gets the cached copy immediately while it renews.
-    headers: { "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=21600" },
+    // whole fan-out. Fifteen minutes at the edge, matching the upstream
+    // refresh: most of this publishes daily, but on the day a release lands or
+    // the Fed moves, an hour-old dashboard is the wrong answer. A visitor past
+    // the window still gets the cached copy instantly while it renews.
+    headers: { "Cache-Control": "public, max-age=0, s-maxage=900, stale-while-revalidate=3600" },
   });
 }

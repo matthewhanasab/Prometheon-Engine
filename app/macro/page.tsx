@@ -53,6 +53,12 @@ interface MacroData {
     sentiment: FredSeries[];
     vix: FredSeries[];
   };
+  latest?: {
+    fedFunds: FredSeries | null;
+    target: { lower: number; upper: number; date: string } | null;
+    y10: FredSeries | null;
+    y2: FredSeries | null;
+  };
   markets: MarketQuote[];
   yieldCurve: YieldPoint[];
   fearGreed: FearGreedData | null;
@@ -76,6 +82,22 @@ function fmtK(n: number | undefined | null): string {
 
 function last(arr: FredSeries[]): number | null {
   return arr.length ? arr[arr.length - 1].value : null;
+}
+
+function lastDate(arr: FredSeries[]): string | null {
+  return arr.length ? arr[arr.length - 1].date : null;
+}
+
+// What period a figure is for. Daily series read "Sep 28"; monthly releases
+// read "Aug 2026", because a monthly number dated to the first of the month
+// looks a month older than it is.
+function asOfDay(iso: string | null | undefined): string | undefined {
+  if (!iso) return undefined;
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+function asOfMonth(iso: string | null | undefined): string | undefined {
+  if (!iso) return undefined;
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
 function tickDate(str: any): string {
@@ -208,11 +230,14 @@ function MCard({
   value,
   sub,
   tone,
+  asOf,
 }: {
   label: string;
   value: string;
   sub?: string;
   tone?: "bad" | "good" | "neutral";
+  /** The day or month the figure is for. */
+  asOf?: string;
 }) {
   const subColor =
     tone === "bad"
@@ -264,6 +289,19 @@ function MCard({
           }}
         >
           {sub}
+        </div>
+      )}
+      {asOf && (
+        <div
+          style={{
+            fontFamily: "'Spline Sans Mono', monospace",
+            fontSize: "0.56rem",
+            color: "var(--text-muted)",
+            marginTop: "auto",
+            paddingTop: 2,
+          }}
+        >
+          {asOf}
         </div>
       )}
     </div>
@@ -428,12 +466,14 @@ export default function MacroPage() {
     );
   }
 
-  const { fred, markets, yieldCurve, fearGreed } = data;
+  const { fred, markets, yieldCurve, fearGreed, latest } = data;
 
-  // snapshot values
-  const ffrVal = last(fred.ffr);
-  const gs10Val = last(fred.gs10);
-  const gs2Val = last(fred.gs2);
+  // Snapshot values. The three rate cards read DAILY series: the monthly
+  // averages behind the chart only publish after a month closes, so a headline
+  // built on them sat a full month behind on the numbers people check first.
+  const ffrVal = latest?.fedFunds?.value ?? last(fred.ffr);
+  const gs10Val = latest?.y10?.value ?? last(fred.gs10);
+  const gs2Val = latest?.y2?.value ?? last(fred.gs2);
   const spreadVal = last(fred.spread);
   const cpiVal = last(fred.cpiYoy);
   const pceVal = last(fred.pceYoy);
@@ -445,17 +485,27 @@ export default function MacroPage() {
     {
       label: "Fed Funds Rate",
       value: ffrVal != null ? `${fmt(ffrVal)}%` : "—",
-      sub: undefined,
+      sub: latest?.target ? `Target ${fmt(latest.target.lower)}–${fmt(latest.target.upper)}%` : undefined,
       tone: "neutral" as const,
+      asOf: asOfDay(latest?.fedFunds?.date ?? lastDate(fred.ffr)),
     },
     {
       label: "10Y Treasury",
       value: gs10Val != null ? `${fmt(gs10Val)}%` : "—",
       sub: undefined,
       tone: "neutral" as const,
+      asOf: asOfDay(latest?.y10?.date ?? lastDate(fred.gs10)),
+    },
+    {
+      label: "2Y Treasury",
+      value: gs2Val != null ? `${fmt(gs2Val)}%` : "—",
+      sub: undefined,
+      tone: "neutral" as const,
+      asOf: asOfDay(latest?.y2?.date ?? lastDate(fred.gs2)),
     },
     {
       label: "Yield Spread",
+      asOf: asOfDay(lastDate(fred.spread)),
       value: spreadVal != null ? `${fmt(spreadVal)}%` : "—",
       sub: spreadVal != null ? (spreadVal < 0 ? "Inverted" : "Normal") : undefined,
       tone:
@@ -467,6 +517,7 @@ export default function MacroPage() {
     },
     {
       label: "CPI YoY",
+      asOf: asOfMonth(lastDate(fred.cpiYoy)),
       value: cpiVal != null ? `${fmt(cpiVal)}%` : "—",
       sub: cpiVal != null && cpiVal > 3.5 ? "Above target" : "Moderating",
       tone:
@@ -474,6 +525,7 @@ export default function MacroPage() {
     },
     {
       label: "PCE YoY",
+      asOf: asOfMonth(lastDate(fred.pceYoy)),
       value: pceVal != null ? `${fmt(pceVal)}%` : "—",
       sub: "Fed target 2%",
       tone:
@@ -481,12 +533,14 @@ export default function MacroPage() {
     },
     {
       label: "Unemployment",
+      asOf: asOfMonth(lastDate(fred.unemp)),
       value: unempVal != null ? `${fmt(unempVal)}%` : "—",
       sub: undefined,
       tone: "neutral" as const,
     },
     {
       label: "VIX",
+      asOf: asOfDay(lastDate(fred.vix)),
       value: vixVal != null ? fmt(vixVal, 1) : "—",
       sub: vixVal != null && vixVal > 25 ? "Elevated" : "Normal",
       tone:
@@ -494,6 +548,7 @@ export default function MacroPage() {
     },
     {
       label: "10Y Breakeven",
+      asOf: asOfDay(lastDate(fred.bei)),
       value: beiVal != null ? `${fmt(beiVal)}%` : "—",
       sub: undefined,
       tone: "neutral" as const,
@@ -507,14 +562,6 @@ export default function MacroPage() {
         : fearGreed.value >= 75 ? ("good" as const)
         : ("neutral" as const)
         : ("neutral" as const),
-    },
-    {
-      label: "10Y Yield",
-      value: yieldCurve.find(p => p.label === "10Y")?.value != null
-        ? `${fmt(yieldCurve.find(p => p.label === "10Y")!.value)}%`
-        : "—",
-      sub: "Treasury",
-      tone: "neutral" as const,
     },
   ];
 
@@ -589,6 +636,7 @@ export default function MacroPage() {
             value={c.value}
             sub={c.sub}
             tone={c.tone}
+            asOf={"asOf" in c ? c.asOf : undefined}
           />
         ))}
       </div>
