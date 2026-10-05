@@ -63,6 +63,10 @@ jobs:
         if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
         run: npm run refresh:earnings
 
+      - name: S&P 500 membership
+        if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
+        run: npm run build:sp500
+
       - name: Congress trades
         if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
         run: npm run build:congress
