@@ -173,21 +173,33 @@ const SHOWCASE = [
 ];
 
 // ── Feature grid ──────────────────────────────────────────────────────────────
-const FEATURES = [
-  { href: "/research?ticker=AAPL", title: "Stock Research",       desc: "40+ metrics, analyst consensus, insider and institutional activity — one page per ticker." },
-  { href: "/charts?ticker=NVDA", title: "Financial Charts",     desc: "Quarterly revenue, margins, EPS, FCF and analyst forecasts, visualized." },
-  { href: "/compare?t=AAPL,MSFT", title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, and health." },
-  { href: "/screener",      title: "Screener",             desc: "Filter the market by sector, size, valuation, and profitability." },
-  { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income, balance sheet, and cash flow — annual and quarterly, with YoY change." },
-  { href: "/projections?ticker=AMD", title: "Projections",          desc: "Bull, base, and bear five-year scenarios with editable assumptions." },
-  { href: "/covered-calls?ticker=TSLA", title: "Covered Calls",        desc: "Premium income calculator with strike comparison tables." },
-  { href: "/earnings", title: "Earnings Calendar",    desc: "Who reports this week — before the bell and after the close." },
-  { href: "/macro",         title: "Macro Dashboard",      desc: "Rates, inflation, yield curve, fear and greed — the full market backdrop." },
-  { href: "/sec?ticker=AAPL", title: "SEC Filings",          desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR." },
-  { href: "/congress",      title: "Congress Trades",      desc: "Senate and House stock disclosures — trades, amounts, and disclosure lag." },
-  { href: "/insider",       title: "Insider Trading",      desc: "Form 4 filings — executive and director buys, sales, and awards, valued and flagged." },
-  { href: "/movers",        title: "Market Movers",        desc: "Top gainers, losers, most active, and a live sector heatmap." },
-  { href: "/dividends?ticker=KO", title: "Dividend Hub",         desc: "Dividend history, yield, growth, and the ex-dividend calendar." },
+// Four groups of four, mirroring the nav. A flat list of fourteen cards left an
+// orphan row and no sense of which tool did what.
+const FEATURE_GROUPS = [
+  { label: "Research", items: [
+    { href: "/research?ticker=AAPL",   title: "Stock Research",       desc: "Valuation, growth, analyst consensus, insiders, and ownership — one page per ticker." },
+    { href: "/compare?t=AAPL,MSFT",    title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, and health." },
+    { href: "/charts?ticker=NVDA",     title: "Financial Charts",     desc: "Revenue, margins, EPS, and cash flow by quarter, with analyst forecasts." },
+    { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income statement, balance sheet, and cash flow — annual and quarterly." },
+  ]},
+  { label: "Markets", items: [
+    { href: "/screener", title: "Screener",          desc: "Filter the whole market by sector, size, valuation, and profitability." },
+    { href: "/earnings", title: "Earnings Calendar", desc: "Who reports this week, before the open or after the close, and what's expected." },
+    { href: "/macro",    title: "Macro Dashboard",   desc: "Rates, inflation, the yield curve, and fear & greed — the full backdrop." },
+    { href: "/movers",   title: "Market Movers",     desc: "Today's gainers, losers, most active, and a live sector heatmap." },
+  ]},
+  { label: "Smart Money", items: [
+    { href: "/congress", title: "Congress Trades",  desc: "Every stock trade disclosed by U.S. Senators and Representatives." },
+    { href: "/insider",  title: "Insider Trading",  desc: "Form 4 filings — executive and director buys and sales, valued and flagged." },
+    { href: "/sec",      title: "SEC Filings",      desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR." },
+    { href: "/etf",      title: "ETF Hub",          desc: "Holdings, overlap, and which funds own the stock you're looking at." },
+  ]},
+  { label: "Income & Planning", items: [
+    { href: "/dividends?ticker=KO",       title: "Dividend Hub",        desc: "Payment history, yield, growth streaks, and the ex-dividend calendar." },
+    { href: "/covered-calls?ticker=TSLA", title: "Covered Calls",       desc: "Premium income estimates with a strike-by-strike comparison." },
+    { href: "/projections?ticker=AMD",    title: "Projections",         desc: "Bull, base, and bear five-year scenarios with editable assumptions." },
+    { href: "/calculator",                title: "Compound Calculator", desc: "What consistent investing does over decades, across return scenarios." },
+  ]},
 ];
 
 // ── Footer link columns ───────────────────────────────────────────────────────
@@ -260,24 +272,34 @@ export default function LandingPage() {
         </h2>
         <div style={{ height: 1, background: "linear-gradient(to right, transparent, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 260, margin: "0 auto 2.6rem" }} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
-          {FEATURES.map((f) => (
-            <Link key={f.href} href={f.href} className="feature-card" style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
-              padding: "20px 20px 18px", textDecoration: "none", display: "block",
-            }}>
-              <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.98rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
-                {f.title}
+        {FEATURE_GROUPS.map((g) => (
+          <div key={g.label} style={{ marginBottom: "2.2rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                {g.label}
               </div>
-              <div style={{ fontSize: "0.76rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                {f.desc}
-              </div>
-              <div style={{ marginTop: 12, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.68rem", color: "var(--accent-gold)" }}>
-                Open →
-              </div>
-            </Link>
-          ))}
-        </div>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+              {g.items.map((f) => (
+                <Link key={f.href} href={f.href} className="feature-card" style={{
+                  background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
+                  padding: "18px 20px 16px", textDecoration: "none", display: "flex", flexDirection: "column",
+                }}>
+                  <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.98rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
+                    {f.title}
+                  </div>
+                  <div style={{ fontSize: "0.76rem", color: "var(--text-secondary)", lineHeight: 1.55, flex: 1 }}>
+                    {f.desc}
+                  </div>
+                  <div style={{ marginTop: 12, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.68rem", color: "var(--accent-gold)" }}>
+                    Open →
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
 
       {/* ── Closing CTA ── */}
