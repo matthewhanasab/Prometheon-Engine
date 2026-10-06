@@ -110,44 +110,6 @@ function Constellation() {
   );
 }
 
-// ── Live market ticker tape ───────────────────────────────────────────────────
-interface MarketQuote { symbol: string; name?: string; price: number; changePct: number | null; }
-
-function TickerTape() {
-  const [quotes, setQuotes] = useState<MarketQuote[]>([]);
-
-  useEffect(() => {
-    fetch("/api/macro")
-      .then(r => r.json())
-      .then(d => {
-        const mk = (d?.markets ?? []).filter((m: any) => m?.price != null);
-        setQuotes(mk);
-      })
-      .catch(() => {});
-  }, []);
-
-  if (quotes.length === 0) return null;
-  const items = [...quotes, ...quotes, ...quotes, ...quotes]; // repeat for seamless loop
-
-  return (
-    <div style={{ overflow: "hidden", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", background: "var(--bg-surface)", padding: "10px 0" }}>
-      <div className="ticker-track">
-        {items.map((q, i) => (
-          <span key={i} style={{ display: "inline-flex", gap: 10, alignItems: "baseline", padding: "0 2rem", whiteSpace: "nowrap", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem" }}>
-            <span style={{ color: "var(--accent-gold)", fontWeight: 600 }}>{q.symbol}</span>
-            <span style={{ color: "var(--text-primary)" }}>${q.price.toFixed(2)}</span>
-            {q.changePct != null && (
-              <span style={{ color: q.changePct >= 0 ? "var(--positive)" : "var(--negative)" }}>
-                {q.changePct >= 0 ? "+" : ""}{q.changePct.toFixed(2)}%
-              </span>
-            )}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── Live scaled preview of an app page ────────────────────────────────────────
 function LivePreview({ href }: { href: string }) {
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -195,7 +157,7 @@ const SHOWCASE = [
   { href: "/portfolio?demo=1", title: "My Portfolio",         desc: "Track your real positions — live P/L, allocation, dividend income, and a benchmark race against the S&P 500." },
   { href: "/research?ticker=AAPL", title: "Stock Research",       desc: "Type a ticker, get the full picture — valuation, growth, quality, analyst consensus, insiders, and institutions on one page." },
   { href: "/macro",         title: "Macro Dashboard",      desc: "Rates, inflation, the yield curve, and fear & greed — know the market backdrop before you buy anything." },
-  { href: "/earnings?week=2026-07-27", title: "Earnings Calendar",    desc: "Who reports this week, before the bell and after the close. Click any ticker to research it instantly." },
+  { href: "/earnings", title: "Earnings Calendar",    desc: "Who reports this week, before the bell and after the close. Click any ticker to research it instantly." },
   { href: "/screener",      title: "Screener",             desc: "Filter the entire market by sector, size, valuation, and profitability — then jump straight into research." },
   { href: "/charts?ticker=NVDA", title: "Financial Charts",     desc: "Quarterly revenue, margins, EPS, and cash flow — with analyst forecasts drawn right on the chart." },
   { href: "/compare?t=AAPL,MSFT", title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, profitability, and health — with a radar chart." },
@@ -219,13 +181,38 @@ const FEATURES = [
   { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income, balance sheet, and cash flow — annual and quarterly, with YoY change." },
   { href: "/projections?ticker=AMD", title: "Projections",          desc: "Bull, base, and bear five-year scenarios with editable assumptions." },
   { href: "/covered-calls?ticker=TSLA", title: "Covered Calls",        desc: "Premium income calculator with strike comparison tables." },
-  { href: "/earnings?week=2026-07-27", title: "Earnings Calendar",    desc: "Who reports this week — before the bell and after the close." },
+  { href: "/earnings", title: "Earnings Calendar",    desc: "Who reports this week — before the bell and after the close." },
   { href: "/macro",         title: "Macro Dashboard",      desc: "Rates, inflation, yield curve, fear and greed — the full market backdrop." },
   { href: "/sec?ticker=AAPL", title: "SEC Filings",          desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR." },
   { href: "/congress",      title: "Congress Trades",      desc: "Senate and House stock disclosures — trades, amounts, and disclosure lag." },
   { href: "/insider",       title: "Insider Trading",      desc: "Form 4 filings — executive and director buys, sales, and awards, valued and flagged." },
   { href: "/movers",        title: "Market Movers",        desc: "Top gainers, losers, most active, and a live sector heatmap." },
   { href: "/dividends?ticker=KO", title: "Dividend Hub",         desc: "Dividend history, yield, growth, and the ex-dividend calendar." },
+];
+
+// ── Footer link columns ───────────────────────────────────────────────────────
+const FOOTER_COLUMNS = [
+  { title: "Research", links: [
+    { href: "/research",   label: "Stock Research" },
+    { href: "/compare",    label: "Compare Stocks" },
+    { href: "/charts",     label: "Financial Charts" },
+    { href: "/financials", label: "Financial Statements" },
+    { href: "/screener",   label: "Screener" },
+  ]},
+  { title: "Markets", links: [
+    { href: "/earnings",  label: "Earnings Calendar" },
+    { href: "/macro",     label: "Macro Dashboard" },
+    { href: "/movers",    label: "Market Movers" },
+    { href: "/dividends", label: "Dividend Hub" },
+    { href: "/etf",       label: "ETF Hub" },
+  ]},
+  { title: "Smart Money", links: [
+    { href: "/congress",      label: "Congress Trades" },
+    { href: "/insider",       label: "Insider Trading" },
+    { href: "/sec",           label: "SEC Filings" },
+    { href: "/options-chain", label: "Options Chain" },
+    { href: "/portfolio",     label: "My Portfolio" },
+  ]},
 ];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -264,20 +251,7 @@ export default function LandingPage() {
         <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
           <LaunchButton onLaunch={() => launch("/research")}>Launch the Engine</LaunchButton>
         </div>
-
-        {/* Stat chips */}
-        <div className="fade-up fade-d4" style={{ position: "relative", display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: "3rem" }}>
-          {[["10", "Research Tools"], ["40+", "Metrics per Stock"], ["Live", "Market Data"]].map(([num, label]) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, padding: "8px 18px" }}>
-              <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontWeight: 700, color: "var(--accent-gold)", fontSize: "0.95rem" }}>{num}</span>
-              <span style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", fontWeight: 600 }}>{label}</span>
-            </div>
-          ))}
-        </div>
       </section>
-
-      {/* ── Live ticker ── */}
-      <TickerTape />
 
       {/* ── Features ── */}
       <section style={{ maxWidth: 1200, margin: "0 auto", padding: "4.5rem 1.5rem 3rem" }}>
@@ -315,8 +289,37 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "1.4rem", textAlign: "center", fontSize: "0.65rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
-        Prometheon Engine · Market data for research purposes · Not financial advice
+      <footer style={{ borderTop: "1px solid var(--border)", padding: "3.5rem 1.5rem 2rem" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(220px, 1.4fr) repeat(auto-fit, minmax(150px, 1fr))", gap: "2.5rem 2rem" }}>
+          <div>
+            <Image className="logo-on-light" src="/logo_transparent_dark.png" alt="Prometheon Engine" width={200} height={64}
+              style={{ objectFit: "contain", height: "auto", marginBottom: "1rem" }} />
+            <Image className="logo-on-dark" src="/logo_transparent.png" alt="Prometheon Engine" width={200} height={64}
+              style={{ objectFit: "contain", height: "auto", marginBottom: "1rem" }} />
+            <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.6, maxWidth: 300, marginBottom: "1rem" }}>
+              Professional-grade stock research, free for everyone.
+            </div>
+            <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+              Made by Matthew Hanasab with <span className="heartbeat" aria-label="love" role="img">❤️</span>
+            </div>
+          </div>
+          {FOOTER_COLUMNS.map((col) => (
+            <div key={col.title}>
+              <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.95rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.9rem" }}>
+                {col.title}
+              </div>
+              {col.links.map((l) => (
+                <Link key={l.href} href={l.href} className="footer-link"
+                  style={{ display: "block", fontSize: "0.82rem", color: "var(--text-secondary)", textDecoration: "none", marginBottom: "0.6rem" }}>
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ maxWidth: 1200, margin: "2.5rem auto 0", paddingTop: "1.2rem", borderTop: "1px solid var(--border)", fontSize: "0.62rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+          Prometheon Engine · Market data for research purposes · Not financial advice
+        </div>
       </footer>
     </div>
   );

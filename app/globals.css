@@ -67,17 +67,20 @@ body:has(.landing) .main-content { padding: 0 !important; }
 .fade-d3 { animation-delay: 0.55s; }
 .fade-d4 { animation-delay: 0.75s; }
 
-@keyframes tickerScroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-.ticker-track {
-  display: flex;
-  width: max-content;
-  animation: tickerScroll 40s linear infinite;
-}
-.ticker-track:hover { animation-play-state: paused; }
 
+.footer-link:hover { color: var(--text-primary); }
+
+/* Two quick beats then a rest, like a pulse. */
+@keyframes heartbeat {
+  0%, 28%, 56%, 100% { transform: scale(1); }
+  14% { transform: scale(1.3); }
+  42% { transform: scale(1.22); }
+}
+.heartbeat {
+  display: inline-block;
+  animation: heartbeat 1.4s ease-in-out infinite;
+  transform-origin: center;
+}
 
 .feature-card {
   transition: transform 0.2s ease, border-color 0.2s ease;
@@ -127,6 +130,6 @@ body:has(.landing) .main-content { padding: 0 !important; }
 
 /* Respect a reduced-motion preference: keep the state legible, drop the movement. */
 @media (prefers-reduced-motion: reduce) {
-  .skeleton-bar, .spinner { animation: none; }
+  .skeleton-bar, .spinner, .heartbeat { animation: none; }
   .skeleton-bar { opacity: 0.5; }
 }
