@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
-import { fetchConsensusEps } from "@/lib/analystEstimates";
+import { fetchConsensusEps, fetchEarningsSurprises } from "@/lib/analystEstimates";
 import { msGet } from "@/lib/marketstack";
 
 // Analyst view for a ticker: price-target consensus, the rating list, and
@@ -54,10 +54,11 @@ export async function GET(
     ? `${MS}/eod?access_key=${key}&symbols=${t}&date_from=${since.toISOString().slice(0, 10)}&limit=1400`
     : null;
 
-  const [ratingsRes, estimate, eodRes] = await Promise.all([
+  const [ratingsRes, estimate, eodRes, earnings] = await Promise.all([
     key ? msGet(`${MS}/companyratings?access_key=${key}&ticker=${t}`) : Promise.resolve({ data: null, err: "no key" }),
     fetchConsensusEps(t).catch(() => null),
     eodUrl ? msGet(eodUrl) : Promise.resolve({ data: null, err: "no key" }),
+    fetchEarningsSurprises(t).catch(() => null),
   ]);
 
   const ratingsOut = (ratingsRes.data as any)?.result?.output;
@@ -106,7 +107,7 @@ export async function GET(
   // MSFT and NVDA were fine. A short window lets the next request try again.
   const degraded = !consensus || ratingsRes.err != null;
   return NextResponse.json(
-    { ticker: t, consensus, analysts, consensusForward, degraded, errors: { ratings: ratingsRes.err } },
+    { ticker: t, consensus, analysts, consensusForward, earnings, degraded, errors: { ratings: ratingsRes.err } },
     {
       headers: {
         "Cache-Control": degraded

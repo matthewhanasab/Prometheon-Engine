@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Covered Call Screener",
+  title: "Covered Call Calculator",
   description: "Model covered-call income: a strike ladder with premiums, greeks, assignment probability, and annualized yield for any stock.",
   alternates: { canonical: "/covered-calls" },
   openGraph: {
-    title: "Covered Call Screener · Prometheon Engine",
+    title: "Covered Call Calculator · Prometheon Engine",
     description: "Model covered-call income: a strike ladder with premiums, greeks, assignment probability, and annualized yield for any stock.",
     url: "https://prometheonengine.com/covered-calls",
   },

@@ -1,4 +1,5 @@
 "use client";
+import type { EarningsSurprise } from "@/lib/analystEstimates";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -36,6 +37,8 @@ type OwnershipPayload = {
   filers?: number;
   top?: Holder[];
 };
+const ANALYST_ROWS = 25;
+
 const CARD: React.CSSProperties = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
 };
@@ -320,6 +323,8 @@ function MarketstackResearchInner() {
   // in the stack (~3.8s and ~2.2s cold, measured), and nothing above the fold
   // needs them — so they load after the main payload instead of holding it up.
   const [analystData, setAnalystData] = useState<any>(null);
+  // The ratings feed goes back a decade; the recent ones are what matter.
+  const [allAnalysts, setAllAnalysts] = useState(false);
   // 13F institutional ownership, keyed by CUSIP off the ISIN marketstack gives
   // us. Loaded after the main payload like the other secondary panels.
   const [ownership, setOwnership] = useState<OwnershipPayload | null>(null);
@@ -807,8 +812,48 @@ function MarketstackResearchInner() {
           )}
 
           {/* ── Earnings History ── */}
-          <SectionLabel>Earnings History</SectionLabel>
-          <NASection reason="Marketstack has no earnings-surprise endpoint (reported vs estimate). Reported EPS is available from SEC filings, but the estimate side — which is what makes a surprise — is not." />
+          <SectionLabel>Earnings History — Reported vs Expected</SectionLabel>
+          {analystsPending ? (
+            <div style={{ ...CARD, padding: "14px 20px" }}>
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className={`skeleton-bar skeleton-d${(i % 3) + 1}`} style={{ height: 14, width: `${72 - i * 8}%`, marginBottom: 10 }} />
+              ))}
+            </div>
+          ) : analystData?.earnings?.length > 0 ? (
+            <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
+                <thead>
+                  <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Quarter</th>
+                    <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Reported</th>
+                    <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Expected EPS</th>
+                    <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Actual EPS</th>
+                    <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Surprise</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(analystData.earnings as EarningsSurprise[]).map((e, i) => {
+                    const beat = e.surprisePct != null ? e.surprisePct >= 0 : e.estimate != null && e.eps != null ? e.eps >= e.estimate : null;
+                    const tone = beat == null ? "var(--text-secondary)" : beat ? "var(--positive)" : "var(--negative)";
+                    return (
+                      <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
+                        <td style={{ padding: "7px 14px", fontWeight: 600 }}>{e.quarter}</td>
+                        <td style={{ padding: "7px 10px", fontFamily: MONO, color: "var(--text-muted)" }}>{e.reported ?? "—"}</td>
+                        <td style={{ padding: "7px 10px", textAlign: "right", fontFamily: MONO, color: "var(--text-secondary)" }}>{e.estimate != null ? money(e.estimate) : "—"}</td>
+                        <td style={{ padding: "7px 10px", textAlign: "right", fontFamily: MONO, fontWeight: 700, color: tone }}>{money(e.eps)}</td>
+                        <td style={{ padding: "7px 14px", textAlign: "right", fontFamily: MONO, fontWeight: 600, color: tone }}>
+                          {e.surprisePct != null ? `${e.surprisePct >= 0 ? "+" : ""}${e.surprisePct.toFixed(1)}%` : "—"}
+                          {beat != null && <span style={{ fontFamily: SANS, fontSize: "0.6rem", fontWeight: 600, marginLeft: 6 }}>{beat ? "Beat" : "Miss"}</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <NASection reason="No reported-versus-expected earnings record is published for this ticker." />
+          )}
 
           {/* ── Analyst Ratings ── */}
           {cons && (
@@ -842,23 +887,33 @@ function MarketstackResearchInner() {
                 if (!(span > 0)) return null;
                 const at = (v: number) => ((v - lo) / span) * 100;
                 const up = cons.avgTarget >= q.price;
-                const mark = (v: number, label: string, color: string, above: boolean) => (
-                  <div style={{ position: "absolute", left: `${at(v)}%`, top: 0, transform: "translateX(-50%)" }}>
-                    <div style={{ width: 2, height: 26, background: color, margin: "0 auto" }} />
-                    <div style={{
-                      fontFamily: MONO, fontSize: "0.66rem", fontWeight: 700, color, whiteSpace: "nowrap",
-                      marginTop: above ? 0 : 4, textAlign: "center",
-                    }}>
-                      {money(v)}
-                      <div style={{ fontFamily: SANS, fontSize: "0.52rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>
-                        {label}
+                // When price and average target sit within a few percent of
+                // each other their labels land on top of one another. The
+                // second label then drops to a row below the first.
+                const crowded = Math.abs(at(cons.avgTarget) - at(q.price)) < 14;
+                const mark = (v: number, label: string, color: string, lower: boolean) => {
+                  const x = at(v);
+                  // Keep labels inside the card at either end of the bar.
+                  const align = x < 7 ? "left" : x > 93 ? "right" : "center";
+                  const shift = align === "left" ? "0" : align === "right" ? "-100%" : "-50%";
+                  return (
+                    <div style={{ position: "absolute", left: `${x}%`, top: 0, transform: `translateX(${shift})` }}>
+                      <div style={{ width: 2, height: 26, background: color, margin: align === "left" ? "0" : align === "right" ? "0 0 0 auto" : "0 auto" }} />
+                      <div style={{
+                        fontFamily: MONO, fontSize: "0.66rem", fontWeight: 700, color, whiteSpace: "nowrap",
+                        marginTop: lower ? 36 : 4, textAlign: align,
+                      }}>
+                        {money(v)}
+                        <div style={{ fontFamily: SANS, fontSize: "0.52rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>
+                          {label}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
+                  );
+                };
                 return (
                   <div style={{ ...CARD, padding: "18px 20px 12px", marginTop: 12 }}>
-                    <div style={{ position: "relative", height: 62 }}>
+                    <div style={{ position: "relative", height: crowded ? 94 : 62 }}>
                       {/* the full span of published targets */}
                       <div style={{ position: "absolute", left: 0, right: 0, top: 11, height: 4, borderRadius: 999, background: "var(--bg-elevated)" }} />
                       {/* distance from today's price to the average target */}
@@ -868,8 +923,8 @@ function MarketstackResearchInner() {
                         width: `${Math.abs(at(cons.avgTarget) - at(q.price))}%`,
                         background: up ? "var(--positive)" : "var(--negative)",
                       }} />
-                      {mark(q.price, "Current", "var(--text-primary)", false)}
                       {mark(cons.avgTarget, "Avg target", up ? "var(--positive)" : "var(--negative)", false)}
+                      {mark(q.price, "Current", "var(--text-primary)", crowded)}
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-muted)" }}>
                       <span>Low {money(cons.lowTarget)}</span>
@@ -893,7 +948,7 @@ function MarketstackResearchInner() {
               )}
 
               {analystData?.analysts?.length > 0 && (
-                <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12, maxHeight: 380, overflowY: "auto" }}>
+                <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12 }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
                     <thead>
                       <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
@@ -905,7 +960,7 @@ function MarketstackResearchInner() {
                       </tr>
                     </thead>
                     <tbody>
-                      {analystData.analysts.map((a: any, i: number) => (
+                      {(allAnalysts ? analystData.analysts : analystData.analysts.slice(0, ANALYST_ROWS)).map((a: any, i: number) => (
                         <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
                           <td style={{ padding: "7px 14px", fontWeight: 600 }}>{a.name}</td>
                           <td style={{ padding: "7px 10px", color: "var(--text-secondary)", fontSize: "0.72rem" }}>{a.firm}</td>
@@ -918,6 +973,16 @@ function MarketstackResearchInner() {
                       ))}
                     </tbody>
                   </table>
+                  {analystData.analysts.length > ANALYST_ROWS && (
+                    <button type="button" onClick={() => setAllAnalysts((v) => !v)}
+                      style={{
+                        display: "block", width: "100%", padding: "9px 14px", cursor: "pointer",
+                        background: "transparent", border: "none", borderTop: "1px solid var(--border)",
+                        fontFamily: SANS, fontSize: "0.64rem", fontWeight: 700, color: "var(--accent-gold)",
+                      }}>
+                      {allAnalysts ? "Show recent only" : `Show all ${analystData.analysts.length} ratings`}
+                    </button>
+                  )}
                 </div>
               )}
             </>

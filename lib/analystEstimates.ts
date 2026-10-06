@@ -140,3 +140,53 @@ export async function fetchConsensusEps(ticker: string): Promise<ConsensusEstima
     basis: "Analyst consensus — next twelve months, blended across fiscal years.",
   };
 }
+
+export type EarningsSurprise = {
+  /** Fiscal quarter label as published, e.g. "Jun 2026". */
+  quarter: string;
+  /** YYYY-MM-DD the company reported. */
+  reported: string | null;
+  eps: number | null;
+  estimate: number | null;
+  /** Surprise against consensus, in percent. */
+  surprisePct: number | null;
+};
+
+// "7/30/2026" → "2026-07-30".
+function usDate(v: unknown): string | null {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(v ?? "").trim());
+  if (!m) return null;
+  return `${m[3]}-${m[1].padStart(2, "0")}-${m[2].padStart(2, "0")}`;
+}
+
+/** The last few quarters of reported EPS against the consensus going in —
+ *  the "beat or miss" record. Newest first. */
+export async function fetchEarningsSurprises(ticker: string): Promise<EarningsSurprise[] | null> {
+  const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+  if (!t) return null;
+  try {
+    const res = await fetch(`https://api.nasdaq.com/api/company/${t}/earnings-surprise`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+        Accept: "application/json",
+      },
+      next: { revalidate: 43200 },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const rows = json?.data?.earningsSurpriseTable?.rows;
+    if (!Array.isArray(rows)) return null;
+    return rows
+      .map((r: Record<string, unknown>): EarningsSurprise => ({
+        quarter: String(r.fiscalQtrEnd ?? ""),
+        reported: usDate(r.dateReported),
+        eps: num(r.eps),
+        estimate: num(r.consensusForecast),
+        surprisePct: num(r.percentageSurprise),
+      }))
+      .filter((r: EarningsSurprise) => r.eps != null);
+  } catch {
+    return null;
+  }
+}
