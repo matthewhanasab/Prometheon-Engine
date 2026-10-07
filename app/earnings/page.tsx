@@ -171,6 +171,23 @@ function EarningsInner() {
         </div>
       </div>
 
+      {loading && (
+        <div style={{
+          ...CARD, borderColor: "var(--border-active)", display: "flex", alignItems: "center", gap: 14,
+          padding: "16px 18px", marginBottom: 14,
+        }}>
+          <span className="spinner" style={{ width: 20, height: 20, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-gold)" }}>
+              Loading the week of {MONTHS_LONG[parseISO(weekStart).getUTCMonth()]} {parseISO(weekStart).getUTCDate()}…
+            </div>
+            <div style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 3 }}>
+              Pulling each day&rsquo;s scheduled reports, times and estimates. Usually a second or two.
+            </div>
+          </div>
+        </div>
+      )}
+
       {isFailed ? (
         <div style={{ ...CARD, padding: "18px 20px", fontSize: "0.8rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           The calendar didn&apos;t load.
