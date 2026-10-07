@@ -101,7 +101,7 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
           // two labels, implying two estimates where there is one. A
           // fiscal-year-to-date expectation needs consensus revenue, which
           // isn't obtainable free.
-          { label: "Current Yr Exp Rev Growth", key: null, fmt: () => "", bench: "4.5–6.5%" },
+          { label: "Current Yr Exp Rev Growth", key: (s) => s.projRevGrowthCurrentYear, fmt: fmtPct, bench: "4.5–6.5%", modeled: true },
           { label: "Next Year Revenue Growth", key: (s) => s.projRevGrowth, fmt: fmtPct, bench: "4.5–6.5%", modeled: true },
         ],
       },
@@ -198,6 +198,9 @@ function normalize(j: any) {
     // Revenue carried forward off the company's own filings (see
     // lib/forwardEstimates.ts) — a projection, flagged as one.
     projRevGrowth: j.forwardRevenue?.growth ?? null,
+    // Fiscal year in progress: quarters already reported plus the remainder
+    // carried forward — not the same number as the next-twelve-months rate.
+    projRevGrowthCurrentYear: j.forwardRevenue?.currentYear?.growth ?? null,
     projRevGrowth2y:
       j.forwardRevenue?.growth != null ? Math.pow(1 + j.forwardRevenue.growth, 2) - 1 : null,
     epsTtm: f.eps ?? null,

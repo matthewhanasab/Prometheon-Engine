@@ -686,6 +686,72 @@ export function deriveChartSeries(f: Facts, limit = 28) {
   const flow = (aliases: string[]) => pts(f.quarterlyComplete(aliases));
   const stock = (aliases: string[]) => pts(f.instant(aliases));
 
+  /**
+   * Cover-page share counts are dated by the cover date — three to six weeks
+   * after the quarter closed — so they never line up with the income-statement
+   * periods. Each one is snapped to the latest reported quarter end on or
+   * before it, which gives the series the same dates and labels as everything
+   * else and lets P/S divide like-for-like.
+   */
+  // Every period end the filer has reported against — quarters and fiscal
+  // years, revenue and net income — since a bank's revenue series can lack
+  // Q4 while its 10-K cover count still needs a year end to land on.
+  const periodEnds = [...new Set(
+    [C.revenue, C.netIncome].flatMap((c) => [...f.quarterlyComplete(c), ...f.annual(c)]).map((p) => p.end)
+  )].sort();
+  const snapToPeriods = (series: Pt[]): Pt[] => {
+    const byDate = new Map<string, Pt>();
+    for (const p of series) {
+      const end = [...periodEnds].reverse().find((e) => e <= p.date && days(e, p.date) <= 75);
+      const date = end ?? p.date;
+      byDate.set(date, { date, label: qLabel(date), value: p.value }); // later cover date wins
+    }
+    return [...byDate.values()].sort((x, y) => x.date.localeCompare(y.date));
+  };
+
+  /**
+   * Undo stock splits in a share-count history.
+   *
+   * Companyfacts is as-reported: the cover-page count is never restated, and
+   * income-statement averages are restated only for the one comparative year,
+   * so both series carry a step — Apple's 4-for-1 in 2020 shows as 4.3B
+   * jumping to 17B. A step of a whole split ratio between adjacent quarters,
+   * where the OTHER series shows no step at the same dates, is a split (the two
+   * series step at different dates — split date vs restatement boundary — so
+   * each can vouch for the other). Everything before the step is scaled by the
+   * ratio. Buybacks never move a count 2× in a quarter; a merger can, which is
+   * why 2× needs the second series to confirm it.
+   */
+  const SPLITS = [2, 3, 4, 5, 6, 7, 8, 10, 15, 20, 25, 30, 40, 50];
+  const splitAdjust = (series: Pt[], reference: Pt[]): Pt[] => {
+    const out = series.map((p) => ({ ...p }));
+    // Nearest reference point within a quarter — the two series are dated a
+    // few weeks apart.
+    const refAt = (date: string) => {
+      let best: Pt | null = null;
+      for (const r of reference) {
+        const d = Math.abs(days(r.date, date));
+        if (d <= 50 && (!best || d < Math.abs(days(best.date, date)))) best = r;
+      }
+      return best?.value ?? null;
+    };
+    for (let i = 1; i < out.length; i++) {
+      const r = out[i].value / out[i - 1].value;
+      if (!(r > 0)) continue;
+      const forward = r >= 1;
+      const ratio = forward ? r : 1 / r;
+      const n = SPLITS.find((k) => Math.abs(ratio / k - 1) < 0.07);
+      if (!n) continue;
+      const a = refAt(out[i - 1].date), b = refAt(out[i].date);
+      const refRatio = a && b ? b / a : null;
+      const confirmed = refRatio != null ? refRatio > 0.8 && refRatio < 1.25 : n >= 3;
+      if (!confirmed) continue;
+      const factor = forward ? n : 1 / n;
+      for (let j = 0; j < i; j++) out[j].value *= factor;
+    }
+    return out;
+  };
+
   /** Rolling 4-quarter sum — the TTM view of a flow series. */
   const ttm = (s: Pt[]): Pt[] =>
     s.map((p, i) =>
@@ -711,7 +777,15 @@ export function deriveChartSeries(f: Facts, limit = 28) {
   const ocf = flow(C.ocf);
   const capex = flow(C.capex);
   const epsQ = flow(C.epsDiluted);
-  const sharesQ = flow(C.dilutedShares);
+  // Weighted-average diluted shares are an average, not a flow, so Q4 can't be
+  // rebuilt as FY − (Q1+Q2+Q3): that produced −35B "shares" for Apple every
+  // September and a P/S chart diving to −18× once a year. The as-filed 10-Q
+  // quarters are kept only as the fallback when there is no cover-page count.
+  const dilutedRaw = pts(f.quarterly(C.dilutedShares));
+  const coverRaw = snapToPeriods(stock(C.sharesOutstanding));
+  const sharesQ = splitAdjust(dilutedRaw, coverRaw);
+  const sharesCover = splitAdjust(coverRaw, dilutedRaw);
+  const shares = sharesCover.length >= 4 ? sharesCover : sharesQ;
 
   const fcf = align(ocf, capex, (o, c) => o - c);
   const revTtm = ttm(revenue);
@@ -727,12 +801,12 @@ export function deriveChartSeries(f: Facts, limit = 28) {
     // share counts — shares are a stock, not a flow, so summing four quarters
     // would understate per-share values by ~4x.
     fcfPerShare: {
-      q: align(fcf, sharesQ, (v, sh) => (sh > 0 ? v / sh : null)),
-      ttm: align(ttm(fcf), sharesQ, (v, sh) => (sh > 0 ? v / sh : null)),
+      q: align(fcf, shares, (v, sh) => (sh > 0 ? v / sh : null)),
+      ttm: align(ttm(fcf), shares, (v, sh) => (sh > 0 ? v / sh : null)),
     },
     grossMargin: align(grossProfit, revenue, (g, r) => (r !== 0 ? (g / r) * 100 : null)),
     netMargin: align(netIncome, revenue, (n, r) => (r !== 0 ? (n / r) * 100 : null)),
-    shares: stock(C.sharesOutstanding).length >= 4 ? stock(C.sharesOutstanding) : sharesQ,
+    shares,
     equity: stock(C.equity),
     currentAssets: stock(C.assetsCurrent),
     currentLiabilities: stock(C.liabilitiesCurrent),
@@ -742,7 +816,7 @@ export function deriveChartSeries(f: Facts, limit = 28) {
     // TTM EPS/revenue power the historical P/E and P/S charts.
     epsTtm: ttm(epsQ),
     revenueTtm: revTtm,
-    sharesForRatio: sharesQ,
+    sharesForRatio: shares,
   };
 }
 

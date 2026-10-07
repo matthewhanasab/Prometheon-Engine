@@ -145,6 +145,8 @@ export type RevenueProjection = {
   growth: number;
   /** Next-twelve-month revenue projection. */
   revenue: number;
+  /** The fiscal year in progress against the last completed one. */
+  currentYear: CurrentYearRevenue | null;
   inputs: { label: string; growth: number; weight: number }[];
   confidence: "high" | "medium" | "low";
   basis: string;
@@ -199,8 +201,52 @@ export function revenueProjection(
   return {
     growth,
     revenue: ttmRevenue * (1 + growth),
+    currentYear: null,
     inputs,
     confidence,
     basis: "Prometheon trend model — projected from SEC-filed revenue, not analyst consensus.",
   };
+}
+
+export type CurrentYearRevenue = {
+  /** Expected growth of the fiscal year in progress over the last completed one (decimal). */
+  growth: number;
+  /** How many of its quarters have already been reported. */
+  reportedQuarters: number;
+};
+
+type Span = { end: string; start?: string; val: number };
+
+/**
+ * Expected growth for the fiscal year in progress.
+ *
+ * Distinct from the next-twelve-months rate: part of this year is already
+ * reported and fixed. The quarters filed so far count as reported; each
+ * remaining quarter is the same quarter a year ago carried forward at the
+ * trend rate. Right after a 10-K, with nothing reported, it collapses to the
+ * trend rate — which is the correct answer then.
+ */
+export function currentFiscalYearRevenueGrowth(
+  annual: Span[],
+  quarterly: Span[],
+  trendGrowth: number | null
+): CurrentYearRevenue | null {
+  const fy = annual[annual.length - 1];
+  if (!fy?.start || !(fy.val > 0)) return null;
+  const priorQ = quarterly.filter((q) => q.end > fy.start! && q.end <= fy.end);
+  const yearOut = new Date(new Date(fy.end).getTime() + 370 * 864e5).toISOString().slice(0, 10);
+  const curQ = quarterly.filter((q) => q.end > fy.end && q.end <= yearOut);
+  const k = Math.min(curQ.length, 4);
+  if (k === 0) return trendGrowth != null ? { growth: trendGrowth, reportedQuarters: 0 } : null;
+  if (priorQ.length < k) return null;
+
+  const reported = curQ.slice(0, k).reduce((t, q) => t + q.val, 0);
+  const yearAgo = priorQ.slice(0, k).reduce((t, q) => t + q.val, 0);
+  if (!(yearAgo > 0)) return null;
+  const remainingYearAgo = fy.val - yearAgo;
+  const g = trendGrowth ?? reported / yearAgo - 1;
+  const projected = reported + Math.max(0, remainingYearAgo) * (1 + g);
+  const growth = projected / fy.val - 1;
+  if (!Number.isFinite(growth) || Math.abs(growth) > 3) return null;
+  return { growth, reportedQuarters: k };
 }
