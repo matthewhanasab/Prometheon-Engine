@@ -62,6 +62,7 @@ const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
   {
     label: "Smart Money",
     items: [
+      { href: "/mna",      label: "M&A Activity" },
       { href: "/congress", label: "Congress Trades" },
       { href: "/insider",  label: "Insider Trading" },
       { href: "/sec",      label: "SEC Filings" },

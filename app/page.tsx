@@ -192,7 +192,7 @@ const FEATURE_GROUPS = [
     { href: "/congress", title: "Congress Trades",  desc: "Every stock trade disclosed by U.S. Senators and Representatives." },
     { href: "/insider",  title: "Insider Trading",  desc: "Form 4 filings — executive and director buys and sales, valued and flagged." },
     { href: "/sec",      title: "SEC Filings",      desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR." },
-    { href: "/etf",      title: "ETF Hub",          desc: "Holdings, overlap, and which funds own the stock you're looking at." },
+    { href: "/mna",      title: "M&A Activity",     desc: "Acquisitions, buyouts and IPOs by industry — acquirer, target, value and advisors." },
   ]},
   { label: "Income & Planning", items: [
     { href: "/dividends?ticker=KO",       title: "Dividend Hub",        desc: "Payment history, yield, growth streaks, and the ex-dividend calendar." },
@@ -219,6 +219,7 @@ const FOOTER_COLUMNS = [
     { href: "/etf",       label: "ETF Hub" },
   ]},
   { title: "Smart Money", links: [
+    { href: "/mna",           label: "M&A Activity" },
     { href: "/congress",      label: "Congress Trades" },
     { href: "/insider",       label: "Insider Trading" },
     { href: "/sec",           label: "SEC Filings" },

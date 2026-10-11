@@ -67,6 +67,10 @@ jobs:
         if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
         run: npm run build:sp500
 
+      - name: M&A activity
+        if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
+        run: npm run build:mna
+
       - name: Congress trades
         if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
         run: npm run build:congress
