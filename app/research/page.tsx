@@ -39,6 +39,19 @@ type OwnershipPayload = {
 };
 const ANALYST_ROWS = 25;
 
+// Listing-exchange codes as the feed spells them, with the name a reader
+// knows and the MIC the price endpoints filter on.
+const EXCHANGES: Record<string, { name: string; mic: string }> = {
+  NMS: { name: "Nasdaq", mic: "XNAS" }, NAS: { name: "Nasdaq", mic: "XNAS" }, NGM: { name: "Nasdaq", mic: "XNAS" },
+  NCM: { name: "Nasdaq", mic: "XNAS" }, XNAS: { name: "Nasdaq", mic: "XNAS" }, NASDAQ: { name: "Nasdaq", mic: "XNAS" },
+  NYQ: { name: "NYSE", mic: "XNYS" }, NYS: { name: "NYSE", mic: "XNYS" }, XNYS: { name: "NYSE", mic: "XNYS" }, NYSE: { name: "NYSE", mic: "XNYS" },
+  ASE: { name: "NYSE American", mic: "XASE" }, AMX: { name: "NYSE American", mic: "XASE" }, XASE: { name: "NYSE American", mic: "XASE" },
+  PCX: { name: "NYSE Arca", mic: "ARCX" }, ARCA: { name: "NYSE Arca", mic: "ARCX" }, ARCX: { name: "NYSE Arca", mic: "ARCX" },
+  BATS: { name: "Cboe BZX", mic: "BATS" }, BZX: { name: "Cboe BZX", mic: "BATS" },
+};
+const exchangeName = (code: unknown) => EXCHANGES[String(code ?? "").toUpperCase()]?.name ?? (code ? String(code) : null);
+const exchangeMic = (code: unknown) => EXCHANGES[String(code ?? "").toUpperCase()]?.mic ?? "";
+
 // The feed gives the fiscal year end as "0930"; read it as a date.
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function fyEndLabel(v: unknown): string | null {
@@ -435,7 +448,7 @@ function MarketstackResearchInner() {
     if (!tk) return;
     let alive = true;
     const pull = () =>
-      fetch(`/api/live-price/${tk}?exchange=${encodeURIComponent(data?.profile?.exchange ?? "")}&ref=${data?.quote?.price ?? ""}`)
+      fetch(`/api/live-price/${tk}?exchange=${exchangeMic(data?.profile?.exchange)}&ref=${data?.quote?.price ?? ""}`)
         .then((r) => r.json())
         .then((j) => { if (alive && j?.price > 0) setLive({ ticker: tk, price: j.price, time: j.time ?? null }); })
         .catch(() => {});
@@ -576,7 +589,7 @@ function MarketstackResearchInner() {
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, alignItems: "center" }}>
               {[
-                prof?.sector, prof?.industry, prof?.exchange,
+                prof?.sector, prof?.industry, exchangeName(prof?.exchange),
                 prof?.ipoDate ? `IPO ${String(prof.ipoDate).slice(0, 4)}` : null,
                 prof?.founded ? `Founded ${String(prof.founded).slice(0, 4)}` : null,
                 prof?.employees != null ? `${Number(prof.employees).toLocaleString()} employees` : null,

@@ -22,7 +22,6 @@ const INDICES: { label: string; codes: string[] }[] = [
   { label: "DAX",            codes: ["de40"] },
   { label: "Euro Stoxx 50",  codes: ["eu50"] },
   { label: "Nikkei 225",     codes: ["jp225"] },
-  { label: "Hang Seng",      codes: ["hk50"] },
 ];
 
 const BONDS: { label: string; country: string }[] = [
