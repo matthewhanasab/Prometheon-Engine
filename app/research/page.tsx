@@ -39,6 +39,15 @@ type OwnershipPayload = {
 };
 const ANALYST_ROWS = 25;
 
+// The feed gives the fiscal year end as "0930"; read it as a date.
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function fyEndLabel(v: unknown): string | null {
+  const m = /^(\d{2})(\d{2})$/.exec(String(v ?? ""));
+  if (!m) return null;
+  const month = MONTHS_SHORT[Number(m[1]) - 1];
+  return month ? `FY ends ${month} ${Number(m[2])}` : null;
+}
+
 const CARD: React.CSSProperties = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
 };
@@ -426,14 +435,14 @@ function MarketstackResearchInner() {
     if (!tk) return;
     let alive = true;
     const pull = () =>
-      fetch(`/api/live-price/${tk}`)
+      fetch(`/api/live-price/${tk}?exchange=${encodeURIComponent(data?.profile?.exchange ?? "")}&ref=${data?.quote?.price ?? ""}`)
         .then((r) => r.json())
         .then((j) => { if (alive && j?.price > 0) setLive({ ticker: tk, price: j.price, time: j.time ?? null }); })
         .catch(() => {});
     pull();
     const id = setInterval(pull, 60_000);
     return () => { alive = false; clearInterval(id); };
-  }, [data?.ticker]);
+  }, [data?.ticker, data?.profile?.exchange, data?.quote?.price]);
 
   // Kick the ETF scan off after the main payload resolves, passing the company
   // name we already have so the endpoint skips its own lookup.
@@ -571,7 +580,7 @@ function MarketstackResearchInner() {
                 prof?.ipoDate ? `IPO ${String(prof.ipoDate).slice(0, 4)}` : null,
                 prof?.founded ? `Founded ${String(prof.founded).slice(0, 4)}` : null,
                 prof?.employees != null ? `${Number(prof.employees).toLocaleString()} employees` : null,
-                prof?.fiscalYearEnd ? `FY ends ${prof.fiscalYearEnd}` : null,
+                fyEndLabel(prof?.fiscalYearEnd),
               ].filter(Boolean).map((chip, i) => (
                 <span key={i} style={{ fontSize: "0.64rem", fontWeight: 600, color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "3px 10px" }}>
                   {chip as string}

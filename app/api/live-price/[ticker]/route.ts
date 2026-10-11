@@ -33,13 +33,33 @@ export async function GET(
   let time: string | null = null;
   let source: string | null = null;
 
+  // The page passes the listing exchange and the last close it already has.
+  // Without the exchange filter the feed answered AAPL with a foreign
+  // listing's print (21,770, five months old), so an unfiltered row is only
+  // trusted when it sits near the known close.
+  const exchange = (req.nextUrl.searchParams.get("exchange") ?? "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 8);
+  const ref = Number(req.nextUrl.searchParams.get("ref"));
+  const plausible = (p: number) => !(ref > 0) || (p > ref * 0.6 && p < ref * 1.4);
+  // "2026-05-08 17:00:00" carries no zone; the feed's clocks are UTC.
+  const utc = (v: unknown) => {
+    const str = String(v ?? "").trim();
+    if (!str) return null;
+    return /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(str) ? str.replace(" ", "T") + "Z" : str;
+  };
+
   // Primary: the real-time price endpoint. Its payload is a single object or
   // a one-element array depending on the exchange filter, so take either.
-  const live = await msGet(`${MS}/stockprice?access_key=${key}&ticker=${t}`, 30);
-  const row = Array.isArray(live.data?.data) ? live.data.data[0] : live.data?.data ?? live.data;
-  if (row && num(row.price)) {
+  const live = await msGet(
+    `${MS}/stockprice?access_key=${key}&ticker=${t}${exchange ? `&exchange=${exchange}` : ""}`, 30
+  );
+  const rowsLive = Array.isArray(live.data?.data) ? live.data.data : live.data?.data ? [live.data.data] : [];
+  const row = rowsLive.find((r: Record<string, unknown>) => {
+    const p = num(r?.price);
+    return p != null && plausible(p) && (!exchange || String(r?.exchange_code ?? "").toUpperCase() === exchange);
+  }) ?? rowsLive.find((r: Record<string, unknown>) => num(r?.price) != null && plausible(num(r?.price)!));
+  if (row) {
     price = num(row.price);
-    time = row.trade_last ? String(row.trade_last) : null;
+    time = utc(row.trade_last);
     source = "realtime";
   }
 
@@ -48,9 +68,12 @@ export async function GET(
     const bar = await msGet(`${MS}/intraday/latest?access_key=${key}&symbols=${t}`, 60);
     const b = Array.isArray(bar.data?.data) ? bar.data.data[0] : null;
     if (b) {
-      price = num(b.last) ?? num(b.marketstack_last) ?? num(b.close);
-      time = b.date ? String(b.date) : null;
-      source = price != null ? "intraday" : null;
+      const p = num(b.last) ?? num(b.marketstack_last) ?? num(b.close);
+      if (p != null && plausible(p)) {
+        price = p;
+        time = utc(b.date);
+        source = "intraday";
+      }
     }
   }
 

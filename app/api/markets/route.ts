@@ -14,15 +14,15 @@ const MS = "https://api.marketstack.com/v2";
 // Benchmark codes differ by provider, so each index lists the spellings it
 // might go by; the first one present in the feed's own list wins.
 const INDICES: { label: string; codes: string[] }[] = [
-  { label: "S&P 500",      codes: ["us500", "spx", "sp500", "gspc", "sandp500"] },
-  { label: "Dow Jones",    codes: ["us30", "dji", "dow", "djia"] },
-  { label: "Nasdaq 100",   codes: ["us100", "ndx", "nasdaq100", "nas100", "ustech100"] },
-  { label: "Nasdaq",       codes: ["nasdaq", "ixic", "comp"] },
-  { label: "Russell 2000", codes: ["us2000", "rut", "russell2000", "russell"] },
-  { label: "VIX",          codes: ["vix", "cboe_vix", "usvix"] },
-  { label: "FTSE 100",     codes: ["uk100", "ftse100", "ukx", "ftse"] },
-  { label: "DAX",          codes: ["de40", "dax", "de30", "gdaxi"] },
-  { label: "Nikkei 225",   codes: ["jp225", "nikkei225", "nikkei", "n225"] },
+  { label: "S&P 500",        codes: ["us500"] },
+  { label: "Dow Jones",      codes: ["us30"] },
+  { label: "Nasdaq 100",     codes: ["us100"] },
+  { label: "Russell 1000",   codes: ["us1000"] },
+  { label: "FTSE 100",       codes: ["gb100", "uk100"] },
+  { label: "DAX",            codes: ["de40"] },
+  { label: "Euro Stoxx 50",  codes: ["eu50"] },
+  { label: "Nikkei 225",     codes: ["jp225"] },
+  { label: "Hang Seng",      codes: ["hk50"] },
 ];
 
 const BONDS: { label: string; country: string }[] = [
@@ -77,7 +77,10 @@ export async function GET(req: NextRequest) {
   // cached for five minutes anyway.
   for (const ix of picks) {
     const r = await msGet(`${MS}/indexinfo?access_key=${key}&index=${encodeURIComponent(ix.code)}`, 300);
-    const row = Array.isArray(r.data?.data) ? r.data.data[0] : r.data?.data ?? null;
+    // The index payload is a bare array, unlike every other endpoint.
+    const rowsIx: Record<string, unknown>[] = Array.isArray(r.data) ? r.data
+      : Array.isArray(r.data?.data) ? r.data.data : r.data?.data ? [r.data.data] : [];
+    const row = rowsIx[0] ?? null;
     const price = num(row?.price);
     if (!row || price == null) continue;
     indices.push({
