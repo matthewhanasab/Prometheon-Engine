@@ -653,8 +653,15 @@ function dcf(f: Facts, shares: number | null) {
  * every fourth bar would be missing, since US filers fold Q4 into the 10-K.
  * Balance-sheet items are point-in-time and need no reconstruction.
  */
-export function deriveChartSeries(f: Facts, limit = 28) {
-  type Pt = { date: string; label: string; value: number };
+/** A stock split as the price feed reports it: `factor` is the multiplier
+ *  (4 for a 4-for-1; 0.1 for a 1-for-10 reverse), effective on `date`. */
+export type SplitEvent = { date: string; factor: number };
+
+export function deriveChartSeries(f: Facts, limit = 28, splits: SplitEvent[] = []) {
+  // `rawDate` is the cover-page date a share count was reported on, kept
+  // alongside the quarter end it was snapped to; splits are applied against
+  // the date the number was actually reported.
+  type Pt = { date: string; label: string; value: number; rawDate?: string };
 
   // Fiscal-year-end month, taken from the company's own annual periods.
   const fyEnds = f.annual(C.revenue).length ? f.annual(C.revenue) : f.annual(C.netIncome);
@@ -704,7 +711,7 @@ export function deriveChartSeries(f: Facts, limit = 28) {
     for (const p of series) {
       const end = [...periodEnds].reverse().find((e) => e <= p.date && days(e, p.date) <= 75);
       const date = end ?? p.date;
-      byDate.set(date, { date, label: qLabel(date), value: p.value }); // later cover date wins
+      byDate.set(date, { date, label: qLabel(date), value: p.value, rawDate: p.date }); // later cover date wins
     }
     return [...byDate.values()].sort((x, y) => x.date.localeCompare(y.date));
   };
@@ -722,6 +729,19 @@ export function deriveChartSeries(f: Facts, limit = 28) {
    * ratio. Buybacks never move a count 2× in a quarter; a merger can, which is
    * why 2× needs the second series to confirm it.
    */
+  /**
+   * Scale as-reported share counts by the splits the price feed knows about:
+   * every count reported before a split is multiplied by that split's factor.
+   * This is the authoritative version of the step detection below, used
+   * whenever the caller has the split record.
+   */
+  const applySplits = (series: Pt[], events: SplitEvent[]): Pt[] =>
+    series.map((p) => {
+      const reported = p.rawDate ?? p.date;
+      const factor = events.reduce((acc, ev) => (ev.date > reported ? acc * ev.factor : acc), 1);
+      return factor === 1 ? { ...p } : { ...p, value: p.value * factor };
+    });
+
   const SPLITS = [2, 3, 4, 5, 6, 7, 8, 10, 15, 20, 25, 30, 40, 50];
   const splitAdjust = (series: Pt[], reference: Pt[]): Pt[] => {
     const out = series.map((p) => ({ ...p }));
@@ -783,8 +803,13 @@ export function deriveChartSeries(f: Facts, limit = 28) {
   // quarters are kept only as the fallback when there is no cover-page count.
   const dilutedRaw = pts(f.quarterly(C.dilutedShares));
   const coverRaw = snapToPeriods(stock(C.sharesOutstanding));
-  const sharesQ = splitAdjust(dilutedRaw, coverRaw);
-  const sharesCover = splitAdjust(coverRaw, dilutedRaw);
+  const validSplits = splits.filter((ev) => ev.factor > 0 && ev.factor !== 1 && /^\d{4}-\d{2}-\d{2}$/.test(ev.date));
+  // The cover-page count is never restated, so the feed's split record maps
+  // onto it exactly. The step detection stays as the fallback for callers
+  // without that record (and for the diluted series, whose partial
+  // restatement doesn't line up with split dates).
+  const sharesCover = validSplits.length ? applySplits(coverRaw, validSplits) : splitAdjust(coverRaw, dilutedRaw);
+  const sharesQ = splitAdjust(dilutedRaw, sharesCover);
   const shares = sharesCover.length >= 4 ? sharesCover : sharesQ;
 
   const fcf = align(ocf, capex, (o, c) => o - c);

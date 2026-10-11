@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
-import { fetchFacts, deriveChartSeries, resolveCik } from "@/lib/edgarFacts";
+import { fetchFacts, deriveChartSeries, resolveCik, type SplitEvent } from "@/lib/edgarFacts";
 
 // Charts data for the Market Stack edition.
 //
@@ -39,18 +39,25 @@ export async function GET(
   const cik = await resolveCik(t);
   if (!cik) return NextResponse.json({ error: `No SEC filer found for ${t}` }, { status: 404 });
 
-  const [facts, infoRaw, eodRaw] = await Promise.all([
+  const [facts, infoRaw, eodRaw, splitRaw] = await Promise.all([
     fetchFacts(cik),
     get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
     // ~8 years of daily closes: enough to place a price against every quarter
     // end in the 28-quarter window the charts render.
     get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=2200`),
+    // The split record: SEC share counts are as-reported, so the shares chart
+    // and the P/S ratio need every pre-split count scaled up.
+    get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
   ]);
   if (!facts) return NextResponse.json({ error: `No XBRL filings for ${t}` }, { status: 404 });
 
+  const splits: SplitEvent[] = (Array.isArray(splitRaw?.data) ? splitRaw.data : [])
+    .map((r: any) => ({ date: String(r.date ?? "").slice(0, 10), factor: Number(r.split_factor ?? 1) }))
+    .filter((ev: SplitEvent) => ev.date && ev.factor > 0 && ev.factor !== 1);
+
   let series: any;
   try {
-    series = deriveChartSeries(facts);
+    series = deriveChartSeries(facts, 28, splits);
   } catch (e: any) {
     return NextResponse.json({ error: `Could not derive series: ${e?.message ?? e}` }, { status: 500 });
   }
