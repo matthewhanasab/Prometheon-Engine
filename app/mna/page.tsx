@@ -79,7 +79,7 @@ function Chip({ children, color }: { children: React.ReactNode; color?: string }
 function Party({ name, ticker, size = 28 }: { name: string | null; ticker: string | null; size?: number }) {
   if (!name && !ticker) return null;
   const body = (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+    <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
       {ticker && <span style={{ width: size, height: size, flexShrink: 0, display: "inline-flex" }}><CompanyLogo ticker={ticker} size={size} fallback /></span>}
       <span style={{ minWidth: 0 }}>
         <span style={{ display: "block", fontFamily: SANS, fontSize: "0.8rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name ?? ticker}</span>
@@ -87,9 +87,15 @@ function Party({ name, ticker, size = 28 }: { name: string | null; ticker: strin
       </span>
     </span>
   );
-  return ticker
-    ? <Link href={`/research?ticker=${ticker}`} onClick={(e) => e.stopPropagation()} style={{ textDecoration: "none", minWidth: 0 }}>{body}</Link>
-    : body;
+  // The grid cell must be allowed to shrink, or a long joint-venture name
+  // ("3M – 50.1% / Bain Capital – 49.9%") pushes across the arrow.
+  return (
+    <div style={{ minWidth: 0, overflow: "hidden" }}>
+      {ticker
+        ? <Link href={`/research?ticker=${ticker}`} onClick={(e) => e.stopPropagation()} style={{ textDecoration: "none", display: "block", minWidth: 0 }}>{body}</Link>
+        : body}
+    </div>
+  );
 }
 
 export default function MnaPage() {
