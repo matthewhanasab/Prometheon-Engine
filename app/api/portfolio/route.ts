@@ -94,7 +94,9 @@ export async function GET(req: NextRequest) {
       .filter((p: any) => p.date >= yearAgo)
       .map((p: any) => ({ date: p.date, price: p.price }));
 
-    return NextResponse.json({ holdings: holdingsRaw.filter(Boolean), spyHistory });
+    return NextResponse.json({ holdings: holdingsRaw.filter(Boolean), spyHistory }, {
+      headers: { "Cache-Control": "public, max-age=0, s-maxage=600, stale-while-revalidate=3600" },
+    });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch portfolio data" }, { status: 500 });

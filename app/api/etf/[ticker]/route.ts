@@ -260,5 +260,5 @@ export async function GET(
     countries: bucket((h) => h.country),
     categories: bucket((h) => h.assetCategory, ASSET_LABELS),
     fairValue: bucket((h) => (h.fairLevel ? `Level ${h.fairLevel}` : "Unclassified")),
-  });
+  }, { headers: { "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" } });
 }

@@ -71,39 +71,48 @@ export async function GET(req: NextRequest) {
     code: ix.codes.find((c) => available.has(c)) ?? (available.size ? null : ix.codes[0]),
   })).filter((ix): ix is typeof ix & { code: string } => ix.code != null);
 
-  const indices: IndexQuote[] = [];
-  // Sequential: the provider enforces a per-second ceiling and these are
-  // cached for five minutes anyway.
-  for (const ix of picks) {
+  // Three in flight at a time: fast enough to answer in a second or two,
+  // slow enough to stay under the provider's per-second ceiling.
+  const pooled = async <T,>(jobs: (() => Promise<T>)[], width = 3): Promise<T[]> => {
+    const out: T[] = new Array(jobs.length);
+    let next = 0;
+    await Promise.all(Array.from({ length: Math.min(width, jobs.length) }, async () => {
+      while (next < jobs.length) { const i = next++; out[i] = await jobs[i](); }
+    }));
+    return out;
+  };
+
+  const indexRows = await pooled(picks.map((ix) => async (): Promise<IndexQuote | null> => {
     const r = await msGet(`${MS}/indexinfo?access_key=${key}&index=${encodeURIComponent(ix.code)}`, 300);
     // The index payload is a bare array, unlike every other endpoint.
     const rowsIx: Record<string, unknown>[] = Array.isArray(r.data) ? r.data
       : Array.isArray(r.data?.data) ? r.data.data : r.data?.data ? [r.data.data] : [];
     const row = rowsIx[0] ?? null;
     const price = num(row?.price);
-    if (!row || price == null) continue;
-    indices.push({
+    if (!row || price == null) return null;
+    return {
       code: ix.code, label: ix.label, price,
       changeDay: num(row.price_change_day), pctDay: num(row.percentage_day),
       pctWeek: num(row.percentage_week), pctMonth: num(row.percentage_month), pctYear: num(row.percentage_year),
       date: row.date ? String(row.date) : null,
-    });
-  }
+    };
+  }));
+  const indices = indexRows.filter((x): x is IndexQuote => x != null);
 
-  const bonds: BondQuote[] = [];
-  for (const b of BONDS) {
+  const bondRows = await pooled(BONDS.map((b) => async (): Promise<BondQuote | null> => {
     const r = await msGet(`${MS}/bond?access_key=${key}&country=${encodeURIComponent(b.country)}`, 900);
     const rows: Record<string, unknown>[] = Array.isArray(r.data?.data) ? r.data.data : r.data?.data ? [r.data.data] : [];
     const row = rows.find((x) => /10/.test(String(x?.type ?? ""))) ?? rows[0];
     const y = num(row?.yield);
-    if (!row || y == null) continue;
-    bonds.push({
+    if (!row || y == null) return null;
+    return {
       label: b.label, country: b.country, tenor: String(row.type ?? "10Y"), yieldPct: y,
       changeDay: num(row.price_change_day), pctWeek: num(row.percentage_week),
       pctMonth: num(row.percentage_month), pctYear: num(row.percentage_year),
       date: row.date ? String(row.date) : null,
-    });
-  }
+    };
+  }));
+  const bonds = bondRows.filter((x): x is BondQuote => x != null);
 
   const degraded = !indices.length && !bonds.length;
   return NextResponse.json(

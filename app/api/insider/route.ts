@@ -36,7 +36,9 @@ export async function GET(req: NextRequest) {
     if (symbol) {
       const sym = symbol.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
       const rows = await getInsiderTrades(sym);
-      return NextResponse.json({ trades: shape(sym, rows) });
+      return NextResponse.json({ trades: shape(sym, rows) }, {
+        headers: { "Cache-Control": "public, max-age=0, s-maxage=900, stale-while-revalidate=3600" },
+      });
     }
 
     const all = await Promise.all(
@@ -55,7 +57,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       trades,
       note: "Without a ticker, showing recent Form 4 activity for a default set of widely-held names — a full market-wide stream is not available with current data.",
-    });
+    }, { headers: { "Cache-Control": "public, max-age=0, s-maxage=900, stale-while-revalidate=3600" } });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch insider trades" }, { status: 500 });

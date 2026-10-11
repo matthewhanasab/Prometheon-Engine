@@ -16,7 +16,9 @@ export async function GET(
       getSecFilings(t),
       getInsiderTrades(t),
     ]);
-    return NextResponse.json({ filings, insiders });
+    return NextResponse.json({ filings, insiders }, {
+      headers: { "Cache-Control": "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400" },
+    });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Failed to fetch SEC data" }, { status: 500 });

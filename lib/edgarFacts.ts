@@ -475,8 +475,30 @@ function mergeFactsJson(primary: FactsJson, older: FactsJson): FactsJson {
   return out;
 }
 
-export async function fetchFacts(cik: string): Promise<Facts | null> {
+// companyfacts for a large filer runs to several megabytes — past the size
+// the framework's data cache will hold — so every cold request re-downloaded
+// it from EDGAR. A warm function instance keeps the last few parsed files in
+// memory instead; the instance-level cache is best-effort, but research,
+// charts, financials and compare all read the same file for the same ticker.
+type FactsMemo = Map<string, { at: number; json: FactsJson | null }>;
+const factsMemo: FactsMemo =
+  ((globalThis as unknown as { __edgarFacts?: FactsMemo }).__edgarFacts ??= new Map());
+const FACTS_TTL = 6 * 3600_000;
+const FACTS_MAX = 40;
+
+async function fetchFactsJsonMemo(cik: string): Promise<FactsJson | null> {
+  const hit = factsMemo.get(cik);
+  if (hit && Date.now() - hit.at < FACTS_TTL) return hit.json;
   const json = await fetchFactsJson(cik);
+  if (json) {
+    if (factsMemo.size >= FACTS_MAX) factsMemo.delete(factsMemo.keys().next().value!);
+    factsMemo.set(cik, { at: Date.now(), json });
+  }
+  return json;
+}
+
+export async function fetchFacts(cik: string): Promise<Facts | null> {
+  const json = await fetchFactsJsonMemo(cik);
   if (!json) return null;
 
   // A registrant with almost no top-line history is the signature of a
@@ -486,7 +508,7 @@ export async function fetchFacts(cik: string): Promise<Facts | null> {
   if (revenueRowCount(json) < 8) {
     const prevCik = await findPredecessorCik(json?.entityName ?? "", cik);
     if (prevCik) {
-      const older = await fetchFactsJson(prevCik);
+      const older = await fetchFactsJsonMemo(prevCik);
       if (older && revenueRowCount(older) > revenueRowCount(json)) {
         return new Facts(mergeFactsJson(json, older));
       }

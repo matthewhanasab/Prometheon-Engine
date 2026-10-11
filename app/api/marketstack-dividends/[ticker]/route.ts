@@ -111,5 +111,5 @@ export async function GET(
     upcoming,
     projectedNext: upcoming.length ? null : projectNextExDate(past),
     recent: past.slice(0, 60),
-  });
+  }, { headers: { "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" } });
 }

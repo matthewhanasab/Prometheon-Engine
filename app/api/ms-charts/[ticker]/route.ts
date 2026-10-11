@@ -109,5 +109,9 @@ export async function GET(
       exchange: info?.exchange_code ?? null,
     },
     series: { ...series, pe: peSeries, ps: psSeries },
+  }, {
+    // Quarterly fundamentals move a few times a year; the edge can hold the
+    // derived series for an hour so repeat visitors skip the EDGAR pull.
+    headers: { "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" },
   });
 }

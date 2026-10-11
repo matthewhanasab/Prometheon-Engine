@@ -48,5 +48,7 @@ export async function GET(
     } catch { /* name is cosmetic — fall back to the ticker */ }
   }
 
-  return NextResponse.json({ ticker: t, name, period, cik, ...statements });
+  return NextResponse.json({ ticker: t, name, period, cik, ...statements }, {
+    headers: { "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" },
+  });
 }
