@@ -339,17 +339,22 @@ function CompareInner() {
       // the comparison as fast as it was, and the consensus rows fill in.
       Promise.all(
         want.map((t) =>
-          fetch(`/api/stock-analysts/${t}`)
+          fetch(`/api/consensus/${t}`)
             .then((r) => r.json())
-            .then((a) => ({ t, cf: a?.consensusForward ?? null }))
+            .then((a) => ({ t, cf: a?.consensus ?? null }))
             .catch(() => ({ t, cf: null }))
         )
       ).then((rows) => {
         const byTicker = new Map(rows.map((r) => [r.t, r.cf]));
         setStocks((prev) =>
           prev.map((s: NormalizedStock) => {
-            const cf = byTicker.get(s.ticker);
-            if (!cf) return s;
+            const raw = byTicker.get(s.ticker);
+            if (!raw) return s;
+            // Forward P/E off the price this row already carries.
+            const cf = {
+              ...raw,
+              pe: raw.ntmEps != null && raw.ntmEps > 0 && s.price ? s.price / raw.ntmEps : null,
+            };
             return {
               ...s,
               consNextYearEpsGrowth: cf.nextYearEpsGrowth ?? null,
@@ -639,7 +644,7 @@ function CompareInner() {
                                       color: "var(--accent-gold)", border: "1px solid var(--border-active)",
                                       borderRadius: 999, padding: "1px 6px", cursor: "help", whiteSpace: "nowrap",
                                     }}
-                                  >cons</span>
+                                  >consensus</span>
                                 )}
                                 {metric.modeled && (
                                   <span
@@ -649,7 +654,7 @@ function CompareInner() {
                                       color: "var(--text-muted)", border: "1px solid var(--border)",
                                       borderRadius: 999, padding: "1px 6px", cursor: "help", whiteSpace: "nowrap",
                                     }}
-                                  >~est</span>
+                                  >model</span>
                                 )}
                               </td>
                               {unavailable ? (
