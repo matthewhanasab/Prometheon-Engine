@@ -9,9 +9,15 @@ function fmt(n: number) {
 
 // "2021-07-19" parses as UTC midnight, which renders as the previous day in any
 // negative-offset timezone. Anchor to local midnight so the date shown is the date given.
-const asLocal = (d: string) => new Date(`${d}T00:00:00`);
+// Intraday points carry a full timestamp and are shown in New York time, the
+// clock the session runs on.
+const isStamp = (d: string) => d.includes("T");
+const asLocal = (d: string) => (isStamp(d) ? new Date(d) : new Date(`${d}T00:00:00`));
+const NY = "America/New_York";
 const longDate = (d: string) =>
-  asLocal(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  isStamp(d)
+    ? asLocal(d).toLocaleString("en-US", { timeZone: NY, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET"
+    : asLocal(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 // Custom tooltip: recharts can't express "% change from the first point in the
 // window", so build the row here rather than in a formatter.
@@ -52,7 +58,12 @@ export default function PriceChart({ data, label }: { data: PricePoint[]; label?
   const spanDays = data.length > 1
     ? (new Date(data[data.length - 1].date).getTime() - new Date(data[0].date).getTime()) / 86400000
     : 0;
-  const tickOpts: Intl.DateTimeFormatOptions = spanDays <= 200
+  const intraday = data.length > 0 && isStamp(data[0].date);
+  const tickOpts: Intl.DateTimeFormatOptions = intraday
+    ? spanDays <= 1.5
+      ? { timeZone: NY, hour: "numeric", minute: "2-digit" }
+      : { timeZone: NY, weekday: "short", hour: "numeric" }
+    : spanDays <= 200
     ? { month: "short", day: "numeric" }
     : { month: "short", year: "2-digit" };
   const tickInterval = Math.max(0, Math.floor(data.length / 6));

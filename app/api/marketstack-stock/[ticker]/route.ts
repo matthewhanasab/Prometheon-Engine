@@ -146,7 +146,7 @@ export async function GET(
     await pool(
       [
         timed("tickerinfo", () => get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`)),
-        timed("dividends", () => get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`)),
+        timed("dividends", () => get(`${MS}/tickers/${t}/dividends?access_key=${key}&limit=200&sort=DESC`)),
         timed("splits", () => get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`)),
         timed("tickers", () => get(`${MS}/tickers/${t}?access_key=${key}`)),
         ...longHorizons.map((y) => timed(`anchor_${y}y`, () =>
@@ -318,6 +318,9 @@ export async function GET(
         industry: decode(info.industry) ?? null,
         exchange: decode(info.exchange_code) ?? null,
         employees: info.full_time_employees ?? null,
+        ipoDate: info.ipo_date ?? null,
+        founded: info.date_founded ?? null,
+        fiscalYearEnd: info.end_fiscal ?? null,
         website: info.website ?? null,
         incorporation: decode(info.incorporation) ?? null,
         about: decode(info.about) ?? null,
@@ -341,7 +344,9 @@ export async function GET(
   // needs. Both moved to /api/stock-analysts, which the page loads after this
   // one lands.
   // ── Dividends ──
-  const divsRaw = rows(divRes.data)
+  // /tickers/{symbol}/dividends nests the list under data.dividends (and
+  // carries the declaration, record and payment dates /dividends lacks).
+  const divsRaw = rows(Array.isArray(divRes.data?.data?.dividends) ? { data: divRes.data.data.dividends } : divRes.data)
     .map((r) => ({
       date: String(r.date ?? "").slice(0, 10),
       amount: Number(r.dividend ?? 0),

@@ -7,7 +7,7 @@ import CompanyLogo from "@/components/CompanyLogo";
 import TradingViewChart from "@/components/TradingViewChart";
 import PriceChart from "@/components/PriceChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
-import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
+import RangeToggle, { RangeKey, sliceRange, isIntraday } from "@/components/RangeToggle";
 import ShareCardButton from "@/components/ShareCardButton";
 
 import TradingViewWidget, { tvSymbol } from "@/components/TradingViewWidget";
@@ -315,6 +315,10 @@ function MarketstackResearchInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<RangeKey>("1Y");
+  // Intraday bars for the 1D/5D views and the latest trade, both tagged with
+  // the ticker they belong to so a change of company reads as "loading".
+  const [intraday, setIntraday] = useState<{ ticker: string; range: RangeKey; points: { date: string; price: number }[] } | null>(null);
+  const [live, setLive] = useState<{ ticker: string; price: number; time: string | null } | null>(null);
   // ETF ownership scans a couple of dozen funds' full portfolios, so it's
   // fetched separately once the main payload has landed — it never delays the
   // page. null = still loading, [] = genuinely held by none of them.
@@ -403,6 +407,34 @@ function MarketstackResearchInner() {
     return () => { alive = false; };
   }, [data?.ticker]);
 
+  useEffect(() => {
+    const tk = data?.ticker;
+    if (!tk || !isIntraday(range)) return;
+    if (intraday?.ticker === tk && intraday?.range === range) return;
+    let alive = true;
+    fetch(`/api/intraday/${tk}?range=${range}`)
+      .then((r) => r.json())
+      .then((j) => { if (alive) setIntraday({ ticker: tk, range, points: Array.isArray(j?.points) ? j.points : [] }); })
+      .catch(() => { if (alive) setIntraday({ ticker: tk, range, points: [] }); });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.ticker, range]);
+
+  // Latest trade, refreshed every minute while the page is open.
+  useEffect(() => {
+    const tk = data?.ticker;
+    if (!tk) return;
+    let alive = true;
+    const pull = () =>
+      fetch(`/api/live-price/${tk}`)
+        .then((r) => r.json())
+        .then((j) => { if (alive && j?.price > 0) setLive({ ticker: tk, price: j.price, time: j.time ?? null }); })
+        .catch(() => {});
+    pull();
+    const id = setInterval(pull, 60_000);
+    return () => { alive = false; clearInterval(id); };
+  }, [data?.ticker]);
+
   // Kick the ETF scan off after the main payload resolves, passing the company
   // name we already have so the endpoint skips its own lookup.
   useEffect(() => {
@@ -435,7 +467,20 @@ function MarketstackResearchInner() {
   const fun = data?.fundamentals;
   const capm = data?.capm;
   const priceSeries: { date: string; price: number }[] = data?.price ?? [];
-  const chartWindow = sliceRange<{ date: string; price: number }>(priceSeries, range);
+  const intradayReady = isIntraday(range) && intraday?.ticker === data?.ticker && intraday?.range === range ? intraday : null;
+  const chartWindow = isIntraday(range)
+    ? (intradayReady?.points ?? [])
+    : sliceRange<{ date: string; price: number }>(priceSeries, range);
+  const chartLoading = isIntraday(range) && !intradayReady;
+  // The latest trade replaces the daily close in the header once it is newer
+  // than that close; the day's move is then measured from the close.
+  const liveReady = live && live.ticker === data?.ticker && q?.date && live.time && live.time.slice(0, 10) > String(q.date).slice(0, 10) ? live : null;
+  const headPrice = liveReady ? liveReady.price : q?.price;
+  const headChange = liveReady && q?.price ? liveReady.price - q.price : q?.change;
+  const headChangePct = liveReady && q?.price ? ((liveReady.price - q.price) / q.price) * 100 : q?.changePct;
+  const liveStamp = liveReady?.time
+    ? new Date(liveReady.time).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }) + " ET"
+    : null;
 
   return (
     <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
@@ -521,23 +566,36 @@ function MarketstackResearchInner() {
               <div style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 500 }}>{prof?.name ?? data.ticker}</div>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, alignItems: "center" }}>
-              <span style={{ fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-muted)", marginRight: 2 }}>Peers</span>
-              <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--accent-gold)", background: "var(--bg-elevated)", border: "1px dashed var(--border)", borderRadius: 999, padding: "3px 9px" }}>
-                Not available with current data
-              </span>
-              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>no screener endpoint to rank industry peers by market cap</span>
+              {[
+                prof?.sector, prof?.industry, prof?.exchange,
+                prof?.ipoDate ? `IPO ${String(prof.ipoDate).slice(0, 4)}` : null,
+                prof?.founded ? `Founded ${String(prof.founded).slice(0, 4)}` : null,
+                prof?.employees != null ? `${Number(prof.employees).toLocaleString()} employees` : null,
+                prof?.fiscalYearEnd ? `FY ends ${prof.fiscalYearEnd}` : null,
+              ].filter(Boolean).map((chip, i) => (
+                <span key={i} style={{ fontSize: "0.64rem", fontWeight: 600, color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "3px 10px" }}>
+                  {chip as string}
+                </span>
+              ))}
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
-              <span style={{ fontFamily: MONO, fontSize: "2.4rem", fontWeight: 600, letterSpacing: "-0.02em" }}>{money(q.price)}</span>
-              <span style={{ fontFamily: MONO, fontSize: "1rem", fontWeight: 500, color: (q.change ?? 0) >= 0 ? "var(--positive)" : "var(--negative)" }}>
-                {(q.change ?? 0) >= 0 ? "▲" : "▼"} ${Math.abs(q.change ?? 0).toFixed(2)} ({pct(q.changePct)})
+              <span style={{ fontFamily: MONO, fontSize: "2.4rem", fontWeight: 600, letterSpacing: "-0.02em" }}>{money(headPrice)}</span>
+              <span style={{ fontFamily: MONO, fontSize: "1rem", fontWeight: 500, color: (headChange ?? 0) >= 0 ? "var(--positive)" : "var(--negative)" }}>
+                {(headChange ?? 0) >= 0 ? "▲" : "▼"} ${Math.abs(headChange ?? 0).toFixed(2)} ({pct(headChangePct)})
               </span>
               {fun?.marketCap != null && (
                 <span style={{ fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-secondary)" }}>
                   Mkt cap <strong style={{ fontFamily: MONO, color: "var(--text-primary)" }}>{compact(fun.marketCap)}</strong>
                 </span>
               )}
-              <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>as of {q.date}</span>
+              {liveReady ? (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: 7, height: 7, borderRadius: 999, background: "var(--positive)", display: "inline-block" }} />
+                  Latest trade {liveStamp} · vs {q.date} close
+                </span>
+              ) : (
+                <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>as of {q.date} close</span>
+              )}
               <span style={{ marginLeft: "auto", alignSelf: "center" }}>
                 <ShareCardButton
                   stock={{
@@ -568,9 +626,17 @@ function MarketstackResearchInner() {
               <ChartModeToggle mode={chartMode} onChange={setChartMode} />
             </div>
           }>Price Chart</SectionLabel>
-          {chartMode === "builtin"
-            ? <PriceChart data={chartWindow} label={range} />
-            : <TradingViewChart ticker={data.ticker} />}
+          {chartMode !== "builtin"
+            ? <TradingViewChart ticker={data.ticker} />
+            : chartLoading
+            ? <div style={{ ...CARD, padding: "1.25rem 1rem", height: 290, display: "flex", alignItems: "center", justifyContent: "center", gap: 12, color: "var(--text-secondary)", fontSize: "0.8rem" }}>
+                <span className="spinner" style={{ width: 18, height: 18 }} /> Loading {range === "1D" ? "today's" : "this week's"} trading…
+              </div>
+            : chartWindow.length === 0 && isIntraday(range)
+            ? <div style={{ ...CARD, padding: "1.25rem 1rem", height: 290, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                No intraday bars available for this ticker.
+              </div>
+            : <PriceChart data={chartWindow} label={range} />}
 
           {/* ── Quick Stats ── */}
           <SectionLabel>Quick Stats</SectionLabel>

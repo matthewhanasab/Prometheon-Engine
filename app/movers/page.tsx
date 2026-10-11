@@ -2,6 +2,7 @@
 
 import TradingViewWidget from "@/components/TradingViewWidget";
 import StockHeatmap from "@/components/StockHeatmap";
+import MarketStrip from "@/components/MarketStrip";
 
 // Market Movers. All panels are TradingView embeds — hotlists (gainers/losers/
 // most-active), the S&P 500 heatmap, and a market-wide overview.
@@ -33,6 +34,9 @@ export default function MsMoversPage() {
       <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
         Today&apos;s biggest gainers, losers and most-active names, plus a market-wide snapshot.
       </div>
+
+      <Label hint="index levels · day, week, month, year">Indices</Label>
+      <MarketStrip />
 
       <Label hint="S&amp;P 500 by market cap · sized &amp; colored by daily move">Heatmap</Label>
       <StockHeatmap height={620} />

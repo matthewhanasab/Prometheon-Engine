@@ -1,5 +1,6 @@
 "use client";
 
+import MarketStrip from "@/components/MarketStrip";
 import { useEffect, useState } from "react";
 import {
   LineChart,
@@ -895,14 +896,16 @@ export default function MacroPage() {
 
       {/* 5. Markets */}
       <SL>Markets Overview</SL>
+      <MarketStrip />
       <div
         style={{
           display: "flex",
           gap: 10,
           flexWrap: "wrap",
+          marginTop: 10,
         }}
       >
-        {["SPY", "QQQ", "GLD", "USO", "BTCUSD", "UUP"].map((sym) => {
+        {["GLD", "USO", "BTCUSD", "UUP"].map((sym) => {
           const q = markets.find((m) => m.symbol === sym);
           if (!q) return null;
           return <MarketCard key={sym} q={q} />;

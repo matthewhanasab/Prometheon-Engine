@@ -1,14 +1,18 @@
 "use client";
 
-export type RangeKey = "1M" | "3M" | "6M" | "YTD" | "1Y" | "5Y";
+export type RangeKey = "1D" | "5D" | "1M" | "3M" | "6M" | "YTD" | "1Y" | "5Y";
 
-export const RANGES: RangeKey[] = ["1M", "3M", "6M", "YTD", "1Y", "5Y"];
+export const RANGES: RangeKey[] = ["1D", "5D", "1M", "3M", "6M", "YTD", "1Y", "5Y"];
+
+/** 1D and 5D are served from intraday bars, not the daily series. */
+export const isIntraday = (r: RangeKey) => r === "1D" || r === "5D";
 
 // Slice an ascending {date, price}[] series down to the selected window.
 export function sliceRange<T extends { date: string }>(data: T[], range: RangeKey): T[] {
   if (!data.length) return data;
   const last = new Date(data[data.length - 1].date);
   let cutoff: Date;
+  if (isIntraday(range)) return data;
   if (range === "YTD") {
     cutoff = new Date(last.getFullYear(), 0, 1);
   } else if (range === "5Y") {

@@ -33,7 +33,7 @@ export async function GET(
   if (!key) return NextResponse.json({ error: "Marketstack key not configured" }, { status: 500 });
 
   const [divRaw, eodRaw, splitRaw] = [
-    await get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=200`),
+    await get(`${MS}/tickers/${t}/dividends?access_key=${key}&limit=200&sort=DESC`),
     await get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=1`),
     await get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
   ];
@@ -47,7 +47,8 @@ export async function GET(
   const adjustFor = (date: string) =>
     splits.reduce((f: number, s: any) => (s.date > date ? f * s.factor : f), 1);
 
-  const divsAll = (Array.isArray(divRaw?.data) ? divRaw.data : [])
+  const divList: Record<string, unknown>[] = Array.isArray(divRaw?.data?.dividends) ? divRaw.data.dividends : Array.isArray(divRaw?.data) ? divRaw.data : [];
+  const divsAll = divList
     .map((r: any) => {
       const date = String(r.date ?? "").slice(0, 10);
       const raw = Number(r.dividend ?? 0);
