@@ -13,6 +13,8 @@ const SEC_UA = "Prometheon Engine (matthanasab@gmail.com)";
 const FACTS_URL = (cik: string) =>
   `https://data.sec.gov/api/xbrl/companyfacts/CIK${cik.padStart(10, "0")}.json`;
 
+import { unstable_cache } from "next/cache";
+
 type RawFact = {
   start?: string; end: string; val: number;
   fy?: number; fp?: string; form?: string; filed?: string; frame?: string;
@@ -486,10 +488,47 @@ const factsMemo: FactsMemo =
 const FACTS_TTL = 6 * 3600_000;
 const FACTS_MAX = 40;
 
+// companyfacts carries every concept a filer has ever tagged — 500 to 900 of
+// them, 4 to 8 MB — and the site reads about fifty. Keeping just those, with
+// only the fields the parser touches and only the unit it reads, brings a
+// large filer under a megabyte, which is small enough for the persistent
+// data cache to hold. That cache is shared across function instances, so
+// once any request (or the warm-cache job) has pulled a company, the next
+// request for it anywhere skips EDGAR entirely.
+const WANTED = new Set<string>(Object.values(C).flat());
+function slimFacts(json: FactsJson): FactsJson {
+  const out: FactsJson = { entityName: json.entityName, facts: { "us-gaap": {}, dei: {} } };
+  for (const tax of ["us-gaap", "dei"] as const) {
+    const src = json.facts?.[tax] ?? {};
+    for (const concept of Object.keys(src)) {
+      if (!WANTED.has(concept)) continue;
+      const units = src[concept]?.units ?? {};
+      const unit = Object.keys(units)[0];
+      if (!unit) continue;
+      out.facts![tax][concept] = {
+        units: {
+          [unit]: (units[unit] ?? []).map((f) => ({
+            start: f.start, end: f.end, val: f.val, fy: f.fy, fp: f.fp, filed: f.filed,
+          })),
+        },
+      };
+    }
+  }
+  return out;
+}
+const fetchSlimFacts = unstable_cache(
+  async (cik: string): Promise<FactsJson | null> => {
+    const json = await fetchFactsJson(cik);
+    return json ? slimFacts(json) : null;
+  },
+  ["edgar-facts-slim-v1"],
+  { revalidate: 21600 }
+);
+
 async function fetchFactsJsonMemo(cik: string): Promise<FactsJson | null> {
   const hit = factsMemo.get(cik);
   if (hit && Date.now() - hit.at < FACTS_TTL) return hit.json;
-  const json = await fetchFactsJson(cik);
+  const json = await fetchSlimFacts(cik);
   if (json) {
     if (factsMemo.size >= FACTS_MAX) factsMemo.delete(factsMemo.keys().next().value!);
     factsMemo.set(cik, { at: Date.now(), json });
