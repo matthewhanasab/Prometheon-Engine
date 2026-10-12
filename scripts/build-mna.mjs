@@ -31,14 +31,14 @@ const LIMIT = Number(args[args.indexOf("--limit") + 1]) || 0;
 
 // Industry categories as the blog names them, with the label the site shows.
 const INDUSTRIES = [
-  { slug: "healthcare",                  key: "healthcare",  label: "Healthcare" },
-  { slug: "consumer-retail",             key: "consumer",    label: "Consumer & Retail" },
-  { slug: "tech-media-telecommunication", key: "tmt",        label: "Tech, Media & Telecom" },
-  { slug: "industrials",                 key: "industrials", label: "Industrials" },
-  { slug: "natural-resources",           key: "resources",   label: "Natural Resources" },
-  { slug: "energy",                      key: "energy",      label: "Energy" },
-  { slug: "financial-institution-group", key: "financials",  label: "Financial Institutions" },
-  { slug: "real-estate",                 key: "realestate",  label: "Real Estate" },
+  { slug: "healthcare",                   page: "healthcare",             key: "healthcare",  label: "Healthcare" },
+  { slug: "consumer-retail",              page: "consumer-retail",        key: "consumer",    label: "Consumer & Retail" },
+  { slug: "tech-media-telecommunication", page: "tmt",                    key: "tmt",         label: "Tech, Media & Telecom" },
+  { slug: "industrials",                  page: "industrials",            key: "industrials", label: "Industrials" },
+  { slug: "natural-resources",            page: "natural-resources",      key: "resources",   label: "Natural Resources" },
+  { slug: "energy",                       page: "energy",                 key: "energy",      label: "Energy" },
+  { slug: "financial-institution-group",  page: "financial-institutions", key: "financials",  label: "Financial Institutions" },
+  { slug: "real-estate",                  page: "real-estate",            key: "realestate",  label: "Real Estate" },
 ];
 const TYPES = [
   { slug: "m-a-reports",          key: "strategic", label: "Strategic M&A" },
@@ -116,6 +116,24 @@ function tickerOf(s) {
 }
 const stripTicker = (s) => (s ?? "").replace(/\s*\((?:[A-Z]+|[A-Za-z ]+)\s*:\s*[A-Z0-9.\-]+\)\s*/g, " ").replace(/\s+/g, " ").trim();
 
+const MONEY = String.raw`(?:(?:US)?\$|€|£|C\$|A\$)\s?[\d.,]+\s?(?:tn|bn|b|mn|m|billion|million|trillion)?`;
+function partiesFromTitle(title) {
+  const t = title.replace(/\s+/g, " ").trim();
+  const clean = (x) => x?.replace(/^(?:the|a)\s+/i, "").replace(/[’']s$/, "").replace(/\s*\(.*?\)\s*$/, "").trim() || null;
+  let m;
+  // "X's $23bn Acquisition of Y" / "X’s proposed $11.6 billion Acquisition of Y" / "DSV $16bn acquisition of Y"
+  const ADJ = String.raw`(?:proposed|planned|completed|failed|landmark|pending|hostile|all-cash|all-stock)\s+`;
+  if ((m = new RegExp(String.raw`^(.+?)(?:[’']s|s[’'])?\s+(?:${ADJ})?(?:${MONEY}\s+)?(?:${ADJ})?(?:acquisition|takeover|purchase|buyout|merger|investment|bid|offer|stake|spin-?off)\s+(?:of|with|in|for)\s+(.+?)(?:\s+for\s+${MONEY}.*|\s+in\s+(?:a|an)\s+${MONEY}.*)?$`, "i").exec(t)))
+    return { acquirer: clean(m[1]), target: clean(m[2]) };
+  // "X to acquire Y" / "X acquires Y for $2bn" / "X completes acquisition of Y" / "X agrees to buy Y"
+  if ((m = new RegExp(String.raw`^(.+?)\s+(?:to\s+acquire|acquires|acquired|acquiring|agrees?\s+to\s+(?:acquire|buy)|set\s+to\s+acquire|complet(?:es?|ing)\s+(?:its\s+)?acquisition\s+of|buys|to\s+buy|takes\s+over|snaps\s+up|announces\s+acquisition\s+of|looks\s+to\s+acquire)\s+(.+?)(?:\s+(?:for|in)\s+(?:a\s+|an\s+)?${MONEY}.*|\s+deal.*)?$`, "i").exec(t)))
+    return { acquirer: clean(m[1]), target: clean(m[2]) };
+  // "X and Y agree $54bn merger" / "X–Y merger"
+  if ((m = new RegExp(String.raw`^(.+?)\s+(?:and|&)\s+(.+?)\s+(?:agree|announce|complete|to)\s+.*merger`, "i").exec(t)))
+    return { acquirer: clean(m[1]), target: clean(m[2]) };
+  return { acquirer: null, target: null };
+}
+
 function parsePost(url, html) {
   const lines = pageText(html);
   const title = meta(html, "og:title")?.replace(/\s*\|\s*MergerSight.*$/i, "") ?? lines.find((l) => l.length > 10) ?? url;
@@ -155,6 +173,10 @@ function parsePost(url, html) {
   const headline = parseMoney(title) ?? parseMoney(valueLine);
 
   const type = /\bipo\b/i.test(title) ? "ipo" : null;
+  // Older write-ups have no overview block, but their titles follow a
+  // pattern — "Roche's $7.1bn acquisition of Telavant", "AstraZeneca to
+  // acquire Alexion", "Luxottica and Essilor agree $54bn merger" — so the
+  // parties come from the title when the block is missing.
   return {
     url, title, published, byline,
     acquirer: stripTicker(acquirerLine) || null, acquirerTicker: tickerOf(acquirerLine),
@@ -170,12 +192,22 @@ function parsePost(url, html) {
 const prev = existsSync(OUT) && !FULL ? JSON.parse(readFileSync(OUT, "utf8")) : { deals: [] };
 const known = new Map(prev.deals.map((d) => [d.url, d]));
 
-console.log("Reading category pages…");
+// The site files a post under an industry in two places: the blog category
+// (paginated, four a page) and the industry page in its own navigation,
+// which shows the most recent write-ups and sometimes files a deal the
+// category misses (Healthpeak under Real Estate as well as Healthcare). Both
+// count as the site's own tag.
+console.log("Reading category and industry pages…");
 const industryOf = new Map();
+const tag = (u, key) => { const cur = industryOf.get(u) ?? []; if (!cur.includes(key)) industryOf.set(u, [...cur, key]); };
 for (const ind of INDUSTRIES) {
   const urls = await categoryPosts(ind.slug);
-  for (const u of urls) industryOf.set(u, [...(industryOf.get(u) ?? []), ind.key]);
-  console.log(`  ${ind.label}: ${urls.length}`);
+  for (const u of urls) tag(u, ind.key);
+  const page = await fetchText(`${SITE}/${ind.page}`);
+  await sleep(PACE_MS);
+  const onPage = postLinks(page.text);
+  for (const u of onPage) tag(u, ind.key);
+  console.log(`  ${ind.label}: ${urls.length} in category, ${onPage.length} on its page`);
 }
 const typeOf = new Map();
 for (const ty of TYPES) {
@@ -247,9 +279,10 @@ const deals = urls
   .map((d) => {
     const tagged = industryOf.get(d.url) ?? [];
     const inferred = tagged.length ? null : inferIndustry(d);
+    const fromTitle = d.type === "ipo" || /\bipo\b/i.test(d.title) ? { acquirer: null, target: null } : partiesFromTitle(d.title);
     return {
       ...d,
-      acquirer: cleanParty(d.acquirer), target: cleanParty(d.target),
+      acquirer: cleanParty(d.acquirer) ?? fromTitle.acquirer, target: cleanParty(d.target) ?? fromTitle.target,
       industries: tagged.length ? tagged : inferred ? [inferred] : [],
       industryInferred: !tagged.length && !!inferred,
       type: typeOf.get(d.url) ?? d.typeHint ?? "strategic",

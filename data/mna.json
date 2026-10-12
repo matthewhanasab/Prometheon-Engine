@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-11T04:21:41.769Z",
+ "generatedAt": "2026-10-12T05:22:20.961Z",
  "source": {
   "name": "MergerSight",
   "url": "https://www.mergersight.com"
@@ -1108,7 +1108,9 @@
    ],
    "excerpt": "Sidara’s acquisition of Wood concludes a drawn-out takeover process that shifted from an earlier multi-billion-pound proposal to a significantly discounted rescue transaction. Wood’s weakened balance sheet, driven by sustained cash outflows and rising debt, created the conditions for a lower entry valuation and the…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "industrials"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -1160,7 +1162,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -1254,7 +1256,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -1313,9 +1315,9 @@
    "title": "Savills' $1.1bn Acquisition of Eastdil Secured",
    "published": "2026-04-15",
    "byline": "By Julianna Zelnhefer, Alex Svanidze, Ryan Leo, and Ava Singer (Boston University); Anastasia Malikova, Dennis Malaj, Gauri Khanna (LSE)",
-   "acquirer": null,
+   "acquirer": "Savill",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Eastdil Secured",
    "targetTicker": null,
    "value": 1100000000,
    "currency": "USD",
@@ -1372,9 +1374,9 @@
    "excerpt": "On March 2, 2026, AES Corporation announced that it had entered into a definitive agreement to be acquired by a consortium comprising BlackRock’s Global Infrastructure Partners (GIP), EQT, CaIPERS and the Qatar Investment Authority (QIA) in an all-cash transaction. Under the terms of the agreement the AES shareholders…",
    "typeHint": null,
    "industries": [
-    "industrials"
+    "energy"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -1503,7 +1505,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -1559,7 +1561,9 @@
    ],
    "excerpt": "On 17 February 2026, Blackstone announced that funds managed by its perpetual private equity strategy, BXPE, had agreed to acquire Champions Group from Odyssey Investment Partners, with Odyssey and the management team retaining a significant minority stake to support continuity and long term alignment. The transaction…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "industrials"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -1595,7 +1599,7 @@
    "industries": [
     "industrials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -1697,7 +1701,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -1748,7 +1752,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -1814,7 +1818,9 @@
    ],
    "excerpt": "On February 9th 2026, Clear Channel Outdoor Holdings, Inc. announced that it had entered into a definitive agreement to be acquired by Mubadala Capital, in partnership with TWG Global, in an all-cash transaction. Under the terms of the agreement, Clear Channel shareholders will receive $2.43 per share in cash,…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "tmt"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -1925,7 +1931,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -1969,7 +1975,9 @@
    ],
    "excerpt": "The $1.29 billion acquisition of FineToday by Bain Capital highlights a strategic shift from public markets to private oversight. After geopolitical volatility and regional tensions derailed an intended IPO, the company opted for a private sale to leverage Bain's operational expertise. This deal marks FineToday’s…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "consumer"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -2021,7 +2029,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2062,9 +2070,9 @@
    "excerpt": "SpaceX’s acquisition of xAI represents a seminal moment in corporate history, as the world’s first private technology conglomerate with a valuation exceeding $1.25T. This transaction, orchestrated through an all-stock share swap, consolidates Elon Musk’s primary interests in heavy-lift aerospace, global…",
    "typeHint": null,
    "industries": [
-    "industrials"
+    "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2107,7 +2115,7 @@
    "industries": [
     "energy"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2127,9 +2135,9 @@
    "excerpt": "Fluorescent-guided surgery (FGS) has been gaining momentum as hospitals look to improve surgical precision, reduce complications, and shorten recovery times. Within this niche, UltraGreen has built a strong position selling the dye used in these surgeries, alongside the tools that help surgeons see it. It has…",
    "typeHint": "ipo",
    "industries": [
-    "healthcare"
+    "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "ipo"
   },
   {
@@ -2180,7 +2188,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2231,7 +2239,7 @@
    "industries": [
     "energy"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2282,7 +2290,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2326,7 +2334,9 @@
    ],
    "excerpt": "EQT’s $3.2 billion acquisition of Coller Capital brings the firm access to one of the fastest-growing private markets sectors. Global secondaries deal volume reached $226bn in 2025, representing an increase of 41% YoY, and is expected to more than double by the end of the decade. Amid a slowdown in traditional exits,…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "financials"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -2349,7 +2359,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "ipo"
   },
   {
@@ -2371,7 +2381,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "ipo"
   },
   {
@@ -2415,7 +2425,9 @@
    ],
    "excerpt": "This deal is a 14.5 billion take-private where Boston Scientific acquired Penumbra in a 73% cash and 27% stock transaction. Perella Weinberg served as an exclusive financial advisor to Penumbra. The acquisition offers Boston Scientific an opportunity to further expand into the vascular space, and Penumbra’s CEO, Adam…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "healthcare"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -2464,7 +2476,9 @@
    ],
    "excerpt": "PAI Partners’ acquisition of Innovad Group represents a notable transaction in the global animal health and nutrition space, taking a rapidly growing specialty animal feed additives platform into the portfolio of a large-cap European private equity sponsor at an undisclosed but likely substantial premium. The deal…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "consumer"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -2516,7 +2530,7 @@
    "industries": [
     "industrials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2567,7 +2581,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2614,7 +2628,7 @@
    "industries": [
     "industrials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2665,7 +2679,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2716,7 +2730,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2767,7 +2781,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -2789,7 +2803,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "ipo"
   },
   {
@@ -2880,7 +2894,9 @@
    ],
    "excerpt": "On 9 December 2024, Omnicom and Interpublic agreed on a definitive agreement for Omnicom to acquire Interpublic in an all-stock transaction. Under the deal, each Interpublic share would be exchanged for 0.344 Omnicom shares, giving legacy Omnicom shareholders roughly 60.6% and Interpublic shareholders 39.4% of the…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "tmt"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -2936,7 +2952,7 @@
    "title": "TriArtisan Capital Advisors, Treville Capital Group and Yadav Enterprises' $620m Acquisition of Denny's",
    "published": "2026-01-19",
    "byline": "By Haci Eren Sidar, Mustafa Arda Sis, Muthu Ramanathan, Josh Lai (University of Nottingham); Alvaro Aguilar De Nalda (ESADE)",
-   "acquirer": null,
+   "acquirer": "TriArtisan Capital Advisors, Treville Capital Group and Yadav Enterprise",
    "acquirerTicker": null,
    "target": "Denny’s",
    "targetTicker": null,
@@ -2972,7 +2988,9 @@
    ],
    "excerpt": "On 3 November 2025, Denny’s announced that it would be acquired by a consortium comprising TriArtisan, Treville, and Yadav Enterprises. The transaction, which remains subject to regulatory approval, is expected to close in the first quarter of 2026. The deal is particularly notable for Yadav Enterprises, as it is one…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "consumer"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -3018,9 +3036,9 @@
    "excerpt": "On 17 October 2025, Jardine Matheson announced its US$4.2 billion acquisition of Mandarin Oriental International Limited, the luxury hotel group in which it has been the majority shareholder. Through its subsidiary, Jardine Strategic Limited has owned approximately 88% of the company and will acquire the remaining…",
    "typeHint": null,
    "industries": [
-    "consumer"
+    "realestate"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3059,7 +3077,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3067,9 +3085,9 @@
    "title": "Kimberly-Clark's $48.7bn Acquisition of Kenvue",
    "published": "2026-01-12",
    "byline": "By Roman Annan, Sophie Zhang, Joey Zhang, and Amani Dhillon (Columbia University), Rasmus Sjögren, Nikolas Kakona, Alexander Henje Scott, and Haris Jasarevic (Stockholm School of Economics)",
-   "acquirer": null,
+   "acquirer": "Kimberly-Clark",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Kenvue",
    "targetTicker": null,
    "value": 48700000000,
    "currency": "USD",
@@ -3078,7 +3096,10 @@
    "fields": [],
    "excerpt": "On November 3, 2025, Kimberly-Clark announced it would acquire Kenvue in a landmark cash-and-stock deal, creating a newly integrated global health and wellness powerhouse. Under the terms of the deal, Kenvue shareholders will receive $3.50 in cash together with 0.14625 Kimberly-Clark shares per Kenvue share, valuing…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "healthcare",
+    "consumer"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -3126,7 +3147,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3148,7 +3169,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "ipo"
   },
   {
@@ -3199,7 +3220,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3221,7 +3242,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "ipo"
   },
   {
@@ -3270,9 +3291,9 @@
    "excerpt": "On October 21, 2025, funds managed by Blackstone and TPG signed a definitive agreement to acquire Hologic, in a public-to-private transaction. Consideration is $76.00 in cash per share at closing plus a non-tradable CVR of up to $3.00 per share (two potential $1.50 payments tied to global Breast Health revenue in…",
    "typeHint": null,
    "industries": [
-    "financials"
+    "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3382,9 +3403,9 @@
    "title": "Novo Nordisk's $5.2bn Acquisition of Akero",
    "published": "2025-11-24",
    "byline": "By Kush Mahawar, Lexi Xiao, Joe Colton, Sean Yeow (University of Oxford); Diana Usova, Dylan Stiassny, Oli Cedar, Obianuju Okafor (University of Bristol)",
-   "acquirer": null,
+   "acquirer": "Novo Nordisk",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Akero",
    "targetTicker": null,
    "value": 5200000000,
    "currency": "USD",
@@ -3396,7 +3417,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3443,7 +3464,7 @@
    "industries": [
     "consumer"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3479,7 +3500,9 @@
    ],
    "excerpt": "In the largest-ever private equity buyout, Electronic Arts is being taken private by a consortium led by PIF, Silver Lake, and Affinity Partners for $55 billion at $210/share, representing a 25% premium. The transaction, financed with ~$36 billion of equity from PIF, and ~$20 billion of debt financing underwritten by…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "tmt"
+   ],
    "industryInferred": false,
    "type": "pe"
   },
@@ -3519,7 +3542,7 @@
    "industries": [
     "consumer"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "pe"
   },
   {
@@ -3558,7 +3581,7 @@
    "industries": [
     "consumer"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3601,7 +3624,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3640,7 +3663,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3677,9 +3700,10 @@
    "excerpt": "The acquisition of Dotmatics positions Siemens to extend into the life sciences area of industrial software alongside their dominant discrete industrials and electrical & electronics",
    "typeHint": null,
    "industries": [
-    "healthcare"
+    "healthcare",
+    "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3718,7 +3742,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3757,7 +3781,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -3800,7 +3824,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -4023,7 +4047,7 @@
    "industries": [
     "energy"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -4279,9 +4303,9 @@
    "title": "Berkshire Hills Bancorp and Brookline Bancorp $1.1 Billion Merger of Equals",
    "published": "2025-03-07",
    "byline": "By Haci Eren Sidar, Leon Gaster, Adalia Melvin, Aviral Jain (University of Nottingham);",
-   "acquirer": null,
+   "acquirer": "Berkshire Hills Bancorp and Brookline Bancorp",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Equals",
    "targetTicker": null,
    "value": 1100000000,
    "currency": "USD",
@@ -4293,7 +4317,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -4330,6 +4354,57 @@
    "excerpt": "Triumph Group, Inc. (NYSE: TGI) announced on February 3, 2025, that it has entered into a definitive agreement to be acquired by private equity firms Warburg Pincus and Berkshire Partners for approximately $3 billion. Under the agreement terms, TRIUMPH shareholders will receive $26.00 per share in cash, representing a…",
    "typeHint": null,
    "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/stryker-s-4-9bn-acquisition-of-inari-medical",
+   "title": "Stryker’s $4.9bn acquisition of Inari Medical",
+   "published": "2025-02-27",
+   "byline": "By Anna Chesca, Aditya Tatwawadi, Ahyaan Malik, and Alex Scothorn (University of Cambridge); Edward Mazin, Charlie Hogshire, Caden Viehe, Olin Duncan, and Ryan Trachuk (UCLA)",
+   "acquirer": "Stryker Corporation",
+   "acquirerTicker": null,
+   "target": "Inari Medical, Inc",
+   "targetTicker": null,
+   "value": 4900000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": "31/03/2025 (expected)",
+   "fields": [
+    {
+     "label": "Acquirer",
+     "value": "Stryker Corporation"
+    },
+    {
+     "label": "Target",
+     "value": "Inari Medical, Inc"
+    },
+    {
+     "label": "Implied Equity Value",
+     "value": "$4.8bn"
+    },
+    {
+     "label": "Total Transaction Size",
+     "value": "$4.9bn"
+    },
+    {
+     "label": "Closed date",
+     "value": "31/03/2025 (expected)"
+    },
+    {
+     "label": "Target advisor",
+     "value": "Citi (financial) & Sidley Austin LLP (Legal)"
+    },
+    {
+     "label": "Acquirer advisor",
+     "value": "Morgan Stanley (financial) & Wachtell, Lipton, Rosen & Katz (legal)"
+    }
+   ],
+   "excerpt": "The acquisition of Inari Medical strengthens Stryker’s position in minimally invasive vascular therapies, broadening its portfolio to include advanced clot removal systems, venous thromboembolism (VTE) treatments, and related devices. This enhances Stryker’s existing vascular and interventional offerings, such as its…",
+   "typeHint": null,
+   "industries": [
+    "healthcare"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -4390,57 +4465,6 @@
     "tmt"
    ],
    "industryInferred": false,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/stryker-s-4-9bn-acquisition-of-inari-medical",
-   "title": "Stryker’s $4.9bn acquisition of Inari Medical",
-   "published": "2025-02-27",
-   "byline": "By Anna Chesca, Aditya Tatwawadi, Ahyaan Malik, and Alex Scothorn (University of Cambridge); Edward Mazin, Charlie Hogshire, Caden Viehe, Olin Duncan, and Ryan Trachuk (UCLA)",
-   "acquirer": "Stryker Corporation",
-   "acquirerTicker": null,
-   "target": "Inari Medical, Inc",
-   "targetTicker": null,
-   "value": 4900000000,
-   "currency": "USD",
-   "announced": null,
-   "closed": "31/03/2025 (expected)",
-   "fields": [
-    {
-     "label": "Acquirer",
-     "value": "Stryker Corporation"
-    },
-    {
-     "label": "Target",
-     "value": "Inari Medical, Inc"
-    },
-    {
-     "label": "Implied Equity Value",
-     "value": "$4.8bn"
-    },
-    {
-     "label": "Total Transaction Size",
-     "value": "$4.9bn"
-    },
-    {
-     "label": "Closed date",
-     "value": "31/03/2025 (expected)"
-    },
-    {
-     "label": "Target advisor",
-     "value": "Citi (financial) & Sidley Austin LLP (Legal)"
-    },
-    {
-     "label": "Acquirer advisor",
-     "value": "Morgan Stanley (financial) & Wachtell, Lipton, Rosen & Katz (legal)"
-    }
-   ],
-   "excerpt": "The acquisition of Inari Medical strengthens Stryker’s position in minimally invasive vascular therapies, broadening its portfolio to include advanced clot removal systems, venous thromboembolism (VTE) treatments, and related devices. This enhances Stryker’s existing vascular and interventional offerings, such as its…",
-   "typeHint": null,
-   "industries": [
-    "healthcare"
-   ],
-   "industryInferred": true,
    "type": "strategic"
   },
   {
@@ -4575,7 +4599,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -4677,7 +4701,7 @@
    "industries": [
     "realestate"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -4779,35 +4803,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/blackstone-and-vista-equity-partners-8-4bn-acquisition-of-smartsheet-1",
-   "title": "TPG and GIC’s $7.1bn joint acquisition of Techem",
-   "published": "2024-11-21",
-   "byline": "By George Luo, Keshi Edirisinghe, Nika Karimi Seffat, Terry Zhang (University of British Columbia), Edoardo Tosti, Alina Shaikh, Alexander Svanidze and Jules Zelnhefer (Boston University)",
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": 7100000000,
-   "currency": "USD",
-   "announced": "Oct 1st, 2024",
-   "closed": null,
-   "fields": [
-    {
-     "label": "Total Transaction Size",
-     "value": "$7.06 billion"
-    },
-    {
-     "label": "Announcement date",
-     "value": "Oct 1st, 2024"
-    }
-   ],
-   "excerpt": "In October 2024, TPG’s Rise Climate Fund and GIC announced a joint venture to acquire TechemGroup, a prominent German provider of energy services and resource management solutions, in a transaction valued at around $7.06 billion. This acquisition corresponds with TPG's climate-centric investment strategy and GIC's…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/blackstone-and-vista-equity-partners-8-4bn-acquisition-of-smartsheet",
    "title": "Blackstone and Vista Equity Partners’ $8.4bn Acquisition of Smartsheet",
    "published": "2024-11-21",
@@ -4855,7 +4850,36 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/blackstone-and-vista-equity-partners-8-4bn-acquisition-of-smartsheet-1",
+   "title": "TPG and GIC’s $7.1bn joint acquisition of Techem",
+   "published": "2024-11-21",
+   "byline": "By George Luo, Keshi Edirisinghe, Nika Karimi Seffat, Terry Zhang (University of British Columbia), Edoardo Tosti, Alina Shaikh, Alexander Svanidze and Jules Zelnhefer (Boston University)",
+   "acquirer": "TPG and GIC’s $7.1bn joint",
+   "acquirerTicker": null,
+   "target": "Techem",
+   "targetTicker": null,
+   "value": 7100000000,
+   "currency": "USD",
+   "announced": "Oct 1st, 2024",
+   "closed": null,
+   "fields": [
+    {
+     "label": "Total Transaction Size",
+     "value": "$7.06 billion"
+    },
+    {
+     "label": "Announcement date",
+     "value": "Oct 1st, 2024"
+    }
+   ],
+   "excerpt": "In October 2024, TPG’s Rise Climate Fund and GIC announced a joint venture to acquire TechemGroup, a prominent German provider of energy services and resource management solutions, in a transaction valued at around $7.06 billion. This acquisition corresponds with TPG's climate-centric investment strategy and GIC's…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -4961,9 +4985,9 @@
    "title": "Rogers Communications’ $3.5bn Acquisition of Bell Canada Enterprises (BCE) Stake in Maple Leaf Sports and Entertainment (MLSE)",
    "published": "2024-11-07",
    "byline": "By Holly Griffin, Ishaanika Gulzar, Kai Lim, Katerina Georgiou, Tomiwa Oshai (King’s College London); Abraham Vongkhamdy, Leo Fridjhon, Zin Nas, Janira Martinez, Amya Hillis, Irene Souny Bihr, Duc Le, and Christian Lippmann (Columbia University)",
-   "acquirer": null,
+   "acquirer": "Rogers Communication",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Bell Canada Enterprises",
    "targetTicker": null,
    "value": 3500000000,
    "currency": "USD",
@@ -5000,7 +5024,7 @@
    "title": "Allianz SE's $1.6bn acquisition of Income Insurance Ltd.",
    "published": "2024-11-01",
    "byline": "By Giorgio Goretti, Marco Morchio (Esade), Helena Bhattacharya (Oxford)",
-   "acquirer": null,
+   "acquirer": "Allianz SE",
    "acquirerTicker": null,
    "target": "Income Insurance Ltd.",
    "targetTicker": null,
@@ -5035,9 +5059,9 @@
    "title": "DSV $15.95bn acquisition of Deutsche Bahn logistics business",
    "published": "2024-10-26",
    "byline": "By Anastasia Malikova, Jack Liang, Shir Lyn Lau, Hunter Pang (LSE), Nathaniel Baker, Lara Grosskopf, Samuel Tainsky (Cornell)",
-   "acquirer": null,
+   "acquirer": "DSV",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Deutsche Bahn logistics business",
    "targetTicker": null,
    "value": 15950000000,
    "currency": "USD",
@@ -5084,9 +5108,9 @@
    "title": "Verizon's $20bn acquisition of Frontier Communications",
    "published": "2024-10-10",
    "byline": "By Shreyas Mehta, Atin Narain, Omar Ali, Nathaniel Mathew (Yale University), Annabel Lai, Sanghyeon Kim, Freya Zhang (HKUST)",
-   "acquirer": null,
+   "acquirer": "Verizon",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Frontier Communications",
    "targetTicker": null,
    "value": 20000000000,
    "currency": "USD",
@@ -5123,9 +5147,9 @@
    "title": "Blackstone’s $16.14bn Acquisition of AirTrunk",
    "published": "2024-09-23",
    "byline": "By Kevin Xu, Nancy Huang (Melbourne University), Annabel Lai, Sanghyeon Kim, Freya Zhang, Edward Fung (HKUST University).",
-   "acquirer": null,
+   "acquirer": "Blackstone",
    "acquirerTicker": null,
-   "target": null,
+   "target": "AirTrunk",
    "targetTicker": null,
    "value": 16140000000,
    "currency": "USD",
@@ -5185,7 +5209,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -5193,9 +5217,9 @@
    "title": "Aon’s $13 bn acquisition of NFP",
    "published": "2024-09-05",
    "byline": "By Pierre Caye (McGill University), Jonathan Lui, Erica Chan, Hunter Pang, Lasheeka Ramesh (London School of Economics)",
-   "acquirer": null,
+   "acquirer": "Aon",
    "acquirerTicker": null,
-   "target": null,
+   "target": "NFP",
    "targetTicker": null,
    "value": 13000000000,
    "currency": "USD",
@@ -5205,9 +5229,9 @@
    "excerpt": "Aon has announced it has completed its $13.0 billion acquisition of NFP, cementing the largest deal ever announced in the global insurance broking sector. The transaction to buy NFP sees the exit of private equity firms Madison Dearborn Partners and HPS Investment Partners. The acquisition closed sooner than expected…",
    "typeHint": null,
    "industries": [
-    "financials"
+    "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -5215,9 +5239,9 @@
    "title": "Boeing’s $8.3bn Acquisition of Spirit AeroSystems",
    "published": "2024-08-18",
    "byline": "By Pierre Caye (McGill University), Jonathan Lui, Erica Chan, Hunter Pang, Lasheeka Ramesh (London School of Economics)",
-   "acquirer": null,
+   "acquirer": "Boeing",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Spirit AeroSystems",
    "targetTicker": null,
    "value": 8300000000.000001,
    "currency": "USD",
@@ -5291,9 +5315,9 @@
    "title": "Eurazo’s €600 million acquisition of Eres",
    "published": "2024-06-12",
    "byline": "By Melvin Bergeret, Bilal Chihuailaf, Arthur Delfour, Agathe Melhem, Clément Melusson, Axel Nkam, Victor Zheng (ESCP Business School) & Devina Aggarwal, Atin Narain, Omar Ali, Nathaniel Matthew and Shreyas Mehta (Yale University)",
-   "acquirer": null,
+   "acquirer": "Eurazo",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Eres",
    "targetTicker": null,
    "value": 600000000,
    "currency": "EUR",
@@ -5318,7 +5342,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -5365,7 +5389,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -5409,7 +5433,9 @@
    ],
    "excerpt": "The Italian government has approved Swisscom's €8 billion acquisition of Vodafone Italy, which was unconditionally cleared under the golden power legislation. This legislation allows the government to review and impose conditions on significant transactions. Swisscom expects the deal, which will merge Vodafone Italy…",
    "typeHint": null,
-   "industries": [],
+   "industries": [
+    "tmt"
+   ],
    "industryInferred": false,
    "type": "strategic"
   },
@@ -5449,9 +5475,9 @@
    "title": "Capital One Financial Corporation’s $35.3 bn Acquisition of Discover Financial Services",
    "published": "2024-05-06",
    "byline": "By Jian Wee Soh, Bharath Sivakumar, Aaren Tan, Arfred Garcia (Imperial College London) and Nancy Huang,",
-   "acquirer": null,
+   "acquirer": "Capital One Financial Corporation",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Discover Financial Services",
    "targetTicker": null,
    "value": 35300000000,
    "currency": "USD",
@@ -5472,7 +5498,7 @@
    "industries": [
     "financials"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -5521,9 +5547,9 @@
    "excerpt": "VIAVI Solutions (\"VIAVI\") has announced a strategic agreement, valued at approximately £1,005 million ($1,277 million) to acquire Spirent Communications plc (\"Spirent\"). The deal is set create a global powerhouse in test, assurance, and security solutions, catering to networking and imminent critical infrastructure…",
    "typeHint": null,
    "industries": [
-    "industrials"
+    "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -5621,7 +5647,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -5854,9 +5880,9 @@
    "excerpt": "January 2024, Yellow Wood Partners, a Boston-based private equity firm, announced that its portfolio company Sauve Brands Company has signed a binding offer to acquire the ChapStick brand from Haleon, a global leader in consumer health. The financials of the deal comprises of a cash payment of $430m as well as a stake…",
    "typeHint": null,
    "industries": [
-    "consumer"
+    "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -5907,7 +5933,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -6111,7 +6137,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -6162,7 +6188,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -6213,7 +6239,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -6256,7 +6282,7 @@
    "industries": [
     "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -6444,7 +6470,7 @@
    "industries": [
     "healthcare"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -6587,9 +6613,9 @@
    "excerpt": "On November 22, 2023, Blackstone, the world’s largest alternative asset manager, announced its intention to acquire Civica, a leader in public sector software solutions, from Partners Group, a Swiss-based private equity firm. The financials of the deal were not officially disclosed, however it is estimated that…",
    "typeHint": null,
    "industries": [
-    "financials"
+    "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -6656,7 +6682,8 @@
    "excerpt": "On October 30th 2023, real estate companies Healthpeak Properties (PEAK) and Physicians Realty Trust (DOC) announced their intentions to create a company that would lead the healthcare discovery and delivery market. With properties in high-growth markets, the combined company resulting from this merger would have a…",
    "typeHint": null,
    "industries": [
-    "healthcare"
+    "healthcare",
+    "realestate"
    ],
    "industryInferred": false,
    "type": "strategic"
@@ -6843,9 +6870,9 @@
    "excerpt": "ARM Holdings (ticker: ARM) architects, develops, and licenses IP solutions for CPUs, GPUs, NPUs, and interconnect technologies, relied on by many of the world's leading semiconductor companies and original equipment manufacturers (OEMs) to develop their products. The company was valued near $60 billion at its initial…",
    "typeHint": "ipo",
    "industries": [
-    "industrials"
+    "tmt"
    ],
-   "industryInferred": true,
+   "industryInferred": false,
    "type": "ipo"
   },
   {
@@ -9250,7 +9277,7 @@
    "byline": "By Adil Amlaiky and Anish Umasuthan (McGill University), Ayushman Mukherjee, Junseok Choi, Matthew Liu and Divy Dayal (University of Cambridge)",
    "acquirer": "Elon Musk",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Twitter",
    "targetTicker": null,
    "value": 44000000000,
    "currency": "USD",
@@ -9463,9 +9490,9 @@
    "title": "EQT’s €6.8bn acquisition of Baring Private Equity Asia",
    "published": "2022-10-26",
    "byline": "By Marvin Stenersen (Stockholm School of Economics)",
-   "acquirer": null,
+   "acquirer": "EQT",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Baring Private Equity Asia",
    "targetTicker": null,
    "value": 6800000000,
    "currency": "EUR",
@@ -9689,9 +9716,9 @@
    "title": "Novartis’ spin-off of Sandoz business",
    "published": "2022-09-12",
    "byline": "By Sameer Jain (Wharton School), Eden Yang (London School of Economics)",
-   "acquirer": null,
+   "acquirer": "Novarti",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Sandoz business",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -9861,9 +9888,9 @@
    "title": "Vista Capital Partners’ $16.5bn Acquisition of Citrix Systems",
    "published": "2022-05-03",
    "byline": "By Marvin Stenersen (Stockholm School of Economics)",
-   "acquirer": null,
+   "acquirer": "Vista Capital Partner",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Citrix Systems",
    "targetTicker": null,
    "value": 16500000000,
    "currency": "USD",
@@ -10016,9 +10043,9 @@
    "title": "KKR’s £1.56b Acquisition of Accell Group",
    "published": "2022-03-15",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "KKR",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Accell Group",
    "targetTicker": null,
    "value": 1560000000,
    "currency": "GBP",
@@ -10732,9 +10759,9 @@
    "title": "CVC Capital Partners’ £1B Acquisition of Medivet",
    "published": "2021-11-29",
    "byline": "By Marvin Stenersen (Stockholm School of Economics)",
-   "acquirer": null,
+   "acquirer": "CVC Capital Partner",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Medivet",
    "targetTicker": null,
    "value": 1000000000,
    "currency": "GBP",
@@ -11015,9 +11042,9 @@
    "title": "Sydney Aviation Alliance’s $17.4B Acquisition of Sydney Airport",
    "published": "2021-10-20",
    "byline": "By Benny Lin and Paul Bernard (McGill University)",
-   "acquirer": null,
+   "acquirer": "Sydney Aviation Alliance",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Sydney Airport",
    "targetTicker": null,
    "value": 17400000000,
    "currency": "USD",
@@ -11080,9 +11107,9 @@
    "title": "CD&R’s £7bn Acquisition of Morrisons",
    "published": "2021-10-05",
    "byline": "By Marvin Stenersen (Stockholm School of Economics)",
-   "acquirer": null,
+   "acquirer": "CD&R",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Morrisons",
    "targetTicker": null,
    "value": 7000000000,
    "currency": "GBP",
@@ -11459,9 +11486,9 @@
    "title": "Cobham’s £2.6B Acquisition of Ultra Electronics",
    "published": "2021-09-03",
    "byline": "By Luc Roberts, Ratish Singh, Hirishika Rajasekaran, Benjamin Schwarzmann and Priyanshu Srivastava (University of Warwick)",
-   "acquirer": null,
+   "acquirer": "Cobham",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Ultra Electronics",
    "targetTicker": null,
    "value": 2600000000,
    "currency": "GBP",
@@ -11651,9 +11678,9 @@
    "title": "Blackstone’s £1.2bn Acquisition of St. Modwen",
    "published": "2021-06-22",
    "byline": "By Kritika Venkat, Akhil Vajjhala and Siddharth Tripurani (NYU), Ratish Singh and Luc Roberts (University of Warwick)",
-   "acquirer": null,
+   "acquirer": "Blackstone",
    "acquirerTicker": null,
-   "target": null,
+   "target": "St. Modwen",
    "targetTicker": null,
    "value": 1200000000,
    "currency": "GBP",
@@ -12396,9 +12423,9 @@
    "title": "TDR Capital to acquire Arrow Global for £563M",
    "published": "2021-04-18",
    "byline": "By Martín Palomar, André Assouline (HEC), and Ratish Singh, Luc Roberts (University of Warwick)",
-   "acquirer": null,
+   "acquirer": "TDR Capital",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Arrow Global",
    "targetTicker": null,
    "value": 563000000,
    "currency": "GBP",
@@ -12632,9 +12659,9 @@
    "title": "Hitachi’s $9.6 Billion Acquisition of GlobaLogic",
    "published": "2021-04-07",
    "byline": "By Kritika Venkat, Akhil, Siddharth T (NYU), Alexis Bernet, Martín Palomar, Kévin Insixiengmay, André Assouline (HEC Paris).",
-   "acquirer": null,
+   "acquirer": "Hitachi",
    "acquirerTicker": null,
-   "target": null,
+   "target": "GlobaLogic",
    "targetTicker": null,
    "value": 9600000000,
    "currency": "USD",
@@ -12991,9 +13018,9 @@
    "title": "Blackstone’s, GIP’s, and Cascade’s £3.5B Takeover of Signature Aviation",
    "published": "2021-03-17",
    "byline": "By Luc Roberts (University of Warwick), and Kevin Insixiengmay, Martin Palomar, Andre Assouline (HEC).",
-   "acquirer": null,
+   "acquirer": "Blackstone’s, GIP’s, and Cascade",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Signature Aviation",
    "targetTicker": null,
    "value": 3500000000,
    "currency": "GBP",
@@ -13912,9 +13939,9 @@
    "title": "Take Two’s $994 million Acquisition of Codemasters",
    "published": "2020-12-13",
    "byline": "By Aman Sharma, Gustaf Baavhammar, Christopher Lewis, Richard Isbister, Peter Moravec (London Business School)",
-   "acquirer": null,
+   "acquirer": "Take Two",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Codemasters",
    "targetTicker": null,
    "value": 994000000,
    "currency": "USD",
@@ -14911,9 +14938,9 @@
    "title": "AVEVA’s $5 Billion Acquisition of OSIsoft",
    "published": "2020-09-08",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "AVEVA",
    "acquirerTicker": null,
-   "target": null,
+   "target": "OSIsoft",
    "targetTicker": null,
    "value": 5000000000,
    "currency": "USD",
@@ -15059,9 +15086,9 @@
    "title": "7-Eleven’s $21 Billion Acquisition of Speedway",
    "published": "2020-08-27",
    "byline": "By Riccardo Colombo, Lorenzo Mirone and Federico De Rosa (Università Bocconi)",
-   "acquirer": null,
+   "acquirer": "7-Eleven",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Speedway",
    "targetTicker": null,
    "value": 21000000000,
    "currency": "USD",
@@ -15081,9 +15108,9 @@
    "title": "Blackstone’s $4.7 Billion Acquisition of Ancestry",
    "published": "2020-08-27",
    "byline": "By Shuishan Xiao, Anthony Borgese (UPenn) and Kritika Venkateswaran, Sreeja Mamillapalli, Aman Singla (NYU)",
-   "acquirer": null,
+   "acquirer": "Blackstone",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Ancestry",
    "targetTicker": null,
    "value": 4700000000,
    "currency": "USD",
@@ -15101,9 +15128,9 @@
    "title": "Worldline’s $8.6 Billion Acquisition of Ingenico",
    "published": "2020-08-24",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Worldline",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Ingenico",
    "targetTicker": null,
    "value": 8600000000,
    "currency": "USD",
@@ -15215,9 +15242,9 @@
    "title": "Siemens Healthineers to buy Varian in $16.4bn deal",
    "published": "2020-08-10",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Siemens Healthineers",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Varian",
    "targetTicker": null,
    "value": 16399999999.999998,
    "currency": "USD",
@@ -15237,9 +15264,9 @@
    "title": "Chevron's $13 bn Acquisition of Noble Energy",
    "published": "2020-08-04",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Chevron",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Noble Energy",
    "targetTicker": null,
    "value": 13000000000,
    "currency": "USD",
@@ -15257,9 +15284,9 @@
    "title": "Analog Device’s $21 bn Acquisition of Maxim Integrated",
    "published": "2020-07-28",
    "byline": "By Luca Delpippo and Nikunj Agarwal, St Andrews and MIT",
-   "acquirer": null,
+   "acquirer": "Analog Device",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Maxim Integrated",
    "targetTicker": null,
    "value": 21000000000,
    "currency": "USD",
@@ -15279,9 +15306,9 @@
    "title": "Amazon’s $1.2 bn Acquisition of Zoox",
    "published": "2020-07-22",
    "byline": "By Aman Singla (New York University) and Itai Almogy (Yale University)",
-   "acquirer": null,
+   "acquirer": "Amazon",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Zoox",
    "targetTicker": null,
    "value": 1200000000,
    "currency": "USD",
@@ -15301,9 +15328,9 @@
    "title": "Uber's $2.65 bn Acquisition of Postmates",
    "published": "2020-07-16",
    "byline": "By Edvard Bruu, Marcus Falck (Stockholm School of Economics), Justin Leung, Harson Lin, Ivan Chung (Hong Kong University of Science and Technology)",
-   "acquirer": null,
+   "acquirer": "Uber",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Postmates",
    "targetTicker": null,
    "value": 2650000000,
    "currency": "USD",
@@ -15323,9 +15350,9 @@
    "title": "Just Eat Takeaway’s $7.3B Acquisition of Grubhub",
    "published": "2020-07-03",
    "byline": "By Elsa Henriksson (Stockholm School of Economics), Hassan Sharif and Vinay Naik (University of Warwick)",
-   "acquirer": null,
+   "acquirer": "Just Eat Takeaway",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Grubhub",
    "targetTicker": null,
    "value": 7300000000,
    "currency": "USD",
@@ -15410,9 +15437,9 @@
    "title": "Accenture to Acquire Sentelis",
    "published": "2020-06-16",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Accenture",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Sentelis",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15430,9 +15457,9 @@
    "title": "Potential Landlord and Authentic Brands Group Acquisition of J.C. Penney",
    "published": "2020-06-15",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Potential Landlord and Authentic Brands Group",
    "acquirerTicker": null,
-   "target": null,
+   "target": "J.C. Penney",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15452,9 +15479,9 @@
    "title": "IBM to Acquire Spanugo",
    "published": "2020-06-15",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "IBM",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Spanugo",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15521,9 +15548,9 @@
    "title": "Zijin Mining to acquire Guyana Goldfields",
    "published": "2020-06-12",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Zijin Mining",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Guyana Goldfields",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15543,9 +15570,9 @@
    "title": "Era and Bristow Complete Merger",
    "published": "2020-06-12",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Era",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Bristow",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15563,9 +15590,9 @@
    "title": "TFI International Set to Acquire Gusgo Transport",
    "published": "2020-06-12",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "TFI International",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Gusgo Transport",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15585,9 +15612,9 @@
    "title": "Novo Nordisk acquires Corvidia",
    "published": "2020-06-11",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Novo Nordisk",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Corvidia",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15605,9 +15632,9 @@
    "title": "Menarini Group Acquires Stemline Therapeutics",
    "published": "2020-06-10",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Menarini Group",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Stemline Therapeutics",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15647,9 +15674,9 @@
    "title": "Simon Property Group Terminates deal to Acquire Taubman",
    "published": "2020-06-10",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Simon Property Group Terminates deal",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Taubman",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15669,9 +15696,9 @@
    "title": "DSP acquires SoundChip",
    "published": "2020-06-09",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "DSP",
    "acquirerTicker": null,
-   "target": null,
+   "target": "SoundChip",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15691,9 +15718,9 @@
    "title": "Bright Mountain Media Acquires Wild Sky Media",
    "published": "2020-06-09",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Bright Mountain Media",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Wild Sky Media",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15713,9 +15740,9 @@
    "title": "Arthur J. Gallagher Acquires CA Insurance Brokers",
    "published": "2020-06-09",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Arthur J. Gallagher",
    "acquirerTicker": null,
-   "target": null,
+   "target": "CA Insurance Brokers",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15782,9 +15809,9 @@
    "title": "XP Acquires Majority Stake in Fliper",
    "published": "2020-06-08",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "XP Acquires Majority",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Fliper",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15802,9 +15829,9 @@
    "title": "Materion to Acquire Optics Balzers",
    "published": "2020-06-08",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Materion",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Optics Balzers",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15822,9 +15849,9 @@
    "title": "Chegg Acquires Mathway",
    "published": "2020-06-05",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Chegg",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Mathway",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15842,9 +15869,9 @@
    "title": "UCB Acquires Engage Therapeutics",
    "published": "2020-06-05",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "UCB",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Engage Therapeutics",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15864,9 +15891,9 @@
    "title": "DOJ Approves Charles Schwab Acquisition of TD Ameritrade",
    "published": "2020-06-04",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "DOJ Approves Charles Schwab",
    "acquirerTicker": null,
-   "target": null,
+   "target": "TD Ameritrade",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15884,9 +15911,9 @@
    "title": "Puration Announces Acquisition of Third CBD Business",
    "published": "2020-06-04",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Puration Announces",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Third CBD Business",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15906,9 +15933,9 @@
    "title": "R1 to Acquire Cerner RevWorks",
    "published": "2020-06-03",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "R1",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Cerner RevWorks",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15928,9 +15955,9 @@
    "title": "Greystar Acquires Alliance Residential’s Property Management Business",
    "published": "2020-06-02",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Greystar",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Alliance Residential’s Property Management Business",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -15950,9 +15977,9 @@
    "title": "Alta Equipment Acquires PeakLogix",
    "published": "2020-06-02",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Alta Equipment",
    "acquirerTicker": null,
-   "target": null,
+   "target": "PeakLogix",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16019,9 +16046,9 @@
    "title": "Zynga Acquires Peak",
    "published": "2020-06-01",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Zynga",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Peak",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16041,9 +16068,9 @@
    "title": "Oppenheimer is Set to Acquire Brandis Tallman",
    "published": "2020-06-01",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Oppenheimer is",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Brandis Tallman",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16103,9 +16130,9 @@
    "title": "Expeditors International of Washington Inc to acquire Fleet Logistics’ Digital Platform",
    "published": "2020-05-26",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Expeditors International of Washington Inc",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Fleet Logistics’ Digital Platform",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16125,9 +16152,9 @@
    "title": "Novavax acquires Praha Vaccines for $167M",
    "published": "2020-05-26",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Novavax",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Praha Vaccines",
    "targetTicker": null,
    "value": 167000000,
    "currency": "USD",
@@ -16216,9 +16243,9 @@
    "title": "Endexx acquires RPA, Inc.",
    "published": "2020-05-21",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Endexx",
    "acquirerTicker": null,
-   "target": null,
+   "target": "RPA, Inc.",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16236,9 +16263,9 @@
    "title": "Roche has acquired Stratos Genomics",
    "published": "2020-05-21",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Roche has",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Stratos Genomics",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16278,9 +16305,9 @@
    "title": "Hebron Technology looks to acquire Nami for $25.4M",
    "published": "2020-05-21",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Hebron Technology",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Nami",
    "targetTicker": null,
    "value": 25400000,
    "currency": "USD",
@@ -16322,9 +16349,9 @@
    "title": "Intel set to acquire Rivet Networks",
    "published": "2020-05-20",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Intel",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Rivet Networks",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16431,9 +16458,9 @@
    "title": "Accenture to acquire PLM Systems",
    "published": "2020-05-18",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Accenture",
    "acquirerTicker": null,
-   "target": null,
+   "target": "PLM Systems",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16453,9 +16480,9 @@
    "title": "Microsoft confirms its acquisition of Softomotive",
    "published": "2020-05-18",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Microsoft confirms its",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Softomotive",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16473,9 +16500,9 @@
    "title": "Advent International cancel merger with Forescout",
    "published": "2020-05-17",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Advent International cancel",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Forescout",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16493,9 +16520,9 @@
    "title": "FTI Consulting acquires team from Delta Partners",
    "published": "2020-05-17",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "FTI Consulting",
    "acquirerTicker": null,
-   "target": null,
+   "target": "team from Delta Partners",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16555,9 +16582,9 @@
    "title": "Melinta Therapeutics begin Takeover bid for Tetraphase Pharmaceuticals",
    "published": "2020-05-14",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Melinta Therapeutics begin Takeover",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Tetraphase Pharmaceuticals",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16597,9 +16624,9 @@
    "title": "Tronox Holdings announce acquisition of TiZir Titanium",
    "published": "2020-05-13",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Tronox Holdings announce",
    "acquirerTicker": null,
-   "target": null,
+   "target": "TiZir Titanium",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16617,9 +16644,9 @@
    "title": "CoStar to acquire commercial real estate division of Ten-X",
    "published": "2020-05-13",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "CoStar",
    "acquirerTicker": null,
-   "target": null,
+   "target": "commercial real estate division of Ten-X",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16659,9 +16686,9 @@
    "title": "Aimia acquires 10% stake Clear Media Limited for $75M",
    "published": "2020-05-12",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Aimia",
    "acquirerTicker": null,
-   "target": null,
+   "target": "10% stake Clear Media Limited",
    "targetTicker": null,
    "value": 75000000,
    "currency": "USD",
@@ -16701,9 +16728,9 @@
    "title": "London Stock Exchange Looking for approval to buy Refinitiv",
    "published": "2020-05-12",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "London Stock Exchange Looking for approval",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Refinitiv",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16714,28 +16741,6 @@
    "typeHint": null,
    "industries": [
     "financials"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/uber-pursuing-grubhub-deal",
-   "title": "Uber pursuing Grubhub Deal",
-   "published": "2020-05-11",
-   "byline": null,
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "\"If the two combined, Uber Eats and Grubhub would represent ~55% market share in 3P food delivery marking a clear leader in the space... While each have respective market strengths, the overlap in diners, restaurants, and markets should create significant cost-saving opportunities, particularly in sales and marketing…",
-   "typeHint": null,
-   "industries": [
-    "consumer"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -16783,6 +16788,28 @@
    "typeHint": null,
    "industries": [
     "realestate"
+   ],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/uber-pursuing-grubhub-deal",
+   "title": "Uber pursuing Grubhub Deal",
+   "published": "2020-05-11",
+   "byline": null,
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "\"If the two combined, Uber Eats and Grubhub would represent ~55% market share in 3P food delivery marking a clear leader in the space... While each have respective market strengths, the overlap in diners, restaurants, and markets should create significant cost-saving opportunities, particularly in sales and marketing…",
+   "typeHint": null,
+   "industries": [
+    "consumer"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -16834,9 +16861,9 @@
    "title": "LivexLive Media to acquire PodcastOne",
    "published": "2020-05-07",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "LivexLive Media",
    "acquirerTicker": null,
-   "target": null,
+   "target": "PodcastOne",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16898,9 +16925,9 @@
    "title": "Microsoft completing its acquisition of  CyberX",
    "published": "2020-05-05",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Microsoft completing its",
    "acquirerTicker": null,
-   "target": null,
+   "target": "CyberX",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16920,9 +16947,9 @@
    "title": "BorgWarner’s acquisition of Delphi Technologies is still on despite concerns in March",
    "published": "2020-05-05",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "BorgWarner",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Delphi Technologies is still on despite concerns in March",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16940,9 +16967,9 @@
    "title": "Alexion Pharmaceuticals announces acquisition of Portola Pharmaceuticals",
    "published": "2020-05-04",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Alexion Pharmaceuticals announces",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Portola Pharmaceuticals",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -16984,9 +17011,9 @@
    "title": "Cognizant to acquire Collaborative Solutions",
    "published": "2020-05-04",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Cognizant",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Collaborative Solutions",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17006,9 +17033,9 @@
    "title": "Menarini Group to acquire Stemline for approximately $677M",
    "published": "2020-05-03",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Menarini Group",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Stemline for approximately $677M",
    "targetTicker": null,
    "value": 677000000,
    "currency": "USD",
@@ -17028,9 +17055,9 @@
    "title": "Intel completes its acquisition of Moovit for $840M",
    "published": "2020-05-03",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Intel completes its",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Moovit",
    "targetTicker": null,
    "value": 840000000,
    "currency": "USD",
@@ -17072,9 +17099,9 @@
    "title": "Molina Healthcare announces acquisition of Magellan Complete Care",
    "published": "2020-04-30",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Molina Healthcare announces",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Magellan Complete Care",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17094,9 +17121,9 @@
    "title": "Accenture closes on acquisition of Symantec",
    "published": "2020-04-29",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Accenture closes on",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Symantec",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17138,9 +17165,9 @@
    "title": "Supernus Pharmaceuticals announces acquisition of US WorldMeds",
    "published": "2020-04-29",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Supernus Pharmaceuticals announces",
    "acquirerTicker": null,
-   "target": null,
+   "target": "US WorldMeds",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17160,9 +17187,9 @@
    "title": "NetApp acquires CloudJumper",
    "published": "2020-04-28",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "NetApp",
    "acquirerTicker": null,
-   "target": null,
+   "target": "CloudJumper",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17182,9 +17209,9 @@
    "title": "Rapid7 announces acquisition of DivvyCloud",
    "published": "2020-04-28",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Rapid7 announces",
    "acquirerTicker": null,
-   "target": null,
+   "target": "DivvyCloud",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17204,9 +17231,9 @@
    "title": "Blackstone’s takeover of NIBC may not pass regulatory stage",
    "published": "2020-04-28",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Blackstone",
    "acquirerTicker": null,
-   "target": null,
+   "target": "NIBC may not pass regulatory stage",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17224,9 +17251,9 @@
    "title": "Aurubis expecting approval for acquisition of Metallo",
    "published": "2020-04-27",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Aurubis expecting approval for",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Metallo",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17246,9 +17273,9 @@
    "title": "Optum to acquire virtual therapy provider Ableto for $470M",
    "published": "2020-04-27",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Optum",
    "acquirerTicker": null,
-   "target": null,
+   "target": "virtual therapy provider Ableto",
    "targetTicker": null,
    "value": 470000000,
    "currency": "USD",
@@ -17268,9 +17295,9 @@
    "title": "KKR announces acquisition of KKR from Shapoorji Pallonji Infrastructure Capital",
    "published": "2020-04-26",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "KKR announces",
    "acquirerTicker": null,
-   "target": null,
+   "target": "KKR from Shapoorji Pallonji Infrastructure Capital",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17357,9 +17384,9 @@
    "title": "Advent International completes acquisition of Forescout",
    "published": "2020-04-22",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Advent International completes",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Forescout",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17377,9 +17404,9 @@
    "title": "Wayside Technology to acquire Interwork Technologies",
    "published": "2020-04-21",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Wayside Technology",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Interwork Technologies",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17397,9 +17424,9 @@
    "title": "Medallia announces $59M acquisition of Voci Technologies",
    "published": "2020-04-21",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Medallia announces",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Voci Technologies",
    "targetTicker": null,
    "value": 59000000,
    "currency": "USD",
@@ -17419,9 +17446,9 @@
    "title": "SoFi announces acquisition of 8 Securities",
    "published": "2020-04-20",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "SoFi announces",
    "acquirerTicker": null,
-   "target": null,
+   "target": "8 Securities",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17441,9 +17468,9 @@
    "title": "Boxlight to acquire MyStemKits",
    "published": "2020-04-20",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Boxlight",
    "acquirerTicker": null,
-   "target": null,
+   "target": "MyStemKits",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17461,9 +17488,9 @@
    "title": "Accenture to acquire Amazon Web Services Consultancy Gekko",
    "published": "2020-04-19",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Accenture",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Amazon Web Services Consultancy Gekko",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17483,9 +17510,9 @@
    "title": "Novartis acquires Amblyotech",
    "published": "2020-04-19",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Novartis",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Amblyotech",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17527,9 +17554,9 @@
    "title": "CordovaCann acquires majority stake of Ontario Inc.",
    "published": "2020-04-14",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "CordovaCann acquires majority",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Ontario Inc.",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17549,9 +17576,9 @@
    "title": "Endeavour’s $690 million Merger with Semafo",
    "published": "2020-04-14",
    "byline": "By Marcus Falck and Edvard Bruu (Stockholm School of Economics), Christopher Gvenetadze and Alessandro Carleo (Bocconi University) | 12/04/2020",
-   "acquirer": null,
+   "acquirer": "Endeavour",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Semafo",
    "targetTicker": null,
    "value": 690000000,
    "currency": "USD",
@@ -17569,9 +17596,9 @@
    "title": "Molina Healthcareback out of acquisition of NextLevel Health Partners",
    "published": "2020-04-13",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Molina Healthcareback out of",
    "acquirerTicker": null,
-   "target": null,
+   "target": "NextLevel Health Partners",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17591,9 +17618,9 @@
    "title": "JZZ Technologies completes acquisition of Senior Lifestyle Media",
    "published": "2020-04-12",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "JZZ Technologies completes",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Senior Lifestyle Media",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17633,9 +17660,9 @@
    "title": "General Cannabis acquires Cannasseur",
    "published": "2020-04-09",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "General Cannabis",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Cannasseur",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17655,9 +17682,9 @@
    "title": "Zscaler to acquire startup Cloudneeti",
    "published": "2020-04-08",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Zscaler",
    "acquirerTicker": null,
-   "target": null,
+   "target": "startup Cloudneeti",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17699,9 +17726,9 @@
    "title": "Aon’s $30 bn Acquisition of Willis Towers Watson",
    "published": "2020-04-07",
    "byline": "By Niclas Halberg, Harvey George, Jonathan Fuchs, Chiara Fulvi (London School of Economics), Christopher Shim, Karthik Neelamegam, Adithya Rajeev (University of Cambridge) | 07/04/2020",
-   "acquirer": null,
+   "acquirer": "Aon",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Willis Towers Watson",
    "targetTicker": null,
    "value": 30000000000,
    "currency": "USD",
@@ -17721,9 +17748,9 @@
    "title": "Sabre acquires Farelogix after winning in Supreme Court",
    "published": "2020-04-07",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Sabre",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Farelogix after winning in Supreme Court",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17743,9 +17770,9 @@
    "title": "Organovo cancels merger with Tarveda Therapeutics",
    "published": "2020-04-07",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Organovo cancels",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Tarveda Therapeutics",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17765,9 +17792,9 @@
    "title": "SoFi to acquire acquire Galileo Financial for its API functions",
    "published": "2020-04-06",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "SoFi",
    "acquirerTicker": null,
-   "target": null,
+   "target": "acquire Galileo Financial for its API functions",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17787,9 +17814,9 @@
    "title": "Gilead finalises acquisition of Forty Seven for $4.9B",
    "published": "2020-04-06",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Gilead finalises",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Forty Seven",
    "targetTicker": null,
    "value": 4900000000,
    "currency": "USD",
@@ -17809,9 +17836,9 @@
    "title": "Accenture acquires Revolutionary Security",
    "published": "2020-04-06",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Accenture",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Revolutionary Security",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17831,9 +17858,9 @@
    "title": "Maxlinear to acquire Intel’s Home Gateway Platform Division assets",
    "published": "2020-04-05",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Maxlinear",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Intel’s Home Gateway Platform Division assets",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17871,9 +17898,9 @@
    "title": "Paylocity set to acquire Vidgrid",
    "published": "2020-04-05",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Paylocity",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Vidgrid",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17891,9 +17918,9 @@
    "title": "Emerson acquires American Governor Company",
    "published": "2020-04-02",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Emerson",
    "acquirerTicker": null,
-   "target": null,
+   "target": "American Governor Company",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17911,9 +17938,9 @@
    "title": "Tencent exercised an option to acquire $262.2M shares from Huya",
    "published": "2020-04-02",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Tencent exercised an option",
    "acquirerTicker": null,
-   "target": null,
+   "target": "$262.2M shares from Huya",
    "targetTicker": null,
    "value": 262200000,
    "currency": "USD",
@@ -17931,9 +17958,9 @@
    "title": "JPMorgan Chase to buyout Shanghai International Trust stake in Joint Venture",
    "published": "2020-04-02",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "JPMorgan Chase to buyout Shanghai International Trust",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Joint Venture",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17953,9 +17980,9 @@
    "title": "Sandy Spring Bancorp close Acquisition of Revere Bank",
    "published": "2020-03-31",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Sandy Spring Bancorp close",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Revere Bank",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17975,9 +18002,9 @@
    "title": "Marcus & Millichap  acquires Metropolitan Capital Advisors",
    "published": "2020-03-31",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Marcus & Millichap",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Metropolitan Capital Advisors",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -17997,9 +18024,9 @@
    "title": "Cannabis company Harvest Health & Recreation acquires Franklin Labs",
    "published": "2020-03-30",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Cannabis company Harvest Health & Recreation",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Franklin Labs",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18063,9 +18090,9 @@
    "title": "Saudi Aramco's $69 billion Acquisition of SABIC",
    "published": "2020-03-30",
    "byline": "By Ilya Korzinkin, Mihir Gupta, Hugo Tay, Siddharth Sharma (University College London), Vincent Wess (WHU) | 16/03/2020",
-   "acquirer": null,
+   "acquirer": "Saudi Aramco",
    "acquirerTicker": null,
-   "target": null,
+   "target": "SABIC",
    "targetTicker": null,
    "value": 69000000000,
    "currency": "USD",
@@ -18105,9 +18132,9 @@
    "title": "Advance Publications Inc. to buy Triathlon Business IRONMAN Group",
    "published": "2020-03-29",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Advance Publications Inc.",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Triathlon Business IRONMAN Group",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18125,9 +18152,9 @@
    "title": "SS&C Technology Holdings to acquire Captricity",
    "published": "2020-03-24",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "SS&C Technology Holdings",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Captricity",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18167,9 +18194,9 @@
    "title": "Huntsman acquires CVC Thermoset Specialities from Emerald Performance",
    "published": "2020-03-23",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Huntsman",
    "acquirerTicker": null,
-   "target": null,
+   "target": "CVC Thermoset Specialities from Emerald Performance",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18187,9 +18214,9 @@
    "title": "Perficient acquires Catalyst Networks",
    "published": "2020-03-23",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Perficient",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Catalyst Networks",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18209,9 +18236,9 @@
    "title": "Endeavour Mining is to acquire SEMAFO for $690M",
    "published": "2020-03-23",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Endeavour Mining is",
    "acquirerTicker": null,
-   "target": null,
+   "target": "SEMAFO",
    "targetTicker": null,
    "value": 690000000,
    "currency": "USD",
@@ -18231,9 +18258,9 @@
    "title": "PepsiCo’s $3.85 billion Acquisition of Rockstar Energy",
    "published": "2020-03-22",
    "byline": "By Steven Skomra, Dylan Barnacle, Zach Trotzky (Georgetown University), Christopher Gvenetadze, and Alessandro Carleo (Bocconi University) | 22/03/2020",
-   "acquirer": null,
+   "acquirer": "PepsiCo",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Rockstar Energy",
    "targetTicker": null,
    "value": 3850000000,
    "currency": "USD",
@@ -18253,9 +18280,9 @@
    "title": "Thomson Reuters has acquired Pondera Solutions",
    "published": "2020-03-20",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Thomson Reuters has",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Pondera Solutions",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18273,9 +18300,9 @@
    "title": "Masima has agreed to acquire German ventilation company TNI",
    "published": "2020-03-20",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Masima has agreed",
    "acquirerTicker": null,
-   "target": null,
+   "target": "German ventilation company TNI",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18295,9 +18322,9 @@
    "title": "Fox to acquire Tubi TV for $440M",
    "published": "2020-03-18",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Fox",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Tubi TV",
    "targetTicker": null,
    "value": 440000000,
    "currency": "USD",
@@ -18337,9 +18364,9 @@
    "title": "Volkswagen's $2.9B offer to buy truck-maker Navistar is in jeopardy",
    "published": "2020-03-18",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Volkswagen's $2.9B offer",
    "acquirerTicker": null,
-   "target": null,
+   "target": "truck-maker Navistar is in jeopardy",
    "targetTicker": null,
    "value": 2900000000,
    "currency": "USD",
@@ -18381,9 +18408,9 @@
    "title": "Lee Enterprises acquires Berkshire Hathaway’s newspaper operations",
    "published": "2020-03-16",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Lee Enterprises",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Berkshire Hathaway’s newspaper operations",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18450,9 +18477,9 @@
    "title": "Provident Financial to acquire SB One Bancorp",
    "published": "2020-03-13",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Provident Financial",
    "acquirerTicker": null,
-   "target": null,
+   "target": "SB One Bancorp",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18472,9 +18499,9 @@
    "title": "PepsiCo to acquire Rockstar Energy for $3.85B",
    "published": "2020-03-11",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "PepsiCo",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Rockstar Energy",
    "targetTicker": null,
    "value": 3850000000,
    "currency": "USD",
@@ -18516,9 +18543,9 @@
    "title": "CVS acquires Schnuck retail and speciality pharmacy business",
    "published": "2020-03-10",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "CVS",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Schnuck retail and speciality pharmacy business",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18538,9 +18565,9 @@
    "title": "RadNet has announced a deal to acquire Deephealth",
    "published": "2020-03-10",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "RadNet has announced a deal",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Deephealth",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18560,9 +18587,9 @@
    "title": "Accenture to acquire ESR Labs",
    "published": "2020-03-10",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Accenture",
    "acquirerTicker": null,
-   "target": null,
+   "target": "ESR Labs",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18582,9 +18609,9 @@
    "title": "Aon and Willis Towers Watson have agreed to an all-stock merger",
    "published": "2020-03-09",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Aon",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Willis Towers Watson have agreed",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18651,9 +18678,9 @@
    "title": "Leading GPU and chip maker, Nvidia, to acquire SwiftStack",
    "published": "2020-03-06",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Leading GPU and chip maker, Nvidia,",
    "acquirerTicker": null,
-   "target": null,
+   "target": "SwiftStack",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18762,9 +18789,9 @@
    "title": "Blackstone fund acquires energy storage company NRStor C&I",
    "published": "2020-03-04",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Blackstone fund",
    "acquirerTicker": null,
-   "target": null,
+   "target": "energy storage company NRStor C&I",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -18784,9 +18811,9 @@
    "title": "Thermo Fisher to acquire QIAGEN for $11.5B",
    "published": "2020-03-03",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Thermo Fisher",
    "acquirerTicker": null,
-   "target": null,
+   "target": "QIAGEN",
    "targetTicker": null,
    "value": 11500000000,
    "currency": "USD",
@@ -18806,9 +18833,9 @@
    "title": "Gilead Sciences to buy Forty-Seven for $4.9B",
    "published": "2020-03-02",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Gilead Sciences",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Forty-Seven",
    "targetTicker": null,
    "value": 4900000000,
    "currency": "USD",
@@ -18922,9 +18949,9 @@
    "title": "Xerox’s $32 billion Acquisition of HP",
    "published": "2020-02-09",
    "byline": "By Christopher Gvenetadze and Alessandro Carleo (Bocconi University), Gustaf Baavhammar and Chris Leung (University of Warwick) | 09/02/2020",
-   "acquirer": null,
+   "acquirer": "Xerox",
    "acquirerTicker": null,
-   "target": null,
+   "target": "HP",
    "targetTicker": null,
    "value": 32000000000,
    "currency": "USD",
@@ -19041,9 +19068,9 @@
    "title": "LVMH’s $16.6bn Acquisition of Tiffany & Co.",
    "published": "2019-12-29",
    "byline": "By Niclas Hallberg, Harvey George, Jonathan Fuchs, Chiara Fulvi (London School of Economics), Ilya Korzinkin, Mihir Gupta, Hugo Tay and Siddarth Sharma (UCL) – Date: 14/12/2019",
-   "acquirer": null,
+   "acquirer": "LVMH",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Tiffany & Co.",
    "targetTicker": null,
    "value": 16600000000.000002,
    "currency": "USD",
@@ -19063,9 +19090,9 @@
    "title": "Occidental Petroleum’s $55 billion Acquisition of Anadarko Petroleum Corporation",
    "published": "2019-12-22",
    "byline": "By Isak Muhr, Elsa Henriksson (Stockholm School of Economics), Chris Leung, and Vinay Naik (University of Warwick) – Date: 22/11/2019",
-   "acquirer": null,
+   "acquirer": "Occidental Petroleum",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Anadarko Petroleum Corporation",
    "targetTicker": null,
    "value": 55000000000,
    "currency": "USD",
@@ -19238,9 +19265,9 @@
    "title": "CBS Corporation's $12bn Acquisition of Viacom Inc.",
    "published": "2019-11-10",
    "byline": "By Marcus Falck and Oscar Kock (Stockholm School of Economics), Orlando Poraqi and Alessandro Carleo (Bocconi University) - Date: 10/11/2019",
-   "acquirer": null,
+   "acquirer": "CBS Corporation",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Viacom Inc.",
    "targetTicker": null,
    "value": 12000000000,
    "currency": "USD",
@@ -19354,9 +19381,9 @@
    "title": "EssilorLuxottica's €7.1bn Acquisition of GrandVision",
    "published": "2019-09-22",
    "byline": "By Vincent Wess (WHU – Otto Beisheim School of Management) - Date: 22/09/2019",
-   "acquirer": null,
+   "acquirer": "EssilorLuxottica",
    "acquirerTicker": null,
-   "target": null,
+   "target": "GrandVision",
    "targetTicker": null,
    "value": 7100000000,
    "currency": "EUR",
@@ -19376,9 +19403,9 @@
    "title": "Mylan’s Merger with Pfizer’s \nUpjohn Unit",
    "published": "2019-09-07",
    "byline": "By Dimitrios Apostolopoulos (University of Warwick), Chris Leung (University of Warwick) and Ilya Korzinkin (UCL) - Date: 07/09/2019",
-   "acquirer": null,
+   "acquirer": "Mylan",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Pfizer’s Upjohn Unit",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -19686,9 +19713,9 @@
    "title": "Renesas’s $6.7 Billion Acquisition of IDT",
    "published": "2019-04-24",
    "byline": "By Jack Briody and Tristan Yang of Columbia University, Dexter Wan (Wharton School) - Date: 24/04/2019",
-   "acquirer": null,
+   "acquirer": "Renesas",
    "acquirerTicker": null,
-   "target": null,
+   "target": "IDT",
    "targetTicker": null,
    "value": 6700000000,
    "currency": "USD",
@@ -19711,7 +19738,7 @@
    "excerpt": "Renesas Electronics Corporation, the second-biggest supplier of automotive semiconductors by market share, is acquiring Integrated Device Technology, Inc. for $6.7 billion in order to expand its product line. Renesas is specifically looking to explore applications beyond the automotive sector, which currently fuels…",
    "typeHint": null,
    "industries": [
-    "financials"
+    "tmt"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -19954,9 +19981,9 @@
    "title": "Eli Lilly’s $8bn Acquisition of Loxo Oncology",
    "published": "2019-03-09",
    "byline": "By Marcus Falck, Carlos Asorey and Isak Muhr (SSE & Georgetown University)",
-   "acquirer": null,
+   "acquirer": "Eli Lilly",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Loxo Oncology",
    "targetTicker": null,
    "value": 8000000000,
    "currency": "USD",
@@ -19989,9 +20016,9 @@
    "title": "Barrick Gold’s Proposed $17.85bn Acquisition of Newmont Mining",
    "published": "2019-03-06",
    "byline": "By Marcus Falck, Carlos Asorey, Oscar Kock and Steven Skomra (SSE & Georgetown University) - Date: 06/03/2019",
-   "acquirer": null,
+   "acquirer": "Barrick Gold",
    "acquirerTicker": "GOLD",
-   "target": null,
+   "target": "Newmont Mining",
    "targetTicker": "NEM",
    "value": 17850000000,
    "currency": "USD",
@@ -20539,9 +20566,9 @@
    "title": "Michael Kors’ $2.12bn acquisition of Versace",
    "published": "2018-12-22",
    "byline": "By Gustaf Baavhammar, Lukas Bruell, Christopher Leung (University of Warwick) |",
-   "acquirer": null,
+   "acquirer": "Michael Kor",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Versace",
    "targetTicker": null,
    "value": 2120000000,
    "currency": "USD",
@@ -20811,9 +20838,9 @@
    "title": "Grab’s Acquisition of Uber’s South-East Asian Business",
    "published": "2018-11-02",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Grab",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Uber’s South-East Asian Business",
    "targetTicker": null,
    "value": null,
    "currency": null,
@@ -21759,9 +21786,9 @@
    "title": "Luxottica and Essilor agree $54bn merger",
    "published": "2018-02-27",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Luxottica",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Essilor",
    "targetTicker": null,
    "value": 54000000000,
    "currency": "USD",
