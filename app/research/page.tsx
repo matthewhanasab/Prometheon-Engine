@@ -735,8 +735,21 @@ function MarketstackResearchInner() {
                       raw: fun.ps / (1 + fwdRev.growth), range: [1.8, 2.6], unit: "x",
                       note: `Projected from revenue trend — not consensus` }
                   : { label: "Forward P/S", value: "", na: true, naReason: "Needs revenue or a positive margin" },
-                { label: "PEG Ratio", value: mult(fun.pegRatio), raw: fun.pegRatio, range: [1, 2], unit: "x",
-                  note: fun.pegRatio == null ? "Needs positive EPS growth" : undefined },
+                // PEG is P/E against expected growth, so the analyst consensus
+                // for next year is the right denominator; a trailing year with
+                // a one-off charge (Abbott's −54%) said nothing about value.
+                // Filed growth is the fallback when no consensus is published.
+                (() => {
+                  const g = cf?.nextYearEpsGrowth;
+                  const consensusPeg = g != null && g > 0 && fun.peRatio != null && fun.peRatio > 0 ? fun.peRatio / (g * 100) : null;
+                  if (consensusPeg != null)
+                    return { label: "PEG Ratio", value: mult(consensusPeg), raw: consensusPeg, range: [1, 2], unit: "x",
+                      note: `P/E ÷ consensus ${cf?.currentYearLabel ?? ""} → ${cf?.nextYearLabel ?? ""} EPS growth`.replace(/\s+→\s+$/, "") };
+                  if (analystsPending && fun.pegRatio == null)
+                    return { label: "PEG Ratio", value: "", loading: true };
+                  return { label: "PEG Ratio", value: mult(fun.pegRatio), raw: fun.pegRatio, range: [1, 2], unit: "x",
+                    note: fun.pegRatio == null ? "Needs positive expected EPS growth" : "P/E ÷ trailing EPS growth — no consensus published" };
+                })(),
               ]} />
 
               {/* Growth */}
