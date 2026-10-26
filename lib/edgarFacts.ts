@@ -84,7 +84,10 @@ export class Facts {
       if (!f.length) continue;
       candidates.push(f);
       const end = f[f.length - 1].end;
-      const tieWins = preferLargest ? latestVal(f) > latestVal(winner ?? f) : f.length > (winner?.length ?? 0);
+      // On an equal latest period the list order decides (NetIncomeLoss over
+      // ProfitLoss, OperatingIncomeLoss over pre-tax income) — except revenue,
+      // where the larger concept is the total.
+      const tieWins = preferLargest && latestVal(f) > latestVal(winner ?? f);
       if (!winner || end > winnerEnd || (end === winnerEnd && tieWins)) {
         winner = f;
         winnerEnd = end;
@@ -290,7 +293,10 @@ export const C = {
   ],
   costOfRevenue: ["CostOfGoodsAndServicesSold", "CostOfRevenue", "CostOfGoodsSold"],
   grossProfit: ["GrossProfit"],
-  operatingIncome: ["OperatingIncomeLoss"],
+  // Banks have no operating-income line; pre-tax income is the closest
+  // equivalent and is only reached when OperatingIncomeLoss is absent or
+  // stale (SoFi last tagged it in 2021).
+  operatingIncome: ["OperatingIncomeLoss", "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest"],
   netIncome: ["NetIncomeLoss", "ProfitLoss"],
   epsDiluted: ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted"],
   dilutedShares: ["WeightedAverageNumberOfDilutedSharesOutstanding"],
@@ -527,12 +533,16 @@ function slimFacts(json: FactsJson): FactsJson {
   }
   return out;
 }
+// The cache key carries a fingerprint of the concept list, so adding an
+// alias (RevenuesNetOfInterestExpense for banks) invalidates the slimmed
+// files instead of serving ones that were trimmed before it existed.
+const WANTED_KEY = [...WANTED].sort().join("|").split("").reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36);
 const fetchSlimFacts = unstable_cache(
   async (cik: string): Promise<FactsJson | null> => {
     const json = await fetchFactsJson(cik);
     return json ? slimFacts(json) : null;
   },
-  ["edgar-facts-slim-v1"],
+  ["edgar-facts-slim", WANTED_KEY],
   { revalidate: 21600 }
 );
 
