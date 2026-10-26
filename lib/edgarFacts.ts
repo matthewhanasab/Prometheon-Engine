@@ -72,12 +72,20 @@ export class Facts {
     const candidates: RawFact[][] = [];
     let winner: RawFact[] | null = null;
     let winnerEnd = "";
+    // Revenue aliases nest: a lender files the fee slice as contract revenue
+    // and the whole as RevenuesNetOfInterestExpense for the same period.
+    // SoFi's "revenue" came out at $154M a quarter — the fee slice — against
+    // $1.2B of total net revenue. When two revenue concepts cover the same
+    // latest period, the larger is the total.
+    const preferLargest = aliases === C.revenue;
+    const latestVal = (f: RawFact[]) => f[f.length - 1].val;
     for (const c of aliases) {
       const f = dedupeByEnd(this.raw(c).filter(keep));
       if (!f.length) continue;
       candidates.push(f);
       const end = f[f.length - 1].end;
-      if (!winner || end > winnerEnd || (end === winnerEnd && f.length > winner.length)) {
+      const tieWins = preferLargest ? latestVal(f) > latestVal(winner ?? f) : f.length > (winner?.length ?? 0);
+      if (!winner || end > winnerEnd || (end === winnerEnd && tieWins)) {
         winner = f;
         winnerEnd = end;
       }
@@ -274,6 +282,9 @@ export const C = {
     "RevenueFromContractWithCustomerExcludingAssessedTax",
     "RevenueFromContractWithCustomerIncludingAssessedTax",
     "Revenues",
+    // Banks and lenders: total net revenue (net interest income plus
+    // non-interest income). Goldman, JPMorgan and Wells tag only this.
+    "RevenuesNetOfInterestExpense",
     "SalesRevenueNet",
     "SalesRevenueGoodsNet",
   ],
