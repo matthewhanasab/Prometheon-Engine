@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19T12:39:05.339Z",
+ "generatedAt": "2026-10-26T12:37:46.297Z",
  "source": {
   "name": "MergerSight",
   "url": "https://www.mergersight.com"
@@ -6943,48 +6943,6 @@
    "type": "ipo"
   },
   {
-   "url": "https://www.mergersight.com/post/the-initial-public-offering-ipo",
-   "title": "The Initial Public Offering (IPO)",
-   "published": "2023-11-09",
-   "byline": "By Victor Paquet (Mergersight Operations) and Carlo Lepoardi & Tommaso Arona (Boston University partners)",
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "to organize this sales process. They will provide investment banks with all relevant financial data and information, so that the investment bank can act as a middleman. The company may also choose to hire more than one investment bank to spread risk and to ensure widespread distribution of the",
-   "typeHint": "ipo",
-   "industries": [
-    "financials"
-   ],
-   "industryInferred": true,
-   "type": "ipo"
-  },
-  {
-   "url": "https://www.mergersight.com/post/the-leveraged-buyout-model-lbo",
-   "title": "The Leveraged Buyout Model (LBO)",
-   "published": "2023-11-09",
-   "byline": "By Victor Paquet (Mergersight Operations) and Carlo Lepoardi & Tommaso Arona (Boston University partners)",
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "of a target company to pay off debt used to finance a takeover, while still expecting a return on their investment. The same core mechanics of an LBO can be applied to minority investments, full takeovers, levered recaps, and other structured",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/chevron-s-53-bn-acquisition-of-hess",
    "title": "Chevron's $53bn acquisition of Hess",
    "published": "2023-11-09",
@@ -7029,6 +6987,48 @@
     "energy"
    ],
    "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/the-initial-public-offering-ipo",
+   "title": "The Initial Public Offering (IPO)",
+   "published": "2023-11-09",
+   "byline": "By Victor Paquet (Mergersight Operations) and Carlo Lepoardi & Tommaso Arona (Boston University partners)",
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "to organize this sales process. They will provide investment banks with all relevant financial data and information, so that the investment bank can act as a middleman. The company may also choose to hire more than one investment bank to spread risk and to ensure widespread distribution of the",
+   "typeHint": "ipo",
+   "industries": [
+    "financials"
+   ],
+   "industryInferred": true,
+   "type": "ipo"
+  },
+  {
+   "url": "https://www.mergersight.com/post/the-leveraged-buyout-model-lbo",
+   "title": "The Leveraged Buyout Model (LBO)",
+   "published": "2023-11-09",
+   "byline": "By Victor Paquet (Mergersight Operations) and Carlo Lepoardi & Tommaso Arona (Boston University partners)",
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "of a target company to pay off debt used to finance a takeover, while still expecting a return on their investment. The same core mechanics of an LBO can be applied to minority investments, full takeovers, levered recaps, and other structured",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -10616,6 +10616,49 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/partner-group-s-2-2bn-acquisition-of-diversitech",
+   "title": "Partner Group’s $2.2bn Acquisition of DiversiTech",
+   "published": "2021-12-10",
+   "byline": "By Haozhe (James) Huang , Friedrich von Storch, Yujia Bao (IE Business School), Athean Myat, Suchrita Patlolla, James Ludlow, May Takagi, and Chris Goranov (Cornell University)",
+   "acquirer": "Partners Group",
+   "acquirerTicker": null,
+   "target": "DiversiTech",
+   "targetTicker": null,
+   "value": 2200000000,
+   "currency": "USD",
+   "announced": "16/11/2021",
+   "closed": null,
+   "fields": [
+    {
+     "label": "Acquirer",
+     "value": "Partners Group"
+    },
+    {
+     "label": "Target",
+     "value": "DiversiTech"
+    },
+    {
+     "label": "Total Transaction Size",
+     "value": "USD 2.2bn"
+    },
+    {
+     "label": "Announced date",
+     "value": "16/11/2021"
+    },
+    {
+     "label": "Target advisor",
+     "value": "Baird, Barclays"
+    }
+   ],
+   "excerpt": "Partners Group has agreed to acquire Diversitech, the largest manufacturer of parts and accessories for heating, ventilation, and air conditioning equipment in the US from Permira, with an implied enterprise value of USD 2.2 billion. The transaction is expected to close in December, and Permira and management will…",
+   "typeHint": null,
+   "industries": [
+    "industrials"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/doordash-s-8-1bn-acquisition-of-wolt",
    "title": "DoorDash’s $8.1bn Acquisition of Wolt",
    "published": "2021-12-10",
@@ -10662,49 +10705,6 @@
    "typeHint": null,
    "industries": [
     "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/partner-group-s-2-2bn-acquisition-of-diversitech",
-   "title": "Partner Group’s $2.2bn Acquisition of DiversiTech",
-   "published": "2021-12-10",
-   "byline": "By Haozhe (James) Huang , Friedrich von Storch, Yujia Bao (IE Business School), Athean Myat, Suchrita Patlolla, James Ludlow, May Takagi, and Chris Goranov (Cornell University)",
-   "acquirer": "Partners Group",
-   "acquirerTicker": null,
-   "target": "DiversiTech",
-   "targetTicker": null,
-   "value": 2200000000,
-   "currency": "USD",
-   "announced": "16/11/2021",
-   "closed": null,
-   "fields": [
-    {
-     "label": "Acquirer",
-     "value": "Partners Group"
-    },
-    {
-     "label": "Target",
-     "value": "DiversiTech"
-    },
-    {
-     "label": "Total Transaction Size",
-     "value": "USD 2.2bn"
-    },
-    {
-     "label": "Announced date",
-     "value": "16/11/2021"
-    },
-    {
-     "label": "Target advisor",
-     "value": "Baird, Barclays"
-    }
-   ],
-   "excerpt": "Partners Group has agreed to acquire Diversitech, the largest manufacturer of parts and accessories for heating, ventilation, and air conditioning equipment in the US from Permira, with an implied enterprise value of USD 2.2 billion. The transaction is expected to close in December, and Permira and management will…",
-   "typeHint": null,
-   "industries": [
-    "industrials"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -10943,6 +10943,28 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/universal-music-group-s-ipo",
+   "title": "Universal Music Group’s IPO",
+   "published": "2021-10-27",
+   "byline": "By Martín Palomar, Olivier Baverez, and Léo Clément (HEC Paris)",
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "Universal is the world’s largest owner of Music rights. As the global music streaming sales grow steadily, Music giants have greatly benefited from the trend. The industry is at a point in time where emerging markets represent a fresh and vibrant opportunity for expansion, all the while per capita expenditure in…",
+   "typeHint": "ipo",
+   "industries": [
+    "tmt"
+   ],
+   "industryInferred": true,
+   "type": "ipo"
+  },
+  {
    "url": "https://www.mergersight.com/post/polestar-s-20bn-spac-merger-with-gores-guggenheim",
    "title": "Polestar's $20bn SPAC Merger with Gores Guggenheim",
    "published": "2021-10-27",
@@ -11011,28 +11033,6 @@
    "typeHint": "ipo",
    "industries": [
     "financials"
-   ],
-   "industryInferred": true,
-   "type": "ipo"
-  },
-  {
-   "url": "https://www.mergersight.com/post/universal-music-group-s-ipo",
-   "title": "Universal Music Group’s IPO",
-   "published": "2021-10-27",
-   "byline": "By Martín Palomar, Olivier Baverez, and Léo Clément (HEC Paris)",
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "Universal is the world’s largest owner of Music rights. As the global music streaming sales grow steadily, Music giants have greatly benefited from the trend. The industry is at a point in time where emerging markets represent a fresh and vibrant opportunity for expansion, all the while per capita expenditure in…",
-   "typeHint": "ipo",
-   "industries": [
-    "tmt"
    ],
    "industryInferred": true,
    "type": "ipo"
@@ -11123,57 +11123,6 @@
    ],
    "industryInferred": true,
    "type": "pe"
-  },
-  {
-   "url": "https://www.mergersight.com/post/intuit-s-12bn-acquisition-of-mailchimp",
-   "title": "Intuit’s $12bn Acquisition of Mailchimp",
-   "published": "2021-10-05",
-   "byline": "By Mikail Boudouda and Florent Onguen (Grenoble École de Management), Claire Zhong (Wharton School)",
-   "acquirer": "Intuit",
-   "acquirerTicker": null,
-   "target": "Mailchimp",
-   "targetTicker": null,
-   "value": 12000000000,
-   "currency": "USD",
-   "announced": "September 13th 2021",
-   "closed": "End of January 2022 (According to Intuit’s CEO)",
-   "fields": [
-    {
-     "label": "Acquirer",
-     "value": "Intuit"
-    },
-    {
-     "label": "Target",
-     "value": "Mailchimp"
-    },
-    {
-     "label": "Total Transaction Size",
-     "value": "$12 billion"
-    },
-    {
-     "label": "Announcement date",
-     "value": "September 13th 2021"
-    },
-    {
-     "label": "Closed date",
-     "value": "End of January 2022 (According to Intuit’s CEO)"
-    },
-    {
-     "label": "Acquirer advisor",
-     "value": "Morgan Stanley"
-    },
-    {
-     "label": "Target advisor",
-     "value": "Qatalyst Partners"
-    }
-   ],
-   "excerpt": "​​The management and accounting software provider Intuit has announced the acquisition of email marketing company Mailchimp for a sum of $12 billion. The largest deal of Intuit’s history will be financed with cash on hand and approximately $4.5 to $5 billion in new debt. The price includes about $300 million of…",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
   },
   {
    "url": "https://www.mergersight.com/post/philip-morris-international-s-1-1-bn-acquisition-of-vectura",
@@ -11280,6 +11229,79 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/intuit-s-12bn-acquisition-of-mailchimp",
+   "title": "Intuit’s $12bn Acquisition of Mailchimp",
+   "published": "2021-10-05",
+   "byline": "By Mikail Boudouda and Florent Onguen (Grenoble École de Management), Claire Zhong (Wharton School)",
+   "acquirer": "Intuit",
+   "acquirerTicker": null,
+   "target": "Mailchimp",
+   "targetTicker": null,
+   "value": 12000000000,
+   "currency": "USD",
+   "announced": "September 13th 2021",
+   "closed": "End of January 2022 (According to Intuit’s CEO)",
+   "fields": [
+    {
+     "label": "Acquirer",
+     "value": "Intuit"
+    },
+    {
+     "label": "Target",
+     "value": "Mailchimp"
+    },
+    {
+     "label": "Total Transaction Size",
+     "value": "$12 billion"
+    },
+    {
+     "label": "Announcement date",
+     "value": "September 13th 2021"
+    },
+    {
+     "label": "Closed date",
+     "value": "End of January 2022 (According to Intuit’s CEO)"
+    },
+    {
+     "label": "Acquirer advisor",
+     "value": "Morgan Stanley"
+    },
+    {
+     "label": "Target advisor",
+     "value": "Qatalyst Partners"
+    }
+   ],
+   "excerpt": "​​The management and accounting software provider Intuit has announced the acquisition of email marketing company Mailchimp for a sum of $12 billion. The largest deal of Intuit’s history will be financed with cash on hand and approximately $4.5 to $5 billion in new debt. The price includes about $300 million of…",
+   "typeHint": null,
+   "industries": [
+    "tmt"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/toast-s-ipo",
+   "title": "Toast’s IPO",
+   "published": "2021-09-27",
+   "byline": "By Athean Myat, May Takagi, James Ludlow, Christopher Goranov (Cornell University), and Karen Zhuang (McGill University)",
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "Toast Inc., a US-based company providing restaurant management products, has filed to go public on August 27th, 2021, and is seeking to raise a “placeholder amount” of $100M. Founded in 2011, Toast provides point of sale (POS) platforms, food delivery services, and restaurant management software, including payroll…",
+   "typeHint": "ipo",
+   "industries": [
+    "consumer"
+   ],
+   "industryInferred": true,
+   "type": "ipo"
+  },
+  {
    "url": "https://www.mergersight.com/post/woodside-petroleum-acquires-bhp-petroleum-s-for-13-8-bn",
    "title": "Woodside Petroleum acquires BHP Petroleum’s for $13.8 bn",
    "published": "2021-09-27",
@@ -11321,28 +11343,6 @@
    ],
    "industryInferred": true,
    "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/toast-s-ipo",
-   "title": "Toast’s IPO",
-   "published": "2021-09-27",
-   "byline": "By Athean Myat, May Takagi, James Ludlow, Christopher Goranov (Cornell University), and Karen Zhuang (McGill University)",
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "Toast Inc., a US-based company providing restaurant management products, has filed to go public on August 27th, 2021, and is seeking to raise a “placeholder amount” of $100M. Founded in 2011, Toast provides point of sale (POS) platforms, food delivery services, and restaurant management software, including payroll…",
-   "typeHint": "ipo",
-   "industries": [
-    "consumer"
-   ],
-   "industryInferred": true,
-   "type": "ipo"
   },
   {
    "url": "https://www.mergersight.com/post/square-inc-s-29bn-acquisition-of-afterpay",
@@ -11743,49 +11743,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/mondelez-s-2bn-acquisition-of-chipita",
-   "title": "Mondelez’s $2bn Acquisition of Chipita",
-   "published": "2021-06-10",
-   "byline": "By Jonathan Fuchs, Eden Yang, Lolade Oluko and David Summers (London School of Economics), Greis Gaeta, Federico De Rosa, Lorenzo Mirone and Riccardo Colombo (Bocconi University)",
-   "acquirer": "Mondelez",
-   "acquirerTicker": null,
-   "target": "Chipita",
-   "targetTicker": null,
-   "value": 2000000000,
-   "currency": "USD",
-   "announced": null,
-   "closed": "26 May 2021",
-   "fields": [
-    {
-     "label": "Acquirer",
-     "value": "Mondelez"
-    },
-    {
-     "label": "Target",
-     "value": "Chipita"
-    },
-    {
-     "label": "Total Transaction Size",
-     "value": "$2B"
-    },
-    {
-     "label": "Closed date",
-     "value": "26 May 2021"
-    },
-    {
-     "label": "Advisors",
-     "value": "Credit Suisse and Goldman Sachs"
-    }
-   ],
-   "excerpt": "Mondelez, the American food conglomerate behind the beloved Oreo biscuits, is gaining a foothold in the baked goods industry through its recent acquisition of Chipita. Based in Athens, Chipita is known for its packaged croissants, biscuits and cake bars, with sales of close to $600m in 2020. It is not difficult to see…",
-   "typeHint": null,
-   "industries": [
-    "industrials"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/amazon-s-8-45bn-acquisition-of-mgm-studios",
    "title": "Amazon’s $8.45bn Acquisition of MGM Studios",
    "published": "2021-06-10",
@@ -11824,6 +11781,49 @@
    "typeHint": null,
    "industries": [
     "tmt"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/mondelez-s-2bn-acquisition-of-chipita",
+   "title": "Mondelez’s $2bn Acquisition of Chipita",
+   "published": "2021-06-10",
+   "byline": "By Jonathan Fuchs, Eden Yang, Lolade Oluko and David Summers (London School of Economics), Greis Gaeta, Federico De Rosa, Lorenzo Mirone and Riccardo Colombo (Bocconi University)",
+   "acquirer": "Mondelez",
+   "acquirerTicker": null,
+   "target": "Chipita",
+   "targetTicker": null,
+   "value": 2000000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": "26 May 2021",
+   "fields": [
+    {
+     "label": "Acquirer",
+     "value": "Mondelez"
+    },
+    {
+     "label": "Target",
+     "value": "Chipita"
+    },
+    {
+     "label": "Total Transaction Size",
+     "value": "$2B"
+    },
+    {
+     "label": "Closed date",
+     "value": "26 May 2021"
+    },
+    {
+     "label": "Advisors",
+     "value": "Credit Suisse and Goldman Sachs"
+    }
+   ],
+   "excerpt": "Mondelez, the American food conglomerate behind the beloved Oreo biscuits, is gaining a foothold in the baked goods industry through its recent acquisition of Chipita. Based in Athens, Chipita is known for its packaged croissants, biscuits and cake bars, with sales of close to $600m in 2020. It is not difficult to see…",
+   "typeHint": null,
+   "industries": [
+    "industrials"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -12376,26 +12376,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/tdr-capital-to-acquire-arrow-global-for-563m",
-   "title": "TDR Capital to acquire Arrow Global for £563M",
-   "published": "2021-04-18",
-   "byline": "By Martín Palomar, André Assouline (HEC), and Ratish Singh, Luc Roberts (University of Warwick)",
-   "acquirer": "TDR Capital",
-   "acquirerTicker": null,
-   "target": "Arrow Global",
-   "targetTicker": null,
-   "value": 563000000,
-   "currency": "GBP",
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "From an original bid of 250 pence per share back in December, Arrow Global’s four consecutive refusals have forced London-based Private Equity fund TDR Capital to rack the price up to 307.5 pence per share. The deal whereby TDR will buy out the British debt collection agency is set to be completed during the third…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/national-grid-s-7-8bn-acquisition-of-western-power-distribution",
    "title": "National Grid’s £7.8bn Acquisition of Western Power Distribution",
    "published": "2021-04-18",
@@ -12436,6 +12416,26 @@
     "energy"
    ],
    "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/tdr-capital-to-acquire-arrow-global-for-563m",
+   "title": "TDR Capital to acquire Arrow Global for £563M",
+   "published": "2021-04-18",
+   "byline": "By Martín Palomar, André Assouline (HEC), and Ratish Singh, Luc Roberts (University of Warwick)",
+   "acquirer": "TDR Capital",
+   "acquirerTicker": null,
+   "target": "Arrow Global",
+   "targetTicker": null,
+   "value": 563000000,
+   "currency": "GBP",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "From an original bid of 250 pence per share back in December, Arrow Global’s four consecutive refusals have forced London-based Private Equity fund TDR Capital to rack the price up to 307.5 pence per share. The deal whereby TDR will buy out the British debt collection agency is set to be completed during the third…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -15062,26 +15062,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/overview-of-private-equity-vs-mergers-and-acquisitions",
-   "title": "Overview of Private Equity vs. Mergers and Acquisitions",
-   "published": "2020-08-27",
-   "byline": "By Shuishan Xiao, Anthony Borgese (UPenn) and Kritika Venkateswaran, Sreeja Mamillapalli, Aman Singla (NYU)",
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "Private equity is a form of private financing in which funds and investors directly invest in companies or engage in buyouts of such companies to secure strong returns on behalf of their investors over a predetermined lifetime. The nature, size and structure of the investment can vary significantly but PE firms…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/7-eleven-s-21-billion-acquisition-of-speedway",
    "title": "7-Eleven’s $21 Billion Acquisition of Speedway",
    "published": "2020-08-27",
@@ -15101,6 +15081,26 @@
     "energy"
    ],
    "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/overview-of-private-equity-vs-mergers-and-acquisitions",
+   "title": "Overview of Private Equity vs. Mergers and Acquisitions",
+   "published": "2020-08-27",
+   "byline": "By Shuishan Xiao, Anthony Borgese (UPenn) and Kritika Venkateswaran, Sreeja Mamillapalli, Aman Singla (NYU)",
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "Private equity is a form of private financing in which funds and investors directly invest in companies or engage in buyouts of such companies to secure strong returns on behalf of their investors over a predetermined lifetime. The nature, size and structure of the investment can vary significantly but PE firms…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -15411,6 +15411,28 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/first-horizon-and-iberiabank-merger-approved-by-fed",
+   "title": "First Horizon and IberiaBank Merger Approved by Fed",
+   "published": "2020-06-16",
+   "byline": null,
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“First Horizon and IberiaBank together will be well positioned to navigate a changing financial services landscape, deliver superior client solutions, strengthen the communities we serve and create strong returns for our",
+   "typeHint": null,
+   "industries": [
+    "financials"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/accenture-to-acquire-sentelis",
    "title": "Accenture to Acquire Sentelis",
    "published": "2020-06-16",
@@ -15431,23 +15453,23 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/first-horizon-and-iberiabank-merger-approved-by-fed",
-   "title": "First Horizon and IberiaBank Merger Approved by Fed",
-   "published": "2020-06-16",
+   "url": "https://www.mergersight.com/post/ibm-to-acquire-spanugo",
+   "title": "IBM to Acquire Spanugo",
+   "published": "2020-06-15",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "IBM",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Spanugo",
    "targetTicker": null,
    "value": null,
    "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "“First Horizon and IberiaBank together will be well positioned to navigate a changing financial services landscape, deliver superior client solutions, strengthen the communities we serve and create strong returns for our",
+   "excerpt": "\"IBM is committed to building the industry's most secure and open public cloud for business. With the acquisition of Spanugo, we have taken another major step in advancing IBM's differentiated capabilities in security and compliance for our enterprise clients, including those in highly regulated",
    "typeHint": null,
    "industries": [
-    "financials"
+    "tmt"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -15522,50 +15544,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/ibm-to-acquire-spanugo",
-   "title": "IBM to Acquire Spanugo",
-   "published": "2020-06-15",
-   "byline": null,
-   "acquirer": "IBM",
-   "acquirerTicker": null,
-   "target": "Spanugo",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "\"IBM is committed to building the industry's most secure and open public cloud for business. With the acquisition of Spanugo, we have taken another major step in advancing IBM's differentiated capabilities in security and compliance for our enterprise clients, including those in highly regulated",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/tfi-international-set-to-acquire-gusgo-transport",
-   "title": "TFI International Set to Acquire Gusgo Transport",
-   "published": "2020-06-12",
-   "byline": null,
-   "acquirer": "TFI International",
-   "acquirerTicker": null,
-   "target": "Gusgo Transport",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Operationally, we see numerous synergies across our combined real estate footprint, as well as for our equipment sales, purchases, and overall utilization. In addition, by joining the TFI group of companies, Gusgo will be able to leverage our growing resources across North America to enhance its own growth and…",
-   "typeHint": null,
-   "industries": [
-    "realestate"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/zijin-mining-to-acquire-guyana-goldfields",
    "title": "Zijin Mining to acquire Guyana Goldfields",
    "published": "2020-06-12",
@@ -15608,6 +15586,28 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/tfi-international-set-to-acquire-gusgo-transport",
+   "title": "TFI International Set to Acquire Gusgo Transport",
+   "published": "2020-06-12",
+   "byline": null,
+   "acquirer": "TFI International",
+   "acquirerTicker": null,
+   "target": "Gusgo Transport",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Operationally, we see numerous synergies across our combined real estate footprint, as well as for our equipment sales, purchases, and overall utilization. In addition, by joining the TFI group of companies, Gusgo will be able to leverage our growing resources across North America to enhance its own growth and…",
+   "typeHint": null,
+   "industries": [
+    "realestate"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/novo-nordisk-acquires-astrazeneca",
    "title": "Novo Nordisk acquires Corvidia",
    "published": "2020-06-11",
@@ -15625,28 +15625,6 @@
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/menarini-group-acquires-stemline-therapeutics",
-   "title": "Menarini Group Acquires Stemline Therapeutics",
-   "published": "2020-06-10",
-   "byline": null,
-   "acquirer": "Menarini Group",
-   "acquirerTicker": null,
-   "target": "Stemline Therapeutics",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "with an established biopharmaceutical company focused on developing oncology therapeutics. Through this acquisition, we will continue to strengthen our portfolio and pipeline of oncology assets and deliver novel therapies around the",
-   "typeHint": null,
-   "industries": [
-    "healthcare"
-   ],
-   "industryInferred": true,
    "type": "strategic"
   },
   {
@@ -15672,6 +15650,28 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/menarini-group-acquires-stemline-therapeutics",
+   "title": "Menarini Group Acquires Stemline Therapeutics",
+   "published": "2020-06-10",
+   "byline": null,
+   "acquirer": "Menarini Group",
+   "acquirerTicker": null,
+   "target": "Stemline Therapeutics",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "with an established biopharmaceutical company focused on developing oncology therapeutics. Through this acquisition, we will continue to strengthen our portfolio and pipeline of oncology assets and deliver novel therapies around the",
+   "typeHint": null,
+   "industries": [
+    "healthcare"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/just-eat-approaching-grubhub-deal",
    "title": "Just Eat Approaching Grubhub Deal",
    "published": "2020-06-10",
@@ -15689,28 +15689,6 @@
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/dsp-acquires-soundchip",
-   "title": "DSP acquires SoundChip",
-   "published": "2020-06-09",
-   "byline": null,
-   "acquirer": "DSP",
-   "acquirerTicker": null,
-   "target": "SoundChip",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“The global pandemic has created extensive challenges for businesses and consumers worldwide, but it has also intersected with DSP Group’s business initiatives, presenting significant new opportunities. Major trends, including work from home, remote communications, and voice as a user interface, all emphasize the need…",
-   "typeHint": null,
-   "industries": [
-    "consumer"
-   ],
-   "industryInferred": true,
    "type": "strategic"
   },
   {
@@ -15753,6 +15731,28 @@
    "typeHint": null,
    "industries": [
     "tmt"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/dsp-acquires-soundchip",
+   "title": "DSP acquires SoundChip",
+   "published": "2020-06-09",
+   "byline": null,
+   "acquirer": "DSP",
+   "acquirerTicker": null,
+   "target": "SoundChip",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“The global pandemic has created extensive challenges for businesses and consumers worldwide, but it has also intersected with DSP Group’s business initiatives, presenting significant new opportunities. Major trends, including work from home, remote communications, and voice as a user interface, all emphasize the need…",
+   "typeHint": null,
+   "industries": [
+    "consumer"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -15805,26 +15805,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/materion-to-acquire-optics-balzers",
-   "title": "Materion to Acquire Optics Balzers",
-   "published": "2020-06-08",
-   "byline": null,
-   "acquirer": "Materion",
-   "acquirerTicker": null,
-   "target": "Optics Balzers",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“We have long held a deep amount of respect and appreciation for the Optics Balzers business. Their technical capabilities, product portfolio, end market, and geographic mix, combined with their talented leadership team, make them the ideal partner to accelerate our global growth. The combination creates a global…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/xp-acquires-majority-stake-in-fliper",
    "title": "XP Acquires Majority Stake in Fliper",
    "published": "2020-06-08",
@@ -15839,6 +15819,26 @@
    "closed": null,
    "fields": [],
    "excerpt": "“The solution will allow us to improve the experience of our clients, who in many cases have accounts with more than one financial institution. Our intention is that XP Inc. customers consolidate all their investments and services within the group's platforms. We are confident that with even more transparency and the…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/materion-to-acquire-optics-balzers",
+   "title": "Materion to Acquire Optics Balzers",
+   "published": "2020-06-08",
+   "byline": null,
+   "acquirer": "Materion",
+   "acquirerTicker": null,
+   "target": "Optics Balzers",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“We have long held a deep amount of respect and appreciation for the Optics Balzers business. Their technical capabilities, product portfolio, end market, and geographic mix, combined with their talented leadership team, make them the ideal partner to accelerate our global growth. The combination creates a global…",
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
@@ -15887,6 +15887,26 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/doj-approves-charles-schwab-acquisition-of-td-ameritrade",
+   "title": "DOJ Approves Charles Schwab Acquisition of TD Ameritrade",
+   "published": "2020-06-04",
+   "byline": null,
+   "acquirer": "DOJ Approves Charles Schwab",
+   "acquirerTicker": null,
+   "target": "TD Ameritrade",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“We’re gratified by the DOJ’s decision and appreciate its diligent and thorough review. We are pleased to be clearing an important milestone in our planned acquisition of TD Ameritrade and look forward to today’s scheduled votes by the stockholders of our two companies, which represent another important step toward…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/puration-announces-acquisition-of-third-cbd-business",
    "title": "Puration Announces Acquisition of Third CBD Business",
    "published": "2020-06-04",
@@ -15906,26 +15926,6 @@
     "consumer"
    ],
    "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/doj-approves-charles-schwab-acquisition-of-td-ameritrade",
-   "title": "DOJ Approves Charles Schwab Acquisition of TD Ameritrade",
-   "published": "2020-06-04",
-   "byline": null,
-   "acquirer": "DOJ Approves Charles Schwab",
-   "acquirerTicker": null,
-   "target": "TD Ameritrade",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“We’re gratified by the DOJ’s decision and appreciate its diligent and thorough review. We are pleased to be clearing an important milestone in our planned acquisition of TD Ameritrade and look forward to today’s scheduled votes by the stockholders of our two companies, which represent another important step toward…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -16126,28 +16126,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/novavax-acquires-praha-vaccines-for-167m",
-   "title": "Novavax acquires Praha Vaccines for $167M",
-   "published": "2020-05-26",
-   "byline": null,
-   "acquirer": "Novavax",
-   "acquirerTicker": null,
-   "target": "Praha Vaccines",
-   "targetTicker": null,
-   "value": 167000000,
-   "currency": "USD",
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Manufacturing capacity is a critical component of our strategy to deliver a vaccine for the COVID-19 pandemic. This acquisition provides the vital assets required to produce more than 1 billion doses per year. In parallel with ramping up production at Bohumil, we will continue efforts to expand antigen capacity in…",
-   "typeHint": null,
-   "industries": [
-    "healthcare"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/expeditors-international-of-washington-inc-to-acquire-fleet-logistics-digital-platform",
    "title": "Expeditors International of Washington Inc to acquire Fleet Logistics’ Digital Platform",
    "published": "2020-05-26",
@@ -16165,6 +16143,28 @@
    "typeHint": null,
    "industries": [
     "tmt"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/novavax-acquires-praha-vaccines-for-167m",
+   "title": "Novavax acquires Praha Vaccines for $167M",
+   "published": "2020-05-26",
+   "byline": null,
+   "acquirer": "Novavax",
+   "acquirerTicker": null,
+   "target": "Praha Vaccines",
+   "targetTicker": null,
+   "value": 167000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Manufacturing capacity is a critical component of our strategy to deliver a vaccine for the COVID-19 pandemic. This acquisition provides the vital assets required to produce more than 1 billion doses per year. In parallel with ramping up production at Bohumil, we will continue efforts to expand antigen capacity in…",
+   "typeHint": null,
+   "industries": [
+    "healthcare"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -16239,26 +16239,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/endexx-acquires-rpa-inc",
-   "title": "Endexx acquires RPA, Inc.",
-   "published": "2020-05-21",
-   "byline": null,
-   "acquirer": "Endexx",
-   "acquirerTicker": null,
-   "target": "RPA, Inc.",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“To say I'm excited about the true potential of Endexx and the CBD Unlimited Division would be an understatement. We have a great opportunity to emerge as a well-positioned CBD lifestyle company in the emerging hemp industry. With the support of the management team, and under Todd's leadership, the Company is well…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/roche-has-acquired-stratos-genomics",
    "title": "Roche has acquired Stratos Genomics",
    "published": "2020-05-21",
@@ -16278,6 +16258,26 @@
     "healthcare"
    ],
    "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/endexx-acquires-rpa-inc",
+   "title": "Endexx acquires RPA, Inc.",
+   "published": "2020-05-21",
+   "byline": null,
+   "acquirer": "Endexx",
+   "acquirerTicker": null,
+   "target": "RPA, Inc.",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“To say I'm excited about the true potential of Endexx and the CBD Unlimited Division would be an understatement. We have a great opportunity to emerge as a well-positioned CBD lifestyle company in the emerging hemp industry. With the support of the management team, and under Todd's leadership, the Company is well…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -16323,28 +16323,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/intel-set-to-acquire-rivet-networks",
-   "title": "Intel set to acquire Rivet Networks",
-   "published": "2020-05-20",
-   "byline": null,
-   "acquirer": "Intel",
-   "acquirerTicker": null,
-   "target": "Rivet Networks",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Rivet Networks’ key products, including its Killer brand, will integrate into Intel’s broader PC Wi-Fi portfolio. With the addition of Rivet Networks’ software, we will license its software to customers and develop new solutions for broader PC connectivity enhancement. With Rivet Networks’ and Intel’s leading Wi-Fi…",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/shareholders-approve-argonaut-and-alio-gold-merger",
    "title": "Shareholders approve Argonaut and Alio Gold merger",
    "published": "2020-05-20",
@@ -16367,43 +16345,25 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/blackstone-looking-to-revise-price-for-nibc-holding-acquisition",
-   "title": "Blackstone looking to revise price for NIBC holding acquisition",
-   "published": "2020-05-19",
+   "url": "https://www.mergersight.com/post/intel-set-to-acquire-rivet-networks",
+   "title": "Intel set to acquire Rivet Networks",
+   "published": "2020-05-20",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Intel",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Rivet Networks",
    "targetTicker": null,
    "value": null,
    "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "\"In light of the emerging widespread impact of COVID-19 and macroeconomic developments, the offeror believes there is substantial uncertainty concerning the transaction-related business plan and it continuing to be a realistic basis for obtaining regulatory clearance for the",
+   "excerpt": "“Rivet Networks’ key products, including its Killer brand, will integrate into Intel’s broader PC Wi-Fi portfolio. With the addition of Rivet Networks’ software, we will license its software to customers and develop new solutions for broader PC connectivity enhancement. With Rivet Networks’ and Intel’s leading Wi-Fi…",
    "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/forescout-files-suit-against-advent-after-merger-called-off",
-   "title": "Forescout files suit against Advent after Merger called off",
-   "published": "2020-05-19",
-   "byline": null,
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“The only change since the merger agreement was jointly executed in February is the deepening of the COVID-19 pandemic, which has significantly impacted global macroeconomic conditions. All companies have been challenged by this pandemic, and it is highly disappointing that Advent would attempt to exploit market…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
+   "industries": [
+    "tmt"
+   ],
+   "industryInferred": true,
    "type": "strategic"
   },
   {
@@ -16454,20 +16414,40 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/microsoft-confirms-its-acquisition-of-softomotive",
-   "title": "Microsoft confirms its acquisition of Softomotive",
-   "published": "2020-05-18",
+   "url": "https://www.mergersight.com/post/blackstone-looking-to-revise-price-for-nibc-holding-acquisition",
+   "title": "Blackstone looking to revise price for NIBC holding acquisition",
+   "published": "2020-05-19",
    "byline": null,
-   "acquirer": "Microsoft confirms its",
+   "acquirer": null,
    "acquirerTicker": null,
-   "target": "Softomotive",
+   "target": null,
    "targetTicker": null,
    "value": null,
    "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "“We believe the greatest potential for both process improvement and overall innovation comes from business end users. This is why we have invested so diligently in abstracting complexity away from end users and created one of the industry’s most intuitive user interfaces...We are extremely excited to pursue this…",
+   "excerpt": "\"In light of the emerging widespread impact of COVID-19 and macroeconomic developments, the offeror believes there is substantial uncertainty concerning the transaction-related business plan and it continuing to be a realistic basis for obtaining regulatory clearance for the",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/forescout-files-suit-against-advent-after-merger-called-off",
+   "title": "Forescout files suit against Advent after Merger called off",
+   "published": "2020-05-19",
+   "byline": null,
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“The only change since the merger agreement was jointly executed in February is the deepening of the COVID-19 pandemic, which has significantly impacted global macroeconomic conditions. All companies have been challenged by this pandemic, and it is highly disappointing that Advent would attempt to exploit market…",
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
@@ -16496,20 +16476,20 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/uber-and-grubhub-continue-merger-discussions",
-   "title": "Uber and Grubhub continue Merger Discussions",
-   "published": "2020-05-17",
+   "url": "https://www.mergersight.com/post/microsoft-confirms-its-acquisition-of-softomotive",
+   "title": "Microsoft confirms its acquisition of Softomotive",
+   "published": "2020-05-18",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Microsoft confirms its",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Softomotive",
    "targetTicker": null,
    "value": null,
    "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "“Grubhub CEO Matt Maloney spoke to Uber CEO Dara Khosrowshahi Sunday and indicated that Uber’s latest offer of 1.9 of its shares for each Grubhub share was too low… Khosrowshahi said he might be able to increase the offer to 1.925 Uber shares, but that is still well below the price Grubhub had been seeking, according…",
+   "excerpt": "“We believe the greatest potential for both process improvement and overall innovation comes from business end users. This is why we have invested so diligently in abstracting complexity away from end users and created one of the industry’s most intuitive user interfaces...We are extremely excited to pursue this…",
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
@@ -16556,20 +16536,20 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/facebook-acquire-giphy-for-400m",
-   "title": "Facebook acquire GIPHY for $400M",
-   "published": "2020-05-14",
+   "url": "https://www.mergersight.com/post/uber-and-grubhub-continue-merger-discussions",
+   "title": "Uber and Grubhub continue Merger Discussions",
+   "published": "2020-05-17",
    "byline": null,
    "acquirer": null,
    "acquirerTicker": null,
    "target": null,
    "targetTicker": null,
-   "value": 400000000,
-   "currency": "USD",
+   "value": null,
+   "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": null,
+   "excerpt": "“Grubhub CEO Matt Maloney spoke to Uber CEO Dara Khosrowshahi Sunday and indicated that Uber’s latest offer of 1.9 of its shares for each Grubhub share was too low… Khosrowshahi said he might be able to increase the offer to 1.925 Uber shares, but that is still well below the price Grubhub had been seeking, according…",
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
@@ -16598,6 +16578,26 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/facebook-acquire-giphy-for-400m",
+   "title": "Facebook acquire GIPHY for $400M",
+   "published": "2020-05-14",
+   "byline": null,
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": 400000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": null,
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/apple-will-acquire-nextvr",
    "title": "Apple will acquire NextVR",
    "published": "2020-05-14",
@@ -16615,28 +16615,6 @@
    "typeHint": null,
    "industries": [
     "consumer"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/costar-to-acquire-commercial-real-estate-division-of-ten-x",
-   "title": "CoStar to acquire commercial real estate division of Ten-X",
-   "published": "2020-05-13",
-   "byline": null,
-   "acquirer": "CoStar",
-   "acquirerTicker": null,
-   "target": "commercial real estate division of Ten-X",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Together, Ten-X and CoStar plan to create a new end-to-end commercial real estate platform, combining LoopNet and CoStar’s unmatched online audience of buyers with Ten-X’s clear leadership in online auctions for both performing and distressed assets. Combining our complementary capabilities is expected to create…",
-   "typeHint": null,
-   "industries": [
-    "realestate"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -16662,6 +16640,28 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/costar-to-acquire-commercial-real-estate-division-of-ten-x",
+   "title": "CoStar to acquire commercial real estate division of Ten-X",
+   "published": "2020-05-13",
+   "byline": null,
+   "acquirer": "CoStar",
+   "acquirerTicker": null,
+   "target": "commercial real estate division of Ten-X",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Together, Ten-X and CoStar plan to create a new end-to-end commercial real estate platform, combining LoopNet and CoStar’s unmatched online audience of buyers with Ten-X’s clear leadership in online auctions for both performing and distressed assets. Combining our complementary capabilities is expected to create…",
+   "typeHint": null,
+   "industries": [
+    "realestate"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/tronox-holdings-announce-acquisition-of-tizir-titanium",
    "title": "Tronox Holdings announce acquisition of TiZir Titanium",
    "published": "2020-05-13",
@@ -16679,6 +16679,28 @@
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/aimia-acquires-10-stake-clear-media-limited-for-75m",
+   "title": "Aimia acquires 10% stake Clear Media Limited for $75M",
+   "published": "2020-05-12",
+   "byline": null,
+   "acquirer": "Aimia",
+   "acquirerTicker": null,
+   "target": "10% stake Clear Media Limited",
+   "targetTicker": null,
+   "value": 75000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "\"Aimia's investment in Clear Media represents an outstanding opportunity, diversifying our holdings and taking advantage of the COVID-19 related economic malaise in the U.S. and China. Aimia now owns a large stake in a leader in the outdoor advertising market in China with more than a 20-year track record, strong…",
+   "typeHint": null,
+   "industries": [
+    "tmt"
+   ],
+   "industryInferred": true,
    "type": "strategic"
   },
   {
@@ -16721,28 +16743,6 @@
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/aimia-acquires-10-stake-clear-media-limited-for-75m",
-   "title": "Aimia acquires 10% stake Clear Media Limited for $75M",
-   "published": "2020-05-12",
-   "byline": null,
-   "acquirer": "Aimia",
-   "acquirerTicker": null,
-   "target": "10% stake Clear Media Limited",
-   "targetTicker": null,
-   "value": 75000000,
-   "currency": "USD",
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "\"Aimia's investment in Clear Media represents an outstanding opportunity, diversifying our holdings and taking advantage of the COVID-19 related economic malaise in the U.S. and China. Aimia now owns a large stake in a leader in the outdoor advertising market in China with more than a 20-year track record, strong…",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
    "type": "strategic"
   },
   {
@@ -16815,6 +16815,26 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/eu-set-to-approve-fiat-chrysler-and-peugeot-merger",
+   "title": "EU set to approve Fiat Chrysler and Peugeot Merger",
+   "published": "2020-05-10",
+   "byline": null,
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Fiat and PSA sought EU approval on Friday, the Commission site showed. EU competition enforcers can approve the deal with or without conditions or open a full-scale investigation of about four months following the end of the preliminary review should they have deep",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/alacer-gold-to-merge-with-ssr-mining",
    "title": "Alacer Gold to merge with SSR Mining",
    "published": "2020-05-10",
@@ -16834,26 +16854,6 @@
     "resources"
    ],
    "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/eu-set-to-approve-fiat-chrysler-and-peugeot-merger",
-   "title": "EU set to approve Fiat Chrysler and Peugeot Merger",
-   "published": "2020-05-10",
-   "byline": null,
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Fiat and PSA sought EU approval on Friday, the Commission site showed. EU competition enforcers can approve the deal with or without conditions or open a full-scale investigation of about four months following the end of the preliminary review should they have deep",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -16963,28 +16963,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/cognizant-to-acquire-collaborative-solutions",
-   "title": "Cognizant to acquire Collaborative Solutions",
-   "published": "2020-05-04",
-   "byline": null,
-   "acquirer": "Cognizant",
-   "acquirerTicker": null,
-   "target": "Collaborative Solutions",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Collaborative Solutions, with its rich expertise and leading position in the Workday ecosystem, expands our opportunity in cloud by establishing a new practice area in this large, fast-growing market. Our combined strengths in cloud strategy and enablement will differentiate our offering, positioning us to provide…",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/sinch-ab-will-acquire-sap-digital-interconnect",
    "title": "Sinch AB will acquire SAP Digital Interconnect",
    "published": "2020-05-04",
@@ -17029,20 +17007,20 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/intel-completes-its-acquisition-of-moovit-for-840m",
-   "title": "Intel completes its acquisition of Moovit for $840M",
-   "published": "2020-05-03",
+   "url": "https://www.mergersight.com/post/cognizant-to-acquire-collaborative-solutions",
+   "title": "Cognizant to acquire Collaborative Solutions",
+   "published": "2020-05-04",
    "byline": null,
-   "acquirer": "Intel completes its",
+   "acquirer": "Cognizant",
    "acquirerTicker": null,
-   "target": "Moovit",
+   "target": "Collaborative Solutions",
    "targetTicker": null,
-   "value": 840000000,
-   "currency": "USD",
+   "value": null,
+   "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "“Specifically, Moovit’s tech will be used to expand and enhance Mobileye’s ‘mobility as a service’ (MaaS) offering, Intel said. Mobileye’s driver assistance technology is in some 60 million vehicles today, and while a lot of autonomous services like ‘robotaxis’ are still in their most nascent phase, the opportunities…",
+   "excerpt": "“Collaborative Solutions, with its rich expertise and leading position in the Workday ecosystem, expands our opportunity in cloud by establishing a new practice area in this large, fast-growing market. Our combined strengths in cloud strategy and enablement will differentiate our offering, positioning us to provide…",
    "typeHint": null,
    "industries": [
     "tmt"
@@ -17068,6 +17046,28 @@
    "typeHint": null,
    "industries": [
     "healthcare"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/intel-completes-its-acquisition-of-moovit-for-840m",
+   "title": "Intel completes its acquisition of Moovit for $840M",
+   "published": "2020-05-03",
+   "byline": null,
+   "acquirer": "Intel completes its",
+   "acquirerTicker": null,
+   "target": "Moovit",
+   "targetTicker": null,
+   "value": 840000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Specifically, Moovit’s tech will be used to expand and enhance Mobileye’s ‘mobility as a service’ (MaaS) offering, Intel said. Mobileye’s driver assistance technology is in some 60 million vehicles today, and while a lot of autonomous services like ‘robotaxis’ are still in their most nascent phase, the opportunities…",
+   "typeHint": null,
+   "industries": [
+    "tmt"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -17117,28 +17117,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/accenture-closes-on-acquisition-of-symantec",
-   "title": "Accenture closes on acquisition of Symantec",
-   "published": "2020-04-29",
-   "byline": null,
-   "acquirer": "Accenture closes on",
-   "acquirerTicker": null,
-   "target": "Symantec",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Cybersecurity has become one of the most critical business imperatives for all organizations regardless of industry or geographic location...With the addition of Symantec’s Cyber Security Services business, Accenture Security will offer one of the most comprehensive managed services for global businesses to detect…",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/supernus-pharmaceuticals-announces-acquisition-of-us-worldmeds",
    "title": "Supernus Pharmaceuticals announces acquisition of US WorldMeds",
    "published": "2020-04-29",
@@ -17183,23 +17161,25 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/blackstone-s-takeover-of-nibc-may-not-pass-regulatory-stage",
-   "title": "Blackstone’s takeover of NIBC may not pass regulatory stage",
-   "published": "2020-04-28",
+   "url": "https://www.mergersight.com/post/accenture-closes-on-acquisition-of-symantec",
+   "title": "Accenture closes on acquisition of Symantec",
+   "published": "2020-04-29",
    "byline": null,
-   "acquirer": "Blackstone",
+   "acquirer": "Accenture closes on",
    "acquirerTicker": null,
-   "target": "NIBC may not pass regulatory stage",
+   "target": "Symantec",
    "targetTicker": null,
    "value": null,
    "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "“There is substantial uncertainty concerning the business plan and it continuing to be a realistic basis for obtaining regulatory clearance...The relevant regulators have not yet given any indication of their views in this",
+   "excerpt": "“Cybersecurity has become one of the most critical business imperatives for all organizations regardless of industry or geographic location...With the addition of Symantec’s Cyber Security Services business, Accenture Security will offer one of the most comprehensive managed services for global businesses to detect…",
    "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
+   "industries": [
+    "tmt"
+   ],
+   "industryInferred": true,
    "type": "strategic"
   },
   {
@@ -17247,25 +17227,23 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/optum-to-acquire-virtual-therapy-provider-ableto-for-470m",
-   "title": "Optum to acquire virtual therapy provider Ableto for $470M",
-   "published": "2020-04-27",
+   "url": "https://www.mergersight.com/post/blackstone-s-takeover-of-nibc-may-not-pass-regulatory-stage",
+   "title": "Blackstone’s takeover of NIBC may not pass regulatory stage",
+   "published": "2020-04-28",
    "byline": null,
-   "acquirer": "Optum",
+   "acquirer": "Blackstone",
    "acquirerTicker": null,
-   "target": "virtual therapy provider Ableto",
+   "target": "NIBC may not pass regulatory stage",
    "targetTicker": null,
-   "value": 470000000,
-   "currency": "USD",
+   "value": null,
+   "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "“Mismatch between supply and demand for mental health services is massive and growing, making virtual care models that scale a winning value proposition. Without the stigma associated with in-person visits, barriers to care-seeking on the part of patients may free up latent demand for service",
+   "excerpt": "“There is substantial uncertainty concerning the business plan and it continuing to be a realistic basis for obtaining regulatory clearance...The relevant regulators have not yet given any indication of their views in this",
    "typeHint": null,
-   "industries": [
-    "healthcare"
-   ],
-   "industryInferred": true,
+   "industries": [],
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -17286,6 +17264,28 @@
    "typeHint": null,
    "industries": [
     "energy"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/optum-to-acquire-virtual-therapy-provider-ableto-for-470m",
+   "title": "Optum to acquire virtual therapy provider Ableto for $470M",
+   "published": "2020-04-27",
+   "byline": null,
+   "acquirer": "Optum",
+   "acquirerTicker": null,
+   "target": "virtual therapy provider Ableto",
+   "targetTicker": null,
+   "value": 470000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Mismatch between supply and demand for mental health services is massive and growing, making virtual care models that scale a winning value proposition. Without the stigma associated with in-person visits, barriers to care-seeking on the part of patients may free up latent demand for service",
+   "typeHint": null,
+   "industries": [
+    "healthcare"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -17442,26 +17442,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/boxlight-to-acquire-mystemkits",
-   "title": "Boxlight to acquire MyStemKits",
-   "published": "2020-04-20",
-   "byline": null,
-   "acquirer": "Boxlight",
-   "acquirerTicker": null,
-   "target": "MyStemKits",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "\"The addition of Robo 3D and MyStemKits supports our strategic expansion of solutions for K-12 classrooms, and our specific focus on STEM education. We are now uniquely positioned to offer a comprehensive suite of STEM solutions, complete with our Labdisc portable STEM lab, Mimio Mybot robotics and coding solution,…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/sofi-announces-acquisition-of-8-securities",
    "title": "SoFi announces acquisition of 8 Securities",
    "published": "2020-04-20",
@@ -17481,6 +17461,26 @@
     "financials"
    ],
    "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/boxlight-to-acquire-mystemkits",
+   "title": "Boxlight to acquire MyStemKits",
+   "published": "2020-04-20",
+   "byline": null,
+   "acquirer": "Boxlight",
+   "acquirerTicker": null,
+   "target": "MyStemKits",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "\"The addition of Robo 3D and MyStemKits supports our strategic expansion of solutions for K-12 classrooms, and our specific focus on STEM education. We are now uniquely positioned to offer a comprehensive suite of STEM solutions, complete with our Labdisc portable STEM lab, Mimio Mybot robotics and coding solution,…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -17678,28 +17678,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/zscaler-to-acquire-startup-cloudneeti",
-   "title": "Zscaler to acquire startup Cloudneeti",
-   "published": "2020-04-08",
-   "byline": null,
-   "acquirer": "Zscaler",
-   "acquirerTicker": null,
-   "target": "startup Cloudneeti",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Cloudneeti augments Zscaler’s data protection capabilities and will dramatically improve organizations’ cloud security by discovering and eliminating some of the most common causes of data breaches and compliance violations. Whether caused by SaaS applications being configured incorrectly or a developer accidentally…",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/blucora-will-acquire-hk-financial-services-at-new-price",
    "title": "Blucora will acquire HK Financial Services at new price",
    "published": "2020-04-08",
@@ -17717,6 +17695,28 @@
    "typeHint": null,
    "industries": [
     "financials"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/zscaler-to-acquire-startup-cloudneeti",
+   "title": "Zscaler to acquire startup Cloudneeti",
+   "published": "2020-04-08",
+   "byline": null,
+   "acquirer": "Zscaler",
+   "acquirerTicker": null,
+   "target": "startup Cloudneeti",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Cloudneeti augments Zscaler’s data protection capabilities and will dramatically improve organizations’ cloud security by discovering and eliminating some of the most common causes of data breaches and compliance violations. Whether caused by SaaS applications being configured incorrectly or a developer accidentally…",
+   "typeHint": null,
+   "industries": [
+    "tmt"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -17788,28 +17788,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/sofi-to-acquire-acquire-galileo-financial-for-its-api-functions",
-   "title": "SoFi to acquire acquire Galileo Financial for its API functions",
-   "published": "2020-04-06",
-   "byline": null,
-   "acquirer": "SoFi",
-   "acquirerTicker": null,
-   "target": "acquire Galileo Financial for its API functions",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“It’s the right time to do something like this — we’re on the precipice of a transition to digital from physical finance. It’s going to serve people in this environment and the need for mobile financial services is only going to",
-   "typeHint": null,
-   "industries": [
-    "financials"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/accenture-acquires-revolutionary-security",
    "title": "Accenture acquires Revolutionary Security",
    "published": "2020-04-06",
@@ -17827,6 +17805,28 @@
    "typeHint": null,
    "industries": [
     "tmt"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/sofi-to-acquire-acquire-galileo-financial-for-its-api-functions",
+   "title": "SoFi to acquire acquire Galileo Financial for its API functions",
+   "published": "2020-04-06",
+   "byline": null,
+   "acquirer": "SoFi",
+   "acquirerTicker": null,
+   "target": "acquire Galileo Financial for its API functions",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“It’s the right time to do something like this — we’re on the precipice of a transition to digital from physical finance. It’s going to serve people in this environment and the need for mobile financial services is only going to",
+   "typeHint": null,
+   "industries": [
+    "financials"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -17854,26 +17854,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/hexcel-and-woodward-cancel-merger",
-   "title": "Hexcel and Woodward cancel Merger",
-   "published": "2020-04-05",
-   "byline": null,
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“While we both believed from the outset, and continue to believe, in the benefits of a combined Woodward and Hexcel, we mutually concluded after careful consideration that given the significant uncertainty in the market, it would not be prudent to continue to pursue the combination and integration of our companies in…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/maxlinear-to-acquire-intel-s-home-gateway-platform-division-assets",
    "title": "Maxlinear to acquire Intel’s Home Gateway Platform Division assets",
    "published": "2020-04-05",
@@ -17888,6 +17868,26 @@
    "closed": null,
    "fields": [],
    "excerpt": "“These assets add significant scale to our entire business while enabling us to provide a compelling WiFi product offering with tremendous growth opportunities inside and outside of the Connected Home, including expanding the portfolio to include IoT",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/hexcel-and-woodward-cancel-merger",
+   "title": "Hexcel and Woodward cancel Merger",
+   "published": "2020-04-05",
+   "byline": null,
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“While we both believed from the outset, and continue to believe, in the benefits of a combined Woodward and Hexcel, we mutually concluded after careful consideration that given the significant uncertainty in the market, it would not be prudent to continue to pursue the combination and integration of our companies in…",
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
@@ -17934,6 +17934,26 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/tencent-exercised-an-option-to-acquire-262-2m-shares-from-huya",
+   "title": "Tencent exercised an option to acquire $262.2M shares from Huya",
+   "published": "2020-04-02",
+   "byline": null,
+   "acquirer": "Tencent exercised an option",
+   "acquirerTicker": null,
+   "target": "$262.2M shares from Huya",
+   "targetTicker": null,
+   "value": 262200000,
+   "currency": "USD",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "\"The transaction is consistent with our strategy to connect industry partners and users via an expanding and open ecosystem. By supporting Huya's management team, we look forward to more business synergies and innovative services for game",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/jpmorgan-chase-to-buyout-shanghai-international-trust-stake-in-joint-venture",
    "title": "JPMorgan Chase to buyout Shanghai International Trust stake in Joint Venture",
    "published": "2020-04-02",
@@ -17953,26 +17973,6 @@
     "financials"
    ],
    "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/tencent-exercised-an-option-to-acquire-262-2m-shares-from-huya",
-   "title": "Tencent exercised an option to acquire $262.2M shares from Huya",
-   "published": "2020-04-02",
-   "byline": null,
-   "acquirer": "Tencent exercised an option",
-   "acquirerTicker": null,
-   "target": "$262.2M shares from Huya",
-   "targetTicker": null,
-   "value": 262200000,
-   "currency": "USD",
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "\"The transaction is consistent with our strategy to connect industry partners and users via an expanding and open ecosystem. By supporting Huya's management team, we look forward to more business synergies and innovative services for game",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
    "type": "strategic"
   },
   {
@@ -18020,48 +18020,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/microsoft-will-acquire-affirmed-networks-for-1-35b",
-   "title": "Microsoft will acquire Affirmed Networks for $1.35B",
-   "published": "2020-03-30",
-   "byline": null,
-   "acquirer": null,
-   "acquirerTicker": null,
-   "target": null,
-   "targetTicker": null,
-   "value": 1350000000,
-   "currency": "USD",
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“This acquisition will allow us to evolve our work with the telecommunications industry, building on our secure and trusted cloud platform for operators. With Affirmed Networks, we will be able to offer new and innovative solutions tailored to the unique needs of operators, including managing their network workloads…",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/saudi-aramco-s-69-billion-acquisition-of-sabic",
-   "title": "Saudi Aramco's $69 billion Acquisition of SABIC",
-   "published": "2020-03-30",
-   "byline": "By Ilya Korzinkin, Mihir Gupta, Hugo Tay, Siddharth Sharma (University College London), Vincent Wess (WHU) | 16/03/2020",
-   "acquirer": "Saudi Aramco",
-   "acquirerTicker": null,
-   "target": "SABIC",
-   "targetTicker": null,
-   "value": 69000000000,
-   "currency": "USD",
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "On March 27 2019, Saudi Aramco announced that it had come to an agreement to acquire a 70% majority stake in SABIC from the Public Investment Fund of Saudi Arabia in a private transaction for a consideration of $69bn which results in no premium being paid. Saudi Aramco sees this deal as a milestone in accelerating the…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/cannabis-company-harvest-health-recreation-acquires-franklin-labs",
    "title": "Cannabis company Harvest Health & Recreation acquires Franklin Labs",
    "published": "2020-03-30",
@@ -18079,6 +18037,28 @@
    "typeHint": null,
    "industries": [
     "consumer"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/microsoft-will-acquire-affirmed-networks-for-1-35b",
+   "title": "Microsoft will acquire Affirmed Networks for $1.35B",
+   "published": "2020-03-30",
+   "byline": null,
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": 1350000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“This acquisition will allow us to evolve our work with the telecommunications industry, building on our secure and trusted cloud platform for operators. With Affirmed Networks, we will be able to offer new and innovative solutions tailored to the unique needs of operators, including managing their network workloads…",
+   "typeHint": null,
+   "industries": [
+    "tmt"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -18106,20 +18086,20 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/advance-publications-inc-to-buy-triathlon-business-ironman-group",
-   "title": "Advance Publications Inc. to buy Triathlon Business IRONMAN Group",
-   "published": "2020-03-29",
-   "byline": null,
-   "acquirer": "Advance Publications Inc.",
+   "url": "https://www.mergersight.com/post/saudi-aramco-s-69-billion-acquisition-of-sabic",
+   "title": "Saudi Aramco's $69 billion Acquisition of SABIC",
+   "published": "2020-03-30",
+   "byline": "By Ilya Korzinkin, Mihir Gupta, Hugo Tay, Siddharth Sharma (University College London), Vincent Wess (WHU) | 16/03/2020",
+   "acquirer": "Saudi Aramco",
    "acquirerTicker": null,
-   "target": "Triathlon Business IRONMAN Group",
+   "target": "SABIC",
    "targetTicker": null,
-   "value": null,
-   "currency": null,
+   "value": 69000000000,
+   "currency": "USD",
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "“We remain confident in our future; our focus and objectives are unchanged; and we are ready to face the opportunities and challenges ahead. Together with Advance and Orkila, we will navigate through the turbulent and uncertain period in front of us and continue to deliver the exceptional experiences for which we’re…",
+   "excerpt": "On March 27 2019, Saudi Aramco announced that it had come to an agreement to acquire a 70% majority stake in SABIC from the Public Investment Fund of Saudi Arabia in a private transaction for a consideration of $69bn which results in no premium being paid. Saudi Aramco sees this deal as a milestone in accelerating the…",
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
@@ -18148,20 +18128,20 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/merger-monday-sees-lowest-deal-volume-in-years",
-   "title": "\"Merger Monday\" sees lowest deal volume in years",
-   "published": "2020-03-24",
+   "url": "https://www.mergersight.com/post/advance-publications-inc-to-buy-triathlon-business-ironman-group",
+   "title": "Advance Publications Inc. to buy Triathlon Business IRONMAN Group",
+   "published": "2020-03-29",
    "byline": null,
-   "acquirer": null,
+   "acquirer": "Advance Publications Inc.",
    "acquirerTicker": null,
-   "target": null,
+   "target": "Triathlon Business IRONMAN Group",
    "targetTicker": null,
    "value": null,
    "currency": null,
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "94 major corporate transactions were announced globally on Monday with a combined value of $2.3B. The only other Mondays with lower deal volume fell on U.S. public holidays. Companies that traditionally look for buying opportunities in a downturn are racing to preserve liquidity and financing in order to weather the…",
+   "excerpt": "“We remain confident in our future; our focus and objectives are unchanged; and we are ready to face the opportunities and challenges ahead. Together with Advance and Orkila, we will navigate through the turbulent and uncertain period in front of us and continue to deliver the exceptional experiences for which we’re…",
    "typeHint": null,
    "industries": [],
    "industryInferred": false,
@@ -18190,6 +18170,26 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/merger-monday-sees-lowest-deal-volume-in-years",
+   "title": "\"Merger Monday\" sees lowest deal volume in years",
+   "published": "2020-03-24",
+   "byline": null,
+   "acquirer": null,
+   "acquirerTicker": null,
+   "target": null,
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "94 major corporate transactions were announced globally on Monday with a combined value of $2.3B. The only other Mondays with lower deal volume fell on U.S. public holidays. Companies that traditionally look for buying opportunities in a downturn are racing to preserve liquidity and financing in order to weather the…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/huntsman-acquires-cvc-thermoset-specialities-from-emerald-performance",
    "title": "Huntsman acquires CVC Thermoset Specialities from Emerald Performance",
    "published": "2020-03-23",
@@ -18210,28 +18210,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/endeavour-mining-is-to-acquire-semafo-for-690m",
-   "title": "Endeavour Mining is to acquire SEMAFO for $690M",
-   "published": "2020-03-23",
-   "byline": null,
-   "acquirer": "Endeavour Mining is",
-   "acquirerTicker": null,
-   "target": "SEMAFO",
-   "targetTicker": null,
-   "value": 690000000,
-   "currency": "USD",
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“This combination will create one of the leading gold companies, with the largest portfolio of operating assets located entirely in West Africa. In addition to being immediately accretive on all metrics, this transaction will enhance our scale as well as providing improved trading liquidity, greater asset…",
-   "typeHint": null,
-   "industries": [
-    "resources"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/perficient-acquires-catalyst-networks",
    "title": "Perficient acquires Catalyst Networks",
    "published": "2020-03-23",
@@ -18249,6 +18227,28 @@
    "typeHint": null,
    "industries": [
     "tmt"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/endeavour-mining-is-to-acquire-semafo-for-690m",
+   "title": "Endeavour Mining is to acquire SEMAFO for $690M",
+   "published": "2020-03-23",
+   "byline": null,
+   "acquirer": "Endeavour Mining is",
+   "acquirerTicker": null,
+   "target": "SEMAFO",
+   "targetTicker": null,
+   "value": 690000000,
+   "currency": "USD",
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“This combination will create one of the leading gold companies, with the largest portfolio of operating assets located entirely in West Africa. In addition to being immediately accretive on all metrics, this transaction will enhance our scale as well as providing improved trading liquidity, greater asset…",
+   "typeHint": null,
+   "industries": [
+    "resources"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -18276,6 +18276,26 @@
    "type": "strategic"
   },
   {
+   "url": "https://www.mergersight.com/post/thomson-reuters-has-acquired-pondera-solutions",
+   "title": "Thomson Reuters has acquired Pondera Solutions",
+   "published": "2020-03-20",
+   "byline": null,
+   "acquirer": "Thomson Reuters has",
+   "acquirerTicker": null,
+   "target": "Pondera Solutions",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Thomson Reuters and Pondera share a commitment to serve customers with solutions that reduce fraud by individuals targeting government programs… Pondera will be a key component to the suite of tools available to government customers that use technology, data and human analysis to support their mission and benefit…",
+   "typeHint": null,
+   "industries": [],
+   "industryInferred": false,
+   "type": "strategic"
+  },
+  {
    "url": "https://www.mergersight.com/post/masima-has-agreed-to-acquire-german-ventilation-company-tni",
    "title": "Masima has agreed to acquire German ventilation company TNI",
    "published": "2020-03-20",
@@ -18298,43 +18318,23 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/thomson-reuters-has-acquired-pondera-solutions",
-   "title": "Thomson Reuters has acquired Pondera Solutions",
-   "published": "2020-03-20",
-   "byline": null,
-   "acquirer": "Thomson Reuters has",
-   "acquirerTicker": null,
-   "target": "Pondera Solutions",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Thomson Reuters and Pondera share a commitment to serve customers with solutions that reduce fraud by individuals targeting government programs… Pondera will be a key component to the suite of tools available to government customers that use technology, data and human analysis to support their mission and benefit…",
-   "typeHint": null,
-   "industries": [],
-   "industryInferred": false,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/fox-to-acquire-tubi-tv-for-440m",
-   "title": "Fox to acquire Tubi TV for $440M",
+   "url": "https://www.mergersight.com/post/volkswagen-s-2-9b-offer-to-buy-truck-maker-navistar-is-in-jeopardy",
+   "title": "Volkswagen's $2.9B offer to buy truck-maker Navistar is in jeopardy",
    "published": "2020-03-18",
    "byline": null,
-   "acquirer": "Fox",
+   "acquirer": "Volkswagen's $2.9B offer",
    "acquirerTicker": null,
-   "target": "Tubi TV",
+   "target": "truck-maker Navistar is in jeopardy",
    "targetTicker": null,
-   "value": 440000000,
+   "value": 2900000000,
    "currency": "USD",
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "“Tubi will immediately expand our direct-to-consumer audience and capabilities and will provide our advertising partners with more opportunities to reach audiences at scale. Importantly, coupled with the combined power of FOX’s existing networks, Tubi provides a substantial base from which we will drive long-term…",
+   "excerpt": "Volkswagen management has said that it is still interested in being the U.S. truckmaker, but in the face of an impending recession, automakers have been forced to scale back production and conserve cash. Volkswagen’s CFO said that the company’s current liquidity outlook does not take into account the",
    "typeHint": null,
    "industries": [
-    "tmt"
+    "industrials"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -18360,23 +18360,23 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/volkswagen-s-2-9b-offer-to-buy-truck-maker-navistar-is-in-jeopardy",
-   "title": "Volkswagen's $2.9B offer to buy truck-maker Navistar is in jeopardy",
+   "url": "https://www.mergersight.com/post/fox-to-acquire-tubi-tv-for-440m",
+   "title": "Fox to acquire Tubi TV for $440M",
    "published": "2020-03-18",
    "byline": null,
-   "acquirer": "Volkswagen's $2.9B offer",
+   "acquirer": "Fox",
    "acquirerTicker": null,
-   "target": "truck-maker Navistar is in jeopardy",
+   "target": "Tubi TV",
    "targetTicker": null,
-   "value": 2900000000,
+   "value": 440000000,
    "currency": "USD",
    "announced": null,
    "closed": null,
    "fields": [],
-   "excerpt": "Volkswagen management has said that it is still interested in being the U.S. truckmaker, but in the face of an impending recession, automakers have been forced to scale back production and conserve cash. Volkswagen’s CFO said that the company’s current liquidity outlook does not take into account the",
+   "excerpt": "“Tubi will immediately expand our direct-to-consumer audience and capabilities and will provide our advertising partners with more opportunities to reach audiences at scale. Importantly, coupled with the combined power of FOX’s existing networks, Tubi provides a substantial base from which we will drive long-term…",
    "typeHint": null,
    "industries": [
-    "industrials"
+    "tmt"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -18517,50 +18517,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/cvs-acquires-schnuck-retail-and-speciality-pharmacy-business",
-   "title": "CVS acquires Schnuck retail and speciality pharmacy business",
-   "published": "2020-03-10",
-   "byline": null,
-   "acquirer": "CVS",
-   "acquirerTicker": null,
-   "target": "Schnuck retail and speciality pharmacy business",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“We have great admiration for Schnuck and believe CVS Pharmacy can bring additional clinical services to its customers. One of CVS Health’s strategic imperatives is to be local. By opening CVS Pharmacy locations within Schnucks stores, we’re increasing access to high quality care and meeting customers where they are.…",
-   "typeHint": null,
-   "industries": [
-    "healthcare"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
-   "url": "https://www.mergersight.com/post/radnet-has-announced-a-deal-to-acquire-deephealth",
-   "title": "RadNet has announced a deal to acquire Deephealth",
-   "published": "2020-03-10",
-   "byline": null,
-   "acquirer": "RadNet has announced a deal",
-   "acquirerTicker": null,
-   "target": "Deephealth",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“We are more certain today than ever before that artificial intelligence will transform the diagnostic imaging and radiology industry… We believe AI will create workflow efficiencies and improve the accuracy of image interpretation in mammography and in other modalities we perform, which can materially benefit all of…",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/cleveland-cliffs-and-ak-steel-shareholders-approve-acquisition",
    "title": "Cleveland-Cliffs and AK-Steel shareholders approve acquisition",
    "published": "2020-03-10",
@@ -18600,6 +18556,50 @@
    "typeHint": null,
    "industries": [
     "industrials"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/cvs-acquires-schnuck-retail-and-speciality-pharmacy-business",
+   "title": "CVS acquires Schnuck retail and speciality pharmacy business",
+   "published": "2020-03-10",
+   "byline": null,
+   "acquirer": "CVS",
+   "acquirerTicker": null,
+   "target": "Schnuck retail and speciality pharmacy business",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“We have great admiration for Schnuck and believe CVS Pharmacy can bring additional clinical services to its customers. One of CVS Health’s strategic imperatives is to be local. By opening CVS Pharmacy locations within Schnucks stores, we’re increasing access to high quality care and meeting customers where they are.…",
+   "typeHint": null,
+   "industries": [
+    "healthcare"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/radnet-has-announced-a-deal-to-acquire-deephealth",
+   "title": "RadNet has announced a deal to acquire Deephealth",
+   "published": "2020-03-10",
+   "byline": null,
+   "acquirer": "RadNet has announced a deal",
+   "acquirerTicker": null,
+   "target": "Deephealth",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“We are more certain today than ever before that artificial intelligence will transform the diagnostic imaging and radiology industry… We believe AI will create workflow efficiencies and improve the accuracy of image interpretation in mammography and in other modalities we perform, which can materially benefit all of…",
+   "typeHint": null,
+   "industries": [
+    "tmt"
    ],
    "industryInferred": true,
    "type": "strategic"
@@ -18674,28 +18674,6 @@
    "type": "strategic"
   },
   {
-   "url": "https://www.mergersight.com/post/leading-gpu-and-chip-maker-nvidia-to-acquire-swiftstack",
-   "title": "Leading GPU and chip maker, Nvidia, to acquire SwiftStack",
-   "published": "2020-03-06",
-   "byline": null,
-   "acquirer": "Leading GPU and chip maker, Nvidia,",
-   "acquirerTicker": null,
-   "target": "SwiftStack",
-   "targetTicker": null,
-   "value": null,
-   "currency": null,
-   "announced": null,
-   "closed": null,
-   "fields": [],
-   "excerpt": "“Building AI supercomputers is exciting to the entire SwiftStack team. We couldn’t be more thrilled to work with the talented folks at Nvidia and look forward to contributing to its world-leading accelerated computing",
-   "typeHint": null,
-   "industries": [
-    "tmt"
-   ],
-   "industryInferred": true,
-   "type": "strategic"
-  },
-  {
    "url": "https://www.mergersight.com/post/national-security-officials-recommend-trump-blocks-infineon-cypress-deal",
    "title": "National Security Officials recommend Trump blocks Infineon/Cypress Deal",
    "published": "2020-03-06",
@@ -18710,6 +18688,28 @@
    "closed": null,
    "fields": [],
    "excerpt": "National Security officials are recommending President Trump block Germany based Infineon from buying Cypress Semiconductor over concerns Chinese buyers might get the technology, pulling Europe deeper into the U.S. China trade",
+   "typeHint": null,
+   "industries": [
+    "tmt"
+   ],
+   "industryInferred": true,
+   "type": "strategic"
+  },
+  {
+   "url": "https://www.mergersight.com/post/leading-gpu-and-chip-maker-nvidia-to-acquire-swiftstack",
+   "title": "Leading GPU and chip maker, Nvidia, to acquire SwiftStack",
+   "published": "2020-03-06",
+   "byline": null,
+   "acquirer": "Leading GPU and chip maker, Nvidia,",
+   "acquirerTicker": null,
+   "target": "SwiftStack",
+   "targetTicker": null,
+   "value": null,
+   "currency": null,
+   "announced": null,
+   "closed": null,
+   "fields": [],
+   "excerpt": "“Building AI supercomputers is exciting to the entire SwiftStack team. We couldn’t be more thrilled to work with the talented folks at Nvidia and look forward to contributing to its world-leading accelerated computing",
    "typeHint": null,
    "industries": [
     "tmt"
