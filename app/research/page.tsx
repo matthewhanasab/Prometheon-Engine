@@ -1393,7 +1393,7 @@ function MarketstackResearchInner() {
           {/* ── SEC Filings ── */}
           {data.filings?.length > 0 && (
             <>
-              <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>via marketstack EDGAR submissions</span>}>
+              <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>SEC EDGAR</span>}>
                 SEC Filings
               </SectionLabel>
               <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
@@ -1463,7 +1463,7 @@ function MarketstackResearchInner() {
                         <td style={{ padding: "8px 16px", fontWeight: 600 }}>{e.name}</td>
                         <td style={{ padding: "8px 16px", color: "var(--text-secondary)", fontSize: "0.72rem" }}>{e.role ?? "—"}</td>
                         <td style={{ padding: "8px 16px", textAlign: "right", fontFamily: MONO, color: "var(--text-muted)" }}>
-                          {e.salary ? `$${Number(e.salary).toLocaleString()}` : ""}
+                          {Number.isFinite(Number(e.salary)) && Number(e.salary) > 0 ? `$${Number(e.salary).toLocaleString()}` : ""}
                         </td>
                       </tr>
                     ))}
@@ -1496,9 +1496,9 @@ function MarketstackResearchInner() {
           />
 
           <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "2rem", lineHeight: 1.6 }}>
-            Prices, quotes, ratings, dividends, splits and filings from marketstack (Business plan); chart by
-            TradingView. Fundamentals come from SEC EDGAR XBRL — marketstack&apos;s Statements/Facts/Concepts
-            endpoints are on the pricing page but return &quot;route not found&quot;, and ETF holdings returns no data.
+            Fundamentals are computed from the company&apos;s own SEC filings (XBRL); prices, ratings and
+            dividends from licensed market-data feeds; analyst consensus from published estimates. Nothing here
+            is investment advice — see <Link href="/about" style={{ color: "var(--accent-gold)" }}>how the numbers are built</Link>.
           </div>
         </>
       )}

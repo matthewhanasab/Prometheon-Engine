@@ -1,20 +1,291 @@
-import NotAvailable from "@/components/NotAvailable";
+"use client";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from "recharts";
+import CompanyLogo from "@/components/CompanyLogo";
 
-import type { Metadata } from "next";
+// Projections — bull, base and bear five-year scenarios for a stock.
+//
+// Each scenario is two editable assumptions: how fast earnings per share grow
+// and what multiple the market pays at the end. Price = EPS × multiple, so
+// the output is an implied price path, the total return against today's
+// price and the annualised rate. The defaults are seeded from what the site
+// already knows — the analyst consensus for next year's growth where one is
+// published, the filed trend otherwise, and today's forward multiple — and
+// every input can be changed.
+const SANS = "'Public Sans', sans-serif";
+const SERIF = "'Space Grotesk', Georgia, serif";
+const MONO = "'Spline Sans Mono', monospace";
+const CARD: React.CSSProperties = { background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22 };
+const DEFAULT_TICKER = "AMD";
 
-export const metadata: Metadata = {
-  title: "Projections",
-  description: "Analyst forward projections. Not currently available on Prometheon Engine.",
-  robots: { index: false, follow: true },
+type Scenario = "bear" | "base" | "bull";
+const SCENARIOS: { key: Scenario; label: string; color: string }[] = [
+  { key: "bear", label: "Bear", color: "#F87171" },
+  { key: "base", label: "Base", color: "var(--accent-gold)" },
+  { key: "bull", label: "Bull", color: "#4ADE80" },
+];
+type Assumptions = { growth: Record<Scenario, number>; exitPe: Record<Scenario, number>; eps: number; years: number };
+// The slices of the research and consensus payloads this page reads.
+type StockPayload = {
+  ticker: string;
+  error?: string;
+  quote?: { price?: number | null };
+  fundamentals?: { eps?: number | null; peRatio?: number | null };
+  forward?: { eps?: number | null; growth?: number | null };
+  profile?: { name?: string | null };
+};
+type Consensus = {
+  ntmEps?: number | null; currentYearEps?: number | null; nextYearEpsGrowth?: number | null;
+  currentYearLabel?: string | null; nextYearLabel?: string | null; analysts?: number | null;
 };
 
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+const money = (v: number) => `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const pct = (v: number, d = 1) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(d)}%`;
+
+function defaults(stock: StockPayload | null, consensus: Consensus | null | undefined): Assumptions | null {
+  const price: number | null = stock?.quote?.price ?? null;
+  const ttmEps: number | null = stock?.fundamentals?.eps ?? null;
+  const curYear: number | null = consensus?.currentYearEps ?? null;
+  const ntm: number | null = consensus?.ntmEps ?? stock?.forward?.eps ?? null;
+  const eps = [curYear, ntm, ttmEps].find((v) => v != null && v > 0) ?? null;
+  if (eps == null || !price) return null;
+  const g = consensus?.nextYearEpsGrowth ?? stock?.forward?.growth ?? 0.08;
+  const base = clamp(g, -0.3, 0.6);
+  const fwdPe = ntm && ntm > 0 ? price / ntm : stock?.fundamentals?.peRatio ?? null;
+  const pe = clamp(fwdPe && fwdPe > 0 ? fwdPe : 18, 6, 60);
+  return {
+    eps,
+    years: 5,
+    growth: { bear: Math.max(-0.4, base - 0.06), base, bull: base + 0.06 },
+    exitPe: { bear: pe * 0.75, base: pe, bull: pe * 1.2 },
+  };
+}
+
+function Field({ label, value, onChange, suffix, step = 1, color }: {
+  label: string; value: number; onChange: (v: number) => void; suffix?: string; step?: number; color?: string;
+}) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+      <span style={{ fontSize: "0.56rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: color ?? "var(--text-secondary)" }}>{label}</span>
+      <span style={{ display: "flex", alignItems: "center", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "0 12px" }}>
+        <input type="number" value={Number.isFinite(value) ? Number(value.toFixed(2)) : 0} step={step}
+          onChange={(e) => onChange(Number(e.target.value))}
+          style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.82rem", padding: "8px 0" }} />
+        {suffix && <span style={{ fontFamily: MONO, fontSize: "0.7rem", color: "var(--text-muted)" }}>{suffix}</span>}
+      </span>
+    </label>
+  );
+}
+
+function ProjectionsInner() {
+  const search = useSearchParams();
+  const [input, setInput] = useState(search.get("ticker") ?? DEFAULT_TICKER);
+  const [ticker, setTicker] = useState(input);
+  // The payload is tagged with the ticker it answers, so a ticker change reads
+  // as "loading" by derivation rather than by resetting state inside the
+  // effect. Edited assumptions are tagged the same way and fall back to the
+  // seeded defaults for any other ticker.
+  const [loaded, setLoaded] = useState<{ ticker: string; stock: StockPayload | null; consensus: Consensus | null; error: string | null } | null>(null);
+  const [custom, setCustom] = useState<{ ticker: string; a: Assumptions } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all([
+      fetch(`/api/marketstack-stock/${ticker}`).then((r) => r.json()),
+      fetch(`/api/consensus/${ticker}`).then((r) => r.json()).catch(() => ({ consensus: null })),
+    ]).then(([s, c]) => {
+      if (!alive) return;
+      if (s?.error) { setLoaded({ ticker, stock: null, consensus: null, error: String(s.error) }); return; }
+      setLoaded({ ticker, stock: s, consensus: c?.consensus ?? null, error: null });
+    }).catch(() => { if (alive) setLoaded({ ticker, stock: null, consensus: null, error: "Could not load this ticker." }); });
+    return () => { alive = false; };
+  }, [ticker]);
+
+  const current = loaded?.ticker === ticker ? loaded : null;
+  const stock = current?.stock ?? null;
+  const consensus = current?.consensus;
+  const error = current?.error ?? null;
+  const a: Assumptions | null = useMemo(
+    () => (custom?.ticker === ticker ? custom.a : stock ? defaults(stock, consensus) : null),
+    [custom, ticker, stock, consensus]
+  );
+  const setA = (update: (prev: Assumptions | null) => Assumptions | null) => {
+    const next = update(a);
+    if (next) setCustom({ ticker, a: next });
+  };
+
+  const price: number | null = stock?.quote?.price ?? null;
+  const rows = useMemo(() => {
+    if (!a || !price) return [];
+    return Array.from({ length: a.years + 1 }, (_, y) => {
+      const row: Record<string, number> = { year: y };
+      for (const s of SCENARIOS) {
+        const eps = a.eps * Math.pow(1 + a.growth[s.key], y);
+        // Today's price anchors year 0; the multiple applies from year one.
+        row[s.key] = y === 0 ? price : eps * a.exitPe[s.key];
+        row[`${s.key}Eps`] = eps;
+      }
+      return row;
+    });
+  }, [a, price]);
+
+  const setGrowth = (k: Scenario, v: number) => setA((p) => p && ({ ...p, growth: { ...p.growth, [k]: v / 100 } }));
+  const setPe = (k: Scenario, v: number) => setA((p) => p && ({ ...p, exitPe: { ...p.exitPe, [k]: v } }));
+  const loading = !stock && !error;
+  const label = (consensus?.nextYearEpsGrowth != null)
+    ? `Base growth seeded from the analyst consensus (${consensus.currentYearLabel} → ${consensus.nextYearLabel}, ${consensus.analysts} estimates); bear and bull sit six points either side.`
+    : stock?.forward?.growth != null
+    ? "No published consensus for this ticker — base growth seeded from the filed earnings trend; bear and bull sit six points either side."
+    : "";
+
+  return (
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
+      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>Projections</h1>
+      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
+      <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "1.4rem" }}>
+        Bull, base and bear scenarios for the next five years — change the growth rate and the exit multiple and see what the stock would be worth.
+      </div>
+
+      <form onSubmit={(e) => { e.preventDefault(); const t = input.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, ""); if (t) setTicker(t); }}
+        style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: "1.4rem" }}>
+        <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker" aria-label="Ticker"
+          style={{ fontFamily: MONO, fontSize: "0.9rem", padding: "10px 16px", borderRadius: 999, width: 160, background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", outline: "none" }} />
+        <button type="submit" style={{ background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 999, padding: "10px 22px", fontFamily: SANS, fontSize: "0.74rem", fontWeight: 700, cursor: "pointer" }}>Project</button>
+        {stock && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: 6 }}>
+            <CompanyLogo ticker={stock.ticker} size={26} fallback />
+            <span style={{ fontFamily: SERIF, fontSize: "0.95rem", fontWeight: 600 }}>{stock.profile?.name ?? stock.ticker}</span>
+            {price && <span style={{ fontFamily: MONO, fontSize: "0.8rem", color: "var(--text-secondary)" }}>{money(price)}</span>}
+          </span>
+        )}
+      </form>
+
+      {error ? (
+        <div style={{ ...CARD, padding: "18px 20px", fontSize: "0.8rem", color: "var(--text-secondary)" }}>{error}</div>
+      ) : loading ? (
+        <>
+          <div style={{ ...CARD, borderColor: "var(--border-active)", display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", marginBottom: 14 }}>
+            <span className="spinner" style={{ width: 20, height: 20, flexShrink: 0 }} />
+            <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-gold)" }}>Loading {ticker}…</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            {[0, 1, 2].map((i) => <div key={i} className={`skeleton-bar skeleton-d${i + 1}`} style={{ height: 150, borderRadius: 22 }} />)}
+          </div>
+        </>
+      ) : !a || !price ? (
+        <div style={{ ...CARD, padding: "18px 20px", fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+          {ticker} has no positive earnings to project from — a scenario built on losses would be a guess about when they end, not a projection.
+          Try the <Link href={`/research?ticker=${ticker}`} style={{ color: "var(--accent-gold)" }}>research page</Link> for the revenue picture.
+        </div>
+      ) : (
+        <>
+          {/* Scenario outcomes */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 14 }}>
+            {SCENARIOS.map((s) => {
+              const last = rows[rows.length - 1];
+              const target = last[s.key];
+              const total = target / price - 1;
+              const cagr = Math.pow(target / price, 1 / a.years) - 1;
+              return (
+                <div key={s.key} style={{ ...CARD, borderTop: `2px solid ${s.color}`, padding: "14px 18px" }}>
+                  <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: s.color }}>{s.label} · year {a.years}</div>
+                  <div style={{ fontFamily: MONO, fontSize: "1.7rem", fontWeight: 700, marginTop: 4 }}>{money(target)}</div>
+                  <div style={{ fontFamily: MONO, fontSize: "0.78rem", fontWeight: 600, color: total >= 0 ? "var(--positive)" : "var(--negative)" }}>
+                    {pct(total, 0)} total · {pct(cagr)}/yr
+                  </div>
+                  <div style={{ fontSize: "0.64rem", color: "var(--text-muted)", marginTop: 6 }}>
+                    EPS {money(last[`${s.key}Eps`])} × {a.exitPe[s.key].toFixed(1)}× exit multiple
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Chart + assumptions */}
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.6fr) minmax(280px, 1fr)", gap: 12, alignItems: "start" }}>
+            <div style={{ ...CARD, padding: "18px 10px 8px" }}>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={rows} margin={{ top: 8, right: 16, left: 4, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+                  <XAxis dataKey="year" tickFormatter={(y: number) => (y === 0 ? "Today" : `Yr ${y}`)} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={(v: number) => `$${Math.round(v)}`} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={60} domain={["auto", "auto"]} />
+                  <Tooltip
+                    contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 }}
+                    labelFormatter={(y: unknown) => (Number(y) === 0 ? "Today" : `Year ${String(y)}`)}
+                    formatter={(v: unknown, name: unknown) => [money(Number(v)), String(name).replace(/^\w/, (c) => c.toUpperCase())]} />
+                  <ReferenceLine y={price} stroke="var(--text-muted)" strokeDasharray="4 4" />
+                  {SCENARIOS.map((s) => (
+                    <Line key={s.key} type="monotone" dataKey={s.key} stroke={s.color} strokeWidth={s.key === "base" ? 2.2 : 1.6} dot={{ r: 2.5 }} isAnimationActive={false} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div style={{ ...CARD, padding: "16px 18px" }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: 6, marginBottom: 12 }}>Assumptions</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                <Field label="Starting EPS" value={a.eps} step={0.1} suffix="$" onChange={(v) => setA((p) => p && ({ ...p, eps: Math.max(0.01, v) }))} />
+                <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <span style={{ fontSize: "0.56rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)" }}>Horizon</span>
+                  <span style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
+                    {[3, 5, 10].map((y) => (
+                      <button key={y} type="button" onClick={() => setA((p) => p && ({ ...p, years: y }))}
+                        style={{ flex: 1, padding: "5px 0", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: MONO, fontSize: "0.7rem", fontWeight: 700, background: a.years === y ? "var(--accent-gold)" : "transparent", color: a.years === y ? "var(--on-accent)" : "var(--text-secondary)" }}>{y}y</button>
+                    ))}
+                  </span>
+                </label>
+              </div>
+              {SCENARIOS.map((s) => (
+                <div key={s.key} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                  <Field label={`${s.label} EPS growth`} color={s.color} value={a.growth[s.key] * 100} step={1} suffix="%/yr" onChange={(v) => setGrowth(s.key, clamp(v, -60, 100))} />
+                  <Field label={`${s.label} exit P/E`} color={s.color} value={a.exitPe[s.key]} step={0.5} suffix="×" onChange={(v) => setPe(s.key, clamp(v, 1, 150))} />
+                </div>
+              ))}
+              <button type="button" onClick={() => setCustom(null)}
+                style={{ marginTop: 4, background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: 999, padding: "7px 14px", fontFamily: SANS, fontSize: "0.64rem", fontWeight: 700, cursor: "pointer" }}>
+                Reset to defaults
+              </button>
+            </div>
+          </div>
+
+          {/* Year table */}
+          <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
+              <thead>
+                <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Year</th>
+                  {SCENARIOS.map((s) => <th key={s.key} style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600, color: s.color }}>{s.label} EPS → price</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.year} style={{ borderTop: "1px solid var(--border)" }}>
+                    <td style={{ padding: "7px 14px", fontFamily: MONO, color: "var(--text-muted)" }}>{r.year === 0 ? "Today" : r.year}</td>
+                    {SCENARIOS.map((s) => (
+                      <td key={s.key} style={{ padding: "7px 14px", textAlign: "right", fontFamily: MONO }}>
+                        <span style={{ color: "var(--text-secondary)" }}>{money(r[`${s.key}Eps`])}</span>
+                        <span style={{ color: "var(--text-muted)" }}> → </span>
+                        <span style={{ fontWeight: 600 }}>{money(r[s.key])}</span>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>
+            {label} Price = EPS × exit multiple; today&apos;s price anchors year 0. A scenario tool, not a forecast and not advice.
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function ProjectionsPage() {
-  return (
-    <NotAvailable
-      title="Projections"
-      reason="Projections are built from analyst forward estimates — EPS, revenue and growth forecasts. No current provider carries estimate data. Historical growth rates, computed from SEC filings, are on the Charts and Earnings pages."
-      alt={{ href: "/charts", label: "Historical growth on Charts →" }}
-    />
-  );
+  return <Suspense fallback={null}><ProjectionsInner /></Suspense>;
 }

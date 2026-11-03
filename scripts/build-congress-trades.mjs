@@ -37,7 +37,7 @@
 //
 // Run:  node scripts/build-congress-trades.mjs [--years 2026,2025] [--limit N]
 // Out:  data/congress-trades.json
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { inflateRawSync } from "node:zlib";
@@ -427,7 +427,24 @@ const snapshot = {
 };
 
 mkdirSync(resolve(ROOT, "data"), { recursive: true });
-writeFileSync(resolve(ROOT, "data/congress-trades.json"), JSON.stringify(snapshot), "utf8");
+// This file deploys straight to production from a scheduled job, so a run
+// that parsed far fewer trades than last time — a changed page layout, a
+// throttled source — keeps the previous snapshot rather than shipping a
+// hollow one. A size cap guards the other direction.
+const outPath = resolve(ROOT, "data/congress-trades.json");
+const body = JSON.stringify(snapshot);
+const newCount = Array.isArray(snapshot.trades) ? snapshot.trades.length : 0;
+let prevCount = 0;
+try { prevCount = (JSON.parse(readFileSync(outPath, "utf8")).trades ?? []).length; } catch { /* first build */ }
+if (prevCount > 0 && newCount < prevCount * 0.5) {
+  console.error(`Parsed ${newCount} trades against ${prevCount} last time — keeping the existing snapshot.`);
+  process.exit(0);
+}
+if (body.length > 25 * 1024 * 1024) {
+  console.error(`Snapshot is ${(body.length / 1e6).toFixed(1)} MB — over the cap; keeping the existing snapshot.`);
+  process.exit(0);
+}
+writeFileSync(outPath, body, "utf8");
 
 console.log(`\nWrote data/congress-trades.json`);
 console.log(`  ${trades.length} trades · ${snapshot.coverage.members} members · ${snapshot.coverage.tickers} tickers`);

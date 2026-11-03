@@ -500,8 +500,8 @@ function ChartsInner() {
 
           <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "1.6rem", lineHeight: 1.6 }}>
             Quarterly fundamentals from SEC EDGAR XBRL (10-K/10-Q), with fourth quarters reconstructed as
-            FY − (Q1+Q2+Q3). Valuation multiples pair those against marketstack quarter-end closes. The
-            revenue forecast overlay needs analyst estimates, which are not available with current data.
+            FY − (Q1+Q2+Q3). Valuation multiples pair those against quarter-end closing prices. Share counts
+            are adjusted for splits.
           </div>
         </>
       )}

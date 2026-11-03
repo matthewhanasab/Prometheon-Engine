@@ -13,6 +13,14 @@ import { NextRequest, NextResponse } from "next/server";
 // fans out to ~11 upstream calls, so the budget is denominated in "upstream
 // cost units" rather than request count — otherwise distinct-ticker enumeration
 // slips under a flat cap while draining the quota.
+// In-process calls between route handlers (portfolio → research, ETF compare →
+// ETF) are exempt from the budget. They prove it with a token that exists only
+// inside this process, so a client can't claim the exemption with a header or
+// a Host value of its own.
+export const INTERNAL_HEADER = "x-prometheon-internal";
+export const internalToken: string =
+  ((globalThis as unknown as { __internalToken?: string }).__internalToken ??= crypto.randomUUID());
+
 const WINDOW_MS = 60_000;
 const BUDGET = 220; // cost units per IP per minute
 
@@ -37,7 +45,7 @@ function clientIp(req: NextRequest): string {
  * request's guard, and an external client cannot forge that hostname.
  */
 export function guard(req: NextRequest, cost: number): NextResponse | null {
-  if (req.nextUrl.hostname === "internal.local") return null;
+  if (req.headers.get(INTERNAL_HEADER) === internalToken) return null;
 
   const now = Date.now();
   const ip = clientIp(req);

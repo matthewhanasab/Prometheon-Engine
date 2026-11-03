@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/rateLimit";
 
 const FRED = "https://api.stlouisfed.org/fred/series/observations";
 
@@ -24,8 +25,14 @@ async function fetchFred(
     limit: "60",
     ...extra,
   });
-  const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 900 } });
-  const data = await res.json();
+  let data: { observations?: { date: string; value: string }[] } = {};
+  try {
+    const res = await fetch(`${FRED}?${params}`, { next: { revalidate: 900 } });
+    data = await res.json();
+  } catch (e) {
+    // One failed series leaves its card empty rather than failing the page.
+    console.error("FRED fetch failed", series, e);
+  }
   return (data.observations ?? [])
     .map((o: { date: string; value: string }) => ({
       date: o.date,
@@ -126,7 +133,9 @@ async function fetchMarkets(): Promise<any[]> {
   return out;
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const limited = guard(req, 2);
+  if (limited) return limited;
 
   const YIELD_SERIES = [
     { label: "1M", series: "DGS1MO", maturity: 1/12 },

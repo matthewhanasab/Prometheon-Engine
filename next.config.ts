@@ -16,6 +16,23 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "geolocation=(), microphone=(), camera=(), payment=()" },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           { key: "X-DNS-Prefetch-Control", value: "on" },
+          // Report-only for now: the policy covers what the site actually loads
+          // (its own code, TradingView's embeds, Google Fonts), and a browser
+          // that disagrees reports rather than breaks. Enforce once the
+          // console stays quiet.
+          {
+            key: "Content-Security-Policy-Report-Only",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' https://s3.tradingview.com https://*.tradingview.com",
+              "frame-src 'self' https://*.tradingview.com https://www.tradingview-widget.com",
+              "img-src 'self' data: https:",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "connect-src 'self' https://*.tradingview.com https://*.tradingview-widget.com",
+              "frame-ancestors 'self'",
+            ].join("; "),
+          },
         ],
       },
     ];

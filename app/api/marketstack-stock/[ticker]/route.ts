@@ -90,7 +90,7 @@ export async function GET(
     const s0 = Date.now();
     try { return await fn(); } finally { marks[label] = Date.now() - s0; }
   };
-  const wantTimings = req.nextUrl.searchParams.get("debug") === "timings";
+  const wantTimings = process.env.NODE_ENV !== "production" && req.nextUrl.searchParams.get("debug") === "timings";
   const key = process.env.MARKETSTACK_KEY;
   if (!key) return NextResponse.json({ error: "Marketstack key not configured" }, { status: 500 });
 
@@ -321,7 +321,8 @@ export async function GET(
         ipoDate: info.ipo_date ?? null,
         founded: info.date_founded ?? null,
         fiscalYearEnd: info.end_fiscal ?? null,
-        website: info.website ?? null,
+        // Rendered as an href, so only a web URL may pass through.
+        website: typeof info.website === "string" && /^https?:\/\/[^\s"'<>]+$/i.test(info.website) ? info.website : null,
         incorporation: decode(info.incorporation) ?? null,
         about: decode(info.about) ?? null,
         address: info.address

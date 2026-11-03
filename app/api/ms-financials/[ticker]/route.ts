@@ -28,7 +28,8 @@ export async function GET(
   try {
     statements = deriveStatements(facts, period as "annual" | "quarterly");
   } catch (e: any) {
-    return NextResponse.json({ error: `Could not derive statements: ${e?.message ?? e}` }, { status: 500 });
+    console.error("ms-financials derive failed", t, e);
+    return NextResponse.json({ error: "Could not derive the statements for this ticker." }, { status: 500 });
   }
   if (!statements.periods.length) {
     return NextResponse.json({ error: `No statement data on file for ${t}` }, { status: 404 });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GET as etfGET } from "@/app/api/etf/[ticker]/route";
-import { guard } from "@/lib/rateLimit";
+import { guard, INTERNAL_HEADER, internalToken } from "@/lib/rateLimit";
 
 // ETF comparison. Side-by-side stats plus the headline feature: holdings
 // OVERLAP — for every pair, the share of net assets invested in the same
@@ -14,7 +14,7 @@ const MAX = 4;
 
 async function loadEtf(ticker: string): Promise<any | null> {
   try {
-    const req = new NextRequest(`https://internal.local/api/etf/${ticker}?full=1`);
+    const req = new NextRequest(`https://internal.local/api/etf/${ticker}?full=1`, { headers: { [INTERNAL_HEADER]: internalToken } });
     const res = await etfGET(req, { params: Promise.resolve({ ticker }) });
     if (!res.ok) return null;
     const j = await res.json();

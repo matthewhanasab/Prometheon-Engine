@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/rateLimit";
 
 // Company logo, same-origin (canvas-safe for the share cards).
 //
@@ -28,14 +29,22 @@ async function fetchIcon(url: string): Promise<Response | null> {
   }
 }
 
+// A miss is cached for a day: the only other outcome of an unknown symbol is
+// a paid lookup per request.
+const MISS = () => new NextResponse(null, { status: 404, headers: { "Cache-Control": "public, max-age=0, s-maxage=86400" } });
+
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
+  // Every distinct symbol here costs an upstream lookup; it is the one paid
+  // route that had no per-IP budget.
+  const limited = guard(req, 2);
+  if (limited) return limited;
   const { ticker } = await params;
   const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
   const key = process.env.MARKETSTACK_KEY;
-  if (!key) return new NextResponse(null, { status: 404 });
+  if (!key) return MISS();
 
   try {
     const res = await fetch(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`, {
@@ -44,15 +53,15 @@ export async function GET(
     const j = await res.json().catch(() => null);
     const info = Array.isArray(j?.data) ? j.data[0] : j?.data;
     const website: string | undefined = info?.website;
-    if (!website) return new NextResponse(null, { status: 404 });
+    if (!website) return MISS();
     const domain = new URL(website.startsWith("http") ? website : `https://${website}`).hostname;
 
     return (
       (await fetchIcon(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`)) ??
       (await fetchIcon(`https://icons.duckduckgo.com/ip3/${domain}.ico`)) ??
-      new NextResponse(null, { status: 404 })
+      MISS()
     );
   } catch {
-    return new NextResponse(null, { status: 404 });
+    return MISS();
   }
 }

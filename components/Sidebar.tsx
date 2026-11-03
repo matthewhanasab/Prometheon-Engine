@@ -74,6 +74,7 @@ const GROUPS: { label: string; items: { href: string; label: string }[] }[] = [
       { href: "/macro",      label: "Macro Dashboard" },
       { href: "/movers",     label: "Market Movers" },
       { href: "/calculator", label: "Compound Calculator" },
+      { href: "/about",      label: "About" },
     ],
   },
 ];

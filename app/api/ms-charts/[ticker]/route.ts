@@ -59,7 +59,8 @@ export async function GET(
   try {
     series = deriveChartSeries(facts, 28, splits);
   } catch (e: any) {
-    return NextResponse.json({ error: `Could not derive series: ${e?.message ?? e}` }, { status: 500 });
+    console.error("ms-charts derive failed", t, e);
+    return NextResponse.json({ error: "Could not derive the chart series for this ticker." }, { status: 500 });
   }
 
   const info = Array.isArray(infoRaw?.data) ? infoRaw.data[0] : infoRaw?.data;

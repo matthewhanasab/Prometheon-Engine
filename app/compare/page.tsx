@@ -697,9 +697,9 @@ function CompareInner() {
           </div>
 
           <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            Forward P/E and forward EPS growth need analyst estimates, which marketstack doesn&apos;t carry —
-            trailing EPS growth is shown in their place. Everything else: marketstack prices &amp; ratings,
-            SEC EDGAR fundamentals.
+            Fundamentals from each company&apos;s SEC filings; prices from licensed market data. Rows marked
+            <em> consensus</em> are published analyst estimates; rows marked <em>model</em> are projected from the
+            filed trend and should be read as estimates, not forecasts.
           </div>
         </>
       )}

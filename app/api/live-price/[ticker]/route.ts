@@ -20,7 +20,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
-  const limited = guard(req, 1);
+  const limited = guard(req, 3);
   if (limited) return limited;
 
   const { ticker } = await params;
@@ -37,7 +37,11 @@ export async function GET(
   // Without the exchange filter the feed answered AAPL with a foreign
   // listing's print (21,770, five months old), so an unfiltered row is only
   // trusted when it sits near the known close.
-  const exchange = (req.nextUrl.searchParams.get("exchange") ?? "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 8);
+  // Only the MICs the research page can send; anything else would mint a new
+  // upstream cache key per value.
+  const EXCHANGES = new Set(["XNAS", "XNYS", "XASE", "ARCX", "BATS"]);
+  const rawExchange = (req.nextUrl.searchParams.get("exchange") ?? "").toUpperCase();
+  const exchange = EXCHANGES.has(rawExchange) ? rawExchange : "";
   const ref = Number(req.nextUrl.searchParams.get("ref"));
   const plausible = (p: number) => !(ref > 0) || (p > ref * 0.6 && p < ref * 1.4);
   // "2026-05-08 17:00:00" carries no zone; the feed's clocks are UTC.

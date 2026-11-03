@@ -325,6 +325,10 @@ export default function LandingPage() {
             <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
               Made by Matthew Hanasab with <span className="heartbeat" aria-label="love" role="img">❤️</span>
             </div>
+            <div style={{ display: "flex", gap: 14, marginTop: 12, fontSize: "0.78rem" }}>
+              <Link href="/about" className="footer-link" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>About</Link>
+              <a href="https://github.com/matthewhanasab/Prometheon-Engine" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>Source on GitHub ↗</a>
+            </div>
           </div>
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title}>

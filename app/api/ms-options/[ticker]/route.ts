@@ -80,7 +80,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
-  const limited = guard(req, 4);
+  const limited = guard(req, 5);
   if (limited) return limited;
   const { ticker } = await params;
   const t = ticker.toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);

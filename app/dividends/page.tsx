@@ -65,7 +65,7 @@ function DividendsInner() {
       </h1>
       <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
       <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "1.2rem" }}>
-        Complete payout record with annual growth — marketstack keeps full history at every tier.
+        The complete payout record since listing, with yield, growth streak and the next ex-dividend date.
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); load(); }} style={{ display: "flex", gap: 10, maxWidth: 360, marginBottom: "0.7rem" }}>

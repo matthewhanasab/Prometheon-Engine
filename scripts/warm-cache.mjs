@@ -41,7 +41,7 @@ const PER_TICKER = (t) => [
 const SHARED = [
   ["/api/macro", 2], ["/api/markets", 2], ["/api/earnings-calendar", 3], ["/api/mna", 2],
   ["/api/congress-trades", 2], ["/api/insider", 6],
-  ["/api/etf-compare?tickers=SPY,QQQ,VTI,ARKK", 4], ["/api/etf/SPY", 4], ["/api/etf/QQQ", 4],
+  ["/api/etf-compare?t=SPY,QQQ,VTI,ARKK", 4], ["/api/etf/SPY", 4], ["/api/etf/QQQ", 4],
   ["/", 0], ["/research", 0], ["/compare", 0], ["/charts", 0], ["/earnings", 0], ["/macro", 0], ["/mna", 0],
 ];
 

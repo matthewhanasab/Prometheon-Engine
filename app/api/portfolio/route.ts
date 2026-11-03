@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GET as stockGET } from "@/app/api/marketstack-stock/[ticker]/route";
 import { GET as optionsGET } from "@/app/api/ms-options/[ticker]/route";
-import { guard } from "@/lib/rateLimit";
+import { guard, INTERNAL_HEADER, internalToken } from "@/lib/rateLimit";
 
 // Portfolio holdings feed, sourced from this site's own aggregators
 // (marketstack prices/ratings + SEC EDGAR fundamentals + FRED). One source of
@@ -22,7 +22,7 @@ async function callHandler(
   ticker: string
 ): Promise<any | null> {
   try {
-    const req = new NextRequest(`https://internal.local/api/x/${ticker}`);
+    const req = new NextRequest(`https://internal.local/api/x/${ticker}`, { headers: { [INTERNAL_HEADER]: internalToken } });
     const res = await handler(req, { params: Promise.resolve({ ticker }) });
     if (!res.ok) return null;
     const j = await res.json();
