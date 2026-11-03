@@ -52,15 +52,21 @@ function defaults(stock: StockPayload | null, consensus: Consensus | null | unde
   const ntm: number | null = consensus?.ntmEps ?? stock?.forward?.eps ?? null;
   const eps = [curYear, ntm, ttmEps].find((v) => v != null && v > 0) ?? null;
   if (eps == null || !price) return null;
+  // A one-year consensus is a poor five-year rate: AMD's analysts expect EPS
+  // to double next year off a depressed base, and compounding that for five
+  // years gives a number nobody would defend. The seed is the one-year rate
+  // blended two-thirds of the way toward a long-run 10%, then capped at 25%.
   const g = consensus?.nextYearEpsGrowth ?? stock?.forward?.growth ?? 0.08;
-  const base = clamp(g, -0.3, 0.6);
+  const base = clamp(0.35 * g + 0.65 * 0.10, -0.2, 0.25);
+  // Exit multiple: today's forward multiple, but a stretched one is not
+  // assumed to hold for five years.
   const fwdPe = ntm && ntm > 0 ? price / ntm : stock?.fundamentals?.peRatio ?? null;
-  const pe = clamp(fwdPe && fwdPe > 0 ? fwdPe : 18, 6, 60);
+  const pe = clamp(fwdPe && fwdPe > 0 ? fwdPe : 18, 8, 30);
   return {
     eps,
     years: 5,
-    growth: { bear: Math.max(-0.4, base - 0.06), base, bull: base + 0.06 },
-    exitPe: { bear: pe * 0.75, base: pe, bull: pe * 1.2 },
+    growth: { bear: Math.max(-0.3, base - 0.08), base, bull: base + 0.08 },
+    exitPe: { bear: pe * 0.7, base: pe, bull: pe * 1.2 },
   };
 }
 
@@ -136,9 +142,9 @@ function ProjectionsInner() {
   const setPe = (k: Scenario, v: number) => setA((p) => p && ({ ...p, exitPe: { ...p.exitPe, [k]: v } }));
   const loading = !stock && !error;
   const label = (consensus?.nextYearEpsGrowth != null)
-    ? `Base growth seeded from the analyst consensus (${consensus.currentYearLabel} → ${consensus.nextYearLabel}, ${consensus.analysts} estimates); bear and bull sit six points either side.`
+    ? `Analysts expect ${pct(consensus.nextYearEpsGrowth, 0)} EPS growth ${consensus.currentYearLabel} → ${consensus.nextYearLabel} (${consensus.analysts} estimates); the base rate blends that toward a long-run 10% since one year rarely holds for five. Bear and bull sit eight points either side.`
     : stock?.forward?.growth != null
-    ? "No published consensus for this ticker — base growth seeded from the filed earnings trend; bear and bull sit six points either side."
+    ? "No published consensus for this ticker — the base rate blends the filed earnings trend toward a long-run 10%. Bear and bull sit eight points either side."
     : "";
 
   return (
