@@ -1,208 +1,52 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
+import MarketStrip from "@/components/MarketStrip";
 
-// ── Launch button with ignition animation ────────────────────────────────────
-function LaunchButton({ children, onLaunch, variant = "solid" }: {
-  children: React.ReactNode; onLaunch: () => void; variant?: "solid" | "outline";
-}) {
-  const solid = variant === "solid";
-  return (
-    <button onClick={onLaunch} style={{
-      background: solid ? "var(--accent-gold)" : "transparent",
-      color: solid ? "var(--on-accent)" : "var(--accent-gold)",
-      border: solid ? "none" : "1.5px solid var(--accent-gold)",
-      cursor: "pointer",
-      padding: "14px 34px", borderRadius: 22, fontSize: "0.78rem", fontWeight: 700,
-      textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Public Sans', sans-serif",
-    }}>
-      {children}
-    </button>
-  );
-}
+// Landing page.
+//
+// A product page, not a pitch: say in one line what the site is, put the
+// ticker box where the eye lands, and show real numbers (today's indices)
+// before any marketing. The sections below are text-first — a reader should
+// be able to find a tool by name in a few seconds, which a wall of identical
+// cards did not allow.
+const SANS = "'Public Sans', sans-serif";
+const SERIF = "'Space Grotesk', Georgia, serif";
+const MONO = "'Spline Sans Mono', monospace";
 
-// ── Particle constellation background ────────────────────────────────────────
-function Constellation() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+const POPULAR = ["AAPL", "MSFT", "NVDA", "AMZN", "TSLA", "JPM"];
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let raf = 0;
-    let w = 0, h = 0;
-
-    function resize() {
-      if (!canvas) return;
-      w = canvas.width = canvas.offsetWidth;
-      h = canvas.height = canvas.offsetHeight;
-    }
-    resize();
-    window.addEventListener("resize", resize);
-
-    const accentRgb = (getComputedStyle(document.documentElement).getPropertyValue("--accent-rgb") || "59, 110, 235").trim();
-    const N = 80;
-    const pts = Array.from({ length: N }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      vx: (Math.random() - 0.5) * 0.00035,
-      vy: (Math.random() - 0.5) * 0.00035,
-      r: Math.random() * 1.6 + 0.6,
-    }));
-
-    function frame() {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, w, h);
-
-      for (const p of pts) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > 1) p.vx *= -1;
-        if (p.y < 0 || p.y > 1) p.vy *= -1;
-      }
-
-      // lines
-      for (let i = 0; i < N; i++) {
-        for (let j = i + 1; j < N; j++) {
-          const dx = (pts[i].x - pts[j].x) * w;
-          const dy = (pts[i].y - pts[j].y) * h;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 130) {
-            const a = (1 - d / 130) * 0.28;
-            ctx.strokeStyle = `rgba(${accentRgb}, ${a})`;
-            ctx.lineWidth = 0.6;
-            ctx.beginPath();
-            ctx.moveTo(pts[i].x * w, pts[i].y * h);
-            ctx.lineTo(pts[j].x * w, pts[j].y * h);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // dots
-      for (const p of pts) {
-        ctx.fillStyle = `rgba(${accentRgb}, 0.55)`;
-        ctx.beginPath();
-        ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      raf = requestAnimationFrame(frame);
-    }
-    raf = requestAnimationFrame(frame);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
-    />
-  );
-}
-
-// ── Live scaled preview of an app page ────────────────────────────────────────
-function LivePreview({ href }: { href: string }) {
-  const frameRef = useRef<HTMLIFrameElement>(null);
-
-  // Keep the embedded page's theme in lockstep with the parent (same-origin)
-  useEffect(() => {
-    function sync() {
-      try {
-        const doc = frameRef.current?.contentDocument;
-        if (doc?.documentElement) {
-          doc.documentElement.dataset.theme = document.documentElement.dataset.theme || "light";
-        }
-      } catch { /* frame not ready */ }
-    }
-    const obs = new MutationObserver(sync);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    const frame = frameRef.current;
-    frame?.addEventListener("load", sync);
-    return () => { obs.disconnect(); frame?.removeEventListener("load", sync); };
-  }, []);
-
-  return (
-    <div style={{
-      position: "relative", height: 280, overflow: "hidden", borderRadius: 22,
-      border: "1px solid var(--border-active)", background: "var(--bg-primary)",
-      boxShadow: "0 0 24px rgba(var(--accent-rgb), 0.10)",
-    }}>
-      <iframe
-        ref={frameRef}
-        src={href}
-        loading="lazy"
-        scrolling="no"
-        style={{
-          width: 1500, height: 1500, border: "none",
-          transform: "scale(0.335)", transformOrigin: "top left",
-          pointerEvents: "none",
-        }}
-      />
-      <div style={{ position: "absolute", inset: 0 }} />
-    </div>
-  );
-}
-
-const SHOWCASE = [
-  { href: "/portfolio?demo=1", title: "My Portfolio",         desc: "Track your real positions — live P/L, allocation, dividend income, and a benchmark race against the S&P 500." },
-  { href: "/research?ticker=AAPL", title: "Stock Research",       desc: "Type a ticker, get the full picture — valuation, growth, quality, analyst consensus, insiders, and institutions on one page." },
-  { href: "/macro",         title: "Macro Dashboard",      desc: "Rates, inflation, the yield curve, and fear & greed — know the market backdrop before you buy anything." },
-  { href: "/earnings", title: "Earnings Calendar",    desc: "Who reports this week, before the bell and after the close. Click any ticker to research it instantly." },
-  { href: "/screener",      title: "Screener",             desc: "Filter the entire market by sector, size, valuation, and profitability — then jump straight into research." },
-  { href: "/charts?ticker=NVDA", title: "Financial Charts",     desc: "Quarterly revenue, margins, EPS, and cash flow — with analyst forecasts drawn right on the chart." },
-  { href: "/compare?t=AAPL,MSFT", title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, profitability, and health — with a radar chart." },
-  { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income statement, balance sheet, and cash flow — annual and quarterly, with YoY change highlighting." },
-  { href: "/projections?ticker=AMD", title: "Projections",          desc: "Bull, base, and bear five-year scenarios with editable growth and multiple assumptions." },
-  { href: "/covered-calls?ticker=TSLA", title: "Covered Calls",        desc: "Estimate option premium income with a strike-by-strike comparison table." },
-  { href: "/calculator",    title: "Compound Calculator",  desc: "See what consistent investing does over decades, across low, base, and high return scenarios." },
-  { href: "/sec?ticker=AAPL", title: "SEC Filings",          desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR, one click from the source." },
-  { href: "/congress",      title: "Congress Trades",      desc: "Every stock trade disclosed by U.S. Senators and Representatives — who bought, who sold, and how late they told you." },
-  { href: "/insider",       title: "Insider Trading",      desc: "SEC Form 4 filings in real time — when a CEO buys their own stock with their own money, you'll see it here first." },
-  { href: "/movers",        title: "Market Movers",        desc: "Today's biggest gainers, losers, and most active names, plus a sector heatmap of where the money is rotating." },
-  { href: "/dividends?ticker=KO", title: "Dividend Hub",         desc: "Payment history, yield, growth streaks, and 5-year dividend CAGR — plus the full ex-dividend calendar." },
-];
-
-// ── Feature grid ──────────────────────────────────────────────────────────────
-// Four groups of four, mirroring the nav. A flat list of fourteen cards left an
-// orphan row and no sense of which tool did what.
-const FEATURE_GROUPS = [
-  { label: "Research", items: [
-    { href: "/research?ticker=AAPL",   title: "Stock Research",       desc: "Valuation, growth, analyst consensus, insiders, and ownership — one page per ticker." },
-    { href: "/compare?t=AAPL,MSFT",    title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, and health." },
-    { href: "/charts?ticker=NVDA",     title: "Financial Charts",     desc: "Revenue, margins, EPS, and cash flow by quarter, with analyst forecasts." },
-    { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income statement, balance sheet, and cash flow — annual and quarterly." },
+const GROUPS = [
+  { label: "Research", blurb: "One company at a time, from its own filings.", items: [
+    { href: "/research?ticker=AAPL",   title: "Stock Research",       desc: "Valuation, growth, margins, analyst consensus, insiders and ownership on one page." },
+    { href: "/compare?t=AAPL,MSFT",    title: "Compare Stocks",       desc: "Up to four tickers side by side, with the typical range for each metric." },
+    { href: "/charts?ticker=NVDA",     title: "Financial Charts",     desc: "Revenue, margins, EPS, cash flow and multiples by quarter, back to 2018." },
+    { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income statement, balance sheet and cash flow, annual and quarterly." },
   ]},
-  { label: "Markets", items: [
-    { href: "/screener", title: "Screener",          desc: "Filter the whole market by sector, size, valuation, and profitability." },
-    { href: "/earnings", title: "Earnings Calendar", desc: "Who reports this week, before the open or after the close, and what's expected." },
-    { href: "/macro",    title: "Macro Dashboard",   desc: "Rates, inflation, the yield curve, and fear & greed — the full backdrop." },
-    { href: "/movers",   title: "Market Movers",     desc: "Today's gainers, losers, most active, and a live sector heatmap." },
+  { label: "Markets", blurb: "What the market is doing this week.", items: [
+    { href: "/earnings", title: "Earnings Calendar", desc: "Who reports each day, before the open or after the close, and the consensus estimate." },
+    { href: "/macro",    title: "Macro Dashboard",   desc: "Rates, inflation, the yield curve and index levels, dated and kept current." },
+    { href: "/movers",   title: "Market Movers",     desc: "Index levels, gainers, losers and a sector heatmap." },
+    { href: "/screener", title: "Screener",          desc: "Filter the whole market by sector, size, valuation and profitability." },
   ]},
-  { label: "Smart Money", items: [
-    { href: "/congress", title: "Congress Trades",  desc: "Every stock trade disclosed by U.S. Senators and Representatives." },
-    { href: "/insider",  title: "Insider Trading",  desc: "Form 4 filings — executive and director buys and sales, valued and flagged." },
-    { href: "/sec",      title: "SEC Filings",      desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR." },
-    { href: "/mna",      title: "M&A Activity",     desc: "Acquisitions, buyouts and IPOs by industry — acquirer, target, value and advisors." },
+  { label: "Smart Money", blurb: "Public records of who is buying what.", items: [
+    { href: "/congress", title: "Congress Trades", desc: "Every stock trade disclosed by members of Congress under the STOCK Act." },
+    { href: "/insider",  title: "Insider Trading", desc: "Form 4 filings: executive and director buys and sales, valued and flagged." },
+    { href: "/mna",      title: "M&A Activity",    desc: "Acquisitions, buyouts and IPOs by industry, with value, dates and advisors." },
+    { href: "/sec",      title: "SEC Filings",     desc: "10-Ks, 10-Qs and 8-Ks straight from EDGAR." },
   ]},
-  { label: "Income & Planning", items: [
-    { href: "/dividends?ticker=KO",       title: "Dividend Hub",        desc: "Payment history, yield, growth streaks, and the ex-dividend calendar." },
-    { href: "/covered-calls?ticker=TSLA", title: "Covered Calls",       desc: "Premium income estimates with a strike-by-strike comparison." },
-    { href: "/projections?ticker=AMD",    title: "Projections",         desc: "Bull, base, and bear five-year scenarios with editable assumptions." },
-    { href: "/calculator",                title: "Compound Calculator", desc: "What consistent investing does over decades, across return scenarios." },
+  { label: "Income & Planning", blurb: "Dividends, options and scenarios.", items: [
+    { href: "/dividends?ticker=KO",       title: "Dividend Hub",        desc: "Payment history, yield, growth streak and the next ex-dividend date." },
+    { href: "/options-chain?ticker=AAPL", title: "Options Chain",       desc: "Live quotes, implied volatility and Greeks for every listed contract." },
+    { href: "/projections?ticker=AMD",    title: "Projections",         desc: "Bull, base and bear five-year scenarios with editable assumptions." },
+    { href: "/covered-calls?ticker=TSLA", title: "Covered Calls",       desc: "Premium income ranked by strike, with the odds of keeping it." },
   ]},
 ];
 
-// ── Footer link columns ───────────────────────────────────────────────────────
 const FOOTER_COLUMNS = [
   { title: "Research", links: [
     { href: "/research",   label: "Stock Research" },
@@ -228,99 +72,124 @@ const FOOTER_COLUMNS = [
   ]},
 ];
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+function Wordmark({ height = 44 }: { height?: number }) {
+  const w = Math.round(height * 3.1);
+  return (
+    <>
+      <Image className="logo-on-light" src="/logo_transparent_dark.png" alt="Prometheon Engine" width={w} height={height} priority style={{ objectFit: "contain", height: "auto", width: w }} />
+      <Image className="logo-on-dark" src="/logo_transparent.png" alt="Prometheon Engine" width={w} height={height} priority style={{ objectFit: "contain", height: "auto", width: w }} />
+    </>
+  );
+}
+
 export default function LandingPage() {
   const router = useRouter();
-  const [leaving, setLeaving] = useState(false);
+  const [ticker, setTicker] = useState("");
 
-  function launch(dest: string = "/research") {
-    if (leaving) return;
-    setLeaving(true);
-    router.prefetch(dest);
-    setTimeout(() => router.push(dest), 500);
-  }
+  const go = (t: string) => {
+    const clean = t.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+    if (clean) router.push(`/research?ticker=${clean}`);
+  };
 
   return (
-    <div className="landing" style={{
-      fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)",
-      opacity: leaving ? 0 : 1, transition: "opacity 0.5s ease",
-    }}>
-
+    <div className="landing" style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
       <ThemeToggle floating />
 
+      {/* ── Header ── */}
+      <header style={{ maxWidth: 1200, margin: "0 auto", padding: "1.4rem 1.5rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        <Link href="/" aria-label="Prometheon Engine" style={{ display: "inline-flex" }}><Wordmark height={40} /></Link>
+        <nav aria-label="Primary" className="landing-nav" style={{ gap: 18, fontSize: "0.74rem", fontWeight: 600, letterSpacing: "0.04em", marginRight: 64 }}>
+          {[["/research", "Research"], ["/compare", "Compare"], ["/charts", "Charts"], ["/earnings", "Earnings"], ["/about", "About"]].map(([href, label]) => (
+            <Link key={href} href={href} className="footer-link" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>{label}</Link>
+          ))}
+        </nav>
+      </header>
+
       {/* ── Hero ── */}
-      <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
-        <Constellation />
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "5.5rem 1.5rem 3rem" }}>
+        <div style={{ maxWidth: 760 }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(1.9rem, 4.2vw, 3rem)", fontWeight: 500, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 1.1rem" }}>
+            Stock research from primary sources.
+          </h1>
+          <p style={{ fontSize: "clamp(0.92rem, 1.4vw, 1.05rem)", color: "var(--text-secondary)", lineHeight: 1.65, margin: "0 0 1.8rem", maxWidth: 640 }}>
+            Fundamentals computed from each company&apos;s SEC filings. Prices, ratings and analyst consensus from
+            licensed feeds. Insider, institutional and congressional trades from the public record.
+            One terminal, no account, free.
+          </p>
 
-        <div className="fade-up" style={{ position: "relative" }}>
-          <Image className="logo-on-light" src="/logo_transparent_dark.png" alt="Prometheon Engine" width={560} height={180} priority
-            style={{ objectFit: "contain", maxWidth: "88vw", height: "auto" }} />
-          <Image className="logo-on-dark" src="/logo_transparent.png" alt="Prometheon Engine" width={560} height={180} priority
-            style={{ objectFit: "contain", maxWidth: "88vw", height: "auto" }} />
-        </div> <h1 className="fade-up fade-d1" style={{ position: "relative", fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 2.1rem)", fontWeight: 500, letterSpacing: "-0.02em", margin: "2rem 0 2.4rem", maxWidth: 760 }}>
-          Every number that matters. One software.
-        </h1>
-
-        <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-          <LaunchButton onLaunch={() => launch("/research")}>Launch the Engine</LaunchButton>
+          <form onSubmit={(e) => { e.preventDefault(); go(ticker); }} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <input value={ticker} onChange={(e) => setTicker(e.target.value.toUpperCase())} placeholder="Ticker" aria-label="Ticker symbol" autoFocus
+              style={{ fontFamily: MONO, fontSize: "1rem", padding: "13px 18px", borderRadius: 999, width: 190, background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", outline: "none" }} />
+            <button type="submit" style={{ background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 999, padding: "13px 26px", fontFamily: SANS, fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>
+              Research
+            </button>
+            <span style={{ display: "inline-flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginLeft: 6 }}>
+              {POPULAR.map((t) => (
+                <Link key={t} href={`/research?ticker=${t}`} style={{ fontFamily: MONO, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "6px 11px", textDecoration: "none" }}>
+                  {t}
+                </Link>
+              ))}
+            </span>
+          </form>
         </div>
       </section>
 
-      {/* ── Features ── */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "4.5rem 1.5rem 3rem" }}>
-        <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.4rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem", textAlign: "center" }}>
-          The full research stack
-        </h2>
-        <div style={{ height: 1, background: "linear-gradient(to right, transparent, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 260, margin: "0 auto 2.6rem" }} />
+      {/* ── Markets today ── */}
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem 3.5rem" }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: 6, marginBottom: 12 }}>
+          <span>Markets today</span>
+          <Link href="/macro" style={{ color: "var(--accent-gold)", textDecoration: "none", textTransform: "none", letterSpacing: 0, fontSize: "0.68rem" }}>Macro dashboard →</Link>
+        </div>
+        <MarketStrip />
+      </section>
 
-        {FEATURE_GROUPS.map((g) => (
-          <div key={g.label} style={{ marginBottom: "2.2rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
-                {g.label}
-              </div>
-              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
-              {g.items.map((f) => (
-                <Link key={f.href} href={f.href} className="feature-card" style={{
-                  background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
-                  padding: "18px 20px 16px", textDecoration: "none", display: "flex", flexDirection: "column",
-                }}>
-                  <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.98rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
-                    {f.title}
-                  </div>
-                  <div style={{ fontSize: "0.76rem", color: "var(--text-secondary)", lineHeight: 1.55, flex: 1 }}>
-                    {f.desc}
-                  </div>
-                  <div style={{ marginTop: 12, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.68rem", color: "var(--accent-gold)" }}>
-                    Open →
-                  </div>
+      {/* ── What's inside ── */}
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem 3.5rem" }}>
+        <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: 6, marginBottom: 20 }}>
+          What&apos;s inside
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "2rem 2.5rem" }}>
+          {GROUPS.map((g) => (
+            <div key={g.label}>
+              <div style={{ fontFamily: SERIF, fontSize: "1.05rem", fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 2 }}>{g.label}</div>
+              <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", marginBottom: 12 }}>{g.blurb}</div>
+              {g.items.map((it) => (
+                <Link key={it.href} href={it.href} className="footer-link" style={{ display: "block", textDecoration: "none", padding: "9px 0", borderTop: "1px solid var(--border)" }}>
+                  <span style={{ display: "block", fontSize: "0.84rem", fontWeight: 600, color: "var(--text-primary)" }}>{it.title}</span>
+                  <span style={{ display: "block", fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5, marginTop: 2 }}>{it.desc}</span>
                 </Link>
               ))}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
-      {/* ── Closing CTA ── */}
-      <section style={{ textAlign: "center", padding: "3rem 1.5rem 5rem" }}>
-        <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", color: "var(--text-primary)", marginBottom: "1.4rem" }}>
-          Stop tab-hopping. Start researching.
+      {/* ── How it is built ── */}
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem 4rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
+          {[
+            ["Computed, not copied", "Margins, growth, multiples and per-share figures are derived from XBRL filings — fourth quarters reconstructed from the 10-K, share counts split-adjusted."],
+            ["Labelled honestly", "Published analyst figures are marked consensus; anything projected from the filed trend is marked model. If a number can't be derived with confidence, the page says so."],
+            ["Kept current", "Prices are live during the session; earnings and macro refresh through the day; congressional, institutional and M&A records rebuild weekly."],
+          ].map(([h, p]) => (
+            <div key={h} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "16px 18px" }}>
+              <div style={{ fontFamily: SERIF, fontSize: "0.95rem", fontWeight: 600, marginBottom: 6 }}>{h}</div>
+              <div style={{ fontSize: "0.76rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{p}</div>
+            </div>
+          ))}
         </div>
-        <LaunchButton onLaunch={() => launch("/research")}>Launch the Engine</LaunchButton>
+        <div style={{ marginTop: 14, fontSize: "0.74rem", color: "var(--text-muted)" }}>
+          <Link href="/about" style={{ color: "var(--accent-gold)", textDecoration: "none" }}>How every number is built →</Link>
+        </div>
       </section>
 
       {/* ── Footer ── */}
       <footer style={{ borderTop: "1px solid var(--border)", padding: "3.5rem 1.5rem 2rem" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(220px, 1.4fr) repeat(auto-fit, minmax(150px, 1fr))", gap: "2.5rem 2rem" }}>
           <div>
-            <Image className="logo-on-light" src="/logo_transparent_dark.png" alt="Prometheon Engine" width={200} height={64}
-              style={{ objectFit: "contain", height: "auto", marginBottom: "1rem" }} />
-            <Image className="logo-on-dark" src="/logo_transparent.png" alt="Prometheon Engine" width={200} height={64}
-              style={{ objectFit: "contain", height: "auto", marginBottom: "1rem" }} />
+            <div style={{ marginBottom: "1rem" }}><Wordmark height={48} /></div>
             <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.6, maxWidth: 300, marginBottom: "1rem" }}>
-              Professional-grade stock research, free for everyone.
+              Stock research from primary sources, free for everyone.
             </div>
             <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
               Made by Matthew Hanasab with <span className="heartbeat" aria-label="love" role="img">❤️</span>
@@ -332,7 +201,7 @@ export default function LandingPage() {
           </div>
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title}>
-              <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.95rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.9rem" }}>
+              <div style={{ fontFamily: SERIF, fontSize: "0.95rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.9rem" }}>
                 {col.title}
               </div>
               {col.links.map((l) => (

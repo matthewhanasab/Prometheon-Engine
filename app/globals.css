@@ -70,6 +70,11 @@ body:has(.landing) .main-content { padding: 0 !important; }
 
 .footer-link:hover { color: var(--text-primary); }
 
+/* Landing header links: inline on wide screens, off on phones, where the
+   wordmark, the theme toggle and the ticker box are the whole header. */
+.landing-nav { display: flex; }
+@media (max-width: 720px) { .landing-nav { display: none; } }
+
 /* Two quick beats then a rest, like a pulse. */
 @keyframes heartbeat {
   0%, 28%, 56%, 100% { transform: scale(1); }
