@@ -53,7 +53,7 @@ export default function MarketStrip({ showBonds = true }: { showBonds?: boolean 
   return (
     <div>
       {data.indices.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(138px, 1fr))", gap: 10 }}>
           {data.indices.map((ix) => (
             <div key={ix.code} style={{
               background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
