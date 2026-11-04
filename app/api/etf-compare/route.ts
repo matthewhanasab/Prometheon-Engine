@@ -9,7 +9,7 @@ import { guard, INTERNAL_HEADER, internalToken } from "@/lib/rateLimit";
 // diversifying, or buying the same basket twice?"
 //
 // The per-ETF handler is called in-process (no HTTP hop → no self-throttle,
-// no SSRF, no amplification), same pattern as the portfolio aggregator.
+// no SSRF, no amplification), one call per fund.
 const MAX = 4;
 
 async function loadEtf(ticker: string): Promise<any | null> {

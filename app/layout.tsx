@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "stock research", "stock analysis", "financial statements", "stock valuation",
     "dividend history", "SEC filings", "insider trading", "earnings calendar",
     "options screener", "covered calls", "cash-secured puts", "stock screener",
-    "P/E ratio", "free cash flow", "compare stocks", "portfolio tracker",
+    "P/E ratio", "free cash flow", "compare stocks",
   ],
   authors: [{ name: "Prometheon Engine" }],
   creator: "Prometheon Engine",

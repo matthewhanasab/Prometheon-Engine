@@ -68,7 +68,6 @@ const FOOTER_COLUMNS = [
     { href: "/insider",       label: "Insider Trading" },
     { href: "/sec",           label: "SEC Filings" },
     { href: "/options-chain", label: "Options Chain" },
-    { href: "/portfolio",     label: "My Portfolio" },
   ]},
 ];
 

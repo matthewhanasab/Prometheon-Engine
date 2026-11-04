@@ -44,6 +44,8 @@ const nextConfig: NextConfig = {
       { source: "/ms", destination: "/research", permanent: true },
       { source: "/ms/research", destination: "/research", permanent: true },
       { source: "/ms/:page*", destination: "/:page*", permanent: true },
+      // The portfolio tracker was retired; the research page is the nearest home.
+      { source: "/portfolio", destination: "/research", permanent: true },
     ];
   },
 };

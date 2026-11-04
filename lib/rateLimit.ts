@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 // fans out to ~11 upstream calls, so the budget is denominated in "upstream
 // cost units" rather than request count — otherwise distinct-ticker enumeration
 // slips under a flat cap while draining the quota.
-// In-process calls between route handlers (portfolio → research, ETF compare →
+// In-process calls between route handlers (ETF compare →
 // ETF) are exempt from the budget. They prove it with a token that exists only
 // inside this process, so a client can't claim the exemption with a header or
 // a Host value of its own.
@@ -41,7 +41,7 @@ function clientIp(req: NextRequest): string {
  * budget is spent, or null to proceed.
  *
  * In-process calls (constructed with the internal.local host, e.g. from the
- * portfolio aggregator) are exempt — they're already gated by the outer
+ * ETF comparison) are exempt — they're already gated by the outer
  * request's guard, and an external client cannot forge that hostname.
  */
 export function guard(req: NextRequest, cost: number): NextResponse | null {
