@@ -24,7 +24,14 @@ type Entry = {
   marketCap: number | null; sp500: boolean;
 };
 type Week = { source: "scheduled" | "projected"; degraded: boolean; entries: Entry[] };
-type Universe = "sp500" | "all";
+type Universe = "top" | "sp500" | "all";
+
+// "Top names" is a size cut: companies worth $100 billion or more, the ones
+// whose results move the whole market. Around 170 US-listed companies qualify,
+// so a busy week shows a few dozen instead of a few hundred.
+const TOP_CAP = 100e9;
+const inUniverse = (u: Universe) => (e: Entry) =>
+  u === "all" ? true : u === "sp500" ? e.sp500 : (e.marketCap ?? 0) >= TOP_CAP;
 
 // A peak day has 400+ reporters across the whole market. Each column shows the
 // largest companies first and tucks the rest behind an expander.
@@ -107,7 +114,7 @@ function EarningsInner() {
   const projected = week?.source === "projected";
 
   const days = Array.from({ length: 5 }, (_, i) => addDaysISO(weekStart, i));
-  const inWeek = (week?.entries ?? []).filter((e) => universe === "all" || e.sp500);
+  const inWeek = (week?.entries ?? []).filter(inUniverse(universe));
   const forDay = (day: string) =>
     inWeek.filter((e) => e.date === day)
       .sort((a, b) => (b.marketCap ?? -1) - (a.marketCap ?? -1) || a.ticker.localeCompare(b.ticker));
@@ -117,7 +124,7 @@ function EarningsInner() {
   // button, so its largest names are previewed underneath.
   const nextStart = addDaysISO(weekStart, 7);
   const upNext = (weeks[nextStart]?.entries ?? [])
-    .filter((e) => universe === "all" || e.sp500)
+    .filter(inUniverse(universe))
     .sort((a, b) => (b.marketCap ?? -1) - (a.marketCap ?? -1) || a.date.localeCompare(b.date))
     .slice(0, 10);
 
@@ -153,8 +160,8 @@ function EarningsInner() {
         </div>
 
         <div style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
-          {([["sp500", "S&P 500"], ["all", "All Stocks"]] as const).map(([k, lab]) => (
-            <button key={k} type="button" onClick={() => setUniverse(k)}
+          {([["top", "Top names", "Companies worth $100 billion or more"], ["sp500", "S&P 500", "Members of the S&P 500 index"], ["all", "All Stocks", "Every company reporting"]] as const).map(([k, lab, tip]) => (
+            <button key={k} type="button" title={tip} aria-pressed={universe === k} onClick={() => setUniverse(k)}
               style={{
                 padding: "5px 13px", borderRadius: 999, border: "none", cursor: "pointer",
                 fontFamily: SANS, fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em",
@@ -302,6 +309,7 @@ function EarningsInner() {
       {!loading && !isFailed && (
         <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>
           {inWeek.length} {inWeek.length === 1 ? "company" : "companies"} {days[4] < todayISO ? "reported" : "reporting"} this week, largest first.
+          {universe === "top" && <> Top names are companies worth $100 billion or more.</>}
           {projected
             ? <> Companies haven&apos;t announced dates this far ahead, so these are <strong>projected</strong> from each company&apos;s past reporting pattern and can shift by a day or two.</>
             : <> EPS figures are the analyst consensus; once a company reports, its actual result is shown against that estimate.</>}

@@ -1,14 +1,19 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-// Company logo via our same-origin /api/logo proxy (company-website favicon,
-// resolved through marketstack's tickerinfo), presented 1000x-style: a white
-// rounded tile so dark/transparent marks stay visible in both themes.
+// Company logo via our same-origin /api/logo proxy (the icon of the company's
+// own website), presented 1000x-style: a white rounded tile so dark or
+// transparent marks stay visible in both themes.
 //
 // On error the default is to hide entirely (unchanged for existing callers).
 // Pass `fallback` to instead render a ticker monogram tile — used in dense
-// lists (the earnings calendar) where every row must carry an icon even when a
-// favicon can't be resolved or hasn't warmed yet.
+// lists (the earnings calendar) where every row must carry an icon.
+//
+// A dense page asks for dozens of logos at once and the odd one is throttled
+// upstream. Those failures are temporary, so a failed logo is asked for once
+// more a couple of seconds later before the component gives up.
+type Phase = "first" | "wait" | "retry" | "failed";
+
 export default function CompanyLogo({
   ticker,
   size = 56,
@@ -18,13 +23,26 @@ export default function CompanyLogo({
   size?: number;
   fallback?: boolean;
 }) {
-  const [ok, setOk] = useState(true);
-  useEffect(() => { setOk(true); }, [ticker]);
+  // Tagged with the ticker it belongs to, so a new ticker starts clean without
+  // an effect to reset it.
+  const [st, setSt] = useState<{ t: string; phase: Phase }>({ t: ticker, phase: "first" });
+  const phase: Phase = st.t === ticker ? st.phase : "first";
   if (!ticker) return null;
 
   const radius = Math.max(10, size * 0.22);
+  const sym = ticker.toUpperCase();
 
-  if (!ok) {
+  const onError = () => {
+    if (phase === "first") {
+      setSt({ t: ticker, phase: "wait" });
+      // Jittered so a column of failures doesn't retry as another burst.
+      setTimeout(() => setSt((s) => (s.t === ticker && s.phase === "wait" ? { t: ticker, phase: "retry" } : s)), 1500 + Math.random() * 2500);
+    } else {
+      setSt({ t: ticker, phase: "failed" });
+    }
+  };
+
+  if (phase === "wait" || phase === "failed") {
     if (!fallback) return null;
     return (
       <span style={{
@@ -35,7 +53,7 @@ export default function CompanyLogo({
         fontFamily: "'Spline Sans Mono', monospace", fontWeight: 700,
         fontSize: Math.round(size * 0.34), letterSpacing: "-0.03em",
       }}>
-        {ticker.toUpperCase().slice(0, 2)}
+        {sym.slice(0, 2)}
       </span>
     );
   }
@@ -50,12 +68,15 @@ export default function CompanyLogo({
     }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`/api/logo/${encodeURIComponent(ticker.toUpperCase())}`}
-        alt={`${ticker.toUpperCase()} logo`}
+        key={phase}
+        src={`/api/logo/${encodeURIComponent(sym)}${phase === "retry" ? "?r=1" : ""}`}
+        alt={`${sym} logo`}
         width={Math.round(size * 0.72)}
         height={Math.round(size * 0.72)}
+        loading="lazy"
+        decoding="async"
         style={{ objectFit: "contain" }}
-        onError={() => setOk(false)}
+        onError={onError}
       />
     </span>
   );

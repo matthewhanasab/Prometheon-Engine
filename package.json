@@ -12,7 +12,9 @@
     "build:ownership": "node --max-old-space-size=4096 scripts/build-institutional-ownership.mjs",
     "refresh:earnings": "node scripts/build-earnings-calendar.mjs --refresh",
     "build:sp500": "node scripts/build-sp500.mjs",
-    "build:mna": "node scripts/build-mna.mjs"
+    "build:mna": "node scripts/build-mna.mjs",
+    "build:caps": "node scripts/build-market-caps.mjs",
+    "build:logos": "node scripts/build-logo-domains.mjs"
   },
   "dependencies": {
     "next": "^16.4.5",

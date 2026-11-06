@@ -3,6 +3,7 @@ import { guard } from "@/lib/rateLimit";
 import { fetchEarningsDay, tickerKey, type CalendarEntry } from "@/lib/earningsCalendar";
 import projections from "@/data/earnings-calendar.json";
 import sp500List from "@/data/sp500.json";
+import capSnapshot from "@/data/market-caps.json";
 
 // Earnings calendar, one trading week per request: ?week=YYYY-MM-DD (any day in
 // the week; it is snapped to that week's Monday).
@@ -23,6 +24,13 @@ function mondayOf(iso: string): string | null {
   d.setUTCDate(d.getUTCDate() - (dow === 0 ? 6 : dow - 1));
   return d.toISOString().slice(0, 10);
 }
+
+// Weekly snapshot of company size, in $ billions, keyed like tickerKey().
+const CAPS = (capSnapshot as { caps: Record<string, number> }).caps ?? {};
+const capOf = (ticker: string): number | null => {
+  const bn = CAPS[tickerKey(ticker)];
+  return bn ? bn * 1e9 : null;
+};
 
 export async function GET(req: NextRequest) {
   const limited = guard(req, 3);
@@ -54,13 +62,17 @@ export async function GET(req: NextRequest) {
       .map((e): CalendarEntry => ({
         ticker: e.ticker, name: e.name, date: e.next, time: null,
         epsEstimate: null, estimates: null, epsActual: null, surprisePct: null,
-        marketCap: null, sp500: SP500.has(tickerKey(e.ticker)),
+        marketCap: capOf(e.ticker), sp500: SP500.has(tickerKey(e.ticker)),
       }));
     if (projected.length) {
       entries = projected;
       source = "projected";
     }
   }
+
+  // The page ranks by size and filters on it, so a row the feed left without a
+  // market cap borrows one from the weekly snapshot.
+  entries = entries.map((e) => (e.marketCap == null ? { ...e, marketCap: capOf(e.ticker) } : e));
 
   // A week with missing days is served, but only briefly cached, so one bad
   // upstream moment doesn't pin a half-empty calendar for half an hour.

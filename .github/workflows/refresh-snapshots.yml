@@ -67,6 +67,15 @@ jobs:
         if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
         run: npm run build:sp500
 
+      - name: Market caps
+        if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
+        run: npm run build:caps
+
+      # After S&P 500 membership, which it reads. Incremental: only new tickers.
+      - name: Company websites for logos
+        if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
+        run: npm run build:logos
+
       - name: M&A activity
         if: steps.plan.outputs.target == 'weekly' || steps.plan.outputs.target == 'all'
         run: npm run build:mna
