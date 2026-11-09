@@ -21,7 +21,10 @@ import { loadDirectory, searchDirectory } from "@/lib/tickerDirectory";
 // background is a number too. Below, the tools are an index, set like the
 // contents page of a journal, where every row is a link.
 
-const DISPLAY = "'Space Grotesk', Georgia, serif";
+// The home page's display face. Newsreader is an editorial serif with optical
+// sizes, the journal half of the site's brief; figures and labels stay in the
+// grotesque and the mono. The app pages keep Space Grotesk for their headings.
+const DISPLAY = "'Newsreader', Georgia, 'Times New Roman', serif";
 const SANS = "'Public Sans', sans-serif";
 const MONO = "'Spline Sans Mono', monospace";
 
@@ -173,8 +176,8 @@ export default function LandingPage() {
           </div>
 
           <h1 className="fade-up fade-d1" style={{
-            fontFamily: DISPLAY, fontSize: "clamp(1.5rem, 3.2vw, 2.25rem)", fontWeight: 500, letterSpacing: "-0.025em",
-            lineHeight: 1.15, margin: "1.75rem 0 0",
+            fontFamily: DISPLAY, fontSize: "clamp(2.1rem, 4.4vw, 3.1rem)", fontWeight: 400, letterSpacing: "-0.015em",
+            lineHeight: 1.08, margin: "1.6rem 0 0", textWrap: "balance",
           }}>
             Every number that matters.<br />One software.
           </h1>
@@ -215,7 +218,7 @@ export default function LandingPage() {
       {/* ── What's inside ── */}
       <section aria-labelledby="inside" style={{ maxWidth: 1080, margin: "0 auto", padding: "4.5rem 1.5rem 4rem" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: "4px 20px", marginBottom: "1.4rem" }}>
-          <h2 id="inside" style={{ fontFamily: DISPLAY, fontSize: "1.5rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
+          <h2 id="inside" style={{ fontFamily: DISPLAY, fontSize: "1.9rem", fontWeight: 400, letterSpacing: "-0.01em", lineHeight: 1.1, margin: 0 }}>
             What&rsquo;s inside
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0 }}>
@@ -225,7 +228,7 @@ export default function LandingPage() {
 
         {FEATURE_GROUPS.map((g) => (
           <div key={g.label} className="home-group">
-            <h3 style={{ fontFamily: DISPLAY, fontSize: "0.95rem", fontWeight: 500, letterSpacing: "-0.01em", color: "var(--text-secondary)", margin: 0, padding: "9px 0" }}>
+            <h3 style={{ fontFamily: DISPLAY, fontSize: "1.15rem", fontWeight: 400, letterSpacing: "-0.005em", color: "var(--text-secondary)", margin: 0, padding: "6px 0" }}>
               {g.label}
             </h3>
             <div>
