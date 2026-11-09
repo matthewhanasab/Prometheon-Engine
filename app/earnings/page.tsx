@@ -2,6 +2,9 @@
 import { useState, useEffect, useSyncExternalStore, Suspense } from "react";
 import Link from "next/link";
 import CompanyLogo from "@/components/CompanyLogo";
+import PageHeader from "@/components/PageHeader";
+import Icon from "@/components/Icon";
+import { ErrorNote } from "@/components/States";
 
 // Earnings calendar — a trading week at a time, one column per weekday.
 //
@@ -135,36 +138,30 @@ function EarningsInner() {
 
   const weekLabel = (() => {
     const d = parseISO(weekStart);
-    return `WEEK OF ${MONTHS_LONG[d.getUTCMonth()].toUpperCase()} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+    return `Week of ${MONTHS_LONG[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
   })();
 
   const navBtn: React.CSSProperties = {
     background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)",
-    borderRadius: 999, padding: "7px 14px", fontFamily: SANS, fontSize: "0.62rem", fontWeight: 700,
-    letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", whiteSpace: "nowrap",
+    borderRadius: 999, padding: "7px 14px", fontFamily: SANS, fontSize: "0.76rem", fontWeight: 600,
+    cursor: "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4,
   };
 
   return (
-    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
-        Earnings Calendar
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
-      <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "1.4rem" }}>
-        Who reports this week, when in the day, and what analysts expect.
-      </div>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+      <PageHeader title="Earnings Calendar" subtitle="Who reports this week, when in the day, and what analysts expect." />
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: "1rem" }}>
-        <div style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 600, letterSpacing: "-0.01em" }}>
+        <h2 aria-live="polite" style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 600, letterSpacing: "-0.01em", margin: 0 }}>
           {weekLabel}
-        </div>
+        </h2>
 
-        <div style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
-          {([["top", "Top names", "Companies worth $100 billion or more"], ["sp500", "S&P 500", "Members of the S&P 500 index"], ["all", "All Stocks", "Every company reporting"]] as const).map(([k, lab, tip]) => (
+        <div role="group" aria-label="Which companies to show" style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
+          {([["top", "Top names", "Companies worth $100 billion or more"], ["sp500", "S&P 500", "Members of the S&P 500 index"], ["all", "All stocks", "Every company reporting"]] as const).map(([k, lab, tip]) => (
             <button key={k} type="button" title={tip} aria-pressed={universe === k} onClick={() => setUniverse(k)}
               style={{
-                padding: "5px 13px", borderRadius: 999, border: "none", cursor: "pointer",
-                fontFamily: SANS, fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em",
+                padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer",
+                fontFamily: SANS, fontSize: "0.76rem", fontWeight: 600,
                 background: universe === k ? "var(--accent-gold)" : "transparent",
                 color: universe === k ? "var(--on-accent)" : "var(--text-secondary)",
               }}>{lab}</button>
@@ -172,9 +169,9 @@ function EarningsInner() {
         </div>
 
         <div style={{ marginLeft: "auto", display: "inline-flex", gap: 8 }}>
-          <button type="button" style={navBtn} onClick={() => setWeekStart(addDaysISO(weekStart, -7))}>◀ Prev</button>
+          <button type="button" style={navBtn} onClick={() => setWeekStart(addDaysISO(weekStart, -7))} aria-label="Previous week"><Icon name="chevron-left" size={14} strokeWidth={2.2} /> Prev</button>
           <button type="button" style={navBtn} onClick={() => setPicked(null)}>This week</button>
-          <button type="button" style={navBtn} onClick={() => setWeekStart(addDaysISO(weekStart, 7))}>Next ▶</button>
+          <button type="button" style={navBtn} onClick={() => setWeekStart(addDaysISO(weekStart, 7))} aria-label="Next week">Next <Icon name="chevron-right" size={14} strokeWidth={2.2} /></button>
         </div>
       </div>
 
@@ -196,10 +193,7 @@ function EarningsInner() {
       )}
 
       {isFailed ? (
-        <div style={{ ...CARD, padding: "18px 20px", fontSize: "0.8rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-          The calendar didn&apos;t load.
-          <button type="button" style={navBtn} onClick={retry}>Try again</button>
-        </div>
+        <ErrorNote title="The calendar didn't load" message="The data service didn't answer. This is usually momentary." onRetry={retry} />
       ) : (
         <div>
           {/* auto-fit: five columns on a desktop, wrapping down to one per row
@@ -220,10 +214,10 @@ function EarningsInner() {
                     padding: "10px 12px", textAlign: "center",
                     background: isToday ? "var(--accent-gold)" : "var(--bg-elevated)",
                     color: isToday ? "var(--on-accent)" : "var(--text-primary)",
-                    fontFamily: SANS, fontSize: "0.62rem", fontWeight: 800, letterSpacing: "0.12em",
+                    fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.12em",
                   }}>
                     {DAY_NAMES[i]}
-                    <div style={{ fontFamily: MONO, fontSize: "0.6rem", fontWeight: 500, opacity: 0.75, letterSpacing: 0, marginTop: 2 }}>
+                    <div style={{ fontFamily: MONO, fontSize: "0.6875rem", fontWeight: 500, opacity: 0.75, letterSpacing: 0, marginTop: 2 }}>
                       {MONTHS[d.getUTCMonth()]} {d.getUTCDate()}{!loading && list.length > 0 ? ` · ${list.length}` : ""}
                     </div>
                   </div>
@@ -235,7 +229,7 @@ function EarningsInner() {
                           style={{ height: 44, borderRadius: 9, marginBottom: 5 }} />
                       ))
                     ) : list.length === 0 ? (
-                      <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.66rem", paddingTop: 16 }}>
+                      <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.7rem", paddingTop: 16 }}>
                         No reports
                       </div>
                     ) : (
@@ -244,7 +238,7 @@ function EarningsInner() {
                           const reported = e.epsActual != null;
                           const beat = reported && e.epsEstimate != null ? e.epsActual! >= e.epsEstimate : null;
                           return (
-                            <Link key={e.ticker} href={`/research?ticker=${e.ticker}`} title={e.name}
+                            <Link key={e.ticker} className="pressable" href={`/research?ticker=${e.ticker}`} title={e.name}
                               style={{
                                 display: "flex", alignItems: "center", gap: 8, marginBottom: 5,
                                 padding: "6px 8px", textDecoration: "none",
@@ -259,24 +253,24 @@ function EarningsInner() {
                                     {e.ticker}
                                   </span>
                                   {e.time && (
-                                    <span style={{ fontSize: "0.54rem", fontWeight: 700, letterSpacing: "0.04em", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                                    <span style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.04em", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                                       {e.time === "pre" ? "Before open" : "After close"}
                                     </span>
                                   )}
                                 </span>
                                 <span style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 6, marginTop: 2 }}>
-                                  <span style={{ fontSize: "0.56rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+                                  <span style={{ fontSize: "0.6875rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
                                     {e.name}
                                   </span>
                                   {reported ? (
                                     <span style={{
-                                      fontFamily: MONO, fontSize: "0.58rem", fontWeight: 600, whiteSpace: "nowrap",
+                                      fontFamily: MONO, fontSize: "0.6875rem", fontWeight: 600, whiteSpace: "nowrap",
                                       color: beat == null ? "var(--text-secondary)" : beat ? "var(--positive)" : "var(--negative)",
                                     }}>
                                       {fmtEps(e.epsActual!)}{e.epsEstimate != null ? ` vs ${fmtEps(e.epsEstimate)}` : ""}
                                     </span>
                                   ) : e.epsEstimate != null ? (
-                                    <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                                    <span style={{ fontFamily: MONO, fontSize: "0.6875rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                                       Est {fmtEps(e.epsEstimate)}
                                     </span>
                                   ) : null}
@@ -291,7 +285,7 @@ function EarningsInner() {
                             style={{
                               width: "100%", marginTop: 2, padding: "6px 8px", cursor: "pointer",
                               background: "transparent", border: "1px dashed var(--border)", borderRadius: 9,
-                              fontFamily: SANS, fontSize: "0.6rem", fontWeight: 700, color: "var(--text-secondary)",
+                              fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-secondary)",
                             }}>
                             {open ? "Show fewer" : `+ ${list.length - DAY_LIMIT} more`}
                           </button>
@@ -307,7 +301,7 @@ function EarningsInner() {
       )}
 
       {!loading && !isFailed && (
-        <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>
+        <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>
           {inWeek.length} {inWeek.length === 1 ? "company" : "companies"} {days[4] < todayISO ? "reported" : "reporting"} this week, largest first.
           {universe === "top" && <> Top names are companies worth $100 billion or more.</>}
           {projected
@@ -321,20 +315,20 @@ function EarningsInner() {
         <div style={{ marginTop: "1.6rem" }}>
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
-            fontSize: "0.58rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+            fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
             color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: 6, marginBottom: 10,
           }}>
             Biggest reports the week after
             <button type="button" onClick={() => setWeekStart(nextStart)}
-              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: SANS, fontSize: "0.62rem", fontWeight: 700, color: "var(--accent-gold)" }}>
-              See full week ▶
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: SANS, fontSize: "0.76rem", fontWeight: 600, color: "var(--accent-gold)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              See full week <Icon name="arrow-right" size={13} />
             </button>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {upNext.map((e) => {
               const d = parseISO(e.date);
               return (
-                <Link key={e.ticker} href={`/research?ticker=${e.ticker}`} title={e.name}
+                <Link key={e.ticker} className="pressable" href={`/research?ticker=${e.ticker}`} title={e.name}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px 6px 8px", textDecoration: "none",
                     background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999,
@@ -343,7 +337,7 @@ function EarningsInner() {
                     <CompanyLogo ticker={e.ticker} size={20} fallback />
                   </span>
                   <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: "0.72rem", color: "var(--text-primary)" }}>{e.ticker}</span>
-                  <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: "var(--text-secondary)" }}>
+                  <span style={{ fontFamily: MONO, fontSize: "0.6875rem", color: "var(--text-secondary)" }}>
                     {DAY_NAMES[(d.getUTCDay() + 6) % 7]?.slice(0, 3)} {MONTHS[d.getUTCMonth()]} {d.getUTCDate()}
                   </span>
                 </Link>

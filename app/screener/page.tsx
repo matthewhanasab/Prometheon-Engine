@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 import TradingViewWidget from "@/components/TradingViewWidget";
+import PageHeader from "@/components/PageHeader";
 
 // Screener, Market Stack edition.
 //
@@ -9,7 +10,6 @@ import TradingViewWidget from "@/components/TradingViewWidget";
 // dead page. TradingView's screener widget covers it — embedded as their
 // product, which is the licensed path (no data is read out of the frame).
 const SANS = "'Public Sans', sans-serif";
-const SERIF = "'Space Grotesk', Georgia, serif";
 
 const MARKETS: { key: string; label: string }[] = [
   { key: "america", label: "US" },
@@ -43,20 +43,13 @@ export default function MsScreenerPage() {
   });
 
   return (
-    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
-      
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
-        Screener
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
-      <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "1.2rem" }}>
-        Screen the whole market across valuation, growth, dividends and technicals — powered by the
-        TradingView screener widget.
-      </div>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+      <PageHeader title="Screener"
+        subtitle="Filter and sort the whole market by valuation, growth, dividends, margins and technicals. Pick a market and a set of columns, then use the table's own filters." />
 
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
         {MARKETS.map((m) => (
-          <button key={m.key} onClick={() => setMarket(m.key)} style={chip(market === m.key)}>{m.label}</button>
+          <button key={m.key} type="button" aria-pressed={market === m.key} onClick={() => setMarket(m.key)} style={chip(market === m.key)}>{m.label}</button>
         ))}
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
@@ -64,7 +57,7 @@ export default function MsScreenerPage() {
           <button key={s.key} onClick={() => setScreen(s.key)} style={chip(screen === s.key)}>{s.label}</button>
         ))}
       </div>
-      <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginBottom: "1.1rem" }}>
+      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "1.1rem" }}>
         {SCREENS.find((s) => s.key === screen)?.hint}
       </div>
 
@@ -79,7 +72,7 @@ export default function MsScreenerPage() {
         }}
       />
 
-      <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>
+      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>
         Sorting and filtering happen inside TradingView&apos;s widget. Click any row to open that symbol on
         TradingView — Prometheon reads nothing out of the frame.
       </div>

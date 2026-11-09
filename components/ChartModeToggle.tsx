@@ -21,7 +21,7 @@ export default function ChartModeToggle({ mode, onChange }: {
           onClick={() => onChange(opt.key)}
           style={{
             padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer",
-            fontFamily: "'Public Sans', sans-serif", fontSize: "0.64rem", fontWeight: 600,
+            fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", fontWeight: 600,
             textTransform: "uppercase", letterSpacing: "0.06em",
             background: mode === opt.key ? "var(--accent-gold)" : "transparent",
             color: mode === opt.key ? "var(--on-accent)" : "var(--text-secondary)",

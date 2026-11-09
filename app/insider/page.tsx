@@ -3,6 +3,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Icon from "@/components/Icon";
+import { ErrorNote, EmptyNote, SkeletonTable } from "@/components/States";
+import PageHeader from "@/components/PageHeader";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface InsiderTrade {
@@ -61,7 +64,7 @@ function fmtValue(n: number | null): string {
 
 const LABEL_STYLE: React.CSSProperties = {
   fontFamily: "'Public Sans', sans-serif",
-  fontSize: "0.58rem",
+  fontSize: "0.6875rem",
   fontWeight: 600,
   textTransform: "uppercase",
   letterSpacing: "0.12em",
@@ -182,7 +185,7 @@ function InsiderInner() {
 
   const th: React.CSSProperties = {
     textAlign: "left", padding: "10px 12px", fontFamily: "'Public Sans', sans-serif",
-    fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em",
+    fontSize: "0.6875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em",
     color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
   };
   const td: React.CSSProperties = {
@@ -191,20 +194,14 @@ function InsiderInner() {
   };
 
   return (
-    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
-      {/* Header */}
-      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
-        Insider Trading
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.45, maxWidth: 200, marginBottom: "0.9rem" }} />
-      <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
-        SEC Form 4 filings — what executives and directors are doing with their own money
-      </div>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)" }}>
+      <PageHeader title="Insider Trading"
+        subtitle="What executives and directors are doing with their own money, from the Form 4 filings they owe the SEC within two business days." />
 
       {/* Controls */}
       <div style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "flex-end", marginBottom: "1.5rem" }}>
         <div>
-          <label style={LABEL_STYLE}>Mode</label>
+          <div style={LABEL_STYLE}>Mode</div>
           <ToggleGroup
             options={[{ key: "latest" as const, label: "Latest Filings" }, { key: "ticker" as const, label: "Search by Ticker" }]}
             value={mode} onChange={switchMode} />
@@ -212,7 +209,7 @@ function InsiderInner() {
         {mode === "ticker" && (
           <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) { setSearched(input.trim().toUpperCase()); load(input.trim()); } }}
             style={{ display: "flex", gap: 8 }}>
-            <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
+            <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker" aria-label="Ticker"
               style={{
                 width: 130, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22,
                 padding: "8px 12px", color: "var(--text-primary)", fontFamily: "'Spline Sans Mono', monospace",
@@ -226,7 +223,7 @@ function InsiderInner() {
           </form>
         )}
         <div>
-          <label style={LABEL_STYLE}>Type</label>
+          <div style={LABEL_STYLE}>Type</div>
           <ToggleGroup
             options={[
               { key: "all" as const, label: "All" },
@@ -237,14 +234,14 @@ function InsiderInner() {
             value={typeFilter} onChange={setTypeFilter} />
         </div>
         <div>
-          <label style={LABEL_STYLE}>Min Value</label>
+          <div style={LABEL_STYLE}>Min Value</div>
           <ToggleGroup
             options={VALUE_OPTIONS.map(o => ({ key: o.key as any, label: o.label }))}
             value={minValue as any} onChange={(v: any) => setMinValue(Number(v))} />
         </div>
         <div>
-          <label style={LABEL_STYLE}>Search</label>
-          <input
+          <label htmlFor="ins-search" style={LABEL_STYLE}>Search</label>
+          <input id="ins-search"
             value={quickFilter}
             onChange={(e) => setQuickFilter(e.target.value)}
             placeholder="Ticker or insider name…"
@@ -256,12 +253,8 @@ function InsiderInner() {
         </div>
       </div>
 
-      {loading && (
-        <div style={{ color: "var(--text-secondary)", fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.8rem", padding: "40px 0", textAlign: "center" }}>
-          Loading filings…
-        </div>
-      )}
-      {error && <div style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</div>}
+      {loading && <SkeletonTable rows={12} />}
+      {error && <ErrorNote title="The filings didn't load" message="The data service didn't answer, or that symbol isn't in the data. Check the spelling and try again." />}
 
       {/* Empty states */}
       {!loading && !error && mode === "ticker" && !ran && (
@@ -273,12 +266,9 @@ function InsiderInner() {
       )}
 
       {!loading && !error && ran && filtered.length === 0 && (
-        <div style={{
-          background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
-          padding: "48px", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.85rem",
-        }}>
-          No insider filings found{searched ? ` for ${searched}` : ""} with the selected filters.
-        </div>
+        <EmptyNote title={`No insider filings${searched ? ` for ${searched}` : ""} match those filters`}>
+          Widen the transaction type or lower the minimum value. Open-market purchases are rare; most filings are sales and awards.
+        </EmptyNote>
       )}
 
       {!loading && filtered.length > 0 && (
@@ -320,7 +310,7 @@ function InsiderInner() {
                       <td style={{ ...td, fontFamily: "'Public Sans', sans-serif" }}>
                         <div style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: "0.8rem" }}>{t.insider ?? "—"}</div>
                         {t.role && (
-                          <div style={{ fontSize: "0.64rem", color: "var(--text-muted)", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis" }}>
                             {t.role}
                           </div>
                         )}
@@ -336,7 +326,7 @@ function InsiderInner() {
                         <span style={{
                           background: purchase ? "rgba(34,197,94,0.12)" : sale ? "rgba(239,68,68,0.12)" : "rgba(148,163,184,0.1)",
                           color: purchase ? "var(--positive)" : sale ? "var(--negative)" : "var(--text-secondary)",
-                          padding: "2px 8px", borderRadius: 24, fontSize: "0.68rem", fontWeight: 600,
+                          padding: "2px 8px", borderRadius: 24, fontSize: "0.72rem", fontWeight: 600,
                         }}>
                           {t.type ?? "—"}
                         </span>
@@ -355,7 +345,7 @@ function InsiderInner() {
                         {fmtDate(t.filingDate)}
                         {lag != null && (
                           <span style={{
-                            marginLeft: 6, fontSize: "0.62rem",
+                            marginLeft: 6, fontSize: "0.6875rem",
                             color: lag > 30 ? "var(--accent-gold)" : "var(--text-muted)",
                             fontWeight: lag > 30 ? 700 : 400,
                           }}>
@@ -365,8 +355,10 @@ function InsiderInner() {
                       </td>
                       <td style={{ ...td, textAlign: "center" }}>
                         {t.url ? (
-                          <a href={t.url} target="_blank" rel="noopener noreferrer" title="SEC filing"
-                            style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.8rem" }}>↗</a>
+                          <a href={t.url} target="_blank" rel="noopener noreferrer" title="Open the SEC filing" className="tap"
+                            style={{ color: "var(--text-secondary)", display: "inline-flex" }}>
+                            <Icon name="external" size={14} title="Open the SEC filing (new tab)" />
+                          </a>
                         ) : "—"}
                       </td>
                     </tr>
@@ -375,8 +367,8 @@ function InsiderInner() {
               </tbody>
             </table>
           </div>
-          <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginTop: 8 }}>
-            SEC Form 4 disclosures · Est. value = shares × reported price · Gold +days = filed more than 30 days after trade · Not financial advice
+          <div style={{ fontSize: "0.6875rem", color: "var(--text-secondary)", marginTop: 8 }}>
+            SEC Form 4 disclosures. Estimated value is shares times the reported price. A highlighted day count marks a filing made more than 30 days after the trade.
           </div>
         </>
       )}

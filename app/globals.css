@@ -1,74 +1,509 @@
 @import "tailwindcss";
 
+/* ── Tokens ──────────────────────────────────────────────────────────────────
+   Light theme lives here; the dark theme overrides the same names in the
+   inline block in layout.tsx (it must be in the document before first paint).
+   Text and signal colours are set to hold at least 4.5:1 against the page
+   ground and the card surface in their own theme. */
 :root {
   --bg-primary:    #D6D8DD;
   --bg-surface:    rgba(255, 255, 255, 0.44);
   --bg-elevated:   rgba(255, 255, 255, 0.62);
   --border:        rgba(35, 40, 55, 0.14);
-  --border-active: rgba(59, 110, 235, 0.40);
-  --accent-gold:   #3B6EEB;
-  --accent-2:      #38B6D3;
-  --accent-rgb:    59, 110, 235;
+  --border-active: rgba(31, 79, 204, 0.42);
+  --accent-gold:   #1F4FCC;
+  --accent-2:      #0E7C96;
+  --accent-rgb:    31, 79, 204;
   --on-accent:     #FFFFFF;
   --text-primary:  #23262F;
-  --text-secondary:#666C7A;
-  --text-muted:    #999EAA;
-  --positive:      #189A55;
-  --negative:      #D64545;
-  --tick:          #7C8BA3;
+  --text-secondary:#4A505E;
+  --text-muted:    #585E6C;
+  --positive:      #0A6636;
+  --negative:      #AE201C;
+  --tick:          #585E6C;
   --tooltip-bg:    rgba(255, 255, 255, 0.96);
-  --tooltip-border:rgba(59, 110, 235, 0.35);
-  --cursor-fill:   rgba(59, 110, 235, 0.08);
+  --tooltip-border:rgba(31, 79, 204, 0.35);
+  --cursor-fill:   rgba(31, 79, 204, 0.08);
   --glow-a:        rgba(150, 160, 185, 0.65);
   --glow-b:        rgba(195, 188, 175, 0.55);
   --bg-g1:         #DCDDE1;
-  --bg-g2:         #D3D5DA;
-  --bg-g3:         #C9CCD3;
+  --bg-g2:         #D6D8DC;
+  --bg-g3:         #D0D3D9;
   --card-shadow:   0 16px 40px rgba(35, 38, 50, 0.16);
-  --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.15);
-  --glass-sheen:   linear-gradient(160deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.06) 55%, rgba(255, 255, 255, 0.14) 100%);
+  --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --bar-bg:        rgba(214, 216, 221, 0.82);
+  --scrim:         rgba(20, 24, 34, 0.38);
+
+  /* Chart series, in fixed order: a company keeps its colour whatever else is
+     on the chart. Each theme has its own steps of the same six hues, checked
+     for colour-blind separation between neighbours and 3:1 against the card
+     surface. Green and red are left out: on this site they mean up and down. */
+  --series-1: #2A66D9;
+  --series-2: #D4581F;
+  --series-3: #1293AE;
+  --series-4: #A87900;
+  --series-5: #CF4F86;
+  --series-6: #6250D6;
+
+  /* Motion. One strong ease-out for anything entering or responding, one
+     drawer curve for sheets; durations stay under 300ms for interface work. */
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-press:   140ms;
+  --dur-fast:    160ms;
+  --dur-base:    220ms;
+
+  --topbar-h: 72px;
+  --page-pad: 2.5rem;
+  color-scheme: light;
 }
+:root[data-theme="dark"] { color-scheme: dark; }
+@media (max-width: 1023px) { :root { --topbar-h: 56px; } }
+@media (max-width: 767px) { :root { --page-pad: 1rem; } }
 
 * { box-sizing: border-box; }
 
+/* ── Document ────────────────────────────────────────────────────────────────
+   The page itself scrolls (not an inner container), so the browser restores
+   position on back/forward, starts new pages at the top, and collapses its
+   chrome on phones. The root size scales gently on wide desktops and is a
+   flat 16px on phones so nothing drops below a readable size. */
 html {
   font-size: clamp(16px, 1.25vw, 20px);
+  background-color: var(--bg-primary);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-padding-top: calc(var(--topbar-h) + 4.25rem);
+  scroll-behavior: smooth;
+  scrollbar-color: var(--border-active) transparent;
 }
 
-html, body {
-  background-color: var(--bg-primary);
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--text-primary);
+  font-family: 'Public Sans', sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* The ground is painted once on a fixed layer. background-attachment: fixed
+   repaints on every scroll frame and is ignored on iOS. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-image:
     radial-gradient(1100px 600px at 85% -10%, var(--glow-a), transparent 60%),
     radial-gradient(900px 700px at -10% 110%, var(--glow-b), transparent 55%),
     linear-gradient(165deg, var(--bg-g1) 0%, var(--bg-g2) 45%, var(--bg-g3) 100%);
-  background-attachment: fixed;
-  color: var(--text-primary);
+}
+
+/* Every page but the landing sits under the fixed bar, so the top padding is
+   the default and the landing page opts out. (It used to be switched on by a
+   script after load, which shifted the whole page down a beat late.) */
+.main-content {
+  display: block;
+  min-width: 0;
+  padding: calc(var(--topbar-h) + 1.75rem) 2.5rem 0;
+  padding-left: max(2.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(2.5rem, env(safe-area-inset-right, 0px));
+}
+.main-content:focus { outline: none; }
+body:has(.landing) .main-content { padding: 0; }
+
+@media (max-width: 767px) {
+  html { font-size: 16px; }
+  .main-content {
+    padding: calc(var(--topbar-h) + env(safe-area-inset-top, 0px) + 1.25rem) 1rem 0;
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  }
+  body:has(.landing) .main-content { padding: 0; }
+}
+
+/* ── Browser surfaces ────────────────────────────────────────────────────────
+   Selection, caret, native controls and scrollbars all take the palette. */
+:root { accent-color: var(--accent-gold); caret-color: var(--accent-gold); }
+::selection { background: rgba(var(--accent-rgb), 0.30); color: var(--text-primary); }
+
+::-webkit-scrollbar { width: 10px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-active);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* ── Focus ───────────────────────────────────────────────────────────────────
+   One ring, keyboard only. Inputs clear their outline inline, so theirs is
+   restored with !important. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent-gold) !important;
+  outline-offset: 1px;
+}
+
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--accent-gold);
+  color: var(--on-accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible { transform: translateY(0); outline-offset: 3px; }
+
+/* ── Type ────────────────────────────────────────────────────────────────── */
+h1, h2, h3 { text-wrap: balance; }
+p, li, figcaption { text-wrap: pretty; }
+a { text-underline-offset: 0.2em; text-decoration-thickness: from-font; }
+
+/* ── Controls ────────────────────────────────────────────────────────────────
+   Taps answer immediately (no double-tap wait), labels on controls do not
+   select on a long press, and every button gives on press. */
+button, a, summary, label, [role="button"] { touch-action: manipulation; }
+button, summary, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+button:not(:disabled):active,
+.pressable:active { transform: scale(0.97); }
+button, .pressable { transition: transform var(--dur-press) var(--ease-out); }
+button:disabled { cursor: default; }
+
+/* Phones: inputs under 16px make iOS zoom the page on focus and never zoom
+   back, and a control shorter than 44px is a missed tap. The visible size of
+   small chips is kept; their touch area is extended instead. */
+@media (pointer: coarse) {
+  input, select, textarea { font-size: 16px !important; min-height: 44px; }
+  button, .pressable, a.tap, .footer-link, .subnav-link { position: relative; }
+  button::after, .pressable::after, a.tap::after, .footer-link::after, .subnav-link::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Hover belongs to devices that can hover; on touch it sticks after a tap. */
+@media (hover: hover) and (pointer: fine) {
+  .footer-link:hover { color: var(--text-primary) !important; }
+  .topnav-link:hover { color: var(--text-primary) !important; background: var(--bg-elevated); }
+  .menu-link:hover { color: var(--text-primary) !important; background: var(--bg-elevated); }
+  .feature-card:hover { transform: translateY(-2px); border-color: var(--border-active) !important; }
+  .row-hover:hover { background: var(--bg-elevated) !important; }
+  .lift:hover { border-color: var(--border-active) !important; }
+}
+.topnav-link, .menu-link, .footer-link {
+  transition: color var(--dur-fast) ease, background-color var(--dur-fast) ease;
+}
+.feature-card, .lift {
+  transition: transform var(--dur-base) var(--ease-out), border-color var(--dur-fast) ease;
+}
+
+/* ── Surfaces ────────────────────────────────────────────────────────────────
+   Every card is the same flat surface: translucent fill, hairline border and
+   a one-pixel top highlight. Matched on the inline style because cards are
+   styled inline; both the server and the browser spelling of it match. */
+[style*="var(--bg-surface)"][style*="var(--border)"][style*="border-radius"]:not(tr):not(td):not(th) {
+  box-shadow: var(--glass-inset);
+}
+@supports (corner-shape: squircle) {
+  [style*="var(--bg-surface)"][style*="var(--border)"][style*="border-radius"]:not(tr):not(td):not(th) {
+    corner-shape: squircle;
+  }
+}
+
+/* The fixed bars sit over scrolling content, so they are the one place the
+   frosted treatment does real work. */
+.app-bar {
+  background: var(--bar-bg);
+  -webkit-backdrop-filter: saturate(1.5) blur(16px);
+  backdrop-filter: saturate(1.5) blur(16px);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────────────
+   Both bars are in the HTML; the breakpoint picks one, so a phone never
+   paints the desktop bar first and swaps it after the script loads. */
+.nav-desktop { display: flex; }
+.nav-mobile { display: none; }
+.nav-mobile-layer { display: none; }
+@media (max-width: 1023px) {
+  .nav-desktop { display: none; }
+  .nav-mobile { display: flex; }
+  .nav-mobile-layer { display: block; }
+}
+@media (max-width: 1239px) { .search-trigger-label { display: none; } }
+
+/* Dropdowns grow from the tab that opened them. Opened from the keyboard, or
+   when sliding from one menu to the next, they simply appear. */
+.menu-panel {
+  transform-origin: 24px 0;
+  transition: opacity 130ms var(--ease-out), transform 130ms var(--ease-out);
+  @starting-style { opacity: 0; transform: scale(0.97) translateY(-4px); }
+}
+.menu-panel.is-instant { transition: none; }
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: 'Spline Sans Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 195;
+  background: var(--scrim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+.drawer-scrim[data-open="true"] { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed;
+  top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px));
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  width: min(86vw, 340px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 12px 0 calc(20px + env(safe-area-inset-bottom, 0px));
+  padding-right: env(safe-area-inset-right, 0px);
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 320ms var(--ease-drawer), visibility 0s linear 320ms;
+}
+.drawer[data-open="true"] {
+  transform: translateX(0);
+  visibility: visible;
+  box-shadow: -18px 0 48px -16px rgba(0, 0, 0, 0.5);
+  transition: transform 320ms var(--ease-drawer), visibility 0s;
+}
+@media (min-width: 1024px) { .drawer, .drawer-scrim { display: none; } }
+
+/* Jump links for a long page: stuck under the top bar, bleeding to the page
+   edges so content scrolls cleanly beneath, scrolling sideways on a phone. */
+.subnav {
+  position: sticky;
+  top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px));
+  z-index: 100;
+  display: flex;
+  gap: 2px;
+  margin: 0 calc(-1 * var(--page-pad)) 1.25rem;
+  padding: 8px var(--page-pad);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+}
+.subnav::-webkit-scrollbar { display: none; }
+.subnav-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
   font-family: 'Public Sans', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  height: 100%;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--dur-fast) ease, background-color var(--dur-fast) ease;
+}
+.subnav-link[aria-current="true"] { color: var(--accent-gold); background: var(--bg-elevated); }
+@media (hover: hover) and (pointer: fine) { .subnav-link:hover { color: var(--text-primary); } }
+
+/* Benchmark rows (research): label, figure, what is typical. On a phone the
+   note drops to its own line instead of forcing the table to scroll sideways. */
+.bench-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.1fr) minmax(96px, auto) minmax(160px, 1.7fr);
+  align-items: baseline;
+  column-gap: 20px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 640px) {
+  .bench-row { grid-template-columns: 1fr auto; row-gap: 3px; }
+  .bench-row > .bench-note { grid-column: 1 / -1; }
+}
+
+/* Accessibility options: a floating button on wide screens and on the landing
+   page; on a phone it is an item in the menu instead, so nothing floats over
+   the right-hand column of a table. */
+.a11y-fab { display: flex; }
+.a11y-panel { bottom: 50px; }
+@media (max-width: 1023px) {
+  body:not(:has(.landing)) .a11y-fab { display: none; }
+  body:not(:has(.landing)) .a11y-panel { bottom: 0; }
+}
+
+/* ── Side sheet ──────────────────────────────────────────────────────────────
+   Detail that slides over a list. A native dialog pinned to the right edge. */
+.sheet {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(600px, 100vw);
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
   margin: 0;
   padding: 0;
+  border: none;
+  border-left: 1px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: -24px 0 60px -20px rgba(0, 0, 0, 0.55);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  transition: transform 320ms var(--ease-drawer);
+  @starting-style { transform: translateX(100%); }
+}
+.sheet::backdrop {
+  background: var(--scrim);
+  transition: opacity 240ms ease;
+  @starting-style { opacity: 0; }
+}
+.sheet-body {
+  position: relative;
+  padding: 22px 24px calc(40px + env(safe-area-inset-bottom, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+}
+.sheet-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
 }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--bg-elevated); }
-::-webkit-scrollbar-thumb { background: var(--border-active); border-radius: 2px; }
+/* Visually hidden, still read aloud. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
-/* ── Landing page ── */
-body:has(.landing) .main-content { padding: 0 !important; }
+/* Embedded frames keep a light colour scheme of their own. Without this the
+   browser paints an opaque white sheet behind a transparent third-party
+   widget whenever the page around it is in dark mode. */
+iframe { color-scheme: light; }
 
+/* ── Search menu ─────────────────────────────────────────────────────────────
+   A native dialog: focus is trapped, Escape closes, and the page behind is
+   inert, all without script. It opens with no animation on purpose. */
+.cmdk {
+  width: min(640px, calc(100vw - 24px));
+  max-height: min(560px, calc(100dvh - 96px));
+  margin: max(72px, 12dvh) auto auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: 0 32px 80px -20px rgba(0, 0, 0, 0.6), 0 4px 14px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+.cmdk[open] { display: flex; flex-direction: column; }
+.cmdk::backdrop { background: var(--scrim); }
+.cmdk-input {
+  flex: 1;
+  min-width: 0;
+  height: 54px;
+  padding: 0 !important;
+  border: none;
+  border-radius: 0 !important;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: 'Public Sans', sans-serif;
+  font-size: 1rem;
+}
+.cmdk-input:focus-visible { outline: none !important; }
+.cmdk-input::placeholder { color: var(--text-muted); }
+.cmdk-list { overflow-y: auto; overscroll-behavior: contain; padding: 6px; scroll-padding: 40px 0 8px; }
+.cmdk-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.cmdk-option[aria-selected="true"] { background: var(--bg-elevated); }
+@media (max-width: 767px) {
+  .cmdk { margin-top: calc(12px + env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px)); }
+}
+
+/* ── Landing page ────────────────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.fade-up { opacity: 0; animation: fadeUp 0.9s ease forwards; }
-.fade-d1 { animation-delay: 0.15s; }
-.fade-d2 { animation-delay: 0.35s; }
-.fade-d3 { animation-delay: 0.55s; }
-.fade-d4 { animation-delay: 0.75s; }
+.fade-up { opacity: 0; animation: fadeUp 0.7s var(--ease-out) forwards; }
+.fade-d1 { animation-delay: 0.12s; }
+.fade-d2 { animation-delay: 0.24s; }
+.fade-d3 { animation-delay: 0.36s; }
+.fade-d4 { animation-delay: 0.48s; }
 
-
-.footer-link:hover { color: var(--text-primary); }
+/* The shortcut hint means nothing without a keyboard. */
+@media (pointer: coarse) { .landing-kbd { display: none; } }
 
 /* Two quick beats then a rest, like a pulse. */
 @keyframes heartbeat {
@@ -82,33 +517,12 @@ body:has(.landing) .main-content { padding: 0 !important; }
   transform-origin: center;
 }
 
-.feature-card {
-  transition: transform 0.2s ease, border-color 0.2s ease;
-}
-.feature-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent-gold) !important;
-}
-
-
-@media (max-width: 767px) {
-  html { font-size: clamp(14px, 4vw, 16px); }
-
-  /* On mobile the sidebar is a fixed overlay, so main fills 100% width */
-  body { overflow: hidden; }
-  .main-content {
-    padding: 4.5rem 1rem 2rem !important;
-    width: 100%;
-  }
-}
-
-/* ── Loading skeletons ──
-   Used where a panel waits on a slow upstream call (ETF comparison pulls full
-   holdings per fund plus the pairwise overlap). A dashed box with the word
-   "Loading" reads as a broken panel; movement is what says "working". */
+/* ── Loading ─────────────────────────────────────────────────────────────────
+   Content that is on its way is drawn as its own outline, so the page keeps
+   its shape and nothing jumps when the data lands. */
 @keyframes skeletonPulse {
-  0%, 100% { opacity: 0.30; }
-  50%      { opacity: 0.75; }
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.8; }
 }
 .skeleton-bar {
   background: var(--bg-elevated);
@@ -119,17 +533,33 @@ body:has(.landing) .main-content { padding: 0 !important; }
 .skeleton-d2 { animation-delay: 0.24s; }
 .skeleton-d3 { animation-delay: 0.36s; }
 
+/* Fresh data replacing what is already on screen: the old stays, dimmed. */
+.is-stale { opacity: 0.55; transition: opacity var(--dur-base) ease; }
+
 @keyframes spinnerRotate { to { transform: rotate(360deg); } }
 .spinner {
   display: inline-block;
   border-radius: 50%;
   border: 2px solid var(--border);
   border-top-color: var(--accent-gold);
-  animation: spinnerRotate 0.7s linear infinite;
+  animation: spinnerRotate 0.6s linear infinite;
 }
 
-/* Respect a reduced-motion preference: keep the state legible, drop the movement. */
+/* Content arriving after a load settles in rather than popping. */
+@keyframes settleIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.settle { animation: settleIn 0.28s var(--ease-out) both; }
+
+/* ── Reduced motion ──────────────────────────────────────────────────────────
+   Movement goes; state changes stay legible through opacity and colour. */
 @media (prefers-reduced-motion: reduce) {
-  .skeleton-bar, .spinner, .heartbeat { animation: none; }
+  .skeleton-bar, .spinner, .heartbeat, .fade-up, .settle { animation: none; }
+  .fade-up { opacity: 1; }
   .skeleton-bar { opacity: 0.5; }
+  button:not(:disabled):active, .pressable:active { transform: none; }
+  .feature-card:hover { transform: none; }
+  html { scroll-behavior: auto; }
+  .menu-panel, .drawer, .drawer-scrim, .sheet, .sheet::backdrop { transition: none; }
 }

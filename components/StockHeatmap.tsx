@@ -18,6 +18,9 @@ export default function StockHeatmap({ height = 620 }: { height?: number }) {
     if (!container) return;
     container.innerHTML = "";
 
+    // Added a beat after mount: the embed script throws if its own tag has
+    // been removed by the time it runs, which a quick remount guarantees.
+    const timer = setTimeout(() => {
     const widgetDiv = document.createElement("div");
     widgetDiv.className = "tradingview-widget-container__widget";
     widgetDiv.style.height = "100%";
@@ -46,8 +49,9 @@ export default function StockHeatmap({ height = 620 }: { height?: number }) {
       height: "100%",
     });
     container.appendChild(script);
+    }, 120);
 
-    return () => { container.innerHTML = ""; };
+    return () => { clearTimeout(timer); container.innerHTML = ""; };
   }, [themeTick]);
 
   return (

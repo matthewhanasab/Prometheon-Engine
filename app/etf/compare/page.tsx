@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
+import { ErrorNote } from "@/components/States";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
@@ -14,14 +16,13 @@ import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 // in common — because that's the question index investors actually have:
 // "am I diversifying, or buying the same basket twice?"
 const SANS = "'Public Sans', sans-serif";
-const SERIF = "'Space Grotesk', Georgia, serif";
 const MONO = "'Spline Sans Mono', monospace";
 const CARD: React.CSSProperties = { background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22 };
 // Series colours must be distinguishable from each other, so they're literal
 // rather than themed: --accent-gold resolves to a blue (#3b6eeb light /
 // #6B9CFF dark) despite the name, which made fund 2 indistinguishable from
 // fund 1 on the performance race.
-const COLORS = ["#3B82F6", "#F59E0B", "#22C55E", "#A78BFA"];
+const COLORS = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)"];
 const MAX = 4;
 
 const money = (n: any) => (n == null || !isFinite(n) ? "—" : `$${Number(n).toFixed(2)}`);
@@ -64,6 +65,7 @@ function CompareInner() {
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error ?? "Request failed");
       setData(json);
+      window.history.replaceState(null, "", `/etf/compare?t=${want.join(",")}`);
     } catch (e: any) {
       setError(e?.message ?? "Failed"); setData(null);
     } finally { setLoading(false); }
@@ -90,7 +92,7 @@ function CompareInner() {
     { label: "Price", get: (f) => money(f.price) },
     {
       label: "Expense Ratio",
-      get: (f) => (f.expenseRatio != null ? `${f.expenseRatio.toFixed(2)}%${f.expenseRatio === cheapest ? " ★" : ""}` : "—"),
+      get: (f) => (f.expenseRatio != null ? `${f.expenseRatio.toFixed(2)}%${f.expenseRatio === cheapest ? " (lowest)" : ""}` : "—"),
       color: (f) => (f.expenseRatio != null && f.expenseRatio === cheapest ? "var(--positive)" : f.expenseRatio != null && f.expenseRatio > 0.4 ? "var(--negative)" : "var(--text-primary)"),
     },
     {
@@ -146,28 +148,32 @@ function CompareInner() {
   }, [funds, range]);
 
   return (
-    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
-        Compare ETFs
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
-      <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1.2rem" }}>
-        Side-by-side yield, returns and concentration — plus how much the funds actually hold in common.
-      </div>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+      <PageHeader title="Compare ETFs"
+        subtitle="Yield, returns and concentration side by side, plus how much the funds actually hold in common." />
 
-      <form onSubmit={(e) => { e.preventDefault(); run(tickers); }} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: "1.4rem" }}>
+      <form onSubmit={(e) => { e.preventDefault(); run(tickers); }} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: "1.4rem" }}>
         {Array.from({ length: MAX }, (_, i) => (
-          <input key={i} value={tickers[i] ?? ""} onChange={(e) => setT(i, e.target.value.toUpperCase())}
-            placeholder={i < 2 ? ["VOO", "VTI"][i] : `ETF ${i + 1}`}
-            style={{ width: 92, background: "var(--bg-elevated)", border: `1px solid ${tickers[i] ? COLORS[i] : "var(--border)"}`, borderRadius: 22, padding: "9px 12px", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.82rem", outline: "none", textTransform: "uppercase" }} />
+          <span key={i} style={{ position: "relative", display: "inline-flex" }}>
+            <span aria-hidden style={{ position: "absolute", left: 14, top: "50%", width: 8, height: 8, marginTop: -4, borderRadius: 999, background: tickers[i] ? COLORS[i] : "var(--border)" }} />
+            <input value={tickers[i] ?? ""} onChange={(e) => setT(i, e.target.value.toUpperCase())}
+              placeholder={i < 2 ? ["VOO", "VTI"][i] : "Add"} aria-label={`ETF ${i + 1}${i < 2 ? "" : " (optional)"}`}
+              autoComplete="off" autoCorrect="off" autoCapitalize="characters" spellCheck={false}
+              style={{ width: 124, height: 42, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, paddingLeft: "2rem", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.85rem", outline: "none", textTransform: "uppercase" }} />
+          </span>
         ))}
-        <button type="submit" disabled={loading}
-          style={{ background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22, padding: "9px 22px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", opacity: loading ? 0.7 : 1 }}>
-          {loading ? "…" : "Compare"}
+        <button type="submit" disabled={loading} aria-busy={loading}
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, height: 42, background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22, padding: "0 1.25rem", fontSize: "0.8rem", fontWeight: 700, cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1 }}>
+          {loading && <span className="spinner" style={{ width: 13, height: 13, borderColor: "color-mix(in srgb, var(--on-accent) 30%, transparent)", borderTopColor: "var(--on-accent)" }} />}
+          Compare
         </button>
       </form>
 
-      {error && <p style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</p>}
+      {error && (
+        <ErrorNote title="That comparison didn't load"
+          message={/at least two/i.test(error) ? "Enter at least two ETF tickers to compare." : "One of those symbols isn't a fund in the data, or the data service didn't answer. Check the symbols and try again."}
+          onRetry={/at least two/i.test(error) ? undefined : () => run(tickers)} />
+      )}
 
       {/* Comparing several funds means a holdings pull each plus the pairwise
           overlap, so the first uncached load takes seconds. A dashed box with
@@ -207,7 +213,7 @@ function CompareInner() {
               padding: "16px 18px", marginBottom: 12,
               opacity: loading ? 1 : 0.7,
             }}>
-              <div style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 9 }}>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 9 }}>
                 {s.t}
               </div>
               {loading ? (
@@ -229,14 +235,16 @@ function CompareInner() {
           {/* Overview cards */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: "1.8rem" }}>
             {funds.map((f, i) => (
-              <div key={f.ticker} style={{ ...CARD, flex: 1, minWidth: 180, borderTop: `3px solid ${COLORS[i]}`, padding: "14px 16px" }}>
+              <div key={f.ticker} style={{ ...CARD, flex: 1, minWidth: 180, padding: "14px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                   <CompanyLogo ticker={f.ticker} size={26} />
-                  <Link href={`/etf?ticker=${f.ticker}`} style={{ fontFamily: MONO, fontWeight: 700, color: COLORS[i], textDecoration: "none" }}>{f.ticker}</Link>
+                  <Link href={`/etf?ticker=${f.ticker}`} className="tap" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: MONO, fontWeight: 700, color: "var(--text-primary)", textDecoration: "none" }}>
+                    <span aria-hidden style={{ width: 9, height: 9, borderRadius: 999, background: COLORS[i] }} />{f.ticker}
+                  </Link>
                 </div>
                 <div style={{ fontSize: "0.78rem", fontWeight: 500, lineHeight: 1.3, marginBottom: 6 }}>{f.name}</div>
                 <div style={{ fontFamily: MONO, fontSize: "1.2rem", fontWeight: 600 }}>{money(f.price)}</div>
-                <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 4 }}>
+                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 4 }}>
                   {f.holdingsAvailable ? `${f.count} holdings · ${big(f.netAssets)}` : "holdings not published"}
                 </div>
               </div>
@@ -246,9 +254,9 @@ function CompareInner() {
           {/* Performance race */}
           {(perfData.length > 10 || chartMode === "tv") && (
             <>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.9rem" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.9rem" }}>
                 <span>Performance</span>
-                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.62rem" }}>
+                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.6875rem" }}>
                   % return, dividend-adjusted, over the shared window
                 </span>
                 <span style={{ marginLeft: "auto", alignSelf: "center", display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -286,9 +294,9 @@ function CompareInner() {
           {/* Overlap matrix — the headline feature */}
           {withHoldings.length >= 2 && (
             <>
-              <div style={{ fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.9rem" }}>
+              <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.9rem" }}>
                 Holdings Overlap
-                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.62rem", marginLeft: 10 }}>
+                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)", fontSize: "0.6875rem", marginLeft: 10 }}>
                   share of net assets held in common
                 </span>
               </div>
@@ -321,7 +329,7 @@ function CompareInner() {
                   </tbody>
                 </table>
               </div>
-              <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginBottom: "1.8rem", lineHeight: 1.6 }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "1.8rem", lineHeight: 1.6 }}>
                 <span style={{ color: "var(--positive)", fontWeight: 600 }}>Green</span> = mostly independent baskets ·{" "}
                 <span style={{ color: "var(--accent-gold)", fontWeight: 600 }}>gold</span> = partial ·{" "}
                 <span style={{ color: "var(--negative)", fontWeight: 600 }}>red</span> = largely the same fund. Computed as the
@@ -349,9 +357,11 @@ function CompareInner() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: MONO, fontSize: "0.8rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
-                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", minWidth: 150 }}>Metric</th>
+                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", minWidth: 150 }}>Metric</th>
                   {funds.map((f, i) => (
-                    <th key={f.ticker} style={{ textAlign: "right", padding: "9px 14px", color: COLORS[i], fontWeight: 700 }}>{f.ticker}</th>
+                    <th key={f.ticker} scope="col" style={{ textAlign: "right", padding: "9px 14px", color: "var(--text-primary)", fontWeight: 700 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}><span aria-hidden style={{ width: 9, height: 9, borderRadius: 999, background: COLORS[i] }} />{f.ticker}</span>
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -370,9 +380,9 @@ function CompareInner() {
             </table>
           </div>
 
-          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "1.2rem", lineHeight: 1.6 }}>
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "1.2rem", lineHeight: 1.6 }}>
             Holdings and concentration from SEC N-PORT filings (as-of each fund&apos;s report date); price, yield and
-            returns from marketstack. Effective holdings = 1 / Σ(weight²), the number of equally-weighted names the
+            returns from licensed market data. Effective holdings = 1 / Σ(weight²), the number of equally-weighted names the
             fund behaves like.
           </div>
         </>

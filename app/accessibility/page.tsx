@@ -1,4 +1,9 @@
-export const metadata = { title: "Accessibility — Prometheon Engine" };
+import PageHeader from "@/components/PageHeader";
+
+export const metadata = {
+  title: "Accessibility",
+  description: "How Prometheon Engine supports keyboard, screen-reader and low-vision use, the display options it offers, and how to report a barrier.",
+};
 
 function P({ children }: { children: React.ReactNode }) {
   return (
@@ -18,11 +23,8 @@ function H2({ children }: { children: React.ReactNode }) {
 
 export default function AccessibilityPage() {
   return (
-    <div style={{ maxWidth: 720, paddingBottom: "4rem" }}>
-      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
-        Accessibility Statement
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
+    <div style={{ maxWidth: 720 }}>
+      <PageHeader title="Accessibility" />
 
       <P>
         Prometheon Engine is committed to making its research tools usable by as many people as
@@ -41,8 +43,8 @@ export default function AccessibilityPage() {
 
       <H2>Accessibility options</H2>
       <P>
-        The accessibility button in the bottom-right corner of every page (or Ctrl+U) opens a
-        menu with options to increase text size (two levels), raise text and border contrast,
+        The accessibility button in the bottom-right corner of every page (on a phone, the last
+        item in the menu), or Ctrl+U, opens a panel with options to increase text size (two levels), raise text and border contrast,
         highlight links, widen text spacing, increase line height, pause animations, hide images,
         switch to a dyslexia-friendlier font, enlarge the cursor, and desaturate colors.
         Preferences are saved in your browser and persist between visits.
@@ -64,7 +66,7 @@ export default function AccessibilityPage() {
         and we will do our best to address it promptly.
       </P>
 
-      <P>This statement was last reviewed on July 17, 2026.</P>
+      <P>This statement was last reviewed on November 8, 2026.</P>
     </div>
   );
 }

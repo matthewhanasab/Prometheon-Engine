@@ -1,58 +1,62 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
+import Icon from "@/components/Icon";
+
+type Theme = "light" | "dark";
+
+// The theme lives on <html data-theme>, set before first paint by the inline
+// script in layout.tsx. Reading it through a store keeps every toggle on the
+// page in step and avoids a flash of the wrong knob position on load.
+const listeners = new Set<() => void>();
+const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
+const read = (): Theme => (document.documentElement.dataset.theme === "light" ? "light" : "dark");
+const readServer = (): Theme => "dark";
+
+function setTheme(next: Theme) {
+  document.documentElement.dataset.theme = next;
+  // Phone browsers colour their own chrome from this tag.
+  document.getElementById("theme-color")?.setAttribute("content", next === "dark" ? "#0C1220" : "#D6D8DD");
+  try { localStorage.setItem("theme", next); } catch { /* private mode */ }
+  listeners.forEach((fn) => fn());
+}
 
 export default function ThemeToggle({ floating = false }: { floating?: boolean }) {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
-
-  useEffect(() => {
-    const t = (document.documentElement.dataset.theme as "light" | "dark") || "dark";
-    setTheme(t);
-  }, []);
-
-  function toggle() {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem("theme", next); } catch { /* ignore */ }
-  }
-
+  const theme = useSyncExternalStore(subscribe, read, readServer);
   const isDark = theme === "dark";
 
   return (
     <button
-      onClick={toggle}
-      aria-label="Toggle light/dark mode"
+      type="button"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
       role="switch"
       aria-checked={isDark}
+      aria-label="Dark mode"
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       style={{
-        ...(floating ? { position: "fixed" as const, top: 18, right: 18, zIndex: 300 } : {}),
-        width: 58,
-        height: 30,
-        padding: 3,
-        display: "inline-flex",
-        alignItems: "center",
-        background: isDark ? "rgba(107, 156, 255, 0.25)" : "var(--bg-elevated)",
-        border: "1px solid var(--border)",
-        cursor: "pointer",
         position: floating ? "fixed" : "relative",
-        transition: "background 0.25s ease",
+        ...(floating ? { top: "calc(18px + env(safe-area-inset-top, 0px))", right: "calc(18px + env(safe-area-inset-right, 0px))", zIndex: 300 } : {}),
+        width: 58, height: 30, padding: 3, flexShrink: 0,
+        display: "inline-flex", alignItems: "center",
+        background: isDark ? "rgba(var(--accent-rgb), 0.25)" : "var(--bg-elevated)",
+        border: "1px solid var(--border)",
+        color: "var(--text-secondary)",
+        cursor: "pointer",
+        transition: "background-color var(--dur-base) ease",
       }}
     >
-      {/* track icons */}
-      <span style={{ position: "absolute", left: 8, fontSize: 11, opacity: isDark ? 0.35 : 0.9, transition: "opacity 0.25s" }}>☀</span>
-      <span style={{ position: "absolute", right: 8, fontSize: 11, opacity: isDark ? 0.9 : 0.35, transition: "opacity 0.25s" }}>☾</span>
-      {/* knob */}
+      <Icon name="sun" size={12} style={{ position: "absolute", left: 8, opacity: isDark ? 0.45 : 0 }} />
+      <Icon name="moon" size={12} style={{ position: "absolute", right: 8, opacity: isDark ? 0 : 0.6 }} />
       <span style={{
-        width: 24,
-        height: 24,
-        borderRadius: "50%",
-        background: isDark ? "#6B9CFF" : "#FFFFFF",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-        transform: isDark ? "translateX(28px)" : "translateX(0px)",
-        transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s ease",
-        display: "inline-block",
-      }} />
+        width: 22, height: 22, borderRadius: "50%",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        background: isDark ? "var(--accent-gold)" : "#FFFFFF",
+        color: isDark ? "var(--on-accent)" : "#4A505E",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.28)",
+        transform: isDark ? "translateX(28px)" : "translateX(0)",
+        transition: "transform var(--dur-base) var(--ease-out), background-color var(--dur-base) ease",
+      }}>
+        <Icon name={isDark ? "moon" : "sun"} size={12} strokeWidth={2} />
+      </span>
     </button>
   );
 }

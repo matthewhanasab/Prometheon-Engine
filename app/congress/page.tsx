@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Icon from "@/components/Icon";
+import { ErrorNote, SkeletonTable } from "@/components/States";
+import PageHeader from "@/components/PageHeader";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Amount {
@@ -108,7 +111,7 @@ function ToggleGroup<T extends string>({ options, value, onChange }: {
 
 const LABEL_STYLE: React.CSSProperties = {
   display: "block",
-  fontSize: "0.58rem",
+  fontSize: "0.6875rem",
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--text-secondary)",
@@ -149,32 +152,22 @@ export default function CongressPage() {
   const rows = data?.trades ?? [];
 
   const th: React.CSSProperties = {
-    textAlign: "left", padding: "0.6rem 0.7rem", fontSize: "0.58rem", textTransform: "uppercase",
+    textAlign: "left", padding: "0.6rem 0.7rem", fontSize: "0.6875rem", textTransform: "uppercase",
     letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)",
     whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-primary)",
   };
   const td: React.CSSProperties = { padding: "0.55rem 0.7rem", fontSize: "0.8rem", whiteSpace: "nowrap" };
 
   return (
-    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "3rem" }}>
-      {/* Header */}
-      <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
-        Congress Trades
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.45, maxWidth: 200, marginBottom: "0.9rem" }} />
-      <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
-        STOCK Act periodic transaction reports — what sitting members of Congress disclose trading
-      </div>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)" }}>
+      <PageHeader title="Congress Trades"
+        subtitle="What sitting members of Congress disclose trading, from the periodic transaction reports the STOCK Act requires." />
 
       {error && (
-        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "1rem 1.2rem", fontSize: "0.8rem", color: "var(--negative)" }}>
-          Couldn&rsquo;t load the disclosure snapshot: {error}
-        </div>
+        <ErrorNote title="The disclosures didn't load" message="The data service didn't answer. This is usually momentary." onRetry={() => window.location.reload()} />
       )}
 
-      {!data && !error && (
-        <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>Loading disclosures…</div>
-      )}
+      {!data && !error && <SkeletonTable rows={12} />}
 
       {data && (
         <>
@@ -200,7 +193,7 @@ export default function CongressPage() {
           {/* Controls */}
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "flex-end", marginBottom: "1.4rem" }}>
             <div>
-              <label style={LABEL_STYLE}>Chamber</label>
+              <div style={LABEL_STYLE}>Chamber</div>
               <ToggleGroup
                 options={[
                   { key: "all" as const, label: "Both" },
@@ -210,7 +203,7 @@ export default function CongressPage() {
                 value={chamber} onChange={setChamber} />
             </div>
             <div>
-              <label style={LABEL_STYLE}>Side</label>
+              <div style={LABEL_STYLE}>Side</div>
               <ToggleGroup
                 options={[
                   { key: "all" as const, label: "All" },
@@ -220,8 +213,8 @@ export default function CongressPage() {
                 value={side} onChange={setSide} />
             </div>
             <div>
-              <label style={LABEL_STYLE}>Filter</label>
-              <input
+              <label htmlFor="cg-filter" style={LABEL_STYLE}>Filter</label>
+              <input id="cg-filter"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ticker or member"
@@ -299,9 +292,9 @@ export default function CongressPage() {
                           {lag == null ? "—" : `${lag}d`}
                         </td>
                         <td style={td}>
-                          <a href={t.source} target="_blank" rel="noopener noreferrer"
-                            style={{ color: "var(--text-secondary)", fontSize: "0.72rem", textDecoration: "none" }}>
-                            View →
+                          <a href={t.source} target="_blank" rel="noopener noreferrer" className="tap"
+                            style={{ color: "var(--text-secondary)", fontSize: "0.74rem", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
+                            View <Icon name="external" size={12} /><span className="sr-only"> the filing for this trade (opens in a new tab)</span>
                           </a>
                         </td>
                       </tr>
@@ -334,7 +327,7 @@ export default function CongressPage() {
             Amounts are the ranges the STOCK Act requires; exact values are never disclosed, and the totals above use
             range midpoints. Rows marked <span style={{ color: "var(--negative)" }}>*</span> carry dates the filing
             itself got wrong — shown as filed rather than corrected. Snapshot generated {new Date(data.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}.{" "}
-            <Link href="/insider" style={{ color: "var(--accent-gold)", textDecoration: "none" }}>Insider trading (Form 4) →</Link>
+            <Link href="/insider" style={{ color: "var(--accent-gold)", whiteSpace: "nowrap" }}>Insider trading (Form 4) <Icon name="arrow-right" size={12} /></Link>
           </div>
         </>
       )}

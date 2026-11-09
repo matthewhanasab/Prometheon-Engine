@@ -1,8 +1,13 @@
 "use client";
-import React, { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import CompanyLogo from "@/components/CompanyLogo";
+import PageHeader from "@/components/PageHeader";
+import TickerInput from "@/components/TickerInput";
+import Icon from "@/components/Icon";
+import { ErrorNote, SkeletonTable } from "@/components/States";
+import { useUrlTicker } from "@/lib/useUrlTicker";
+import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 
 
 // Financials — Market Stack edition. Mirrors /financials row for row, but the
@@ -102,41 +107,10 @@ const fmtEps = (v: number | null | undefined) =>
   v == null || !Number.isFinite(v) ? "—" : `$${v.toFixed(2)}`;
 
 function FinancialsInner() {
-  const search = useSearchParams();
-  const [input, setInput] = useState(search.get("ticker") ?? "AAPL");
+  const [ticker, setTicker] = useUrlTicker("AAPL");
   const [period, setPeriod] = useState<"annual" | "quarterly">("annual");
   const [tab, setTab] = useState<"income" | "balance" | "cashflow">("income");
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const booted = useRef(false);
-
-  async function load(sym?: string, p?: "annual" | "quarterly") {
-    const t = (sym ?? input).trim().toUpperCase();
-    const per = p ?? period;
-    if (!t) return;
-    setInput(t); setLoading(true); setError(null);
-    try {
-      const res = await fetch(`/api/ms-financials/${t}?period=${per}`);
-      const json = await res.json();
-      if (!res.ok || json.error) throw new Error(json.error ?? "Request failed");
-      setData(json);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed"); setData(null);
-    } finally { setLoading(false); }
-  }
-  useEffect(() => {
-    if (booted.current) return;
-    booted.current = true;
-    load(search.get("ticker") ?? "AAPL", "annual");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function switchPeriod(p: "annual" | "quarterly") {
-    setPeriod(p);
-    if (data?.ticker) load(data.ticker, p);
-  }
+  const { data, loading, stale, error, retry } = useTickerData<any>(ticker, (t) => `/api/ms-financials/${t}?period=${period}`);
 
   const ROWS = tab === "income" ? INCOME_ROWS : tab === "balance" ? BALANCE_ROWS : CASHFLOW_ROWS;
   // On by default: the statement is what changed, not just what the level is.
@@ -160,58 +134,40 @@ function FinancialsInner() {
   });
 
   return (
-    <div style={{ paddingBottom: "4rem", fontFamily: SANS, color: "var(--text-primary)" }}>
-      
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
-        Financials
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
-      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
-        Income statement · Balance sheet · Cash flow — annual &amp; quarterly, as filed with the SEC
-      </div>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+      <PageHeader title="Financial Statements"
+        subtitle="Income statement, balance sheet and cash flow, annual and quarterly, as filed with the SEC.">
+        <TickerInput value={ticker} onSubmit={setTicker} loading={loading} action="Load" />
+      </PageHeader>
 
-      <form onSubmit={(e) => { e.preventDefault(); load(); inputRef.current?.blur(); }}
-        style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: "1.2rem" }}>
-        <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value.toUpperCase())}
-          placeholder="Type a ticker…" required
-          style={{
-            width: 160, background: "var(--bg-elevated)", border: "1px solid var(--border)",
-            borderRadius: 22, padding: "9px 14px", color: "var(--text-primary)",
-            fontFamily: MONO, fontSize: "0.85rem", outline: "none",
-          }} />
-        <button type="submit" disabled={loading} style={{
-          background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
-          padding: "9px 22px", fontFamily: SANS, fontSize: "0.72rem", fontWeight: 700,
-          textTransform: "uppercase", letterSpacing: "0.1em", cursor: loading ? "not-allowed" : "pointer",
-          opacity: loading ? 0.7 : 1,
-        }}>{loading ? "Loading…" : "Load"}</button>
+      {error && <ErrorNote title={`${ticker} didn't load`} message={lookupErrorText(error)} onRetry={retry} />}
 
-        <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
-          <button type="button" onClick={() => setShowGrowth((g) => !g)} style={chip(showGrowth)}
-            title="Show period-over-period change under each figure">
-            Growth %
-          </button>
-          <button type="button" onClick={() => switchPeriod("annual")} style={chip(period === "annual")}>Annual</button>
-          <button type="button" onClick={() => switchPeriod("quarterly")} style={chip(period === "quarterly")}>Quarterly</button>
-        </div>
-      </form>
+      {loading && !data && <SkeletonTable rows={10} />}
 
-      {error && <div style={{ color: "var(--negative)", fontSize: "0.85rem", marginBottom: 16 }}>{error}</div>}
-
-      {data && !loading && periods.length > 0 && (
-        <>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1rem" }}>
+      {data && periods.length > 0 && (
+        <div className={stale ? "is-stale" : undefined} aria-busy={stale}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1rem", flexWrap: "wrap" }}>
             <CompanyLogo ticker={data.ticker} size={38} />
-            <span style={{ fontFamily: SERIF, fontSize: "1.2rem", fontWeight: 600 }}>{data.name}</span>
-            <span style={{ fontFamily: MONO, fontSize: "0.7rem", color: "var(--text-muted)" }}>
-              CIK {Number(data.cik)} · {periods.length} periods
+            <h2 style={{ fontFamily: SERIF, fontSize: "1.2rem", fontWeight: 600, margin: 0, letterSpacing: "-0.01em" }}>{data.name}</h2>
+            <span style={{ fontFamily: MONO, fontSize: "0.74rem", color: "var(--text-muted)" }}>
+              {data.ticker} · {periods.length} periods
             </span>
           </div>
 
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: "1.1rem" }}>
-            {tabs.map((tb) => (
-              <button key={tb.key} onClick={() => setTab(tb.key)} style={chip(tab === tb.key)}>{tb.label}</button>
-            ))}
+          <div style={{ display: "flex", gap: "8px 16px", flexWrap: "wrap", justifyContent: "space-between", marginBottom: "1.1rem" }}>
+            <div role="tablist" aria-label="Statement" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {tabs.map((tb) => (
+                <button key={tb.key} type="button" role="tab" aria-selected={tab === tb.key} onClick={() => setTab(tb.key)} style={chip(tab === tb.key)}>{tb.label}</button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <button type="button" aria-pressed={period === "annual"} onClick={() => setPeriod("annual")} style={chip(period === "annual")}>Annual</button>
+              <button type="button" aria-pressed={period === "quarterly"} onClick={() => setPeriod("quarterly")} style={chip(period === "quarterly")}>Quarterly</button>
+              <button type="button" aria-pressed={showGrowth} onClick={() => setShowGrowth((g) => !g)} style={chip(showGrowth)}
+                title="Show period-over-period change under each figure">
+                Growth %
+              </button>
+            </div>
           </div>
 
           <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 22 }}>
@@ -219,7 +175,7 @@ function FinancialsInner() {
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
                   <th style={{
-                    textAlign: "left", padding: "10px 14px", fontFamily: SANS, fontSize: "0.58rem",
+                    textAlign: "left", padding: "10px 14px", fontFamily: SANS, fontSize: "0.6875rem",
                     fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em",
                     color: "var(--text-secondary)", borderBottom: "1px solid var(--border)",
                     minWidth: 190, position: "sticky", left: 0, background: "var(--bg-primary)",
@@ -239,7 +195,7 @@ function FinancialsInner() {
                     return (
                       <tr key={row.section} style={{ background: "var(--bg-elevated)" }}>
                         <td colSpan={periods.length + 1} style={{
-                          padding: "6px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600,
+                          padding: "6px 14px", fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600,
                           textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)",
                         }}>{row.section}</td>
                       </tr>
@@ -260,7 +216,7 @@ function FinancialsInner() {
                       {allEmpty ? (
                         <td colSpan={periods.length} style={{
                           textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)",
-                          fontFamily: SANS, fontSize: "0.68rem", fontWeight: 600, color: "var(--accent-gold)",
+                          fontFamily: SANS, fontSize: "0.72rem", fontWeight: 600, color: "var(--accent-gold)",
                         }}>
                           Not tagged in this filer&apos;s XBRL
                         </td>
@@ -285,7 +241,7 @@ function FinancialsInner() {
                                 const good = row.invertColor ? g < 0 : g > 0;
                                 return (
                                   <div style={{
-                                    fontFamily: MONO, fontSize: "0.6rem", fontWeight: 600, marginTop: 2,
+                                    fontFamily: MONO, fontSize: "0.6875rem", fontWeight: 600, marginTop: 2,
                                     color: g === 0 ? "var(--text-muted)" : good ? "var(--positive)" : "var(--negative)",
                                   }}>
                                     {g > 0 ? "+" : ""}{(g * 100).toFixed(1)}%
@@ -303,16 +259,16 @@ function FinancialsInner() {
             </table>
           </div>
 
-          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "1rem", lineHeight: 1.6 }}>
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "1rem", lineHeight: 1.6 }}>
             Source: SEC EDGAR XBRL company facts, as filed on 10-K and 10-Q. Quarterly cash-flow figures are
             un-cumulated from the year-to-date tagging filers use, and fourth quarters are reconstructed from
             the annual total. EBITDA is not a GAAP line — it is operating income plus D&amp;A. Rows a company
             doesn&apos;t tag are marked rather than shown as zero.{" "}
-            <Link href={`/charts?ticker=${data.ticker}`} style={{ color: "var(--accent-gold)" }}>
-              See these charted →
+            <Link href={`/charts?ticker=${data.ticker}`} style={{ color: "var(--accent-gold)", whiteSpace: "nowrap" }}>
+              See these charted <Icon name="arrow-right" size={12} />
             </Link>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

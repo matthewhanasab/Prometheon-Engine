@@ -214,7 +214,7 @@ export default function ChartShotButton({ ticker, companyName }: { ticker: strin
         ref={ref}
         type="button"
         onClick={() => setOpen(o => !o)}
-        title={state === "copied" ? "Copied ✓" : state === "saved" ? "Saved ✓" : "Screenshot this chart"}
+        title={state === "copied" ? "Copied" : state === "saved" ? "Saved" : "Screenshot this chart"}
         aria-label="Screenshot this chart"
         aria-expanded={open}
         style={{

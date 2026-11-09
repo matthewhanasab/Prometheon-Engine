@@ -8,7 +8,7 @@ export default function NotAvailable({ title, reason, alt }: {
   alt?: { href: string; label: string };
 }) {
   return (
-    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", paddingBottom: "4rem" }}>
+    <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)", }}>
       <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
         {title}
       </h1>
@@ -30,7 +30,7 @@ export default function NotAvailable({ title, reason, alt }: {
             </Link>
           )}
           <Link href="/research" style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "7px 16px", textDecoration: "none" }}>
-            ← Stock Research
+            Go to Stock Research
           </Link>
         </div>
       </div>

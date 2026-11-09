@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Compare ETFs — Holdings Overlap & Returns",
+  // Absolute: the "· Prometheon Engine" suffix is a template on the root
+  // layout, and it does not reach through /etf's own title to this page.
+  title: { absolute: "Compare ETFs — Holdings Overlap & Returns · Prometheon Engine" },
   description:
     "Compare ETFs side by side: yield, returns, concentration, and how much they hold in common. See whether two funds are truly diversifying or the same basket twice.",
   alternates: { canonical: "/etf/compare" },

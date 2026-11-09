@@ -5,23 +5,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
+import Icon from "@/components/Icon";
+import { useModKey } from "@/components/CommandMenu";
+import { NAV_GROUPS, GITHUB_URL } from "@/lib/nav";
 
-// ── Launch button with ignition animation ────────────────────────────────────
-function LaunchButton({ children, onLaunch, variant = "solid" }: {
-  children: React.ReactNode; onLaunch: () => void; variant?: "solid" | "outline";
+// ── Launch control ───────────────────────────────────────────────────────────
+// A real link, so it can be opened in a new tab and followed by crawlers; a
+// plain click plays the short fade first.
+function LaunchButton({ children, href, onLaunch }: {
+  children: React.ReactNode; href: string; onLaunch: (e: React.MouseEvent) => void;
 }) {
-  const solid = variant === "solid";
   return (
-    <button onClick={onLaunch} style={{
-      background: solid ? "var(--accent-gold)" : "transparent",
-      color: solid ? "var(--on-accent)" : "var(--accent-gold)",
-      border: solid ? "none" : "1.5px solid var(--accent-gold)",
-      cursor: "pointer",
-      padding: "14px 34px", borderRadius: 22, fontSize: "0.78rem", fontWeight: 700,
-      textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Public Sans', sans-serif",
+    <Link href={href} onClick={onLaunch} className="pressable" style={{
+      display: "inline-flex", alignItems: "center", gap: 10,
+      background: "var(--accent-gold)", color: "var(--on-accent)",
+      padding: "14px 30px", borderRadius: 999, fontSize: "0.9rem", fontWeight: 700,
+      fontFamily: "'Public Sans', sans-serif", textDecoration: "none",
     }}>
       {children}
-    </button>
+      <Icon name="arrow-right" size={16} strokeWidth={2.2} />
+    </Link>
   );
 }
 
@@ -37,17 +40,28 @@ function Constellation() {
 
     let raf = 0;
     let w = 0, h = 0;
+    let visible = true;
+    // Movement is decoration here; a visitor who has asked for less of it gets
+    // the same field, drawn once and left still.
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      || document.documentElement.dataset.a11yMotion === "reduce";
 
     function resize() {
-      if (!canvas) return;
-      w = canvas.width = canvas.offsetWidth;
-      h = canvas.height = canvas.offsetHeight;
+      if (!canvas || !ctx) return;
+      // Sized in device pixels (capped at 2x) so the lines stay crisp on a
+      // phone or a retina display instead of being scaled up and blurred.
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.offsetWidth; h = canvas.offsetHeight;
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     resize();
     window.addEventListener("resize", resize);
 
     const accentRgb = (getComputedStyle(document.documentElement).getPropertyValue("--accent-rgb") || "59, 110, 235").trim();
-    const N = 80;
+    // Fewer points on a phone: the field is as dense, and there are far fewer
+    // pairs to test each frame.
+    const N = w < 640 ? 44 : 80;
     const pts = Array.from({ length: N }, () => ({
       x: Math.random(),
       y: Math.random(),
@@ -92,12 +106,20 @@ function Constellation() {
         ctx.fill();
       }
 
-      raf = requestAnimationFrame(frame);
+      if (!still && visible) raf = requestAnimationFrame(frame);
     }
     raf = requestAnimationFrame(frame);
 
+    // Nothing is drawn while the hero is scrolled away or the tab is hidden.
+    const wake = () => { cancelAnimationFrame(raf); if (!still && visible && !document.hidden) raf = requestAnimationFrame(frame); };
+    const io = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; wake(); });
+    io.observe(canvas);
+    document.addEventListener("visibilitychange", wake);
+
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
+      document.removeEventListener("visibilitychange", wake);
       window.removeEventListener("resize", resize);
     };
   }, []);
@@ -105,124 +127,45 @@ function Constellation() {
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden
       style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
     />
   );
 }
 
 // ── Live scaled preview of an app page ────────────────────────────────────────
-function LivePreview({ href }: { href: string }) {
-  const frameRef = useRef<HTMLIFrameElement>(null);
-
-  // Keep the embedded page's theme in lockstep with the parent (same-origin)
-  useEffect(() => {
-    function sync() {
-      try {
-        const doc = frameRef.current?.contentDocument;
-        if (doc?.documentElement) {
-          doc.documentElement.dataset.theme = document.documentElement.dataset.theme || "light";
-        }
-      } catch { /* frame not ready */ }
-    }
-    const obs = new MutationObserver(sync);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    const frame = frameRef.current;
-    frame?.addEventListener("load", sync);
-    return () => { obs.disconnect(); frame?.removeEventListener("load", sync); };
-  }, []);
-
-  return (
-    <div style={{
-      position: "relative", height: 280, overflow: "hidden", borderRadius: 22,
-      border: "1px solid var(--border-active)", background: "var(--bg-primary)",
-      boxShadow: "0 0 24px rgba(var(--accent-rgb), 0.10)",
-    }}>
-      <iframe
-        ref={frameRef}
-        src={href}
-        loading="lazy"
-        scrolling="no"
-        style={{
-          width: 1500, height: 1500, border: "none",
-          transform: "scale(0.335)", transformOrigin: "top left",
-          pointerEvents: "none",
-        }}
-      />
-      <div style={{ position: "absolute", inset: 0 }} />
-    </div>
-  );
-}
-
-const SHOWCASE = [
-  { href: "/research?ticker=AAPL", title: "Stock Research",       desc: "Type a ticker, get the full picture — valuation, growth, quality, analyst consensus, insiders, and institutions on one page." },
-  { href: "/macro",         title: "Macro Dashboard",      desc: "Rates, inflation, the yield curve, and fear & greed — know the market backdrop before you buy anything." },
-  { href: "/earnings", title: "Earnings Calendar",    desc: "Who reports this week, before the bell and after the close. Click any ticker to research it instantly." },
-  { href: "/screener",      title: "Screener",             desc: "Filter the entire market by sector, size, valuation, and profitability — then jump straight into research." },
-  { href: "/charts?ticker=NVDA", title: "Financial Charts",     desc: "Quarterly revenue, margins, EPS, and cash flow — with analyst forecasts drawn right on the chart." },
-  { href: "/compare?t=AAPL,MSFT", title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, profitability, and health — with a radar chart." },
-  { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income statement, balance sheet, and cash flow — annual and quarterly, with YoY change highlighting." },
-  { href: "/projections?ticker=AMD", title: "Projections",          desc: "Bull, base, and bear five-year scenarios with editable growth and multiple assumptions." },
-  { href: "/covered-calls?ticker=TSLA", title: "Covered Calls",        desc: "Estimate option premium income with a strike-by-strike comparison table." },
-  { href: "/calculator",    title: "Compound Calculator",  desc: "See what consistent investing does over decades, across low, base, and high return scenarios." },
-  { href: "/sec?ticker=AAPL", title: "SEC Filings",          desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR, one click from the source." },
-  { href: "/congress",      title: "Congress Trades",      desc: "Every stock trade disclosed by U.S. Senators and Representatives — who bought, who sold, and how late they told you." },
-  { href: "/insider",       title: "Insider Trading",      desc: "SEC Form 4 filings in real time — when a CEO buys their own stock with their own money, you'll see it here first." },
-  { href: "/movers",        title: "Market Movers",        desc: "Today's biggest gainers, losers, and most active names, plus a sector heatmap of where the money is rotating." },
-  { href: "/dividends?ticker=KO", title: "Dividend Hub",         desc: "Payment history, yield, growth streaks, and 5-year dividend CAGR — plus the full ex-dividend calendar." },
-];
-
 // ── Feature grid ──────────────────────────────────────────────────────────────
-// Four groups of four, mirroring the nav. A flat list of fourteen cards left an
-// orphan row and no sense of which tool did what.
+// Every tool on the site, grouped the way the navigation groups them. Each
+// links to a worked example where the page takes a ticker.
 const FEATURE_GROUPS = [
   { label: "Research", items: [
-    { href: "/research?ticker=AAPL",   title: "Stock Research",       desc: "Valuation, growth, analyst consensus, insiders, and ownership — one page per ticker." },
-    { href: "/compare?t=AAPL,MSFT",    title: "Compare Stocks",       desc: "Up to four tickers side by side across valuation, growth, and health." },
-    { href: "/charts?ticker=NVDA",     title: "Financial Charts",     desc: "Revenue, margins, EPS, and cash flow by quarter, with analyst forecasts." },
-    { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income statement, balance sheet, and cash flow — annual and quarterly." },
+    { href: "/research?ticker=AAPL",   title: "Stock Research",       desc: "Valuation, growth, quality, analyst consensus, insiders and ownership, one page per company." },
+    { href: "/compare?t=AAPL,MSFT",    title: "Compare Stocks",       desc: "Up to five companies side by side across valuation, growth and balance-sheet health." },
+    { href: "/charts?ticker=NVDA",     title: "Financial Charts",     desc: "Revenue, margins, earnings and cash flow by quarter, drawn from the filings." },
+    { href: "/financials?ticker=MSFT", title: "Financial Statements", desc: "Income statement, balance sheet and cash flow, annual and quarterly." },
   ]},
   { label: "Markets", items: [
-    { href: "/screener", title: "Screener",          desc: "Filter the whole market by sector, size, valuation, and profitability." },
-    { href: "/earnings", title: "Earnings Calendar", desc: "Who reports this week, before the open or after the close, and what's expected." },
-    { href: "/macro",    title: "Macro Dashboard",   desc: "Rates, inflation, the yield curve, and fear & greed — the full backdrop." },
-    { href: "/movers",   title: "Market Movers",     desc: "Today's gainers, losers, most active, and a live sector heatmap." },
+    { href: "/earnings", title: "Earnings Calendar", desc: "Who reports this week, before the open or after the close, and what is expected." },
+    { href: "/screener", title: "Screener",          desc: "Filter the whole market by sector, size, valuation and profitability." },
+    { href: "/movers",   title: "Market Movers",     desc: "Today's gainers, losers and most active, with a map of the S&P 500." },
+    { href: "/macro",    title: "Macro Dashboard",   desc: "Rates, inflation, the yield curve and sentiment: the backdrop for every stock." },
+  ]},
+  { label: "Funds & Options", items: [
+    { href: "/etf?ticker=VOO",              title: "ETF Hub",                 desc: "What a fund holds, where, what it yields and what it costs." },
+    { href: "/etf/compare?t=VOO,QQQ",       title: "Compare ETFs",            desc: "Returns, concentration and how much two funds actually hold in common." },
+    { href: "/options-chain?ticker=AAPL",   title: "Options Chain",           desc: "Quotes, implied volatility and Greeks for every listed contract." },
+    { href: "/covered-calls?ticker=TSLA",   title: "Covered Call Calculator", desc: "Premium income on shares you hold, ranked strike by strike." },
   ]},
   { label: "Smart Money", items: [
-    { href: "/congress", title: "Congress Trades",  desc: "Every stock trade disclosed by U.S. Senators and Representatives." },
-    { href: "/insider",  title: "Insider Trading",  desc: "Form 4 filings — executive and director buys and sales, valued and flagged." },
-    { href: "/sec",      title: "SEC Filings",      desc: "10-Ks, 10-Qs, and 8-Ks straight from EDGAR." },
-    { href: "/mna",      title: "M&A Activity",     desc: "Acquisitions, buyouts and IPOs by industry — acquirer, target, value and advisors." },
+    { href: "/mna",      title: "M&A Activity",    desc: "Acquisitions, buyouts and IPOs by industry: acquirer, target, value and advisers." },
+    { href: "/congress", title: "Congress Trades", desc: "Every stock trade disclosed by U.S. Senators and Representatives." },
+    { href: "/insider",  title: "Insider Trading", desc: "Form 4 filings: what executives and directors buy and sell." },
+    { href: "/sec",      title: "SEC Filings",     desc: "10-Ks, 10-Qs and 8-Ks, each linked to the original on EDGAR." },
   ]},
-  { label: "Income & Planning", items: [
-    { href: "/dividends?ticker=KO",       title: "Dividend Hub",        desc: "Payment history, yield, growth streaks, and the ex-dividend calendar." },
-    { href: "/covered-calls?ticker=TSLA", title: "Covered Calls",       desc: "Premium income estimates with a strike-by-strike comparison." },
-    { href: "/projections?ticker=AMD",    title: "Projections",         desc: "Bull, base, and bear five-year scenarios with editable assumptions." },
-    { href: "/calculator",                title: "Compound Calculator", desc: "What consistent investing does over decades, across return scenarios." },
-  ]},
-];
-
-// ── Footer link columns ───────────────────────────────────────────────────────
-const FOOTER_COLUMNS = [
-  { title: "Research", links: [
-    { href: "/research",   label: "Stock Research" },
-    { href: "/compare",    label: "Compare Stocks" },
-    { href: "/charts",     label: "Financial Charts" },
-    { href: "/financials", label: "Financial Statements" },
-    { href: "/screener",   label: "Screener" },
-  ]},
-  { title: "Markets", links: [
-    { href: "/earnings",  label: "Earnings Calendar" },
-    { href: "/macro",     label: "Macro Dashboard" },
-    { href: "/movers",    label: "Market Movers" },
-    { href: "/dividends", label: "Dividend Hub" },
-    { href: "/etf",       label: "ETF Hub" },
-  ]},
-  { title: "Smart Money", links: [
-    { href: "/mna",           label: "M&A Activity" },
-    { href: "/congress",      label: "Congress Trades" },
-    { href: "/insider",       label: "Insider Trading" },
-    { href: "/sec",           label: "SEC Filings" },
-    { href: "/options-chain", label: "Options Chain" },
+  { label: "Planning", items: [
+    { href: "/projections?ticker=AMD", title: "Projections",         desc: "Bull, base and bear five-year scenarios with assumptions you can edit." },
+    { href: "/dividends?ticker=KO",    title: "Dividends",           desc: "Payment history, yield, growth streak and the next ex-dividend date." },
+    { href: "/calculator",             title: "Compound Calculator", desc: "What steady investing does over decades, under three return scenarios." },
   ]},
 ];
 
@@ -231,23 +174,29 @@ export default function LandingPage() {
   const router = useRouter();
   const [leaving, setLeaving] = useState(false);
 
-  function launch(dest: string = "/research") {
+  const mod = useModKey();
+
+  // A plain click fades the page out before the route changes. Modified
+  // clicks (new tab, new window) are left to the browser.
+  function launch(e: React.MouseEvent, dest: string) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
     if (leaving) return;
     setLeaving(true);
     router.prefetch(dest);
-    setTimeout(() => router.push(dest), 500);
+    setTimeout(() => router.push(dest), 220);
   }
 
   return (
     <div className="landing" style={{
       fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)",
-      opacity: leaving ? 0 : 1, transition: "opacity 0.5s ease",
+      opacity: leaving ? 0 : 1, transition: "opacity 0.22s ease",
     }}>
 
       <ThemeToggle floating />
 
       {/* ── Hero ── */}
-      <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
+      <section style={{ position: "relative", minHeight: "100svh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4rem 1.5rem 3rem", overflow: "hidden" }}>
         <Constellation />
 
         <div className="fade-up" style={{ position: "relative" }}>
@@ -259,8 +208,17 @@ export default function LandingPage() {
           Every number that matters. One software.
         </h1>
 
-        <div className="fade-up fade-d3" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-          <LaunchButton onLaunch={() => launch("/research")}>Launch the Engine</LaunchButton>
+        <div className="fade-up fade-d2" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+          <LaunchButton href="/research" onLaunch={(e) => launch(e, "/research")}>Launch the Engine</LaunchButton>
+          <button type="button" onClick={() => window.dispatchEvent(new Event("prometheon:search"))} style={{
+            display: "inline-flex", alignItems: "center", gap: 8, minHeight: 40, padding: "0 14px", cursor: "pointer",
+            background: "transparent", border: "none", color: "var(--text-secondary)",
+            fontFamily: "'Public Sans', sans-serif", fontSize: "0.85rem",
+          }}>
+            <Icon name="search" size={15} />
+            Search a company or ticker
+            <kbd className="kbd landing-kbd">{mod === "Ctrl" ? "Ctrl K" : "⌘K"}</kbd>
+          </button>
         </div>
       </section>
 
@@ -274,7 +232,7 @@ export default function LandingPage() {
         {FEATURE_GROUPS.map((g) => (
           <div key={g.label} style={{ marginBottom: "2.2rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                 {g.label}
               </div>
               <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
@@ -291,8 +249,8 @@ export default function LandingPage() {
                   <div style={{ fontSize: "0.76rem", color: "var(--text-secondary)", lineHeight: 1.55, flex: 1 }}>
                     {f.desc}
                   </div>
-                  <div style={{ marginTop: 12, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.68rem", color: "var(--accent-gold)" }}>
-                    Open →
+                  <div style={{ marginTop: 12, fontSize: "0.76rem", fontWeight: 600, color: "var(--accent-gold)", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    Open <Icon name="arrow-right" size={13} />
                   </div>
                 </Link>
               ))}
@@ -306,12 +264,12 @@ export default function LandingPage() {
         <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", color: "var(--text-primary)", marginBottom: "1.4rem" }}>
           Stop tab-hopping. Start researching.
         </div>
-        <LaunchButton onLaunch={() => launch("/research")}>Launch the Engine</LaunchButton>
+        <LaunchButton href="/research" onLaunch={(e) => launch(e, "/research")}>Launch the Engine</LaunchButton>
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "3.5rem 1.5rem 2rem" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(220px, 1.4fr) repeat(auto-fit, minmax(150px, 1fr))", gap: "2.5rem 2rem" }}>
+      <footer style={{ borderTop: "1px solid var(--border)", padding: "3.5rem max(1.5rem, env(safe-area-inset-right, 0px)) 2rem max(1.5rem, env(safe-area-inset-left, 0px))" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "2.25rem 2rem" }}>
           <div>
             <Image className="logo-on-light" src="/logo_transparent_dark.png" alt="Prometheon Engine" width={200} height={64}
               style={{ objectFit: "contain", height: "auto", marginBottom: "1rem" }} />
@@ -323,27 +281,27 @@ export default function LandingPage() {
             <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
               Made by Matthew Hanasab with <span className="heartbeat" aria-label="love" role="img">❤️</span>
             </div>
-            <div style={{ display: "flex", gap: 14, marginTop: 12, fontSize: "0.78rem" }}>
+            <div style={{ display: "flex", gap: 14, marginTop: 12, fontSize: "0.78rem", flexWrap: "wrap" }}>
               <Link href="/about" className="footer-link" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>About</Link>
-              <a href="https://github.com/matthewhanasab/Prometheon-Engine" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>Source on GitHub ↗</a>
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="footer-link" style={{ color: "var(--text-secondary)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>Source on GitHub <Icon name="external" size={13} /></a>
             </div>
           </div>
-          {FOOTER_COLUMNS.map((col) => (
-            <div key={col.title}>
-              <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.95rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.9rem" }}>
-                {col.title}
+          {NAV_GROUPS.map((col) => (
+            <nav key={col.label} aria-label={col.label}>
+              <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "0.95rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.6rem" }}>
+                {col.label}
               </div>
-              {col.links.map((l) => (
+              {col.items.map((l) => (
                 <Link key={l.href} href={l.href} className="footer-link"
-                  style={{ display: "block", fontSize: "0.82rem", color: "var(--text-secondary)", textDecoration: "none", marginBottom: "0.6rem" }}>
+                  style={{ display: "flex", alignItems: "center", minHeight: 32, fontSize: "0.82rem", color: "var(--text-secondary)", textDecoration: "none" }}>
                   {l.label}
                 </Link>
               ))}
-            </div>
+            </nav>
           ))}
         </div>
-        <div style={{ maxWidth: 1200, margin: "2.5rem auto 0", paddingTop: "1.2rem", borderTop: "1px solid var(--border)", fontSize: "0.62rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
-          Prometheon Engine · Market data for research purposes · Not financial advice
+        <div style={{ maxWidth: 1200, margin: "2.5rem auto 0", paddingTop: "1.2rem", borderTop: "1px solid var(--border)", fontSize: "0.75rem", color: "var(--text-muted)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+          <span suppressHydrationWarning>© {new Date().getFullYear()}</span> Prometheon Engine. Market data for research, not financial advice.
         </div>
       </footer>
     </div>

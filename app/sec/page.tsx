@@ -1,7 +1,12 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import PageHeader from "@/components/PageHeader";
+import TickerInput from "@/components/TickerInput";
+import Icon from "@/components/Icon";
+import { ErrorNote, SkeletonTable } from "@/components/States";
+import { useUrlTicker } from "@/lib/useUrlTicker";
+import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 
 interface Filing {
   date: string;
@@ -21,17 +26,20 @@ interface Insider {
   owned: number | null;
 }
 
+// Form types take a colour from the site's chart series so the badges hold
+// their contrast in both themes.
+const tint = (c: string) => `color-mix(in srgb, ${c} 16%, transparent)`;
 const FORM_COLORS: Record<string, { bg: string; color: string }> = {
-  "10-K": { bg: "rgba(var(--accent-rgb), 0.15)",  color: "var(--accent-gold)" },
-  "10-Q": { bg: "rgba(59,130,246,0.15)",  color: "var(--accent-2)" },
-  "8-K":  { bg: "rgba(100,116,139,0.2)",  color: "var(--tick)" },
-  "4":    { bg: "rgba(34,197,94,0.15)",   color: "#22C55E" },
-  "S-1":  { bg: "rgba(168,85,247,0.15)",  color: "#C084FC" },
-  "DEF 14A": { bg: "rgba(249,115,22,0.15)", color: "#FB923C" },
+  "10-K":    { bg: tint("var(--accent-gold)"), color: "var(--accent-gold)" },
+  "10-Q":    { bg: tint("var(--series-3)"),    color: "var(--series-3)" },
+  "8-K":     { bg: tint("var(--text-muted)"),  color: "var(--text-secondary)" },
+  "4":       { bg: tint("var(--positive)"),    color: "var(--positive)" },
+  "S-1":     { bg: tint("var(--series-5)"),    color: "var(--series-5)" },
+  "DEF 14A": { bg: tint("var(--series-2)"),    color: "var(--series-2)" },
 };
 
 function formBadge(form: string) {
-  const style = FORM_COLORS[form] ?? { bg: "rgba(100,116,139,0.12)", color: "var(--text-secondary)" };
+  const style = FORM_COLORS[form] ?? { bg: tint("var(--text-muted)"), color: "var(--text-secondary)" };
   return (
     <span style={{
       display: "inline-block",
@@ -83,137 +91,41 @@ const tdStyle: React.CSSProperties = {
   verticalAlign: "middle",
 };
 
-function EmptyHint({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div style={{ marginBottom: "1.25rem" }}>
-      <div style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{title}</div>
-      <div style={{ border: "1px dashed var(--border-active)", borderRadius: 22, background: "var(--bg-surface)", padding: "34px 20px", textAlign: "center" }}>
-        <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
-      </div>
-    </div>
-  );
-}
-
 function SecInner() {
-  const searchParams = useSearchParams();
-  const [inputTicker, setInputTicker] = useState("");
-  const [activeTicker, setActiveTicker] = useState<string | null>(null);
-  const [filings, setFilings]   = useState<Filing[]>([]);
-  const [insiders, setInsiders] = useState<Insider[]>([]);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState<string | null>(null);
-  const [insiderPage, setInsiderPage] = useState(0);
+  // Opens on a worked example, like the other company pages.
+  const [ticker, setTicker] = useUrlTicker("AAPL");
+  const { data, shown, loading, stale, error, retry } = useTickerData<{ filings?: Filing[]; insiders?: Insider[] }>(ticker, (t) => `/api/sec/${t}`);
+  const filings = data?.filings ?? [];
+  const insiders = data?.insiders ?? [];
+  const activeTicker = shown;
+  // The page of insider rows, remembered per company so a new lookup starts at the top.
+  const [paging, setPaging] = useState<{ ticker: string | null; page: number }>({ ticker: null, page: 0 });
+  const insiderPage = paging.ticker === activeTicker ? paging.page : 0;
+  const setInsiderPage = (fn: (p: number) => number) => setPaging({ ticker: activeTicker, page: fn(insiderPage) });
 
   const INSIDER_PAGE_SIZE = 15;
-
-  useEffect(() => {
-    const t = searchParams.get("ticker");
-    if (t) { setInputTicker(t.toUpperCase()); loadTicker(t.toUpperCase()); }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function loadTicker(symArg?: string) {
-    const sym = (symArg ?? inputTicker).trim().toUpperCase();
-    if (!sym) return;
-    setLoading(true);
-    setError(null);
-    setInsiderPage(0);
-    fetch(`/api/sec/${sym}`)
-      .then(r => r.json())
-      .then(d => {
-        setFilings(d.filings  ?? []);
-        setInsiders(d.insiders ?? []);
-        setActiveTicker(sym);
-        setLoading(false);
-      })
-      .catch(() => { setError("Failed to load SEC data."); setLoading(false); });
-  }
 
   const insiderSlice = insiders.slice(insiderPage * INSIDER_PAGE_SIZE, (insiderPage + 1) * INSIDER_PAGE_SIZE);
   const totalInsiderPages = Math.ceil(insiders.length / INSIDER_PAGE_SIZE);
 
   return (
     <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)" }}>
-      {/* Header */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
-          SEC Filings
-        </h1>
-        <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.25rem 0 0" }}>
-          EDGAR · Real-time regulatory filings
-        </p>
-      </div>
+      <PageHeader title="SEC Filings"
+        subtitle="A company's most recent filings and insider transactions, each linked to the original document on EDGAR.">
+        <TickerInput value={ticker} onSubmit={setTicker} loading={loading} action="Load" />
+      </PageHeader>
 
-      {/* Search */}
-      <div style={{ display: "flex", gap: "0.6rem", marginBottom: "1.75rem", alignItems: "center" }}>
-        <input
-          value={inputTicker}
-          onChange={e => setInputTicker(e.target.value.toUpperCase())}
-          onKeyDown={e => e.key === "Enter" && loadTicker()}
-          placeholder="Ticker"
-          style={{
-            width: 200,
-            padding: "0.5rem 0.75rem",
-            background: "var(--bg-elevated)",
-            border: "1px solid var(--border)",
-            borderRadius: 22,
-            color: "var(--text-primary)",
-            fontSize: "0.875rem",
-            fontFamily: "'Spline Sans Mono', monospace",
-            outline: "none",
-            letterSpacing: "0.04em",
-          }}
-        />
-        <button
-          onClick={() => loadTicker()}
-          disabled={loading}
-          style={{
-            padding: "10px 22px",
-            background: "var(--accent-gold)",
-            border: "none",
-            borderRadius: 22,
-            color: "var(--on-accent)",
-            fontFamily: "'Public Sans', sans-serif",
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            cursor: "pointer",
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? "Loading…" : "Load"}
-        </button>
-        {activeTicker && !loading && (
-          <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontWeight: 700, fontSize: "1.1rem", color: "var(--accent-gold)", marginLeft: "0.5rem" }}>
-            {activeTicker}
-          </span>
-        )}
-      </div>
+      {error && <ErrorNote title={`${ticker} didn't load`} message={lookupErrorText(error)} onRetry={retry} />}
 
-      {error && <div style={{ color: "var(--negative)", marginBottom: "1rem" }}>{error}</div>}
+      {loading && !data && <SkeletonTable rows={10} />}
 
-      {loading && (
-        <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-secondary)" }}>
-          Loading SEC filings from EDGAR…
-        </div>
-      )}
-
-      {!loading && !activeTicker && !error && (
-        <>
-          <EmptyHint title="Recent Filings" desc="The last 30 EDGAR filings — 10-Ks, 10-Qs, 8-Ks, and more — each linked to the original document." />
-          <EmptyHint title="Insider Transactions" desc="Form 4 buys and sells by executives and directors, with share counts and dollar values." />
-        </>
-      )}
-
-      {!loading && activeTicker && (
-        <>
+      {data && activeTicker && (
+        <div className={stale ? "is-stale" : undefined} aria-busy={stale}>
           {/* Recent Filings */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 24, overflow: "hidden", marginBottom: "1.75rem" }}>
             <div style={{ padding: "0.9rem 1.25rem", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Recent Filings</h2>
+                <h2 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>Recent Filings <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.8rem", fontWeight: 500, color: "var(--text-secondary)", marginLeft: 6 }}>{activeTicker}</span></h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: "0.76rem", margin: "0.15rem 0 0" }}>Last 30 filings from EDGAR</p>
               </div>
               <span style={{ color: "var(--text-secondary)", fontSize: "0.78rem" }}>{filings.length} filings</span>
@@ -233,7 +145,7 @@ function SecInner() {
                   </thead>
                   <tbody>
                     {filings.map((f, i) => (
-                      <tr key={i} style={{ transition: "background 0.1s" }} onMouseEnter={e => (e.currentTarget.style.background = "rgba(30,45,69,0.4)")} onMouseLeave={e => (e.currentTarget.style.background = "")}>
+                      <tr key={i} className="row-hover">
                         <td style={{ ...tdStyle, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                           {f.date}
                         </td>
@@ -249,9 +161,11 @@ function SecInner() {
                               href={f.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ color: "var(--accent-gold)", fontSize: "0.8rem", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
+                              className="tap"
+                              style={{ color: "var(--accent-gold)", fontSize: "0.8rem", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.3rem", position: "relative" }}
                             >
-                              View ↗
+                              View <Icon name="external" size={13} />
+                              <span className="sr-only"> {f.form} filed {f.date} (opens on sec.gov)</span>
                             </a>
                           ) : "—"}
                         </td>
@@ -287,7 +201,7 @@ function SecInner() {
                     </thead>
                     <tbody>
                       {insiderSlice.map((ins, i) => (
-                        <tr key={i} onMouseEnter={e => (e.currentTarget.style.background = "rgba(30,45,69,0.4)")} onMouseLeave={e => (e.currentTarget.style.background = "")}>
+                        <tr key={i} className="row-hover">
                           <td style={{ ...tdStyle, fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.78rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                             {ins.date}
                           </td>
@@ -296,7 +210,7 @@ function SecInner() {
                           <td style={tdStyle}>
                             <span style={{
                               display: "inline-block",
-                              background: ins.type === "BUY" ? "rgba(34,197,94,0.15)" : ins.type === "SELL" ? "rgba(239,68,68,0.15)" : "rgba(100,116,139,0.15)",
+                              background: tint(ins.type === "BUY" ? "var(--positive)" : ins.type === "SELL" ? "var(--negative)" : "var(--text-muted)"),
                               color: ins.type === "BUY" ? "var(--positive)" : ins.type === "SELL" ? "var(--negative)" : "var(--text-secondary)",
                               fontWeight: 700,
                               fontSize: "0.7rem",
@@ -333,7 +247,7 @@ function SecInner() {
                       disabled={insiderPage === 0}
                       style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, color: "var(--text-primary)", cursor: insiderPage === 0 ? "not-allowed" : "pointer", opacity: insiderPage === 0 ? 0.4 : 1, fontSize: "0.8rem" }}
                     >
-                      ← Prev
+                      <Icon name="chevron-left" size={14} /> Prev
                     </button>
                     <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
                       Page {insiderPage + 1} of {totalInsiderPages} · {insiders.length} total
@@ -343,14 +257,14 @@ function SecInner() {
                       disabled={insiderPage === totalInsiderPages - 1}
                       style={{ padding: "0.35rem 0.75rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, color: "var(--text-primary)", cursor: insiderPage === totalInsiderPages - 1 ? "not-allowed" : "pointer", opacity: insiderPage === totalInsiderPages - 1 ? 0.4 : 1, fontSize: "0.8rem" }}
                     >
-                      Next →
+                      Next <Icon name="chevron-right" size={14} />
                     </button>
                   </div>
                 )}
               </>
             )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

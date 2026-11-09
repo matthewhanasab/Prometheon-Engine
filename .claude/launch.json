@@ -4,7 +4,21 @@
     {
       "name": "prometheon-next",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "prometheon-live-data",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DEV_API_ORIGIN=https://www.prometheonengine.com",
+        "npm",
+        "run",
+        "dev"
+      ],
       "port": 3000
     }
   ]

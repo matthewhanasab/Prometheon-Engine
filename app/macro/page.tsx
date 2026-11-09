@@ -1,6 +1,7 @@
 "use client";
 
 import MarketStrip from "@/components/MarketStrip";
+import PageHeader from "@/components/PageHeader";
 import { useEffect, useState } from "react";
 import {
   LineChart,
@@ -119,7 +120,7 @@ function SL({ children }: { children: React.ReactNode }) {
     <div
       style={{
         fontFamily: "'Public Sans', sans-serif",
-        fontSize: "0.58rem",
+        fontSize: "0.6875rem",
         fontWeight: 600,
         textTransform: "uppercase",
         letterSpacing: "0.16em",
@@ -158,7 +159,7 @@ function ChartCard({
         <div
           style={{
             fontFamily: "'Public Sans', sans-serif",
-            fontSize: "0.65rem",
+            fontSize: "0.7rem",
             fontWeight: 600,
             color: "var(--text-secondary)",
             textTransform: "uppercase",
@@ -192,7 +193,7 @@ function XAx() {
     <XAxis
       dataKey="date"
       tickFormatter={tickDate}
-      tick={{ fill: "var(--text-muted)", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+      tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }}
       axisLine={false}
       tickLine={false}
       interval="preserveStartEnd"
@@ -210,7 +211,7 @@ function YAx({
   return (
     <YAxis
       tickFormatter={(v) => `${v}${unit}`}
-      tick={{ fill: "var(--text-muted)", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+      tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }}
       axisLine={false}
       tickLine={false}
       width={44}
@@ -261,7 +262,7 @@ function MCard({
       <div
         style={{
           fontFamily: "'Public Sans', sans-serif",
-          fontSize: "0.6rem",
+          fontSize: "0.6875rem",
           fontWeight: 600,
           textTransform: "uppercase",
           letterSpacing: "0.12em",
@@ -285,7 +286,7 @@ function MCard({
         <div
           style={{
             fontFamily: "'Public Sans', sans-serif",
-            fontSize: "0.65rem",
+            fontSize: "0.7rem",
             color: subColor,
           }}
         >
@@ -296,7 +297,7 @@ function MCard({
         <div
           style={{
             fontFamily: "'Spline Sans Mono', monospace",
-            fontSize: "0.56rem",
+            fontSize: "0.6875rem",
             color: "var(--text-muted)",
             marginTop: "auto",
             paddingTop: 2,
@@ -332,7 +333,7 @@ function SpreadChart({ data }: { data: FredSeries[] }) {
         <Area
           type="monotone"
           dataKey="pos"
-          stroke="#22C55E"
+          stroke="var(--positive)"
           fill="rgba(34,197,94,0.10)"
           strokeWidth={1.5}
           dot={false}
@@ -342,7 +343,7 @@ function SpreadChart({ data }: { data: FredSeries[] }) {
         <Area
           type="monotone"
           dataKey="neg"
-          stroke="#EF4444"
+          stroke="var(--negative)"
           fill="rgba(239,68,68,0.15)"
           strokeWidth={1.5}
           dot={false}
@@ -359,12 +360,12 @@ const MARKET_META: Record<
   string,
   { label: string; color: string }
 > = {
-  SPY: { label: "S&P 500", color: "#22C55E" },
-  QQQ: { label: "Nasdaq", color: "#3B82F6" },
+  SPY: { label: "S&P 500", color: "var(--positive)" },
+  QQQ: { label: "Nasdaq", color: "var(--series-1)" },
   GLD: { label: "Gold", color: "var(--accent-gold)" },
-  USO: { label: "Crude Oil", color: "#F97316" },
-  BTCUSD: { label: "Bitcoin", color: "#F59E0B" },
-  UUP: { label: "USD Index", color: "#8B5CF6" },
+  USO: { label: "Crude Oil", color: "var(--series-2)" },
+  BTCUSD: { label: "Bitcoin", color: "var(--series-4)" },
+  UUP: { label: "USD Index", color: "var(--series-6)" },
 };
 
 function MarketCard({ q }: { q: MarketQuote }) {
@@ -388,7 +389,7 @@ function MarketCard({ q }: { q: MarketQuote }) {
       <div
         style={{
           fontFamily: "'Public Sans', sans-serif",
-          fontSize: "0.58rem",
+          fontSize: "0.6875rem",
           fontWeight: 600,
           textTransform: "uppercase",
           letterSpacing: "0.14em",
@@ -588,37 +589,8 @@ export default function MacroPage() {
 
   return (
     <div style={{ fontFamily: "'Public Sans', sans-serif" }}>
-      {/* Header */}
-      <h1
-        style={{
-          fontFamily: "'Space Grotesk', Georgia, serif",
-          fontSize: "1.75rem",
-          fontWeight: 500,
-          color: "var(--text-primary)",
-          letterSpacing: "-0.02em",
-          marginBottom: "0.35rem",
-        }}
-      >
-        Macro Dashboard
-      </h1>
-      <div
-        style={{
-          fontSize: "0.78rem",
-          color: "var(--text-secondary)",
-          marginBottom: "0.9rem",
-        }}
-      >
-        Interest rates · Inflation · Labor · Markets · Recession signals · FRED
-      </div>
-      <div
-        style={{
-          height: 1,
-          background: "linear-gradient(to right,var(--accent-gold),transparent)",
-          opacity: 0.45,
-          maxWidth: 300,
-          marginBottom: "1.5rem",
-        }}
-      />
+      <PageHeader title="Macro Dashboard"
+        subtitle="The backdrop for every stock: interest rates, inflation, the labor market, cross-asset performance and recession signals, from Federal Reserve data." />
 
       {/* 1. Snapshot */}
       <SL>Snapshot</SL>
@@ -679,7 +651,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="gs10"
-                stroke="#3B82F6"
+                stroke="var(--series-1)"
                 strokeWidth={1.5}
                 dot={false}
                 isAnimationActive={false}
@@ -688,7 +660,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="gs2"
-                stroke="#8B5CF6"
+                stroke="var(--series-6)"
                 strokeWidth={1.5}
                 strokeDasharray="4 3"
                 dot={false}
@@ -734,14 +706,14 @@ export default function MacroPage() {
                 label={{
                   value: "2%",
                   fill: "var(--accent-gold)",
-                  fontSize: 9,
+                  fontSize: 11,
                   fontFamily: "Spline Sans Mono",
                 }}
               />
               <Line
                 type="monotone"
                 dataKey="cpi"
-                stroke="#EF4444"
+                stroke="var(--negative)"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -750,7 +722,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="pce"
-                stroke="#F97316"
+                stroke="var(--series-2)"
                 strokeWidth={1.5}
                 strokeDasharray="4 3"
                 dot={false}
@@ -783,14 +755,14 @@ export default function MacroPage() {
                 label={{
                   value: "2%",
                   fill: "var(--accent-gold)",
-                  fontSize: 9,
+                  fontSize: 11,
                   fontFamily: "Spline Sans Mono",
                 }}
               />
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#A78BFA"
+                stroke="var(--series-6)"
                 fill="rgba(167,139,250,0.08)"
                 strokeWidth={2}
                 dot={false}
@@ -828,7 +800,7 @@ export default function MacroPage() {
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#F97316"
+                stroke="var(--series-2)"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -855,7 +827,7 @@ export default function MacroPage() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#22C55E"
+                stroke="var(--positive)"
                 fill="rgba(34,197,94,0.07)"
                 strokeWidth={2}
                 dot={false}
@@ -883,7 +855,7 @@ export default function MacroPage() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#A78BFA"
+                stroke="var(--series-6)"
                 fill="rgba(167,139,250,0.08)"
                 strokeWidth={2}
                 dot={false}
@@ -937,25 +909,25 @@ export default function MacroPage() {
                 label={{
                   value: "Caution",
                   fill: "var(--accent-gold)",
-                  fontSize: 9,
+                  fontSize: 11,
                   fontFamily: "Spline Sans Mono",
                 }}
               />
               <ReferenceLine
                 y={30}
-                stroke="#EF4444"
+                stroke="var(--negative)"
                 strokeDasharray="4 3"
                 label={{
                   value: "Fear",
-                  fill: "#EF4444",
-                  fontSize: 9,
+                  fill: "var(--negative)",
+                  fontSize: 11,
                   fontFamily: "Spline Sans Mono",
                 }}
               />
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#EF4444"
+                stroke="var(--negative)"
                 fill="rgba(239,68,68,0.08)"
                 strokeWidth={2}
                 dot={false}
@@ -986,7 +958,7 @@ export default function MacroPage() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#A78BFA"
+                stroke="var(--series-6)"
                 fill="rgba(167,139,250,0.09)"
                 strokeWidth={2}
                 dot={false}
@@ -1011,7 +983,7 @@ export default function MacroPage() {
                   <Grid />
                   <XAxis
                     dataKey="label"
-                    tick={{ fill: "var(--text-muted)", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+                    tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -1050,7 +1022,7 @@ export default function MacroPage() {
                       minWidth: 64,
                     }}
                   >
-                    <div style={{ fontFamily: "Spline Sans Mono, monospace", fontSize: "0.6rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{p.label}</div>
+                    <div style={{ fontFamily: "Spline Sans Mono, monospace", fontSize: "0.6875rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{p.label}</div>
                     <div style={{ fontFamily: "Spline Sans Mono, monospace", fontSize: "0.95rem", fontWeight: 600, color: "var(--accent-gold)" }}>{fmt(p.value)}%</div>
                   </div>
                 ))}
@@ -1078,7 +1050,7 @@ export default function MacroPage() {
                 minWidth: 160,
               }}
             >
-              <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>Fear &amp; Greed</div>
+              <div style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>Fear &amp; Greed</div>
               <div
                 style={{
                   fontFamily: "'Space Grotesk', Georgia, serif",
@@ -1113,7 +1085,7 @@ export default function MacroPage() {
                   }}
                 />
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", width: "100%", fontSize: "0.58rem", color: "var(--text-secondary)", fontFamily: "Spline Sans Mono, monospace" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", width: "100%", fontSize: "0.6875rem", color: "var(--text-secondary)", fontFamily: "Spline Sans Mono, monospace" }}>
                 <span>Fear</span>
                 <span>Greed</span>
               </div>
@@ -1132,7 +1104,7 @@ export default function MacroPage() {
                       const d = new Date(parseInt(v) * 1000);
                       return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
                     }}
-                    tick={{ fill: "var(--text-muted)", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+                    tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                     interval="preserveStartEnd"
@@ -1140,7 +1112,7 @@ export default function MacroPage() {
                   <YAxis
                     domain={[0, 100]}
                     tickFormatter={(v) => String(v)}
-                    tick={{ fill: "var(--text-muted)", fontSize: 9, fontFamily: "Spline Sans Mono" }}
+                    tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }}
                     axisLine={false}
                     tickLine={false}
                     width={44}
@@ -1154,8 +1126,8 @@ export default function MacroPage() {
                       return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
                     }}
                   />
-                  <ReferenceLine y={25} stroke="#EF4444" strokeDasharray="4 3" label={{ value: "Fear", fill: "#EF4444", fontSize: 9, fontFamily: "Spline Sans Mono" }} />
-                  <ReferenceLine y={75} stroke="#22C55E" strokeDasharray="4 3" label={{ value: "Greed", fill: "#22C55E", fontSize: 9, fontFamily: "Spline Sans Mono" }} />
+                  <ReferenceLine y={25} stroke="var(--negative)" strokeDasharray="4 3" label={{ value: "Fear", fill: "var(--negative)", fontSize: 11, fontFamily: "Spline Sans Mono" }} />
+                  <ReferenceLine y={75} stroke="var(--positive)" strokeDasharray="4 3" label={{ value: "Greed", fill: "var(--positive)", fontSize: 11, fontFamily: "Spline Sans Mono" }} />
                   <Area
                     type="monotone"
                     dataKey="value"
@@ -1178,7 +1150,7 @@ export default function MacroPage() {
           marginTop: "3rem",
           paddingTop: "1rem",
           borderTop: "1px solid var(--border)",
-          fontSize: "0.62rem",
+          fontSize: "0.6875rem",
           color: "var(--text-secondary)",
           fontFamily: "'Public Sans', sans-serif",
           textAlign: "center",

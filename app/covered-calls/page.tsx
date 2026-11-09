@@ -1,7 +1,12 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import PageHeader from "@/components/PageHeader";
+import TickerInput from "@/components/TickerInput";
+import Icon from "@/components/Icon";
+import { ErrorNote, SkeletonCards } from "@/components/States";
+import { useUrlTicker } from "@/lib/useUrlTicker";
+import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
@@ -70,7 +75,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const labelStyle: React.CSSProperties = {
-  fontSize: "0.58rem",
+  fontSize: "0.6875rem",
   fontWeight: 600,
   color: "var(--text-secondary)",
   textTransform: "uppercase",
@@ -93,7 +98,7 @@ function Metric({ label, value, sub, tone }: { label: string; value: string; sub
     <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "12px 14px" }}>
       <div style={labelStyle}>{label}</div>
       <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)" }}>{value}</div>
-      {sub && <div style={{ fontSize: "0.65rem", color: subColor, marginTop: 4, fontFamily: "'Public Sans', sans-serif" }}>{sub}</div>}
+      {sub && <div style={{ fontSize: "0.7rem", color: subColor, marginTop: 4, fontFamily: "'Public Sans', sans-serif" }}>{sub}</div>}
     </div>
   );
 }
@@ -126,11 +131,10 @@ function navKeys(e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) {
 // greek on this page is computed locally from Black-Scholes — there is no
 // options-chain feed involved.
 export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: string } = {}) {
-  const searchParams = useSearchParams();
-  const [inputTicker, setInputTicker] = useState("");
-  const [data, setData] = useState<CCData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Opens on a worked example; the position fields below re-rank it live.
+  const [ticker, setTicker] = useUrlTicker("AAPL");
+  const { data, loading, stale, error, retry } = useTickerData<CCData>(ticker, (t) => `${apiBase}/${t}`);
+  const [draft, setDraft] = useState<string | null>(null);
 
   // Position + strategy inputs
   const [shares, setShares] = useState("100");
@@ -139,27 +143,6 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
   const [strategy, setStrategy] = useState<Strategy>("balanced");
   const [deltaMin, setDeltaMin] = useState("0.15");
   const [deltaMax, setDeltaMax] = useState("0.40");
-
-  useEffect(() => {
-    const t = searchParams.get("ticker");
-    if (t) { setInputTicker(t.toUpperCase()); load(t.toUpperCase()); }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function load(symArg?: string) {
-    const sym = (symArg ?? inputTicker).trim().toUpperCase();
-    if (!sym) return;
-    setLoading(true);
-    setError(null);
-    fetch(`${apiBase}/${sym}`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.error) throw new Error(d.error);
-        setData(d);
-        setLoading(false);
-      })
-      .catch(() => { setError("Failed to load stock data. Check the ticker."); setLoading(false); });
-  }
 
   // ── Screen contracts (live-computed from inputs) ──
   const S = data?.price ?? 0;
@@ -230,55 +213,46 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
 
   return (
     <div style={{ fontFamily: "'Public Sans', sans-serif", color: "var(--text-primary)" }}>
-      {/* Header */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontFamily: "'Space Grotesk', Georgia, serif", fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: 0 }}>
-          Covered Call Calculator
-        </h1>
-        <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, margin: "0.6rem 0" }} />
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0.25rem 0 0" }}>
-          Enter your position — every strike gets scored and ranked for your strategy
-        </p>
-      </div>
+      <PageHeader title="Covered Call Calculator"
+        subtitle="Enter a position you hold. Every strike is priced, scored and ranked for the strategy you pick." />
 
       {/* Position form */}
       <div style={{ ...cardStyle, marginBottom: "1.5rem" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "14px 18px", marginBottom: 14 }}>
           <div>
-            <label style={labelStyle}>Ticker</label>
-            <input data-nav={0} value={inputTicker} onChange={e => setInputTicker(e.target.value.toUpperCase())}
-              onKeyDown={e => { if (e.key === "Enter") load(); navKeys(e); }} placeholder="Ticker" style={inputStyle} />
+            <label htmlFor="cc-ticker" style={labelStyle}>Ticker</label>
+            <TickerInput id="cc-ticker" value={ticker} onSubmit={setTicker} onDraftChange={setDraft} action="" width="100%" placeholder="Ticker" />
           </div>
           <div>
-            <label style={labelStyle}>Shares Owned</label>
-            <input data-nav={1} inputMode="numeric" value={shares} onChange={e => setShares(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
+            <label htmlFor="cc-shares" style={labelStyle}>Shares Owned</label>
+            <input id="cc-shares" data-nav={1} inputMode="numeric" value={shares} onChange={e => setShares(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Cost Basis / Share ($)</label>
-            <input data-nav={2} inputMode="decimal" placeholder="optional" value={costBasis} onChange={e => setCostBasis(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
+            <label htmlFor="cc-basis" style={labelStyle}>Cost Basis / Share ($)</label>
+            <input id="cc-basis" data-nav={2} inputMode="decimal" placeholder="optional" value={costBasis} onChange={e => setCostBasis(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Target Expiration</label>
-            <select data-nav={3} value={dte} onChange={e => setDte(Number(e.target.value))} style={{ ...inputStyle, cursor: "pointer" }}>
+            <label htmlFor="cc-dte" style={labelStyle}>Target Expiration</label>
+            <select id="cc-dte" data-nav={3} value={dte} onChange={e => setDte(Number(e.target.value))} style={{ ...inputStyle, cursor: "pointer" }}>
               {DTE_OPTIONS.map(d => <option key={d} value={d}>{d} days</option>)}
             </select>
           </div>
           <div>
-            <label style={labelStyle}>Delta Min</label>
-            <input data-nav={4} inputMode="decimal" value={deltaMin} onChange={e => setDeltaMin(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
+            <label htmlFor="cc-dmin" style={labelStyle}>Delta Min</label>
+            <input id="cc-dmin" data-nav={4} inputMode="decimal" value={deltaMin} onChange={e => setDeltaMin(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Delta Max</label>
-            <input data-nav={5} inputMode="decimal" value={deltaMax} onChange={e => setDeltaMax(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
+            <label htmlFor="cc-dmax" style={labelStyle}>Delta Max</label>
+            <input id="cc-dmax" data-nav={5} inputMode="decimal" value={deltaMax} onChange={e => setDeltaMax(e.target.value)} onKeyDown={navKeys} style={inputStyle} />
           </div>
         </div>
 
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end" }}>
-          <div>
-            <label style={labelStyle}>Strategy</label>
+          <div role="group" aria-labelledby="cc-strategy">
+            <div id="cc-strategy" style={labelStyle}>Strategy</div>
             <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 22, overflow: "hidden" }}>
               {([["balanced", "Balanced"], ["maxYield", "Max Yield"], ["safest", "Safest"]] as [Strategy, string][]).map(([key, label]) => (
-                <button key={key} onClick={() => setStrategy(key)} style={{
+                <button key={key} type="button" aria-pressed={strategy === key} onClick={() => setStrategy(key)} style={{
                   padding: "0.5rem 1rem", fontSize: "0.72rem", fontWeight: 600, border: "none", cursor: "pointer",
                   fontFamily: "'Public Sans', sans-serif",
                   background: strategy === key ? "var(--accent-gold)" : "transparent",
@@ -289,35 +263,31 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
               ))}
             </div>
           </div>
-          <button onClick={() => load()} disabled={loading} style={{
-            padding: "10px 28px", background: "var(--accent-gold)", border: "none", borderRadius: 22,
-            color: "var(--on-accent)", fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
-            textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", opacity: loading ? 0.7 : 1,
+          <button type="button" onClick={() => { if (draft?.trim()) setTicker(draft); }} disabled={loading} aria-busy={loading} style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "10px 24px", background: "var(--accent-gold)", border: "none", borderRadius: 22,
+            color: "var(--on-accent)", fontFamily: "'Public Sans', sans-serif", fontSize: "0.8rem", fontWeight: 700,
+            cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1,
           }}>
-            {loading ? "Screening…" : "Screen Options"}
+            {loading && <span className="spinner" style={{ width: 13, height: 13, borderColor: "color-mix(in srgb, var(--on-accent) 30%, transparent)", borderTopColor: "var(--on-accent)" }} />}
+            Screen options
           </button>
-          <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>
-            Strategy, deltas, shares &amp; basis re-rank instantly — no reload needed.
+          <span style={{ fontSize: "0.74rem", color: "var(--text-muted)" }}>
+            Strategy, deltas, shares and basis re-rank instantly.
           </span>
         </div>
       </div>
 
-      {error && <div style={{ color: "var(--negative)", marginBottom: "1rem", fontSize: "0.85rem" }}>{error}</div>}
-
-      {!data && !loading && !error && (
-        <div style={{ border: "1px dashed var(--border-active)", borderRadius: 22, background: "var(--bg-surface)", padding: "40px 20px", textAlign: "center", marginBottom: "1.5rem" }}>
-          <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-            Ranked contract table · best-pick summary · payoff diagram · earnings-risk flags — enter a ticker above to begin.
-          </span>
-        </div>
-      )}
+      {error && <ErrorNote title={`${ticker} didn't load`} message={lookupErrorText(error)} onRetry={retry} style={{ marginBottom: "1.5rem" }} />}
+      {loading && !data && <div style={{ marginBottom: "1.5rem" }}><SkeletonCards count={6} minWidth={150} /></div>}
 
       {data && (
-        <>
+        <div className={stale ? "is-stale" : undefined} aria-busy={stale}>
           {/* Earnings warning */}
           {earningsBeforeExpiry && (
-            <div style={{ background: "rgba(var(--accent-rgb), 0.10)", border: "1px solid rgba(var(--accent-rgb), 0.3)", borderRadius: 22, padding: "10px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--accent-gold)" }}>
-              ⚠ <strong>Earnings {data.nextEarnings}</strong> falls before your {expiryDate.toISOString().slice(0, 10)} expiry — selling calls through earnings carries gap risk.
+            <div role="note" style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "rgba(var(--accent-rgb), 0.10)", border: "1px solid rgba(var(--accent-rgb), 0.3)", borderRadius: 22, padding: "11px 16px", marginBottom: "1.25rem", fontSize: "0.8rem", color: "var(--text-primary)", lineHeight: 1.5 }}>
+              <Icon name="alert" size={16} style={{ color: "var(--accent-gold)", marginTop: 1 }} />
+              <span><strong>Earnings on {data.nextEarnings}</strong> fall before your {expiryDate.toISOString().slice(0, 10)} expiry. Selling calls through earnings carries gap risk.</span>
             </div>
           )}
 
@@ -349,7 +319,7 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
           {/* Best pick */}
           {best && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-gold)", borderRadius: 22, padding: "16px 20px", marginBottom: "1.5rem" }}>
-              <div style={{ ...labelStyle, color: "var(--accent-gold)" }}>⭐ Best Pick — {strategy === "maxYield" ? "Max Yield" : strategy === "safest" ? "Safest" : "Balanced"}</div>
+              <div style={{ ...labelStyle, color: "var(--accent-gold)", display: "flex", alignItems: "center", gap: 6 }}><Icon name="star" size={13} filled /> Best pick — {strategy === "maxYield" ? "Max Yield" : strategy === "safest" ? "Safest" : "Balanced"}</div>
               <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.3rem", fontWeight: 700, marginBottom: 6 }}>
                 Sell the ${best.strike} call · collect ~${Math.round(best.maxProfit).toLocaleString()} upfront
               </div>
@@ -357,7 +327,7 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
                 {best.probProfit.toFixed(0)}% chance of keeping the full premium · breakeven falls to ${fmt(best.breakeven)} ·
                 upside capped at ${Math.round((best.strike - S) * numShares + best.maxProfit).toLocaleString()} if called away
                 {best.roiOnBasis != null ? ` · ${best.roiOnBasis.toFixed(1)}% return on your cost basis if assigned` : ""}
-                {earningsBeforeExpiry ? " · ⚠ earnings before expiry" : ""}
+                {earningsBeforeExpiry ? " · earnings fall before expiry" : ""}
                 {` · delta ${best.delta.toFixed(2)} · theta -$${Math.abs(best.theta).toFixed(2)}/day per share`}
               </div>
             </div>
@@ -372,7 +342,7 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
                     {["Rank", "Strike", "OTM %", "Est. Premium", "Delta", "Theta $/day", "Gamma", "Vega", "Ann. Yield", "Prob. Profit", "Breakeven", "Max Premium", basis > 0 ? "ROI on Basis" : null].filter(Boolean).map((h, i) => (
                       <th key={h as string} style={{
                         textAlign: i === 0 ? "left" : "right", padding: "9px 12px",
-                        fontFamily: "'Public Sans', sans-serif", fontSize: "0.58rem", fontWeight: 500,
+                        fontFamily: "'Public Sans', sans-serif", fontSize: "0.6875rem", fontWeight: 500,
                         textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)",
                         borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
                       }}>{h}</th>
@@ -439,10 +409,10 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
             </div>
           )}
 
-          <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "2rem" }}>
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "2rem" }}>
             Premiums are Black-Scholes estimates priced on 21-day historical volatility — live chains vary with market IV. Not financial advice.
           </div>
-        </>
+        </div>
       )}
 
       {/* Education cards */}

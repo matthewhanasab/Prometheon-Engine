@@ -6,8 +6,8 @@ interface MetricCardProps {
 }
 
 const TONES = {
-  good:    { top: "#22C55E", sub: "#22C55E" },
-  bad:     { top: "#EF4444", sub: "#EF4444" },
+  good:    { top: "var(--positive)", sub: "var(--positive)" },
+  bad:     { top: "var(--negative)", sub: "var(--negative)" },
   neutral: { top: "var(--accent-gold)", sub: "var(--accent-gold)" },
   default: { top: "var(--border)", sub: "var(--text-secondary)" },
 };
@@ -24,7 +24,7 @@ export default function MetricCard({ label, value, sub, tone = "default" }: Metr
     }}>
       <div style={{
         fontFamily: "'Public Sans', sans-serif",
-        fontSize: "0.60rem",
+        fontSize: "0.6875rem",
         fontWeight: 500,
         textTransform: "uppercase",
         letterSpacing: "0.12em",
@@ -41,7 +41,7 @@ export default function MetricCard({ label, value, sub, tone = "default" }: Metr
       {sub && (
         <div style={{
           fontFamily: "'Public Sans', sans-serif",
-          fontSize: "0.68rem",
+          fontSize: "0.72rem",
           color: colors.sub,
           marginTop: 6,
         }}>{sub}</div>

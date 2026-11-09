@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PageHeader from "@/components/PageHeader";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, Area, AreaChart, ResponsiveContainer
@@ -63,14 +64,14 @@ interface Results {
   inputs: Inputs;
 }
 
-function SummaryCard({ label, result, color, accentBg }: { label: string; result: CalcResult; color: string; accentBg: string }) {
+// Same card as the scenario cards on Projections: a hairline in the scenario's
+// colour across the top, the label in that colour, the figure in text ink.
+function SummaryCard({ label, result, color }: { label: string; result: CalcResult; color: string }) {
   return (
-    <div style={{ background: "var(--bg-elevated)", border: `1px solid ${color}40`, borderRadius: 24, overflow: "hidden", flex: 1, minWidth: 180 }}>
-      <div style={{ background: accentBg, padding: "8px 14px" }}>
-        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#fff", fontFamily: "'Public Sans', sans-serif" }}>{label}</span>
-      </div>
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${color}`, borderRadius: 22, flex: 1, minWidth: 180 }}>
       <div style={{ padding: "14px 16px" }}>
-        <div style={{ ...HEADING, fontSize: "1.6rem", color, marginBottom: 8 }}>{fmtDollar(result.final)}</div>
+        <div style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color, fontFamily: "'Public Sans', sans-serif", marginBottom: 6 }}>{label}</div>
+        <div style={{ ...MONO, fontSize: "1.6rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>{fmtDollar(result.final)}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--text-secondary)" }}>
             <span>Total contributed</span>
@@ -135,9 +136,9 @@ export default function CalculatorPage() {
   };
 
   return (
-    <div style={{ padding: "2rem", margin: "0 auto" }}>
-      <h1 style={{ ...HEADING, fontSize: "1.75rem", margin: "0 0 0.5rem" }}>Compound Calculator</h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "2rem" }} />
+    <div>
+      <PageHeader title="Compound Calculator"
+        subtitle="What steady investing does over decades, under a low, a base and a high return." />
 
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
         {/* Inputs Panel */}
@@ -145,24 +146,24 @@ export default function CalculatorPage() {
           <h2 style={{ ...HEADING, fontSize: 16, margin: "0 0 18px" }}>Assumptions</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label style={labelStyle}>Initial Investment ($)</label>
-              <input type="number" value={inputs.principal} onChange={e => handleChange("principal", parseFloat(e.target.value) || 0)} style={inputStyle} />
+              <label htmlFor="calc-initial-investment" style={labelStyle}>Initial Investment ($)</label>
+              <input id="calc-initial-investment" type="number" value={inputs.principal} onChange={e => handleChange("principal", parseFloat(e.target.value) || 0)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Monthly Contribution ($)</label>
-              <input type="number" value={inputs.monthly} onChange={e => handleChange("monthly", parseFloat(e.target.value) || 0)} style={inputStyle} />
+              <label htmlFor="calc-monthly-contribution" style={labelStyle}>Monthly Contribution ($)</label>
+              <input id="calc-monthly-contribution" type="number" value={inputs.monthly} onChange={e => handleChange("monthly", parseFloat(e.target.value) || 0)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Time Horizon (Years)</label>
-              <input type="number" value={inputs.years} min={1} max={50} onChange={e => handleChange("years", parseInt(e.target.value) || 1)} style={inputStyle} />
+              <label htmlFor="calc-time-horizon-years" style={labelStyle}>Time Horizon (Years)</label>
+              <input id="calc-time-horizon-years" type="number" value={inputs.years} min={1} max={50} onChange={e => handleChange("years", parseInt(e.target.value) || 1)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Annual Return Rate — Base (%)</label>
-              <input type="number" value={inputs.baseRate} step={0.5} onChange={e => handleChange("baseRate", parseFloat(e.target.value) || 0)} style={inputStyle} />
+              <label htmlFor="calc-annual-return-rate-base" style={labelStyle}>Annual Return Rate — Base (%)</label>
+              <input id="calc-annual-return-rate-base" type="number" value={inputs.baseRate} step={0.5} onChange={e => handleChange("baseRate", parseFloat(e.target.value) || 0)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Variance Range (Â±%)</label>
-              <input type="number" value={inputs.variance} step={0.5} onChange={e => handleChange("variance", parseFloat(e.target.value) || 0)} style={inputStyle} />
+              <label htmlFor="calc-variance-range" style={labelStyle}>Variance Range (±%)</label>
+              <input id="calc-variance-range" type="number" value={inputs.variance} step={0.5} onChange={e => handleChange("variance", parseFloat(e.target.value) || 0)} style={inputStyle} />
             </div>
 
             <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, padding: "10px 14px", display: "flex", justifyContent: "space-between", fontSize: 13, ...MONO }}>
@@ -175,7 +176,7 @@ export default function CalculatorPage() {
               <button
                 onClick={reset}
                 style={{ flex: 1, background: "transparent", color: "var(--text-secondary)", border: "1px solid var(--border)", borderRadius: 22, padding: "10px 16px", fontSize: 14, cursor: "pointer", fontFamily: "'Public Sans', sans-serif" }}
-              >Reset to Defaults</button>
+              >Reset to defaults</button>
             </div>
             <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'Public Sans', sans-serif" }}>
               Projections update live as you edit.
@@ -188,9 +189,9 @@ export default function CalculatorPage() {
           {(
             <>
               <div style={{ display: "flex", gap: 14, marginBottom: 22, flexWrap: "wrap" }}>
-                <SummaryCard label="LOW PROJECTION"  result={results.low}  color="var(--negative)"    accentBg="#7F1D1D" />
-                <SummaryCard label="BASE PROJECTION" result={results.base} color="var(--accent-gold)" accentBg="#78350F" />
-                <SummaryCard label="HIGH PROJECTION" result={results.high} color="var(--positive)"    accentBg="#14532D" />
+                <SummaryCard label="Low"  result={results.low}  color="var(--negative)" />
+                <SummaryCard label="Base" result={results.base} color="var(--accent-gold)" />
+                <SummaryCard label="High" result={results.high} color="var(--positive)" />
               </div>
               <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "16px 18px" }}>
                 <ResponsiveContainer width="100%" height={300}>
@@ -225,7 +226,7 @@ export default function CalculatorPage() {
       {results && (
         <>
           {/* Insight box */}
-          <div style={{ marginTop: 28, background: "var(--bg-surface)", border: "1px solid var(--border)", borderLeft: "3px solid var(--accent-gold)", borderRadius: 24, padding: "14px 18px", fontSize: 14, color: "var(--text-primary)", fontFamily: "'Public Sans', sans-serif" }}>
+          <div style={{ marginTop: 28, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "14px 18px", fontSize: 14, lineHeight: 1.6, color: "var(--text-primary)", fontFamily: "'Public Sans', sans-serif" }}>
             <strong style={{ color: "var(--accent-gold)" }}>Insight: </strong>
             The difference between the high ({(results.inputs.baseRate + results.inputs.variance).toFixed(1)}%) and low ({(results.inputs.baseRate - results.inputs.variance).toFixed(1)}%) return scenarios over {results.inputs.years} years is{" "}
             <span style={{ ...MONO, color: "var(--positive)", fontWeight: 600 }}>{fmtDollar(results.high.final - results.low.final)}</span>

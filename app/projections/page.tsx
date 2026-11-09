@@ -1,6 +1,9 @@
 "use client";
 import { useState, useEffect, useMemo, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import PageHeader from "@/components/PageHeader";
+import TickerInput from "@/components/TickerInput";
+import { ErrorNote, EmptyNote } from "@/components/States";
+import { useUrlTicker } from "@/lib/useUrlTicker";
 import Link from "next/link";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from "recharts";
 import CompanyLogo from "@/components/CompanyLogo";
@@ -75,7 +78,7 @@ function Field({ label, value, onChange, suffix, step = 1, color }: {
 }) {
   return (
     <label style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-      <span style={{ fontSize: "0.56rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: color ?? "var(--text-secondary)" }}>{label}</span>
+      <span style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: color ?? "var(--text-secondary)" }}>{label}</span>
       <span style={{ display: "flex", alignItems: "center", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "0 12px" }}>
         <input type="number" value={Number.isFinite(value) ? Number(value.toFixed(2)) : 0} step={step}
           onChange={(e) => onChange(Number(e.target.value))}
@@ -87,9 +90,9 @@ function Field({ label, value, onChange, suffix, step = 1, color }: {
 }
 
 function ProjectionsInner() {
-  const search = useSearchParams();
-  const [input, setInput] = useState(search.get("ticker") ?? DEFAULT_TICKER);
-  const [ticker, setTicker] = useState(input);
+  const [urlTicker, setTicker] = useUrlTicker(DEFAULT_TICKER);
+  const ticker = urlTicker ?? DEFAULT_TICKER;
+  const [attempt, setAttempt] = useState(0);
   // The payload is tagged with the ticker it answers, so a ticker change reads
   // as "loading" by derivation rather than by resetting state inside the
   // effect. Edited assumptions are tagged the same way and fall back to the
@@ -108,7 +111,7 @@ function ProjectionsInner() {
       setLoaded({ ticker, stock: s, consensus: c?.consensus ?? null, error: null });
     }).catch(() => { if (alive) setLoaded({ ticker, stock: null, consensus: null, error: "Could not load this ticker." }); });
     return () => { alive = false; };
-  }, [ticker]);
+  }, [ticker, attempt]);
 
   const current = loaded?.ticker === ticker ? loaded : null;
   const stock = current?.stock ?? null;
@@ -130,8 +133,14 @@ function ProjectionsInner() {
       const row: Record<string, number> = { year: y };
       for (const s of SCENARIOS) {
         const eps = a.eps * Math.pow(1 + a.growth[s.key], y);
-        // Today's price anchors year 0; the multiple applies from year one.
-        row[s.key] = y === 0 ? price : eps * a.exitPe[s.key];
+        // The multiple glides from the one the market pays today to the exit
+        // multiple over the horizon. Applying the exit multiple in full from
+        // year one drew a cliff at year one for any stock whose multiple was
+        // assumed to compress, which read as a crash the model never meant.
+        // The end point, and so the total return, is the same either way.
+        const today = a.eps > 0 ? price / a.eps : a.exitPe[s.key];
+        const multiple = today + (a.exitPe[s.key] - today) * (y / a.years);
+        row[s.key] = y === 0 ? price : eps * multiple;
         row[`${s.key}Eps`] = eps;
       }
       return row;
@@ -148,44 +157,35 @@ function ProjectionsInner() {
     : "";
 
   return (
-    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>Projections</h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
-      <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "1.4rem" }}>
-        Bull, base and bear scenarios for the next five years — change the growth rate and the exit multiple and see what the stock would be worth.
-      </div>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+      <PageHeader title="Projections"
+        subtitle="Bull, base and bear scenarios for the next five years. Change the growth rate and the exit multiple and see what the stock would be worth.">
+        <TickerInput value={ticker} onSubmit={setTicker} loading={loading} action="Project" />
+      </PageHeader>
 
-      <form onSubmit={(e) => { e.preventDefault(); const t = input.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, ""); if (t) setTicker(t); }}
-        style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: "1.4rem" }}>
-        <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker" aria-label="Ticker"
-          style={{ fontFamily: MONO, fontSize: "0.9rem", padding: "10px 16px", borderRadius: 999, width: 160, background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", outline: "none" }} />
-        <button type="submit" style={{ background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 999, padding: "10px 22px", fontFamily: SANS, fontSize: "0.74rem", fontWeight: 700, cursor: "pointer" }}>Project</button>
-        {stock && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: 6 }}>
-            <CompanyLogo ticker={stock.ticker} size={26} fallback />
-            <span style={{ fontFamily: SERIF, fontSize: "0.95rem", fontWeight: 600 }}>{stock.profile?.name ?? stock.ticker}</span>
-            {price && <span style={{ fontFamily: MONO, fontSize: "0.8rem", color: "var(--text-secondary)" }}>{money(price)}</span>}
-          </span>
-        )}
-      </form>
+      {stock && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.2rem", flexWrap: "wrap" }}>
+          <CompanyLogo ticker={stock.ticker} size={30} fallback />
+          <h2 style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 600, margin: 0 }}>{stock.profile?.name ?? stock.ticker}</h2>
+          {price && <span style={{ fontFamily: MONO, fontSize: "0.85rem", color: "var(--text-secondary)" }}>{money(price)}</span>}
+        </div>
+      )}
 
       {error ? (
-        <div style={{ ...CARD, padding: "18px 20px", fontSize: "0.8rem", color: "var(--text-secondary)" }}>{error}</div>
+        <ErrorNote title={`${ticker} didn't load`}
+          message="That symbol isn't in the data, or the data service didn't answer. Check the spelling, or search by company name."
+          onRetry={() => { setLoaded(null); setAttempt((n) => n + 1); }} />
       ) : loading ? (
         <>
-          <div style={{ ...CARD, borderColor: "var(--border-active)", display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", marginBottom: 14 }}>
-            <span className="spinner" style={{ width: 20, height: 20, flexShrink: 0 }} />
-            <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-gold)" }}>Loading {ticker}…</div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+          <div role="status" aria-label={`Loading ${ticker}`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             {[0, 1, 2].map((i) => <div key={i} className={`skeleton-bar skeleton-d${i + 1}`} style={{ height: 150, borderRadius: 22 }} />)}
           </div>
         </>
       ) : !a || !price ? (
-        <div style={{ ...CARD, padding: "18px 20px", fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-          {ticker} has no positive earnings to project from — a scenario built on losses would be a guess about when they end, not a projection.
-          Try the <Link href={`/research?ticker=${ticker}`} style={{ color: "var(--accent-gold)" }}>research page</Link> for the revenue picture.
-        </div>
+        <EmptyNote title={`${ticker} has no positive earnings to project from`}>
+          A scenario built on losses would be a guess about when they end, not a projection.
+          The <Link href={`/research?ticker=${ticker}`} style={{ color: "var(--accent-gold)" }}>research page</Link> has the revenue picture.
+        </EmptyNote>
       ) : (
         <>
           {/* Scenario outcomes */}
@@ -197,12 +197,12 @@ function ProjectionsInner() {
               const cagr = Math.pow(target / price, 1 / a.years) - 1;
               return (
                 <div key={s.key} style={{ ...CARD, borderTop: `2px solid ${s.color}`, padding: "14px 18px" }}>
-                  <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: s.color }}>{s.label} · year {a.years}</div>
+                  <div style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: s.color }}>{s.label} · year {a.years}</div>
                   <div style={{ fontFamily: MONO, fontSize: "1.7rem", fontWeight: 700, marginTop: 4 }}>{money(target)}</div>
                   <div style={{ fontFamily: MONO, fontSize: "0.78rem", fontWeight: 600, color: total >= 0 ? "var(--positive)" : "var(--negative)" }}>
                     {pct(total, 0)} total · {pct(cagr)}/yr
                   </div>
-                  <div style={{ fontSize: "0.64rem", color: "var(--text-muted)", marginTop: 6 }}>
+                  <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 6 }}>
                     EPS {money(last[`${s.key}Eps`])} × {a.exitPe[s.key].toFixed(1)}× exit multiple
                   </div>
                 </div>
@@ -216,8 +216,8 @@ function ProjectionsInner() {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={rows} margin={{ top: 8, right: 16, left: 4, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
-                  <XAxis dataKey="year" tickFormatter={(y: number) => (y === 0 ? "Today" : `Yr ${y}`)} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
-                  <YAxis tickFormatter={(v: number) => `$${Math.round(v)}`} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={60} domain={["auto", "auto"]} />
+                  <XAxis dataKey="year" tickFormatter={(y: number) => (y === 0 ? "Today" : `Yr ${y}`)} tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={(v: number) => `$${Math.round(v)}`} tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={60} domain={["auto", "auto"]} />
                   <Tooltip
                     contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 }}
                     labelFormatter={(y: unknown) => (Number(y) === 0 ? "Today" : `Year ${String(y)}`)}
@@ -231,11 +231,11 @@ function ProjectionsInner() {
             </div>
 
             <div style={{ ...CARD, padding: "16px 18px" }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: 6, marginBottom: 12 }}>Assumptions</div>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: 6, marginBottom: 12 }}>Assumptions</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
                 <Field label="Starting EPS" value={a.eps} step={0.1} suffix="$" onChange={(v) => setA((p) => p && ({ ...p, eps: Math.max(0.01, v) }))} />
                 <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: "0.56rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)" }}>Horizon</span>
+                  <span style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)" }}>Horizon</span>
                   <span style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
                     {[3, 5, 10].map((y) => (
                       <button key={y} type="button" onClick={() => setA((p) => p && ({ ...p, years: y }))}
@@ -251,7 +251,7 @@ function ProjectionsInner() {
                 </div>
               ))}
               <button type="button" onClick={() => setCustom(null)}
-                style={{ marginTop: 4, background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: 999, padding: "7px 14px", fontFamily: SANS, fontSize: "0.64rem", fontWeight: 700, cursor: "pointer" }}>
+                style={{ marginTop: 4, background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: 999, padding: "7px 14px", fontFamily: SANS, fontSize: "0.7rem", fontWeight: 700, cursor: "pointer" }}>
                 Reset to defaults
               </button>
             </div>
@@ -261,7 +261,7 @@ function ProjectionsInner() {
           <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
               <thead>
-                <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                <tr style={{ color: "var(--text-secondary)", fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                   <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Year</th>
                   {SCENARIOS.map((s) => <th key={s.key} style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600, color: s.color }}>{s.label} EPS → price</th>)}
                 </tr>
@@ -283,8 +283,8 @@ function ProjectionsInner() {
             </table>
           </div>
 
-          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>
-            {label} Price = EPS × exit multiple; today&apos;s price anchors year 0. A scenario tool, not a forecast and not advice.
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>
+            {label} Each year&apos;s price is that year&apos;s EPS times a multiple that moves evenly from today&apos;s to the exit multiple. A scenario tool, not a forecast and not advice.
           </div>
         </>
       )}

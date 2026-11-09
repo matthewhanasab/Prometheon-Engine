@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 
 type Prefs = {
   text: 0 | 1 | 2;     // bigger text (two levels)
@@ -70,7 +71,7 @@ function Card({ icon, label, active, level, levels, onClick }: {
       }}
     >
       <span aria-hidden style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20 }}>{icon}</span>
-      <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.64rem", fontWeight: 600, lineHeight: 1.25, textAlign: "center", color: active ? "var(--accent-gold)" : "var(--text-primary)" }}>
+      <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", fontWeight: 600, lineHeight: 1.25, textAlign: "center", color: active ? "var(--accent-gold)" : "var(--text-primary)" }}>
         {label}
       </span>
       {levels != null && (
@@ -107,8 +108,12 @@ export default function AccessibilityWidget() {
         setOpen(o => !o);
       }
     };
+    // The phone menu opens this panel too; there the floating button is hidden
+    // so it cannot sit on top of the figures at the right edge of a table.
+    const onOpen = () => setOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("prometheon:a11y", onOpen);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("prometheon:a11y", onOpen); };
   }, []);
 
   function save(next: Prefs) {
@@ -127,11 +132,11 @@ export default function AccessibilityWidget() {
       {open && (
         <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 380 }} aria-hidden />
       )}
-      <div style={{ position: "fixed", right: 16, bottom: 16, zIndex: 400 }}>
+      <div style={{ position: "fixed", right: "calc(16px + env(safe-area-inset-right, 0px))", bottom: "calc(16px + env(safe-area-inset-bottom, 0px))", zIndex: 400 }}>
         {open && (
-          <div role="dialog" aria-label="Accessibility menu" style={{
-            position: "absolute", right: 0, bottom: 48, width: 302,
-            maxHeight: "min(72vh, 580px)", display: "flex", flexDirection: "column",
+          <div role="dialog" aria-label="Accessibility options" className="a11y-panel" style={{
+            position: "absolute", right: 0, width: "min(302px, calc(100vw - 32px))",
+            maxHeight: "min(72dvh, 580px)", display: "flex", flexDirection: "column",
             background: "var(--bg-primary)", border: "1px solid var(--border)",
             borderRadius: 18, overflow: "hidden",
             boxShadow: "0 16px 40px rgba(0,0,0,0.32)",
@@ -142,13 +147,13 @@ export default function AccessibilityWidget() {
               background: "var(--accent-gold)", padding: "12px 14px",
             }}>
               <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", fontWeight: 700, color: "var(--on-accent)" }}>
-                Accessibility Menu <span style={{ fontWeight: 500, opacity: 0.8 }}>(Ctrl+U)</span>
+                Accessibility options <span style={{ fontWeight: 500, opacity: 0.8 }}>(Ctrl+U)</span>
               </span>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Close accessibility menu" style={{
-                width: 26, height: 26, borderRadius: 999, border: "1.5px solid var(--on-accent)",
+              <button type="button" onClick={() => setOpen(false)} aria-label="Close accessibility options" style={{
+                width: 30, height: 30, borderRadius: 999, border: "none",
                 background: "transparent", color: "var(--on-accent)", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center", padding: 0, fontSize: 13, lineHeight: 1,
-              }}>✕</button>
+                display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
+              }}><Icon name="x" size={17} strokeWidth={2.2} /></button>
             </div>
 
             {/* Option grid */}
@@ -174,15 +179,15 @@ export default function AccessibilityWidget() {
                 color: anyActive ? "var(--on-accent)" : "var(--text-muted)",
                 fontFamily: "'Public Sans', sans-serif", fontSize: "0.72rem", fontWeight: 700,
               }}>
-                Reset All Accessibility Settings
+                Reset all settings
               </button>
 
               <Link href="/accessibility" onClick={() => setOpen(false)} style={{
-                display: "block", textAlign: "center", marginTop: 8, padding: "4px 0",
-                fontFamily: "'Public Sans', sans-serif", fontSize: "0.66rem",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginTop: 8, minHeight: 32,
+                fontFamily: "'Public Sans', sans-serif", fontSize: "0.74rem",
                 color: "var(--text-secondary)", textDecoration: "none",
               }}>
-                Accessibility statement →
+                Accessibility statement <Icon name="arrow-right" size={12} />
               </Link>
             </div>
           </div>
@@ -193,11 +198,13 @@ export default function AccessibilityWidget() {
           type="button"
           onClick={() => setOpen(o => !o)}
           aria-expanded={open}
-          aria-label="Open accessibility menu (Ctrl+U)"
-          title="Accessibility menu (Ctrl+U)"
+          aria-label="Accessibility options"
+          aria-keyshortcuts="Control+U"
+          title="Accessibility options (Ctrl+U)"
+          className="a11y-fab"
           style={{
-            width: 38, height: 38, borderRadius: 999, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 40, height: 40, borderRadius: 999, cursor: "pointer",
+            alignItems: "center", justifyContent: "center",
             background: open ? "var(--accent-gold)" : "var(--bg-elevated)",
             border: "1px solid var(--border)",
             color: open ? "var(--on-accent)" : "var(--accent-gold)", padding: 0,

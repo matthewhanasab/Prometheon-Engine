@@ -10,42 +10,50 @@ Professional stock research platform. Next.js 14 App Router, TypeScript, rechart
 
 ## Visual direction
 
-**"Bloomberg terminal meets luxury print journal."** Dark, dense, editorial. Think a financial reading room: navy ink, gold leaf, serif headlines, monospaced figures. Never playful, never neon, never generic SaaS.
+**"Bloomberg terminal meets luxury print journal."** Dense, editorial, calm. Navy ink, one blue accent, grotesque headlines, monospaced figures. Never playful, never neon, never generic SaaS.
 
-### Palette (CSS variables in `app/globals.css` — always use the variables)
+Dark is the default theme; light is a first-class theme and every change must be checked in both.
 
-- `--bg-primary: #0A120D` — near-black green canvas with fixed radial green glow gradients on body
-- `--bg-surface: rgba(255,255,255,0.035)` — translucent glass cards
-- `--bg-elevated: rgba(255,255,255,0.065)` — inputs, chips
-- `--border: rgba(255,255,255,0.09)` / `--border-active: rgba(61,230,140,0.35)`
-- `--accent-gold: #3DE68C` — the accent is now NEON GREEN (var name kept for compatibility). Buttons, active states, dividers, primary series.
-- `--text-primary: #EAF6EE`, `--text-secondary: #93AF9E`, `--text-muted: #5C7466`
-- `--positive: #4ADE80`, `--negative: #F87171`
+### Palette (CSS variables — always use the variables, never a hex)
 
-Chart series palette: neon green `#3DE68C` (primary), aqua `#5BD1EF`, green `#22C55E`, teal `#14B8A6`, sage `#7E9887`, red `#EF4444` (negative only). Forecast/estimate bars: same hue at `fillOpacity 0.3` with dashed stroke.
+Light values live in `app/globals.css` (`:root`); dark values in the inline block in `app/layout.tsx` (`:root[data-theme="dark"]`).
+
+- `--bg-primary` — page ground (`#0C1220` dark, `#D6D8DD` light), painted once on a fixed layer
+- `--bg-surface` — cards; `--bg-elevated` — inputs, chips, hover
+- `--border` / `--border-active`
+- `--accent-gold` — the accent. **It is blue** (`#6B9CFF` dark, `#1F4FCC` light); the name is historical. Primary buttons, active states, links.
+- `--text-primary`, `--text-secondary`, `--text-muted` — all three hold at least 4.5:1 on the page ground and on a card, in both themes. Do not introduce a lighter grey.
+- `--positive` / `--negative` — up and down, and nothing else
+- `--series-1` … `--series-6` — chart series, in fixed order. Validated for colour-blind separation and contrast per theme. Green and red are not in the set. Text never wears a series colour; put a coloured dot beside it.
 
 ### Typography (three fonts, three jobs)
 
-- **Space Grotesk** — page titles and section headings only. 1.75rem / weight 500 / letterSpacing -0.02em for h1.
-- **Public Sans** — UI labels, body copy, buttons.
-- **Spline Sans Mono** — every number: prices, tickers, table figures, chart ticks. Numbers are never set in the sans font.
+- **Space Grotesk** — page titles and section headings. h1 is 1.75rem / 500 / -0.02em.
+- **Public Sans** — labels, body copy, buttons.
+- **Spline Sans Mono** — every number: prices, tickers, table figures, chart ticks.
+- **Nothing below `0.6875rem`** (11px on a phone). Chart ticks no smaller than 11.
+- Buttons and tabs are sentence case. Uppercase with tracking is for small section labels only.
 
-### Recurring patterns (match these exactly)
+### Shared components (use these; do not retype them per page)
 
-- **Page header**: Playfair h1 -> 1px gold gradient divider (`linear-gradient(to right, var(--accent-gold), transparent)`, opacity 0.4, maxWidth 200) -> one-line subtitle 0.78rem `--text-secondary`.
-- **Section labels**: 0.58rem uppercase Inter, letterSpacing 0.12-0.16em, `--text-secondary`, bottom border.
-- **Primary button**: gold bg, `#0A0F1E` text, uppercase 0.72rem weight 700 letterSpacing 0.1em, padding 10px 22px, radius 4.
-- **Metric cards**: `--bg-surface`, 1px border, 2px colored top border for tone (green good / red bad / gold neutral), radius 4.
-- **Ticker inputs**: IBM Plex Mono, `--bg-elevated`, placeholder "Ticker", auto-uppercase.
-- **Border radius**: 22-24 for cards/panels; buttons, inputs, chips and badges are full pills (999). Cards float: frosted backdrop-blur + soft 0-12-32 shadow (applied globally via CSS). Buttons are sentence case, never uppercase.
-- **Tables**: mono figures right-aligned, uppercase Inter column headers, zebra rows via `--bg-surface`/`--bg-primary`.
+- `components/PageHeader` — title, accent rule, one-line subtitle; controls go in as children.
+- `components/TickerInput` — the ticker box, with company-name suggestions.
+- `lib/useUrlTicker` + `lib/useTickerData` — the ticker lives in the address (`?ticker=`); data loads with the previous company kept on screen, dimmed, until the next arrives.
+- `components/States` — `Skeleton*`, `ErrorNote` (with retry), `EmptyNote`. Content that is loading is a skeleton, not the word "Loading".
+- `components/Icon` — the only icon source. No arrows, crosses, ticks, stars or emoji typed as characters (the heart in the footer is the one exception).
+- `components/Sheet` — side panel for detail; `components/SectionNav` — jump links on long pages.
+- `components/CommandMenu` — search (Cmd/Ctrl+K). `lib/nav.ts` is the single list of pages for the top bar, drawer, search and footers; add a page there.
 
-### Hard rules
+### Rules
 
-- Never use raw Tailwind default colors (blue-500 etc.), shadcn components, or default recharts colors.
-- No gradients except the signature gold divider. No glows, no shadows except the mobile sidebar slide-over.
+- Cards are flat: `--bg-surface`, 1px `--border`, radius 22. No drop shadows, no backdrop blur, no coloured side borders. Only the fixed bars are frosted.
+- No gradients except the signature accent rule under a page title.
+- The page scrolls (not an inner container). Fixed bars pad for `env(safe-area-inset-*)`.
+- Hover styles go inside `@media (hover: hover) and (pointer: fine)`. Every button has a press state (global).
+- Inputs are 16px on touch and every field has a real label (`htmlFor`/`aria-label`).
+- Motion: under 300ms, `var(--ease-out)`, transform and opacity only, and it must respect `prefers-reduced-motion`.
 - Data attribution ("Powered by X") stays off the UI.
-- All rem-based sizing — root font-size is responsive (`clamp`), so px hardcoding breaks scaling.
+- All rem-based sizing — the root font-size is responsive on desktop.
 - Files must be saved UTF-8 (no BOM). Watch for mojibake when scripting edits — it has bitten this repo before.
 
 ## Engineering notes
@@ -55,3 +63,4 @@ Chart series palette: neon green `#3DE68C` (primary), aqua `#5BD1EF`, green `#22
 - FRED key in `FRED_KEY`.
 - recharts Tooltip `formatter`/`labelFormatter` params must be typed `any` (TS mismatch with recharts types).
 - Run `npm run build` before every push — Vercel deploys `main` automatically.
+- Local development without the data keys: start the dev server with `DEV_API_ORIGIN=https://www.prometheonengine.com` (the `prometheon-live-data` launch entry) and `/api/*` is answered by the live site. Restart the dev server after editing `app/globals.css`; it does not always hot-reload.

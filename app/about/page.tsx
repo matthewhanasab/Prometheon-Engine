@@ -36,7 +36,7 @@ function Row({ k, v }: { k: string; v: React.ReactNode }) {
 
 export default function AboutPage() {
   return (
-    <div style={{ fontFamily: SANS, color: "var(--text-primary)", maxWidth: 820, paddingBottom: "4rem" }}>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)", maxWidth: 820 }}>
       <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
         About Prometheon Engine
       </h1>
@@ -88,14 +88,14 @@ export default function AboutPage() {
       </P>
 
       <div style={{ marginTop: "2rem", display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Link href="/research" style={{ background: "var(--accent-gold)", color: "var(--on-accent)", borderRadius: 999, padding: "10px 22px", fontSize: "0.74rem", fontWeight: 700, textDecoration: "none" }}>
+        <Link href="/research" className="pressable" style={{ background: "var(--accent-gold)", color: "var(--on-accent)", borderRadius: 999, padding: "10px 22px", fontSize: "0.74rem", fontWeight: 700, textDecoration: "none" }}>
           Open the research page
         </Link>
-        <Link href="/accessibility" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: 999, padding: "10px 18px", fontSize: "0.74rem", fontWeight: 600, textDecoration: "none" }}>
+        <Link href="/accessibility" className="pressable" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: 999, padding: "10px 18px", fontSize: "0.74rem", fontWeight: 600, textDecoration: "none" }}>
           Accessibility
         </Link>
       </div>
-      <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "2rem" }}>
+      <div style={{ fontFamily: MONO, fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "2rem" }}>
         prometheonengine.com
       </div>
     </div>

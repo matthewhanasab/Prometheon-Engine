@@ -1,12 +1,17 @@
 "use client";
 import React, { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import {
   ResponsiveContainer, BarChart, Bar, Cell, LineChart, Line, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine,
 } from "recharts";
 
 import ChartShotButton from "@/components/ChartShotButton";
+import PageHeader from "@/components/PageHeader";
+import TickerInput from "@/components/TickerInput";
+import SectionNav from "@/components/SectionNav";
+import { ErrorNote } from "@/components/States";
+import { useUrlTicker } from "@/lib/useUrlTicker";
+import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 
 // Financial Charts — Market Stack edition. Mirrors /charts chart-for-chart:
 // same section order, TTM toggles, QoQ labels, gold bars and screenshot
@@ -22,11 +27,11 @@ const CARD_STYLE: React.CSSProperties = {
 };
 const SECTION_LABEL_STYLE: React.CSSProperties = {
   fontFamily: SERIF, fontSize: "1.05rem", fontWeight: 600,
-  color: "var(--text-primary)", marginBottom: "0.5rem", marginTop: "1.5rem",
-  letterSpacing: "0.01em",
+  color: "var(--text-primary)", margin: "2rem 0 0.5rem",
+  letterSpacing: "-0.01em",
 };
-const X_TICK = { fill: "var(--tick)", fontSize: 16 };
-const Y_TICK = { fill: "var(--tick)", fontSize: 16 };
+const X_TICK = { fill: "var(--tick)", fontSize: 13 };
+const Y_TICK = { fill: "var(--tick)", fontSize: 13 };
 const TOOLTIP_STYLE = {
   cursor: { fill: "var(--cursor-fill)" },
   labelStyle: { color: "var(--text-primary)" },
@@ -64,7 +69,7 @@ function TtmToggle({ isTtm, onChange }: { isTtm: boolean; onChange: (v: boolean)
             background: active ? "var(--accent-gold)" : "var(--bg-elevated)",
             color: active ? "var(--on-accent)" : "var(--text-secondary)",
             border: "1px solid var(--border)", borderRadius: 24, padding: "3px 10px",
-            fontSize: "0.68rem", fontFamily: SANS, cursor: "pointer",
+            fontSize: "0.72rem", fontFamily: SANS, cursor: "pointer",
           }}>{opt}</button>
         );
       })}
@@ -79,7 +84,7 @@ function QoQLabel(props: { x?: number; y?: number; width?: number; value?: numbe
   if (prev == null || prev === 0) return null;
   const pct = ((value - prev) / Math.abs(prev)) * 100;
   return (
-    <text x={x + width / 2} y={y - 4} fill={pct >= 0 ? "#22C55E" : "#EF4444"} fontSize={13}
+    <text x={x + width / 2} y={y - 4} fill={pct >= 0 ? "var(--positive)" : "var(--negative)"} fontSize={13}
       textAnchor="middle" fontFamily="Spline Sans Mono, monospace">
       {`${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`}
     </text>
@@ -87,16 +92,29 @@ function QoQLabel(props: { x?: number; y?: number; width?: number; value?: numbe
 }
 
 /** Section header — carries the screenshot button, exactly like /charts. */
-function SectionLabel({ children, ticker, companyName }: {
-  children: React.ReactNode; ticker: string; companyName?: string;
+function SectionLabel({ children, ticker, companyName, id }: {
+  children: React.ReactNode; ticker: string; companyName?: string; id?: string;
 }) {
   return (
-    <div data-chart-section style={{ ...SECTION_LABEL_STYLE, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+    <h2 id={id} data-chart-section style={{ ...SECTION_LABEL_STYLE, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
       <span data-section-title>{children}</span>
       {ticker && <ChartShotButton ticker={ticker} companyName={companyName} />}
-    </div>
+    </h2>
   );
 }
+
+const SECTIONS = [
+  { id: "revenue", label: "Revenue" },
+  { id: "cash-flow", label: "Cash flow" },
+  { id: "income", label: "Operating income" },
+  { id: "margins", label: "Margins" },
+  { id: "eps", label: "EPS" },
+  { id: "fcf", label: "Free cash flow" },
+  { id: "valuation", label: "Valuation" },
+  { id: "shares", label: "Shares" },
+  { id: "segments", label: "Segments" },
+  { id: "balance", label: "Balance sheet" },
+];
 
 /** Whole-chart placeholder for series marketstack/EDGAR can't supply. */
 type SegSlice = { label: string; value: number };
@@ -111,7 +129,7 @@ type SegmentsPayload = {
   segment?: SegBreakdown | null;
 };
 
-const SEG_COLORS = ["#3DE68C", "#5BD1EF", "#22C55E", "#14B8A6", "#7E9887", "#A78BFA", "#F59E0B"];
+const SEG_COLORS = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)", "var(--series-5)", "var(--series-6)", "var(--text-muted)"];
 
 const compactUsd = (n: number) =>
   n >= 1e12 ? `$${(n / 1e12).toFixed(2)}T`
@@ -130,7 +148,7 @@ function SegmentChart({ b, filed }: { b: SegBreakdown; filed?: string | null }) 
           <BarChart data={b.slices} layout="vertical" margin={{ top: 12, right: 60, left: 8, bottom: 6 }}>
             <CartesianGrid stroke="var(--border)" strokeDasharray="2 4" horizontal={false} />
             <XAxis type="number" tickFormatter={(v: any) => compactUsd(Number(v))}
-              tick={{ fontFamily: MONO, fontSize: 10, fill: "var(--text-muted)" }} />
+              tick={{ fontFamily: MONO, fontSize: 11, fill: "var(--text-muted)" }} />
             <YAxis type="category" dataKey="label" width={150}
               tick={{ fontFamily: SANS, fontSize: 11, fill: "var(--text-secondary)" }} />
             <Tooltip
@@ -147,7 +165,7 @@ function SegmentChart({ b, filed }: { b: SegBreakdown; filed?: string | null }) 
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <div style={{ fontFamily: SANS, fontSize: "0.66rem", color: "var(--text-muted)", margin: "6px 2px 0", lineHeight: 1.6 }}>
+      <div style={{ fontFamily: SANS, fontSize: "0.7rem", color: "var(--text-muted)", margin: "6px 2px 0", lineHeight: 1.6 }}>
         Fiscal year ended {b.periodEnd}{filed ? `, as filed ${filed}` : ""} · {compactUsd(total)} across {b.slices.length} lines.
         {partial && (
           <> <span style={{ color: "var(--negative)" }}>
@@ -173,12 +191,10 @@ function NAChart({ reason }: { reason: string }) {
 type Pt = { date: string; label: string; value: number };
 
 function ChartsInner() {
-  const search = useSearchParams();
-  const [inputTicker, setInputTicker] = useState(search.get("ticker") ?? "AAPL");
-  const [ticker, setTicker] = useState("");
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [urlTicker, setUrlTicker] = useUrlTicker("AAPL");
+  const { data, shown, loading, stale, error, retry } = useTickerData<any>(urlTicker, (t) => `/api/ms-charts/${t}`);
+  // The ticker the charts on screen belong to.
+  const ticker = shown ?? "";
   // Segment revenue comes from the 10-K's XBRL instance, which is a whole
   // filing (1.4MB for Apple, 15MB for JPMorgan) — loaded after the page paints
   // so nothing else waits on it.
@@ -193,9 +209,6 @@ function ChartsInner() {
       .catch(() => { if (alive) setSegments({ found: false, ticker }); });
     return () => { alive = false; };
   }, [ticker]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const booted = useRef(false);
-
   // Independent TTM state per chart, matching the original.
   const [ttmRevenue, setTtmRevenue] = useState(false);
   const [ttmOCF, setTtmOCF] = useState(false);
@@ -203,26 +216,6 @@ function ChartsInner() {
   const [ttmEPS, setTtmEPS] = useState(false);
   const [ttmFCF, setTtmFCF] = useState(false);
   const [ttmFCFPS, setTtmFCFPS] = useState(false);
-
-  async function load(sym?: string) {
-    const t = (sym ?? inputTicker).trim().toUpperCase();
-    if (!t) return;
-    setInputTicker(t); setLoading(true); setError(null);
-    try {
-      const res = await fetch(`/api/ms-charts/${t}`);
-      const json = await res.json();
-      if (!res.ok || json.error) throw new Error(json.error ?? "Request failed");
-      setData(json); setTicker(t);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed"); setData(null); setTicker("");
-    } finally { setLoading(false); }
-  }
-  useEffect(() => {
-    if (booted.current) return;
-    booted.current = true;
-    load(search.get("ticker") ?? "AAPL");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const s = data?.series;
   const company = data?.profile?.companyName;
@@ -321,62 +314,56 @@ function ChartsInner() {
   const pctTick = (v: number) => `${v.toFixed(0)}%`;
 
   return (
-    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
-      
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.2rem" }}>
-        Financial Charts
-      </h1>
-      <p style={{ color: "var(--text-secondary)", fontSize: "0.78rem", margin: "0 0 0.75rem" }}>
-        Revenue · OCF · Operating Income · Margins · EPS · FCF · FCF/Share · PE · P/S · Shares · Equity · Segments · Cash vs Debt
-      </p>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", marginBottom: "1.25rem" }} />
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+      <PageHeader title="Financial Charts"
+        subtitle="A company's filings, drawn: revenue, cash flow, margins, earnings, valuation, share count, segments and balance sheet.">
+        <TickerInput value={urlTicker} onSubmit={setUrlTicker} loading={loading} action="Load" />
+      </PageHeader>
 
-      <div style={{ display: "flex", gap: "0.6rem", marginBottom: "1.5rem", alignItems: "center" }}>
-        <input ref={inputRef} value={inputTicker}
-          onChange={(e) => setInputTicker(e.target.value.toUpperCase())}
-          onKeyDown={(e) => { if (e.key === "Enter") { load(); inputRef.current?.blur(); } }}
-          placeholder="Type a ticker…"
-          style={{
-            width: 180, background: "var(--bg-elevated)", border: "1px solid var(--border)",
-            borderRadius: 22, padding: "9px 14px", color: "var(--text-primary)",
-            fontFamily: MONO, fontSize: "0.85rem", outline: "none",
-          }} />
-        <button onClick={() => load()} disabled={loading} style={{
-          background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
-          padding: "9px 22px", fontFamily: SANS, fontSize: "0.72rem", fontWeight: 700,
-          textTransform: "uppercase", letterSpacing: "0.1em", cursor: loading ? "not-allowed" : "pointer",
-          opacity: loading ? 0.7 : 1,
-        }}>{loading ? "Loading…" : "Load"}</button>
-        {data?.profile && (
-          <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>
-            {company}{data.profile.sector ? ` · ${data.profile.sector}` : ""}
-          </span>
-        )}
-      </div>
+      {error && (
+        <ErrorNote title={`${urlTicker} didn't load`} message={lookupErrorText(error)} onRetry={retry} />
+      )}
 
-      {error && <div style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</div>}
+      {loading && !data && (
+        <div role="status" aria-label="Loading charts" style={{ display: "grid", gap: 26, marginTop: 8 }}>
+          {[0, 1].map((i) => (
+            <div key={i}>
+              <div className="skeleton-bar" style={{ height: 18, width: 180, marginBottom: 12 }} />
+              <div className={`skeleton-bar skeleton-d${i + 1}`} style={{ height: 380, borderRadius: 22 }} />
+            </div>
+          ))}
+        </div>
+      )}
 
-      {data && s && !loading && (
-        <>
+      {data && s && (
+        <div className={stale ? "is-stale" : undefined} aria-busy={stale}>
+          {company && (
+            <div style={{ fontFamily: SERIF, fontSize: "1.15rem", fontWeight: 500, letterSpacing: "-0.01em", marginBottom: 12 }}>
+              {company}
+              <span style={{ fontFamily: MONO, fontSize: "0.8rem", color: "var(--text-secondary)", marginLeft: 10 }}>{ticker}</span>
+              {data.profile?.sector && <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: "var(--text-secondary)", marginLeft: 10 }}>{data.profile.sector}</span>}
+            </div>
+          )}
+          <SectionNav items={SECTIONS} watch={ticker} />
           {/* 1. Revenue */}
-          <SectionLabel ticker={ticker} companyName={company}>Revenue</SectionLabel>
+          <SectionLabel id="revenue" ticker={ticker} companyName={company}>Revenue</SectionLabel>
           <TtmToggle isTtm={ttmRevenue} onChange={setTtmRevenue} />
           <div style={CARD_STYLE} ref={cardRef}>
             {barChart(pick(s.revenue, ttmRevenue), yTickMoney, ttmRevenue ? "Revenue (TTM)" : "Revenue")}
           </div>
 
           {/* 2. Operating Cash Flow */}
-          <SectionLabel ticker={ticker} companyName={company}>Operating Cash Flow</SectionLabel>
+          <SectionLabel id="cash-flow" ticker={ticker} companyName={company}>Operating Cash Flow</SectionLabel>
           <TtmToggle isTtm={ttmOCF} onChange={setTtmOCF} />
           <div style={CARD_STYLE}>{barChart(pick(s.ocf, ttmOCF), yTickMoney, "Operating Cash Flow")}</div>
 
           {/* 3. Operating Income */}
-          <SectionLabel ticker={ticker} companyName={company}>Operating Income</SectionLabel>
+          <SectionLabel id="income" ticker={ticker} companyName={company}>Operating Income</SectionLabel>
           <TtmToggle isTtm={ttmOpInc} onChange={setTtmOpInc} />
           <div style={CARD_STYLE}>{barChart(pick(s.operatingIncome, ttmOpInc), yTickMoney, "Operating Income")}</div>
 
           {/* 4. Gross & Net Margin */}
-          <SectionLabel ticker={ticker} companyName={company}>
+          <SectionLabel id="margins" ticker={ticker} companyName={company}>
             {hasGrossMargin ? "Gross & Net Margin" : "Net Margin"}
           </SectionLabel>
           <div style={CARD_STYLE}>
@@ -390,26 +377,26 @@ function ChartsInner() {
                 {hasGrossMargin && (
                   <Line type="monotone" dataKey="gross" stroke="var(--accent-gold)" strokeWidth={2.5} dot={false} isAnimationActive={false} />
                 )}
-                <Line type="monotone" dataKey="net" stroke="#22C55E" strokeWidth={2.5} dot={false} isAnimationActive={false} />
+                <Line type="monotone" dataKey="net" stroke="var(--positive)" strokeWidth={2.5} dot={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
           {!hasGrossMargin && hasNetMargin && (
-            <div style={{ fontFamily: SANS, fontSize: "0.66rem", color: "var(--text-muted)", margin: "6px 2px 0" }}>
+            <div style={{ fontFamily: SANS, fontSize: "0.7rem", color: "var(--text-muted)", margin: "6px 2px 0" }}>
               This filer doesn&rsquo;t report gross profit, so only net margin is shown — common for
               banks, utilities and payment networks, where cost of revenue isn&rsquo;t a line they keep.
             </div>
           )}
 
           {/* 5. EPS */}
-          <SectionLabel ticker={ticker} companyName={company}>Earnings Per Share (EPS)</SectionLabel>
+          <SectionLabel id="eps" ticker={ticker} companyName={company}>Earnings Per Share (EPS)</SectionLabel>
           <TtmToggle isTtm={ttmEPS} onChange={setTtmEPS} />
           <div style={CARD_STYLE}>
             {barChart(pick(s.eps, ttmEPS), (v) => `$${v.toFixed(2)}`, "EPS")}
           </div>
 
           {/* 6. Free Cash Flow */}
-          <SectionLabel ticker={ticker} companyName={company}>Free Cash Flow</SectionLabel>
+          <SectionLabel id="fcf" ticker={ticker} companyName={company}>Free Cash Flow</SectionLabel>
           <TtmToggle isTtm={ttmFCF} onChange={setTtmFCF} />
           <div style={CARD_STYLE}>{barChart(pick(s.fcf, ttmFCF), yTickMoney, "Free Cash Flow")}</div>
 
@@ -421,7 +408,7 @@ function ChartsInner() {
           </div>
 
           {/* 8. Historical PE */}
-          <SectionLabel ticker={ticker} companyName={company}>Historical PE Ratio</SectionLabel>
+          <SectionLabel id="valuation" ticker={ticker} companyName={company}>Historical PE Ratio</SectionLabel>
           <div style={CARD_STYLE}>{areaChart(s.pe ?? [], (v) => `${v.toFixed(1)}×`, "PE")}</div>
 
           {/* 9. Historical P/S */}
@@ -429,7 +416,7 @@ function ChartsInner() {
           <div style={CARD_STYLE}>{areaChart(s.ps ?? [], (v) => `${v.toFixed(1)}×`, "PS")}</div>
 
           {/* 10. Shares Outstanding */}
-          <SectionLabel ticker={ticker} companyName={company}>Shares Outstanding</SectionLabel>
+          <SectionLabel id="shares" ticker={ticker} companyName={company}>Shares Outstanding</SectionLabel>
           <div style={CARD_STYLE}>{barChart(s.shares ?? [], fmtShares, "Shares", false)}</div>
 
           {/* 11. Shareholders' Equity */}
@@ -437,7 +424,7 @@ function ChartsInner() {
           <div style={CARD_STYLE}>{barChart(s.equity ?? [], yTickMoney, "Equity", false)}</div>
 
           {/* 12. Revenue by Product */}
-          <SectionLabel ticker={ticker} companyName={company}>Revenue by Product</SectionLabel>
+          <SectionLabel id="segments" ticker={ticker} companyName={company}>Revenue by Product</SectionLabel>
           {!segReady ? (
             <NAChart reason="Reading the annual report's XBRL instance…" />
           ) : segReady.product ? (
@@ -465,7 +452,7 @@ function ChartsInner() {
           )}
 
           {/* 14. Current Assets vs Liabilities */}
-          <SectionLabel ticker={ticker} companyName={company}>Current Assets vs Liabilities</SectionLabel>
+          <SectionLabel id="balance" ticker={ticker} companyName={company}>Current Assets vs Liabilities</SectionLabel>
           <div style={CARD_STYLE}>
             <ResponsiveContainer width="100%" height={360}>
               <BarChart data={liquidityRows} margin={{ top: 14, right: 8, left: 8, bottom: 0 }}>
@@ -475,7 +462,7 @@ function ChartsInner() {
                 <Tooltip {...TOOLTIP_STYLE} formatter={(v: any, n: any) => [fmtVal(Number(v)), n === "assets" ? "Current Assets" : "Current Liabilities"]} />
                 <Legend wrapperStyle={{ fontFamily: MONO, fontSize: 13 }} formatter={(v) => (v === "assets" ? "Current Assets" : "Current Liabilities")} />
                 <Bar dataKey="assets" fill="var(--accent-gold)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
-                <Bar dataKey="liabilities" fill="#EF4444" fillOpacity={0.75} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="liabilities" fill="var(--negative)" fillOpacity={0.75} radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -492,18 +479,18 @@ function ChartsInner() {
                 <Legend wrapperStyle={{ fontFamily: MONO, fontSize: 13 }}
                   formatter={(v) => (v === "cash" ? "Cash" : v === "securities" ? "Securities" : "Debt")} />
                 <Bar dataKey="cash" stackId="a" fill="var(--accent-gold)" isAnimationActive={false} />
-                <Bar dataKey="securities" stackId="a" fill="#22C55E" fillOpacity={0.8} radius={[2, 2, 0, 0]} isAnimationActive={false} />
-                <Bar dataKey="debt" fill="#EF4444" fillOpacity={0.75} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="securities" stackId="a" fill="var(--positive)" fillOpacity={0.8} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="debt" fill="var(--negative)" fillOpacity={0.75} radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "1.6rem", lineHeight: 1.6 }}>
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "1.6rem", lineHeight: 1.6 }}>
             Quarterly fundamentals from SEC EDGAR XBRL (10-K/10-Q), with fourth quarters reconstructed as
             FY − (Q1+Q2+Q3). Valuation multiples pair those against quarter-end closing prices. Share counts
             are adjusted for splits.
           </div>
-        </>
+        </div>
       )}
     </div>
   );

@@ -17,6 +17,9 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
     const container = containerRef.current;
     container.innerHTML = "";
 
+    // Added a beat after mount: the embed script throws if its own tag has
+    // been removed by the time it runs, which a quick remount guarantees.
+    const timer = setTimeout(() => {
     const widgetDiv = document.createElement("div");
     widgetDiv.className = "tradingview-widget-container__widget";
     widgetDiv.style.height = "100%";
@@ -50,8 +53,9 @@ export default function CompareChart({ tickers, height = 460 }: { tickers: strin
       support_host: "https://www.tradingview.com",
     });
     container.appendChild(script);
+    }, 120);
 
-    return () => { container.innerHTML = ""; };
+    return () => { clearTimeout(timer); container.innerHTML = ""; };
   }, [tickers.join(","), themeTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

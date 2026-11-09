@@ -1,9 +1,14 @@
 "use client";
 import type { EarningsSurprise } from "@/lib/analystEstimates";
-import { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import CompanyLogo from "@/components/CompanyLogo";
+import PageHeader from "@/components/PageHeader";
+import TickerInput from "@/components/TickerInput";
+import SectionNav from "@/components/SectionNav";
+import Icon from "@/components/Icon";
+import { ErrorNote } from "@/components/States";
+import { useUrlTicker } from "@/lib/useUrlTicker";
 import TradingViewChart from "@/components/TradingViewChart";
 import PriceChart from "@/components/PriceChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
@@ -84,16 +89,30 @@ const compact = (n: number | null | undefined) => {
   return `${s}${Math.round(a)}`;
 };
 
-function SectionLabel({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
+const SECTIONS = [
+  { id: "price", label: "Price" },
+  { id: "metrics", label: "Key metrics" },
+  { id: "quality", label: "Quality" },
+  { id: "earnings", label: "Earnings" },
+  { id: "analysts", label: "Analysts" },
+  { id: "ownership", label: "Ownership" },
+  { id: "insiders", label: "Insiders" },
+  { id: "dividends", label: "Dividends" },
+  { id: "filings", label: "Filings" },
+  { id: "profile", label: "Profile" },
+  { id: "news", label: "News" },
+];
+
+function SectionLabel({ children, right, id }: { children: React.ReactNode; right?: React.ReactNode; id?: string }) {
   return (
-    <div style={{
+    <h2 id={id} style={{
       display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
-      fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase",
+      fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase",
       letterSpacing: "0.14em", color: "var(--text-secondary)",
-      borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", margin: "2rem 0 0.9rem",
+      borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", margin: "2.25rem 0 0.9rem",
     }}>
       <span>{children}</span>{right}
-    </div>
+    </h2>
   );
 }
 
@@ -104,12 +123,9 @@ function MCard({ label, value, sub, tone = "default", na = false, loading = fals
   const color = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : "var(--text-primary)";
   return (
     <div style={{ ...CARD, padding: "14px 16px", opacity: na ? 0.6 : 1 }}>
-      <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 5 }}>{label}</div>
+      <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 5 }}>{label}</div>
       {loading ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span className="spinner" style={{ width: 13, height: 13 }} />
-          <span style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)" }}>Loading…</span>
-        </div>
+        <div role="status" aria-label="Loading" className="skeleton-bar" style={{ height: 18, width: "58%", margin: "3px 0" }} />
       ) : na ? (
         <div style={{ fontFamily: SANS, fontSize: "0.72rem", fontWeight: 600, color: "var(--accent-gold)", lineHeight: 1.35 }}>
           Not available with current data
@@ -117,7 +133,7 @@ function MCard({ label, value, sub, tone = "default", na = false, loading = fals
       ) : (
         <div style={{ fontFamily: MONO, fontSize: "1.15rem", fontWeight: 600, color }}>{value}</div>
       )}
-      {sub && <div style={{ fontFamily: SANS, fontSize: "0.6rem", color: "var(--text-muted)", marginTop: 3 }}>{sub}</div>}
+      {sub && <div style={{ fontFamily: SANS, fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: 3 }}>{sub}</div>}
     </div>
   );
 }
@@ -134,7 +150,7 @@ function NASection({ reason }: { reason: string }) {
   );
 }
 
-function Grid({ cols = 5, children }: { cols?: number; children: React.ReactNode }) {
+function Grid({ children }: { cols?: number; children: React.ReactNode }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(min(150px, 44vw), 1fr))`, gap: 10 }}>
       {children}
@@ -165,13 +181,6 @@ type Bench = {
   loading?: boolean;
 };
 
-const ACCENTS: Record<string, string> = {
-  valuation: "var(--accent-gold)",
-  growth: "#3B82F6",
-  margins: "#22C55E",
-  health: "#A78BFA",
-};
-
 function benchText(b: Bench): string {
   if (b.note) return b.note;
   if (!b.range) return "";
@@ -190,65 +199,43 @@ function grade(b: Bench): "good" | "mid" | "bad" | null {
   return b.raw < lo ? "good" : "bad";
 }
 
-function BenchRow({ b, accent }: { b: Bench; accent: string }) {
+function BenchRow({ b }: { b: Bench }) {
   const g = grade(b);
-  const valueColor = b.na || b.loading
-    ? "var(--accent-gold)"
+  const valueColor = b.na
+    ? "var(--text-muted)"
     : g === "good" ? "var(--positive)"
     : g === "bad" ? "var(--negative)"
     : "var(--text-primary)";
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "minmax(140px, 1.15fr) minmax(80px, 0.75fr) minmax(150px, 1.5fr)",
-      alignItems: "center", gap: 14,
-      padding: "9px 14px",
-      borderBottom: "1px solid var(--border)",
-    }}>
-      {/* label pill */}
-      <div style={{
-        fontFamily: SANS, fontSize: "0.63rem", fontWeight: 700,
-        textTransform: "uppercase", letterSpacing: "0.09em",
-        color: "var(--text-primary)",
-        background: "var(--bg-elevated)",
-        borderLeft: `3px solid ${accent}`,
-        borderRadius: "6px",
-        padding: "7px 11px",
-      }}>
+    <div className="bench-row">
+      <div style={{ fontFamily: SANS, fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>
         {b.label}
       </div>
-
-      {/* figure */}
       <div style={{
-        fontFamily: MONO, fontSize: b.na || b.loading ? "0.66rem" : "1.05rem", fontWeight: 700,
-        color: valueColor, textAlign: "right", lineHeight: 1.25,
-        display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 7,
+        fontFamily: MONO, fontSize: b.na ? "0.78rem" : "1.02rem", fontWeight: b.na ? 500 : 700,
+        color: valueColor, textAlign: "right", whiteSpace: "nowrap",
       }}>
-        {b.loading ? (
-          <>
-            <span className="spinner" style={{ width: 11, height: 11 }} />
-            <span style={{ color: "var(--text-muted)" }}>Loading</span>
-          </>
-        ) : b.na ? "Not available" : b.value}
+        {b.loading
+          ? <span role="status" aria-label="Loading" className="skeleton-bar" style={{ display: "inline-block", height: 14, width: 64, verticalAlign: "middle" }} />
+          : b.na ? "Not available" : b.value}
       </div>
-
-      {/* benchmark */}
-      <div style={{
-        fontFamily: SANS, fontSize: "0.63rem", fontWeight: 500,
-        textTransform: "uppercase", letterSpacing: "0.07em",
-        color: "var(--text-muted)",
-        borderBottom: "1px solid var(--border)", paddingBottom: 4,
-      }}>
+      <div className="bench-note" style={{ fontFamily: SANS, fontSize: "0.76rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
         {b.loading ? "Fetching analyst consensus" : b.na ? (b.naReason ?? "Needs analyst estimates") : benchText(b)}
       </div>
     </div>
   );
 }
 
-function BenchGroup({ rows, accent }: { rows: Bench[]; accent: string }) {
+function BenchGroup({ title, rows }: { title: string; rows: Bench[] }) {
   return (
-    <div style={{ ...CARD, padding: "2px 0", marginBottom: 10, overflowX: "auto" }}>
-      {rows.map((b) => <BenchRow key={b.label} b={b} accent={accent} />)}
+    <div style={{ ...CARD, marginBottom: 10, overflow: "hidden" }}>
+      <div style={{
+        fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em",
+        color: "var(--text-secondary)", padding: "11px 16px 9px",
+      }}>
+        {title}
+      </div>
+      {rows.map((b) => <BenchRow key={b.label} b={b} />)}
     </div>
   );
 }
@@ -259,7 +246,7 @@ function BenchGroup({ rows, accent }: { rows: Bench[]; accent: string }) {
 function SkCard({ label }: { label: string }) {
   return (
     <div style={{ ...CARD, padding: "14px 16px", opacity: 0.55 }}>
-      <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 8 }}>{label}</div>
+      <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 8 }}>{label}</div>
       <div style={{ height: 15, width: "62%", borderRadius: 6, background: "var(--bg-elevated)" }} />
       <div style={{ height: 8, width: "40%", borderRadius: 6, background: "var(--bg-elevated)", marginTop: 8, opacity: 0.7 }} />
     </div>
@@ -285,7 +272,7 @@ function EmptyPreview() {
       <SectionLabel>Long-Term Performance</SectionLabel>
       {skGrid(["1-Year Return", "3-Year Return", "5-Year Return", "10-Year Return", "15-Year Return"])}
 
-      <SectionLabel>Mandatory Metrics</SectionLabel>
+      <SectionLabel>Key Metrics</SectionLabel>
       {skGrid(["TTM P/E Ratio", "Forward P/E", "Fwd EPS Growth", "Revenue Growth", "Total Revenue"])}
       <div style={{ height: 8 }} />
       {skGrid(["Gross Margin", "Operating Margin", "Net Margin", "Price / Sales", "EPS (TTM)"])}
@@ -304,24 +291,6 @@ const pctOf = (n: number | null | undefined, d = 2) =>
 const mult = (n: number | null | undefined) =>
   n == null || !Number.isFinite(n) ? "N/A" : `${n.toFixed(2)}×`;
 
-type Tone = "good" | "bad" | "neutral" | "default";
-const peTone = (pe: number | null): [string, Tone] =>
-  pe == null ? ["No data", "default"] : pe < 15 ? ["Value territory", "good"]
-    : pe < 25 ? ["Reasonable multiple", "neutral"] : ["Growth premium priced in", "bad"];
-const marginTone = (m: number | null, kind: "gross" | "operating" | "net"): [string, Tone] => {
-  if (m == null) return ["No data", "default"];
-  const hi = kind === "gross" ? 0.4 : kind === "operating" ? 0.2 : 0.15;
-  const lo = kind === "gross" ? 0.2 : kind === "operating" ? 0.08 : 0.05;
-  return m > hi ? [kind === "gross" ? "Solid gross margin" : kind === "operating" ? "Strong operating leverage" : "Highly profitable", "good"]
-    : m > lo ? ["Moderate margin", "neutral"] : ["Thin margin", "bad"];
-};
-const roeTone = (r: number | null): [string, Tone] =>
-  r == null ? ["No data", "default"] : r > 0.2 ? ["Exceptional capital returns", "good"]
-    : r > 0.1 ? ["Healthy returns", "neutral"] : r > 0 ? ["Low returns", "bad"] : ["Negative returns", "bad"];
-const deTone = (d: number | null): [string, Tone] =>
-  d == null ? ["No data", "default"] : d < 0.5 ? ["Conservative leverage", "good"]
-    : d < 1.5 ? ["Moderate leverage", "neutral"] : ["High leverage", "bad"];
-
 function ratingTone(r: string | null): string {
   if (!r) return "var(--text-secondary)";
   const s = r.toLowerCase();
@@ -331,11 +300,12 @@ function ratingTone(r: string | null): string {
 }
 
 function MarketstackResearchInner() {
-  const search = useSearchParams();
-  const [input, setInput] = useState(search.get("ticker") ?? "AAPL");
+  // A bare visit opens on a default ticker rather than an empty page, so the
+  // page shows what it does before the visitor types anything.
+  const [ticker, setTicker] = useUrlTicker(DEFAULT_TICKER);
   const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [failed, setFailed] = useState<{ ticker: string; message: string } | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [range, setRange] = useState<RangeKey>("1Y");
   // Intraday bars for the 1D/5D views and the latest trade, both tagged with
   // the ticker they belong to so a change of company reads as "loading".
@@ -359,32 +329,27 @@ function MarketstackResearchInner() {
   // "not here yet" rather than showing the previous company's insiders.
   const [insiders, setInsiders] = useState<{ ticker: string; trades: InsiderTrade[] } | null>(null);
   const [chartMode, setChartMode] = useState<ChartMode>("builtin");
-  const loadedOnce = useRef(false);
 
-  async function load(sym?: string) {
-    const t = (sym ?? input).trim().toUpperCase();
-    if (!t) return;
-    setInput(t); setLoading(true); setError(null);
-    try {
-      const res = await fetch(`/api/marketstack-stock/${t}`);
-      const json = await res.json();
-      if (!res.ok || json.error) throw new Error(json.error ?? "Request failed");
-      setData(json);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to fetch"); setData(null);
-    } finally { setLoading(false); }
-  }
-
-  // A bare visit opens on a default ticker rather than the empty skeleton, so
-  // the page shows what it does without the visitor having to type first. Being
-  // the default keeps it hot in the edge cache, so it costs a cache hit.
-  // EmptyPreview still covers the gap until the payload lands.
+  // Load whenever the address names a different company. The previous
+  // company stays on screen, dimmed, until the new one arrives, so a lookup
+  // never blanks the page.
   useEffect(() => {
-    if (loadedOnce.current) return;
-    loadedOnce.current = true;
-    load(search.get("ticker") ?? DEFAULT_TICKER);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!ticker) return;
+    let alive = true;
+    fetch(`/api/marketstack-stock/${ticker}`)
+      .then(async (res) => {
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json || json.error) throw new Error(json?.error ?? "Request failed");
+        if (alive) { setData(json); setFailed(null); }
+      })
+      .catch((e: unknown) => {
+        if (alive) setFailed({ ticker, message: e instanceof Error ? e.message : "Request failed" });
+      });
+    return () => { alive = false; };
+  }, [ticker, attempt]);
+
+  const error = failed && failed.ticker === ticker ? failed.message : null;
+  const loading = !error && data?.ticker !== ticker;
 
   // Derived rather than reset inside the effect: tagging the payload with the
   // CUSIP it came from means a ticker change reads as "not ready yet" without a
@@ -505,32 +470,18 @@ function MarketstackResearchInner() {
     : null;
 
   return (
-    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "4rem" }}>
-      
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 0.4rem" }}>
-        Stock Research
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1rem" }} />
-      <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1.4rem" }}>
-        Type in a ticker to get started — valuation, growth, quality, analyst ratings, dividends,
-        and SEC filings fill in automatically.
-      </div>
-
-      <form onSubmit={(e) => { e.preventDefault(); load(); }} style={{ display: "flex", gap: 10, maxWidth: 380, marginBottom: "0.7rem" }}>
-        <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Type a ticker…"
-          style={{ flex: 1, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, padding: "10px 14px", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.85rem", outline: "none" }} />
-        <button type="submit" disabled={loading}
-          style={{ background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22, padding: "10px 22px", fontFamily: SANS, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
-          {loading ? "Loading…" : "Analyze"}
-        </button>
-      </form>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+            <PageHeader title="Stock Research"
+        subtitle="Valuation, growth, quality, analyst ratings, ownership and filings for one company.">
+        <TickerInput value={ticker} onSubmit={setTicker} loading={loading} action="Analyze" width="16rem" />
+      </PageHeader>
 
       {/* A one-line "Loading AAPL…" left the rest of the page blank for the
           seconds an uncached ticker takes, which reads as nothing happening.
           The skeleton mirrors the real layout — header, chart, then the metric
           grids — so the shape of what's coming is visible while it loads. */}
-      {loading && (
-        <div style={{ marginTop: "0.5rem" }}>
+      {loading && !data && (
+        <div style={{ marginTop: "0.5rem" }} aria-busy="true">
           <div style={{
             ...CARD, borderColor: "var(--border-active)", display: "flex", alignItems: "center",
             gap: 14, padding: "16px 18px", marginBottom: 16,
@@ -538,7 +489,7 @@ function MarketstackResearchInner() {
             <span className="spinner" style={{ width: 20, height: 20, flexShrink: 0 }} />
             <div>
               <div style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-gold)" }}>
-                Analyzing {input}…
+                Analyzing {ticker}…
               </div>
               <div style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 3 }}>
                 Pulling prices, SEC filings and fundamentals. First load for a ticker takes a few
@@ -560,7 +511,7 @@ function MarketstackResearchInner() {
           <SectionLabel>Price Chart</SectionLabel>
           <div className="skeleton-bar" style={{ ...CARD, height: 300, marginBottom: 4 }} />
 
-          {["Quick Stats", "Mandatory Metrics", "Advanced Metrics"].map((label, gi) => (
+          {["Quick Stats", "Key Metrics", "Advanced Metrics"].map((label, gi) => (
             <div key={label}>
               <SectionLabel>{label}</SectionLabel>
               <Grid cols={5}>
@@ -575,17 +526,29 @@ function MarketstackResearchInner() {
           ))}
         </div>
       )}
-      {error && <div style={{ color: "var(--negative)", fontSize: "0.85rem" }}>{error}</div>}
+      {error && (
+        <ErrorNote
+          title={`${ticker} didn't load`}
+          message={/not found|no data|unknown|404/i.test(error)
+            ? "That symbol isn't in the data. Check the spelling, or search by company name."
+            : "The data service didn't answer. This is usually momentary."}
+          onRetry={() => { setFailed(null); setAttempt((n) => n + 1); }}
+          style={{ marginBottom: 16 }} />
+      )}
 
       {!data && !loading && !error && <EmptyPreview />}
 
-      {data && q && !loading && (
-        <>
+      {data && q && !error && (
+        <div className={loading ? "is-stale" : undefined} aria-busy={loading}>
+          <SectionNav items={SECTIONS} watch={`${data.ticker}-${analystData ? 1 : 0}`} />
           {/* ── Company Header ── */}
           <div style={{ borderBottom: "1px solid var(--border)", paddingBottom: "1.5rem", marginBottom: "0.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10 }}>
               <CompanyLogo ticker={data.ticker} size={58} />
-              <div style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 500 }}>{prof?.name ?? data.ticker}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: SERIF, fontSize: "clamp(1.4rem, 5vw, 2rem)", fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.15, textWrap: "balance" }}>{prof?.name ?? data.ticker}</div>
+                <div style={{ fontFamily: MONO, fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: 3 }}>{data.ticker}</div>
+              </div>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, alignItems: "center" }}>
               {[
@@ -595,15 +558,16 @@ function MarketstackResearchInner() {
                 prof?.employees != null ? `${Number(prof.employees).toLocaleString()} employees` : null,
                 fyEndLabel(prof?.fiscalYearEnd),
               ].filter(Boolean).map((chip, i) => (
-                <span key={i} style={{ fontSize: "0.64rem", fontWeight: 600, color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "3px 10px" }}>
+                <span key={i} style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "3px 10px" }}>
                   {chip as string}
                 </span>
               ))}
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
-              <span style={{ fontFamily: MONO, fontSize: "2.4rem", fontWeight: 600, letterSpacing: "-0.02em" }}>{money(headPrice)}</span>
-              <span style={{ fontFamily: MONO, fontSize: "1rem", fontWeight: 500, color: (headChange ?? 0) >= 0 ? "var(--positive)" : "var(--negative)" }}>
-                {(headChange ?? 0) >= 0 ? "▲" : "▼"} ${Math.abs(headChange ?? 0).toFixed(2)} ({pct(headChangePct)})
+              <span style={{ fontFamily: MONO, fontSize: "clamp(1.9rem, 8vw, 2.4rem)", fontWeight: 600, letterSpacing: "-0.02em" }}>{money(headPrice)}</span>
+              <span style={{ fontFamily: MONO, fontSize: "1rem", fontWeight: 500, color: (headChange ?? 0) >= 0 ? "var(--positive)" : "var(--negative)", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                <Icon name={(headChange ?? 0) >= 0 ? "tri-up" : "tri-down"} size={13} filled title={(headChange ?? 0) >= 0 ? "Up" : "Down"} />
+                ${Math.abs(headChange ?? 0).toFixed(2)} ({pct(headChangePct)})
               </span>
               {fun?.marketCap != null && (
                 <span style={{ fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-secondary)" }}>
@@ -647,12 +611,12 @@ function MarketstackResearchInner() {
               {chartMode === "builtin" && <RangeToggle range={range} onChange={setRange} />}
               <ChartModeToggle mode={chartMode} onChange={setChartMode} />
             </div>
-          }>Price Chart</SectionLabel>
+          } id="price">Price Chart</SectionLabel>
           {chartMode !== "builtin"
             ? <TradingViewChart ticker={data.ticker} />
             : chartLoading
             ? <div style={{ ...CARD, padding: "1.25rem 1rem", height: 290, display: "flex", alignItems: "center", justifyContent: "center", gap: 12, color: "var(--text-secondary)", fontSize: "0.8rem" }}>
-                <span className="spinner" style={{ width: 18, height: 18 }} /> Loading {range === "1D" ? "today's" : "this week's"} trading…
+                <span className="spinner" style={{ width: 18, height: 18 }} /> Loading {range === "1D" ? "today\u2019s" : "this week\u2019s"} trading
               </div>
             : chartWindow.length === 0 && isIntraday(range)
             ? <div style={{ ...CARD, padding: "1.25rem 1rem", height: 290, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "0.8rem" }}>
@@ -676,9 +640,7 @@ function MarketstackResearchInner() {
           </Grid>
 
           {/* ── Long-Term Performance ── */}
-          <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>the 15-year history entitlement, live</span>}>
-            Long-Term Performance
-          </SectionLabel>
+          <SectionLabel>Long-Term Performance</SectionLabel>
           <Grid cols={5}>
             {data.longReturns?.map((r: any) =>
               r.available ? (
@@ -695,12 +657,12 @@ function MarketstackResearchInner() {
           {/* ── Mandatory Metrics (SEC EDGAR XBRL) ── */}
           {fun && (
             <>
-              <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>SEC EDGAR · TTM through {fun.asOf}</span>}>
-                Mandatory Metrics
+              <SectionLabel right={<span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>SEC filings · trailing twelve months through {fun.asOf}</span>} id="metrics">
+                Key Metrics
               </SectionLabel>
 
               {/* Valuation multiples */}
-              <BenchGroup accent={ACCENTS.valuation} rows={[
+              <BenchGroup title="Valuation" rows={[
                 { label: "TTM P/E", value: mult(fun.peRatio), raw: fun.peRatio, range: [20, 28], unit: "x" },
                 cf?.pe != null
                   ? { label: "Forward P/E", value: mult(cf.pe), raw: cf.pe, range: [18, 26], unit: "x",
@@ -753,7 +715,7 @@ function MarketstackResearchInner() {
               ]} />
 
               {/* Growth */}
-              <BenchGroup accent={ACCENTS.growth} rows={[
+              <BenchGroup title="Growth" rows={[
                 { label: "TTM EPS Growth", value: pctOf(fun.epsGrowth, 1),
                   raw: fun.epsGrowth != null ? fun.epsGrowth * 100 : null, range: [8, 12], unit: "%", higherBetter: true },
                 analystsPending && cf?.nextYearEpsGrowth == null
@@ -783,7 +745,7 @@ function MarketstackResearchInner() {
               ]} />
 
               {/* Margins */}
-              <BenchGroup accent={ACCENTS.margins} rows={[
+              <BenchGroup title="Profitability" rows={[
                 { label: "Gross Margin", value: pctOf(fun.grossMargin),
                   raw: fun.grossMargin != null ? fun.grossMargin * 100 : null, range: [40, 48], unit: "%", higherBetter: true },
                 { label: "Operating Margin", value: pctOf(fun.operatingMargin),
@@ -797,7 +759,7 @@ function MarketstackResearchInner() {
               {/* ── Advanced Metrics ── */}
               <SectionLabel>Advanced Metrics</SectionLabel>
 
-              <BenchGroup accent={ACCENTS.valuation} rows={[
+              <BenchGroup title="Returns and cash" rows={[
                 { label: "Return on Equity", value: pctOf(fun.roe),
                   raw: fun.roe != null ? fun.roe * 100 : null, range: [12, 18], unit: "%", higherBetter: true },
                 { label: "Price / Book", value: mult(fun.pb), raw: fun.pb, range: [2, 4], unit: "x" },
@@ -809,7 +771,7 @@ function MarketstackResearchInner() {
                   note: div?.yieldPct == null ? "Pays no dividend" : undefined },
               ]} />
 
-              <BenchGroup accent={ACCENTS.health} rows={[
+              <BenchGroup title="Balance sheet" rows={[
                 { label: "Debt / Equity", value: mult(fun.debtToEquity), raw: fun.debtToEquity, range: [0.5, 1.5], unit: "x" },
                 { label: "Current Ratio", value: mult(fun.currentRatio),
                   raw: fun.currentRatio, range: [1.5, 3], unit: "x", higherBetter: true },
@@ -823,19 +785,21 @@ function MarketstackResearchInner() {
               ]} />
 
               {/* ── Quality & Fair Value ── */}
-              <SectionLabel>Quality &amp; Fair Value</SectionLabel>
+              <SectionLabel id="quality">Quality &amp; Fair Value</SectionLabel>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 92vw), 1fr))", gap: 10 }}>
                 <div style={{ ...CARD, padding: "16px 18px" }}>
-                  <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>Piotroski F-Score</div>
+                  <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>Piotroski F-Score</div>
                   <div style={{ fontFamily: MONO, fontSize: "1.6rem", fontWeight: 700, color: fun.piotroski.score >= 7 ? "var(--positive)" : fun.piotroski.score >= 4 ? "var(--accent-gold)" : "var(--negative)" }}>
                     {fun.piotroski.score} / {fun.piotroski.outOf}
                   </div>
-                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 10 }}>{fun.piotroski.basis}</div>
+                  <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: 10 }}>{fun.piotroski.basis}</div>
                   <div style={{ display: "grid", gap: 3 }}>
                     {fun.piotroski.checks.map((c: any, i: number) => (
-                      <div key={i} style={{ display: "flex", gap: 8, fontSize: "0.68rem", alignItems: "baseline" }}>
-                        <span style={{ width: 12, color: c.pass === true ? "var(--positive)" : c.pass === false ? "var(--negative)" : "var(--text-muted)", fontWeight: 700 }}>
-                          {c.pass === true ? "✓" : c.pass === false ? "✗" : "–"}
+                      <div key={i} style={{ display: "flex", gap: 8, fontSize: "0.72rem", alignItems: "baseline" }}>
+                        <span style={{ width: 14, flexShrink: 0, color: c.pass === true ? "var(--positive)" : c.pass === false ? "var(--negative)" : "var(--text-muted)" }}>
+                          {c.pass === true ? <Icon name="check" size={13} strokeWidth={2.6} title="Pass" />
+                            : c.pass === false ? <Icon name="x" size={13} strokeWidth={2.6} title="Fail" />
+                            : <span aria-label="Not scored">–</span>}
                         </span>
                         <span style={{ color: c.pass === false ? "var(--text-secondary)" : "var(--text-primary)" }}>{c.label}</span>
                       </div>
@@ -844,7 +808,7 @@ function MarketstackResearchInner() {
                 </div>
 
                 <div style={{ ...CARD, padding: "16px 18px" }}>
-                  <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>Altman Z-Score</div>
+                  <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>Altman Z-Score</div>
                   <div style={{ fontFamily: MONO, fontSize: "1.6rem", fontWeight: 700, color: (fun.altmanZ ?? 0) > 2.99 ? "var(--positive)" : (fun.altmanZ ?? 0) > 1.81 ? "var(--accent-gold)" : "var(--negative)" }}>
                     {fun.altmanZ != null ? fun.altmanZ.toFixed(2) : "N/A"}
                   </div>
@@ -854,13 +818,13 @@ function MarketstackResearchInner() {
                       : fun.altmanZ > 1.81 ? "Grey zone — some financial stress"
                       : "Distress zone — elevated risk"}
                   </div>
-                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 10, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: 10, lineHeight: 1.5 }}>
                     Weighted from working capital, retained earnings, operating income, market cap and revenue, all against total assets.
                   </div>
                 </div>
 
                 <div style={{ ...CARD, padding: "16px 18px" }}>
-                  <div style={{ fontFamily: SANS, fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>DCF Fair Value</div>
+                  <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 6 }}>DCF Fair Value</div>
                   <div style={{ fontFamily: MONO, fontSize: "1.6rem", fontWeight: 700, color: fun.dcf && fun.dcf.perShare > q.price ? "var(--positive)" : "var(--negative)" }}>
                     {fun.dcf ? money(fun.dcf.perShare) : "N/A"}
                   </div>
@@ -869,7 +833,7 @@ function MarketstackResearchInner() {
                       <div style={{ fontSize: "0.7rem", color: fun.dcf.perShare > q.price ? "var(--positive)" : "var(--negative)", marginTop: 6 }}>
                         {pct(((fun.dcf.perShare - q.price) / q.price) * 100, 1)} vs price
                       </div>
-                      <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: 10, lineHeight: 1.5 }}>
+                      <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: 10, lineHeight: 1.5 }}>
                         Two-stage FCF model: {pctOf(fun.dcf.assumedGrowth, 1)} growth for 5y then half that,
                         {" "}{pctOf(fun.dcf.discount, 0)} discount, {pctOf(fun.dcf.terminal, 1)} terminal.
                         Assumption-driven — a reference point, not a target.
@@ -884,7 +848,7 @@ function MarketstackResearchInner() {
           {/* ── CAPM ── */}
           {capm && (
             <>
-              <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
+              <SectionLabel right={<span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
                 beta from {capm.betaSamples} monthly returns vs SPY (5-year)
               </span>}>
                 CAPM · Risk-Adjusted Return
@@ -913,7 +877,7 @@ function MarketstackResearchInner() {
           )}
 
           {/* ── Earnings History ── */}
-          <SectionLabel>Earnings History — Reported vs Expected</SectionLabel>
+          <SectionLabel id="earnings">Earnings History — Reported vs Expected</SectionLabel>
           {analystsPending ? (
             <div style={{ ...CARD, padding: "14px 20px" }}>
               {[0, 1, 2, 3].map((i) => (
@@ -924,7 +888,7 @@ function MarketstackResearchInner() {
             <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
                 <thead>
-                  <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  <tr style={{ color: "var(--text-secondary)", fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                     <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Quarter</th>
                     <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Reported</th>
                     <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Expected EPS</th>
@@ -944,7 +908,7 @@ function MarketstackResearchInner() {
                         <td style={{ padding: "7px 10px", textAlign: "right", fontFamily: MONO, fontWeight: 700, color: tone }}>{money(e.eps)}</td>
                         <td style={{ padding: "7px 14px", textAlign: "right", fontFamily: MONO, fontWeight: 600, color: tone }}>
                           {e.surprisePct != null ? `${e.surprisePct >= 0 ? "+" : ""}${e.surprisePct.toFixed(1)}%` : "—"}
-                          {beat != null && <span style={{ fontFamily: SANS, fontSize: "0.6rem", fontWeight: 600, marginLeft: 6 }}>{beat ? "Beat" : "Miss"}</span>}
+                          {beat != null && <span style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, marginLeft: 6 }}>{beat ? "Beat" : "Miss"}</span>}
                         </td>
                       </tr>
                     );
@@ -959,7 +923,7 @@ function MarketstackResearchInner() {
           {/* ── Analyst Ratings ── */}
           {cons && (
             <>
-              <SectionLabel right={cons.asOf ? <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>as of {cons.asOf}</span> : undefined}>
+              <SectionLabel right={cons.asOf ? <span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>as of {cons.asOf}</span> : undefined} id="analysts">
                 Analyst Ratings — {cons.analysts ?? "?"} Analysts
               </SectionLabel>
               <Grid cols={5}>
@@ -1001,11 +965,11 @@ function MarketstackResearchInner() {
                     <div style={{ position: "absolute", left: `${x}%`, top: 0, transform: `translateX(${shift})` }}>
                       <div style={{ width: 2, height: 26, background: color, margin: align === "left" ? "0" : align === "right" ? "0 0 0 auto" : "0 auto" }} />
                       <div style={{
-                        fontFamily: MONO, fontSize: "0.66rem", fontWeight: 700, color, whiteSpace: "nowrap",
+                        fontFamily: MONO, fontSize: "0.7rem", fontWeight: 700, color, whiteSpace: "nowrap",
                         marginTop: lower ? 36 : 4, textAlign: align,
                       }}>
                         {money(v)}
-                        <div style={{ fontFamily: SANS, fontSize: "0.52rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>
+                        <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>
                           {label}
                         </div>
                       </div>
@@ -1027,7 +991,7 @@ function MarketstackResearchInner() {
                       {mark(cons.avgTarget, "Avg target", up ? "var(--positive)" : "var(--negative)", false)}
                       {mark(q.price, "Current", "var(--text-primary)", crowded)}
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-muted)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: "0.6875rem", color: "var(--text-muted)" }}>
                       <span>Low {money(cons.lowTarget)}</span>
                       <span>
                         {cons.analysts ?? "?"} analysts · spread{" "}
@@ -1052,7 +1016,7 @@ function MarketstackResearchInner() {
                 <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12 }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
                     <thead>
-                      <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      <tr style={{ color: "var(--text-secondary)", fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                         <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Analyst</th>
                         <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Firm</th>
                         <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Rating</th>
@@ -1066,7 +1030,7 @@ function MarketstackResearchInner() {
                           <td style={{ padding: "7px 14px", fontWeight: 600 }}>{a.name}</td>
                           <td style={{ padding: "7px 10px", color: "var(--text-secondary)", fontSize: "0.72rem" }}>{a.firm}</td>
                           <td style={{ padding: "7px 10px", color: ratingTone(a.rating), fontWeight: 600 }}>
-                            {a.rating ?? "—"}{a.action ? <span style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: "0.66rem" }}> · {a.action}</span> : null}
+                            {a.rating ?? "—"}{a.action ? <span style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: "0.7rem" }}> · {a.action}</span> : null}
                           </td>
                           <td style={{ padding: "7px 10px", textAlign: "right", fontFamily: MONO }}>{a.target != null ? money(a.target) : "—"}</td>
                           <td style={{ padding: "7px 14px", textAlign: "right", fontFamily: MONO, color: "var(--text-muted)" }}>{a.date}</td>
@@ -1079,7 +1043,7 @@ function MarketstackResearchInner() {
                       style={{
                         display: "block", width: "100%", padding: "9px 14px", cursor: "pointer",
                         background: "transparent", border: "none", borderTop: "1px solid var(--border)",
-                        fontFamily: SANS, fontSize: "0.64rem", fontWeight: 700, color: "var(--accent-gold)",
+                        fontFamily: SANS, fontSize: "0.7rem", fontWeight: 700, color: "var(--accent-gold)",
                       }}>
                       {allAnalysts ? "Show recent only" : `Show all ${analystData.analysts.length} ratings`}
                     </button>
@@ -1093,7 +1057,7 @@ function MarketstackResearchInner() {
           {fwd && (
             <>
               <SectionLabel right={
-                <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
+                <span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
                   projection · {fwd.confidence} confidence
                 </span>
               }>Forward Outlook — Projected</SectionLabel>
@@ -1129,15 +1093,17 @@ function MarketstackResearchInner() {
           {/* ── Ownership Breakdown ── */}
           <SectionLabel right={
             ownershipReady?.found ? (
-              <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
+              <span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
                 SEC Form 13F · {ownershipReady.quarter}
               </span>
             ) : undefined
-          }>Ownership Breakdown</SectionLabel>
+          } id="ownership">Ownership Breakdown</SectionLabel>
 
           {!ownershipReady ? (
-            <div style={{ ...CARD, padding: "18px 20px", opacity: 0.6 }}>
-              <div style={{ fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-muted)" }}>Loading 13F filings…</div>
+            <div style={{ ...CARD, padding: "16px 18px" }} role="status" aria-label="Loading institutional ownership">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className={`skeleton-bar skeleton-d${(i % 3) + 1}`} style={{ height: 14, width: `${88 - i * 9}%`, marginBottom: i < 3 ? 12 : 0 }} />
+              ))}
             </div>
           ) : !ownershipReady.found ? (
             <NASection reason={ownershipReady.reason ?? "No institutional positions reported for this security in the latest quarter."} />
@@ -1187,7 +1153,7 @@ function MarketstackResearchInner() {
                     <span style={{ fontFamily: MONO, fontSize: "0.76rem", whiteSpace: "nowrap" }}>
                       {compact(h.shares)}
                       {fun?.shares ? (
-                        <span style={{ color: "var(--text-muted)", fontSize: "0.68rem" }}>
+                        <span style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>
                           {" "}· {((h.shares / fun.shares) * 100).toFixed(2)}%
                         </span>
                       ) : null}
@@ -1196,7 +1162,7 @@ function MarketstackResearchInner() {
                 ))}
               </div>
 
-              <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 8, lineHeight: 1.6 }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 8, lineHeight: 1.6 }}>
                 Positions reported on Form 13F for the quarter ended {ownershipReady.quarter}, deduplicated by filer
                 and with options excluded. 13F covers institutional managers over $100M only — insider and retail
                 holdings aren&rsquo;t in this data, so this is not a full float breakdown.
@@ -1207,7 +1173,7 @@ function MarketstackResearchInner() {
           {/* ── ETF Ownership ── */}
           <SectionLabel right={
             etfHolders?.matches?.length ? (
-              <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
+              <span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>
                 found in {etfHolders.matches.length} of {etfHolders.scanned} funds scanned
               </span>
             ) : undefined
@@ -1241,7 +1207,7 @@ function MarketstackResearchInner() {
               <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.77rem" }}>
                   <thead>
-                    <tr style={{ color: "var(--text-secondary)", fontFamily: SANS, fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    <tr style={{ color: "var(--text-secondary)", fontFamily: SANS, fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                       <th style={{ textAlign: "left", padding: "9px 14px", fontWeight: 600 }}>ETF</th>
                       <th style={{ textAlign: "left", padding: "9px 10px", fontWeight: 600 }}>Fund</th>
                       <th style={{ textAlign: "right", padding: "9px 10px", fontWeight: 600 }}>Weight</th>
@@ -1260,7 +1226,7 @@ function MarketstackResearchInner() {
                         </td>
                         <td style={{ padding: "8px 10px", color: "var(--text-secondary)" }}>
                           {m.label}
-                          <span style={{ marginLeft: 8, fontSize: "0.6rem", color: "var(--text-muted)", border: "1px solid var(--border)", borderRadius: 999, padding: "1px 7px" }}>{m.category}</span>
+                          <span style={{ marginLeft: 8, fontSize: "0.6875rem", color: "var(--text-muted)", border: "1px solid var(--border)", borderRadius: 999, padding: "1px 7px" }}>{m.category}</span>
                         </td>
                         <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: MONO, fontWeight: 700, color: "var(--accent-gold)" }}>{m.weightPct.toFixed(2)}%</td>
                         <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: MONO, color: "var(--text-muted)" }}>{m.rank ? `#${m.rank}` : "—"}</td>
@@ -1278,7 +1244,7 @@ function MarketstackResearchInner() {
                   </tbody>
                 </table>
               </div>
-              <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 10 }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 10 }}>
                 Weights are as-of each fund&apos;s latest quarterly SEC N-PORT filing, matched on registrant name.
                 Only a curated set of major funds is scanned, so this is a representative sample, not every ETF holding {data.ticker}.
               </div>
@@ -1294,16 +1260,16 @@ function MarketstackResearchInner() {
               were always available from /api/insider and simply never wired. */}
           <SectionLabel right={
             insidersReady && insidersReady.trades.length > 0 ? (
-              <Link href={`/insider?ticker=${data.ticker}`} style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--accent-gold)", textDecoration: "none" }}>
-                full history →
+              <Link href={`/insider?ticker=${data.ticker}`} style={{ fontSize: "0.74rem", textTransform: "none", letterSpacing: 0, fontWeight: 600, color: "var(--accent-gold)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                Full history <Icon name="arrow-right" size={13} />
               </Link>
             ) : undefined
-          }>Insider Activity — Form 4</SectionLabel>
+          } id="insiders">Insider Activity — Form 4</SectionLabel>
 
           {!insidersReady ? (
             <div style={{ ...CARD, padding: "18px 20px", display: "flex", alignItems: "center", gap: 10 }}>
               <span className="spinner" style={{ width: 14, height: 14 }} />
-              <span style={{ fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-muted)" }}>Reading Form 4 filings…</span>
+              <span style={{ fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-muted)" }}>Reading Form 4 filings</span>
             </div>
           ) : insidersReady.trades.length === 0 ? (
             <div style={{ ...CARD, padding: "18px 20px", fontFamily: SANS, fontSize: "0.78rem", color: "var(--text-muted)" }}>
@@ -1313,7 +1279,7 @@ function MarketstackResearchInner() {
             <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
                 <thead>
-                  <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  <tr style={{ color: "var(--text-secondary)", fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                     <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Date</th>
                     <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Insider</th>
                     <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Role</th>
@@ -1341,14 +1307,14 @@ function MarketstackResearchInner() {
                   })}
                 </tbody>
               </table>
-              <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", padding: "8px 14px 4px", lineHeight: 1.5 }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", padding: "8px 14px 4px", lineHeight: 1.5 }}>
                 Parsed from the filer&rsquo;s own SEC Form 4 filings. A buy with no price is usually a grant or award, not an open-market purchase.
               </div>
             </div>
           )}
 
           {/* ── Dividends ── */}
-          <SectionLabel right={div?.count ? <span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>{div.count} records since {div.oldest}</span> : undefined}>
+          <SectionLabel right={div?.count ? <span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>{div.count} records since {div.oldest}</span> : undefined} id="dividends">
             Dividends
           </SectionLabel>
           {div?.count > 0 ? (
@@ -1368,7 +1334,7 @@ function MarketstackResearchInner() {
               <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", marginTop: 12, maxHeight: 300, overflowY: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem", fontFamily: MONO }}>
                   <thead>
-                    <tr style={{ color: "var(--text-secondary)", fontFamily: SANS, fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    <tr style={{ color: "var(--text-secondary)", fontFamily: SANS, fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                       <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Ex-Date</th>
                       <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Amount</th>
                       <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Paid</th>
@@ -1393,13 +1359,13 @@ function MarketstackResearchInner() {
           {/* ── SEC Filings ── */}
           {data.filings?.length > 0 && (
             <>
-              <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>SEC EDGAR</span>}>
+              <SectionLabel right={<span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>SEC EDGAR</span>} id="filings">
                 SEC Filings
               </SectionLabel>
               <div style={{ ...CARD, padding: "6px 0", overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
                   <thead>
-                    <tr style={{ color: "var(--text-secondary)", fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    <tr style={{ color: "var(--text-secondary)", fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                       <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Form</th>
                       <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600 }}>Description</th>
                       <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Filed</th>
@@ -1439,14 +1405,14 @@ function MarketstackResearchInner() {
           {/* ── About / Profile ── */}
           {prof?.about && (
             <>
-              <SectionLabel>About</SectionLabel>
+              <SectionLabel id="profile">About</SectionLabel>
               <div style={{ ...CARD, padding: "16px 20px", fontSize: "0.82rem", lineHeight: 1.65, color: "var(--text-secondary)" }}>
                 {prof.about}
-                <div style={{ marginTop: 12, fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.9 }}>
-                  {prof.employees != null && <div>👥 {Number(prof.employees).toLocaleString()} employees</div>}
-                  {prof.address && <div>🏢 {prof.address}</div>}
-                  {prof.website && <div>🔗 <a href={prof.website} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-gold)" }}>{prof.website}</a></div>}
-                </div>
+                <dl style={{ display: "grid", gridTemplateColumns: "max-content 1fr", gap: "6px 16px", margin: "14px 0 0", fontSize: "0.76rem" }}>
+                  {prof.employees != null && <><dt style={{ color: "var(--text-muted)" }}>Employees</dt><dd style={{ margin: 0, fontFamily: MONO, color: "var(--text-primary)" }}>{Number(prof.employees).toLocaleString()}</dd></>}
+                  {prof.address && <><dt style={{ color: "var(--text-muted)" }}>Headquarters</dt><dd style={{ margin: 0, color: "var(--text-primary)" }}>{prof.address}</dd></>}
+                  {prof.website && <><dt style={{ color: "var(--text-muted)" }}>Website</dt><dd style={{ margin: 0, minWidth: 0, overflowWrap: "anywhere" }}><a href={prof.website} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-gold)" }}>{String(prof.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a></dd></>}
+                </dl>
               </div>
             </>
           )}
@@ -1474,7 +1440,7 @@ function MarketstackResearchInner() {
           )}
 
           {/* ── Technical Analysis ── */}
-          <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>TradingView widget</span>}>
+          <SectionLabel right={<span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>TradingView widget</span>}>
             Technical Analysis
           </SectionLabel>
           <TradingViewWidget
@@ -1485,7 +1451,7 @@ function MarketstackResearchInner() {
           />
 
           {/* ── Recent News ── */}
-          <SectionLabel right={<span style={{ fontSize: "0.6rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>TradingView widget</span>}>
+          <SectionLabel right={<span style={{ fontSize: "0.6875rem", textTransform: "none", letterSpacing: 0, fontWeight: 400, color: "var(--text-muted)" }}>TradingView widget</span>} id="news">
             Recent News
           </SectionLabel>
           <TradingViewWidget
@@ -1495,12 +1461,12 @@ function MarketstackResearchInner() {
             config={{ feedMode: "symbol", symbol: tvSymbol(data.ticker, prof?.exchange), displayMode: "regular" }}
           />
 
-          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "2rem", lineHeight: 1.6 }}>
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "2rem", lineHeight: 1.6 }}>
             Fundamentals are computed from the company&apos;s own SEC filings (XBRL); prices, ratings and
             dividends from licensed market-data feeds; analyst consensus from published estimates. Nothing here
             is investment advice — see <Link href="/about" style={{ color: "var(--accent-gold)" }}>how the numbers are built</Link>.
           </div>
-        </>
+        </div>
       )}
     </div>
   );

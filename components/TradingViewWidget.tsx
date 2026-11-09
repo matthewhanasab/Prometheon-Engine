@@ -48,26 +48,33 @@ export default function TradingViewWidget({
     if (!host) return;
     host.innerHTML = "";
 
-    const isLight = document.documentElement.dataset.theme !== "dark";
-    const inner = document.createElement("div");
-    inner.className = "tradingview-widget-container__widget";
-    host.appendChild(inner);
+    // The embed script finds its own <script> tag when it runs and throws if
+    // that tag has already been removed. A widget torn down before its script
+    // arrives (a quick change of ticker or theme) hit exactly that, so the tag
+    // is only added once the widget has survived a moment on the page.
+    const timer = setTimeout(() => {
+      const isLight = document.documentElement.dataset.theme !== "dark";
+      const inner = document.createElement("div");
+      inner.className = "tradingview-widget-container__widget";
+      host.appendChild(inner);
 
-    const script = document.createElement("script");
-    script.src = `https://s3.tradingview.com/external-embedding/embed-widget-${widget}.js`;
-    script.async = true;
-    script.type = "text/javascript";
-    script.innerHTML = JSON.stringify({
-      colorTheme: isLight ? "light" : "dark",
-      isTransparent: true,
-      locale: "en",
-      width: "100%",
-      height: typeof height === "number" ? height : "100%",
-      ...config,
-    });
-    host.appendChild(script);
+      const script = document.createElement("script");
+      script.src = `https://s3.tradingview.com/external-embedding/embed-widget-${widget}.js`;
+      script.async = true;
+      script.type = "text/javascript";
+      script.innerHTML = JSON.stringify({
+        colorTheme: isLight ? "light" : "dark",
+        isTransparent: true,
+        locale: "en",
+        width: "100%",
+        height: typeof height === "number" ? height : "100%",
+        ...config,
+      });
+      host.appendChild(script);
+    }, 120);
 
-    return () => { host.innerHTML = ""; };
+    return () => { clearTimeout(timer); host.innerHTML = ""; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [widget, JSON.stringify(config), height, themeTick]);
 
   return (

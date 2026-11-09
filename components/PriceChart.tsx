@@ -1,5 +1,6 @@
 "use client";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import Icon from "@/components/Icon";
 
 interface PricePoint { date: string; price: number; }
 
@@ -31,12 +32,12 @@ function PriceTooltip({ active, payload, label, base, baseDate }: any) {
       background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)",
       borderRadius: 22, padding: "10px 14px", fontFamily: "'Spline Sans Mono', monospace",
     }}>
-      <div style={{ color: "var(--text-muted)", fontSize: 10, marginBottom: 5 }}>{longDate(String(label))}</div>
+      <div style={{ color: "var(--text-muted)", fontSize: 11, marginBottom: 5 }}>{longDate(String(label))}</div>
       <div style={{ color: "var(--text-primary)", fontSize: 13, fontWeight: 600 }}>{fmt(v)}</div>
       {pct != null && (
-        <div style={{ color: up ? "#22C55E" : "#EF4444", fontSize: 12, fontWeight: 600, marginTop: 5 }}>
-          {up ? "▲" : "▼"} {up ? "+" : ""}{pct.toFixed(2)}%
-          <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: 10, fontWeight: 400, color: "var(--text-muted)", marginLeft: 6 }}>
+        <div style={{ color: up ? "var(--positive)" : "var(--negative)", fontSize: 12, fontWeight: 600, marginTop: 5 }}>
+          {up ? "+" : ""}{pct.toFixed(2)}%
+          <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: 11, fontWeight: 400, color: "var(--text-muted)", marginLeft: 6 }}>
             since {longDate(baseDate)}
           </span>
         </div>
@@ -52,7 +53,7 @@ export default function PriceChart({ data, label }: { data: PricePoint[]; label?
   const chg    = data.length > 1 && first != null && last != null ? last - first : null;
   const chgPct = chg != null && first ? (chg / first) * 100 : null;
   const positive = chg == null ? true : chg >= 0;
-  const color = positive ? "#22C55E" : "#EF4444";
+  const color = positive ? "var(--positive)" : "var(--negative)";
 
   // Short windows need day-level labels; long ones would repeat the same month.
   const spanDays = data.length > 1
@@ -78,18 +79,19 @@ export default function PriceChart({ data, label }: { data: PricePoint[]; label?
       {chg != null && chgPct != null && (
         <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", padding: "0 6px 0.9rem" }}>
           <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.15rem", fontWeight: 600, color }}>
-            {positive ? "▲" : "▼"} {chgPct >= 0 ? "+" : ""}{chgPct.toFixed(2)}%
+            <Icon name={positive ? "tri-up" : "tri-down"} size={13} filled title={positive ? "Up" : "Down"} style={{ marginRight: 6 }} />
+            {chgPct >= 0 ? "+" : ""}{chgPct.toFixed(2)}%
           </span>
           <span style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "0.85rem", fontWeight: 500, color }}>
             {chg >= 0 ? "+" : "−"}{fmt(Math.abs(chg))}
           </span>
           {label && (
-            <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "2px 9px" }}>
+            <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "2px 9px" }}>
               {label}
             </span>
           )}
-          <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.66rem", color: "var(--text-muted)" }}>
-            {longDate(data[0].date)} → {longDate(data[data.length - 1].date)}
+          <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.7rem", color: "var(--text-muted)" }}>
+            {longDate(data[0].date)} to {longDate(data[data.length - 1].date)}
           </span>
         </div>
       )}
@@ -105,7 +107,7 @@ export default function PriceChart({ data, label }: { data: PricePoint[]; label?
           <XAxis
             dataKey="date"
             tickFormatter={(v) => asLocal(v).toLocaleString("en-US", tickOpts)}
-            tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }}
+            tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
             interval={tickInterval}
@@ -113,7 +115,7 @@ export default function PriceChart({ data, label }: { data: PricePoint[]; label?
           <YAxis
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v}`}
-            tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "Spline Sans Mono" }}
+            tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }}
             axisLine={false}
             tickLine={false}
             width={60}

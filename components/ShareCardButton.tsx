@@ -268,7 +268,7 @@ export default function ShareCardButton(props: Props) {
 
   const done = state === "copied" || state === "saved";
   const busy = state === "busy";
-  const tip = busy ? "Rendering…" : state === "copied" ? "Copied ✓" : state === "saved" ? (prefersNativeShare() ? "Saved ✓" : "Downloaded ✓") : "Copy or save a share-ready image of this stock";
+  const tip = busy ? "Rendering…" : state === "copied" ? "Copied" : state === "saved" ? (prefersNativeShare() ? "Saved" : "Downloaded") : "Copy or save a share-ready image of this stock";
   const saveLabel = prefersNativeShare() ? "Save to Photos" : "Download";
 
   return (

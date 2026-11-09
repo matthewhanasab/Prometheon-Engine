@@ -2,6 +2,9 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
+import Icon from "@/components/Icon";
+import { ErrorNote } from "@/components/States";
 import {
   ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend,
 } from "recharts";
@@ -15,16 +18,14 @@ import CompanyLogo from "@/components/CompanyLogo";
 // five ticker slots, overview cards, performance race, category scorecard and
 // starred metric table. Metrics that need analyst estimates carry an explicit
 // "Not available with current data" marker instead of being silently dropped.
-// Literal, not themed: --accent-gold resolves to a blue (#3b6eeb light /
-// #6B9CFF dark) despite the name, so using it here made ticker 2's line
-// indistinguishable from ticker 1's on the performance race.
-const COLORS = ["#3B82F6", "#F59E0B", "#22C55E", "#A78BFA", "#EF4444"];
+// One fixed colour per ticker slot, from the site's chart series (see
+// globals.css). Green and red are not in the set: here they mean up and down.
+const COLORS = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)", "var(--series-5)"];
 const MAX_TICKERS = 5;
 // Shown when no ?t= is given, so /compare opens on a worked example.
 const DEFAULT_TICKERS = "AAPL,MSFT,GOOGL";
 const SANS = "'Public Sans', sans-serif";
 const MONO = "'Spline Sans Mono', monospace";
-const SERIF = "'Space Grotesk', Georgia, serif";
 
 const NA = Symbol("not-available-on-marketstack");
 
@@ -63,7 +64,7 @@ const ACCENTS = {
   valuation: "var(--accent-gold)",
   eps: "#F59E0B",
   revenue: "#3B82F6",
-  margins: "#22C55E",
+  margins: "var(--positive)",
   other: "#A78BFA",
 };
 
@@ -73,7 +74,7 @@ const ACCENTS = {
 // the norms by heart. Rows needing analyst estimates carry key: null.
 const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] }[] }[] = [
   {
-    title: "MANDATORY METRICS",
+    title: "Key metrics",
     groups: [
       {
         accent: ACCENTS.valuation,
@@ -117,7 +118,7 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
     ],
   },
   {
-    title: "ADVANCED METRICS",
+    title: "Advanced metrics",
     groups: [
       {
         accent: ACCENTS.eps,
@@ -152,7 +153,7 @@ const SECTIONS: { title: string; groups: { accent: string; metrics: MetricDef[] 
     ],
   },
   {
-    title: "QUALITY, RISK & RETURNS",
+    title: "Quality, risk and returns",
     groups: [
       {
         accent: ACCENTS.margins,
@@ -242,17 +243,28 @@ function normalize(j: any) {
   };
 }
 
-function TickerInput({ value, onChange, placeholder, required }: {
-  value: string; onChange: (v: string) => void; placeholder: string; required?: boolean;
+function TickerInput({ value, onChange, placeholder, required, label, color }: {
+  value: string; onChange: (v: string) => void; placeholder: string; required?: boolean; label: string; color: string;
 }) {
   return (
-    <input value={value} onChange={(e) => onChange(e.target.value.toUpperCase())} placeholder={placeholder} required={required}
-      style={{
-        width: 100, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22,
-        padding: "9px 12px", color: "var(--text-primary)", fontFamily: MONO,
-        fontSize: "0.82rem", outline: "none", textTransform: "uppercase",
-      }} />
+    <span style={{ position: "relative", display: "inline-flex" }}>
+      {/* The slot's chart colour, so a field and its line are visibly the same company. */}
+      <span aria-hidden style={{ position: "absolute", left: 14, top: "50%", width: 8, height: 8, marginTop: -4, borderRadius: 999, background: value ? color : "var(--border)" }} />
+      <input value={value} onChange={(e) => onChange(e.target.value.toUpperCase())} placeholder={placeholder} required={required}
+        aria-label={label} autoComplete="off" autoCorrect="off" autoCapitalize="characters" spellCheck={false}
+        style={{
+          width: 124, height: 42, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22,
+          paddingLeft: "2rem", color: "var(--text-primary)", fontFamily: MONO,
+          fontSize: "0.85rem", outline: "none", textTransform: "uppercase",
+        }} />
+    </span>
   );
+}
+
+/** A company's chart colour beside its ticker. The ticker itself stays in
+ *  text ink: coloured text loses contrast, a coloured mark does not. */
+function Swatch({ color }: { color: string }) {
+  return <span aria-hidden style={{ display: "inline-block", width: 9, height: 9, borderRadius: 999, background: color, flexShrink: 0 }} />;
 }
 
 function OverviewCard({ stock, color }: { stock: any; color: string }) {
@@ -260,17 +272,18 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
   return (
     <div style={{
       flex: 1, minWidth: 180, background: "var(--bg-surface)", border: "1px solid var(--border)",
-      borderTop: `3px solid ${color}`, borderRadius: 22, padding: "14px 16px",
+      borderRadius: 22, padding: "14px 16px",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <CompanyLogo ticker={stock.ticker} size={28} />
-        <Link href={`/research?ticker=${stock.ticker}`} title={`Research ${stock.ticker}`} style={{
-          fontFamily: MONO, fontSize: "0.72rem", fontWeight: 700,
-          background: `${color}22`, color, border: `1px solid ${color}55`,
-          borderRadius: 24, padding: "2px 7px", textDecoration: "none",
-        }}>{stock.ticker}</Link>
+        <Link href={`/research?ticker=${stock.ticker}`} title={`Research ${stock.ticker}`} className="tap" style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          fontFamily: MONO, fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)",
+          background: "var(--bg-elevated)", border: "1px solid var(--border)",
+          borderRadius: 24, padding: "2px 9px", textDecoration: "none",
+        }}><Swatch color={color} />{stock.ticker}</Link>
         {stock.sector && (
-          <span style={{ fontFamily: SANS, fontSize: "0.60rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stock.sector}</span>
+          <span style={{ fontFamily: SANS, fontSize: "0.6875rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stock.sector}</span>
         )}
       </div>
       <div style={{ fontFamily: SANS, fontSize: "0.82rem", fontWeight: 500, marginBottom: 8, lineHeight: 1.3 }}>{stock.name}</div>
@@ -278,7 +291,7 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
       <div style={{ fontFamily: MONO, fontSize: "0.78rem", marginBottom: 8, color: chg == null ? "var(--text-secondary)" : chg >= 0 ? "var(--positive)" : "var(--negative)" }}>
         {chg != null ? `${chg >= 0 ? "+" : "-"}${Math.abs(chg).toFixed(2)}%` : "N/A"}
       </div>
-      <div style={{ fontFamily: SANS, fontSize: "0.68rem", color: "var(--text-secondary)" }}>
+      <div style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-secondary)" }}>
         Mkt Cap: {fmtLarge(stock.mktCap)}
       </div>
     </div>
@@ -288,7 +301,7 @@ function OverviewCard({ stock, color }: { stock: any; color: string }) {
 function EmptyHint({ title, desc }: { title: string; desc: string }) {
   return (
     <div style={{ background: "var(--bg-surface)", border: "1px dashed var(--border)", borderRadius: 22, padding: "16px 18px", marginBottom: 12, opacity: 0.7 }}>
-      <div style={{ fontFamily: SANS, fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 5 }}>{title}</div>
+      <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 5 }}>{title}</div>
       <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{desc}</div>
     </div>
   );
@@ -333,6 +346,8 @@ function CompareInner() {
         })
       );
       setStocks(out);
+      // The comparison on screen is now an address that can be shared.
+      window.history.replaceState(null, "", `/compare?t=${want.join(",")}`);
 
       // Analyst consensus lives on its own route because it's the slowest pair
       // of calls in the stack. Fetching it after the table has rendered keeps
@@ -438,10 +453,10 @@ function CompareInner() {
   // Scorecard bands, named for what they actually measure rather than the
   // table's section headings.
   const SCORE_BANDS: { title: string; pick: (m: MetricDef) => boolean }[] = [
-    { title: "VALUATION", pick: (m) => /P\/E|P\/S|PEG|Price to Book|Price to Free/i.test(m.label) },
-    { title: "GROWTH", pick: (m) => /Growth/i.test(m.label) },
-    { title: "PROFITABILITY", pick: (m) => /Margin|Return on Equity|Free Cash Flow Yield/i.test(m.label) },
-    { title: "HEALTH", pick: (m) => /Debt|Current Ratio|Cash Flow$|F-Score|Z-Score/i.test(m.label) },
+    { title: "Valuation", pick: (m) => /P\/E|P\/S|PEG|Price to Book|Price to Free/i.test(m.label) },
+    { title: "Growth", pick: (m) => /Growth/i.test(m.label) },
+    { title: "Profitability", pick: (m) => /Margin|Return on Equity|Free Cash Flow Yield/i.test(m.label) },
+    { title: "Health", pick: (m) => /Debt|Current Ratio|Cash Flow$|F-Score|Z-Score/i.test(m.label) },
   ];
   const scorecard = SCORE_BANDS.map((band) => {
     const scored = ALL_METRICS.filter((m) => m.key && band.pick(m));
@@ -453,36 +468,39 @@ function CompareInner() {
   });
 
   return (
-    <div style={{ paddingBottom: "4rem", fontFamily: SANS, color: "var(--text-primary)" }}>
-      
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.4rem" }}>
-        Compare Stocks
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right,var(--accent-gold),transparent)", opacity: 0.4, maxWidth: 200, marginBottom: "1.5rem" }} />
-      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
-        Side-by-side valuation · growth · profitability · health
-      </div>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+      <PageHeader title="Compare Stocks"
+        subtitle="Two to five companies side by side: price, a performance race, and every valuation, growth, profitability and balance-sheet metric." />
 
       <form onSubmit={(e) => { e.preventDefault(); run(tickers); }}
         style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, marginBottom: "2rem" }}>
         {Array.from({ length: MAX_TICKERS }, (_, i) => (
-          <TickerInput key={i} value={tickers[i] ?? ""} onChange={(v) => setTicker(i, v)}
-            placeholder={i === 0 ? "AAPL" : i === 1 ? "MSFT" : `Ticker ${i + 1}`} required={i < 2} />
+          <TickerInput key={i} value={tickers[i] ?? ""} onChange={(v) => setTicker(i, v)} color={COLORS[i]}
+            label={`Ticker ${i + 1}${i < 2 ? "" : " (optional)"}`}
+            placeholder={i === 0 ? "AAPL" : i === 1 ? "MSFT" : "Add"} required={i < 2} />
         ))}
-        <button type="submit" style={{
+        <button type="submit" disabled={loading} aria-busy={loading} style={{
+          display: "inline-flex", alignItems: "center", gap: 8, height: 42,
           background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 22,
-          padding: "9px 22px", fontFamily: SANS, fontSize: "0.72rem", fontWeight: 700,
-          textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer",
-        }}>Compare</button>
-        {loading && <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading…</span>}
+          padding: "0 1.25rem", fontFamily: SANS, fontSize: "0.8rem", fontWeight: 700,
+          cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1,
+        }}>
+          {loading && <span className="spinner" style={{ width: 13, height: 13, borderColor: "color-mix(in srgb, var(--on-accent) 30%, transparent)", borderTopColor: "var(--on-accent)" }} />}
+          Compare
+        </button>
       </form>
-      {error && <div style={{ color: "var(--negative)", fontSize: "0.82rem", marginBottom: 16 }}>{error}</div>}
+      {error && (
+        <ErrorNote title="That comparison didn't load"
+          message={/at least two/i.test(error) ? "Enter at least two tickers to compare." : `${error.replace(/\.$/, "")}. Check the symbols and try again.`}
+          onRetry={/at least two/i.test(error) ? undefined : () => run(tickers)}
+          style={{ marginBottom: 16 }} />
+      )}
 
       {/* A "Loading…" beside the button left the whole page blank while several
           tickers were fetched, which reads as nothing happening. The sections
           that are coming are shown instead, animated so the wait is legible as
           work rather than as an empty page. */}
-      {loading && (
+      {loading && stocks.length === 0 && (
         <>
           <div style={{
             background: "var(--bg-surface)", border: "1px solid var(--border-active)",
@@ -503,7 +521,7 @@ function CompareInner() {
 
           {["Side-by-Side Overview", "1-Year Performance Race", "Category Scorecard", "Metric Comparison Table"].map((t, i) => (
             <div key={t} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "16px 18px", marginBottom: 12 }}>
-              <div style={{ fontFamily: SANS, fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 9 }}>
+              <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 9 }}>
                 {t}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -526,7 +544,7 @@ function CompareInner() {
       )}
 
       {stocks.length >= 2 && (
-        <>
+        <div className={loading ? "is-stale" : undefined} aria-busy={loading}>
           {/* Overview row */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: "2rem" }}>
             {stocks.map((s, i) => <OverviewCard key={s.ticker} stock={s} color={COLORS[i]} />)}
@@ -536,7 +554,7 @@ function CompareInner() {
           {(perfData.length > 10 || chartMode === "tv") && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "20px 16px", marginBottom: "2rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
-                <div style={{ fontSize: "0.60rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>
+                <div style={{ fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>
                   Performance — % Return
                 </div>
                 <div style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -576,16 +594,16 @@ function CompareInner() {
             {scorecard.map((card) => (
               <div key={card.title} style={{
                 background: "var(--bg-surface)", border: "1px solid var(--border)",
-                borderTop: `2px solid ${card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--border)"}`,
                 borderRadius: 22, padding: "14px 16px",
               }}>
-                <div style={{ fontSize: "0.56rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 6 }}>
-                  {card.title} WINNER
+                <div style={{ fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginBottom: 6 }}>
+                  {card.title} winner
                 </div>
-                <div style={{ fontFamily: MONO, fontSize: "1.3rem", fontWeight: 700, color: card.winnerIdx >= 0 ? COLORS[card.winnerIdx] : "var(--text-secondary)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 9, fontFamily: MONO, fontSize: "1.3rem", fontWeight: 700, color: card.winnerIdx >= 0 ? "var(--text-primary)" : "var(--text-secondary)" }}>
+                  {card.winnerIdx >= 0 && <Swatch color={COLORS[card.winnerIdx]} />}
                   {card.winnerIdx >= 0 ? stocks[card.winnerIdx].ticker : "Tie"}
                 </div>
-                <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 3 }}>
+                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 3 }}>
                   {card.winnerIdx >= 0 ? `Wins ${card.wins[card.winnerIdx]} of ${card.total} metrics` : `Even split across ${card.total} metrics`}
                 </div>
               </div>
@@ -597,13 +615,13 @@ function CompareInner() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: MONO, fontSize: "0.80rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-primary)" }}>
-                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 140 }}>Metric</th>
+                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 140 }}>Metric</th>
                   {stocks.map((s, i) => (
-                    <th key={s.ticker} style={{ textAlign: "right", padding: "9px 14px", fontFamily: MONO, fontSize: "0.78rem", fontWeight: 700, color: COLORS[i], borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
-                      {s.ticker}
+                    <th key={s.ticker} scope="col" style={{ textAlign: "right", padding: "9px 14px", fontFamily: MONO, fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}><Swatch color={COLORS[i]} />{s.ticker}</span>
                     </th>
                   ))}
-                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 150 }}>
+                  <th style={{ textAlign: "left", padding: "9px 14px", fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", minWidth: 150 }}>
                     Typical Range
                   </th>
                 </tr>
@@ -612,7 +630,7 @@ function CompareInner() {
                 {SECTIONS.map((section) => (
                   <React.Fragment key={section.title}>
                     <tr style={{ background: "var(--bg-elevated)" }}>
-                      <td colSpan={stocks.length + 2} style={{ padding: "6px 14px", fontFamily: SANS, fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--text-secondary)" }}>
+                      <td colSpan={stocks.length + 2} style={{ padding: "8px 14px", fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)" }}>
                         {section.title}
                       </td>
                     </tr>
@@ -632,7 +650,6 @@ function CompareInner() {
                               <td style={{
                                 padding: "8px 14px", fontFamily: SANS, fontSize: "0.76rem",
                                 borderBottom: "1px solid var(--border)",
-                                borderLeft: `3px solid ${group.accent}`,
                                 color: unavailable ? "var(--text-muted)" : "var(--text-primary)",
                               }}>
                                 {metric.label}
@@ -640,7 +657,7 @@ function CompareInner() {
                                   <span
                                     title="Published analyst consensus, aggregated across covering analysts — not a projection."
                                     style={{
-                                      marginLeft: 7, fontFamily: MONO, fontSize: "0.6rem", fontWeight: 700,
+                                      marginLeft: 7, fontFamily: MONO, fontSize: "0.6875rem", fontWeight: 700,
                                       color: "var(--accent-gold)", border: "1px solid var(--border-active)",
                                       borderRadius: 999, padding: "1px 6px", cursor: "help", whiteSpace: "nowrap",
                                     }}
@@ -650,7 +667,7 @@ function CompareInner() {
                                   <span
                                     title="Projected from SEC-filed results by Prometheon's trend model — not analyst consensus."
                                     style={{
-                                      marginLeft: 7, fontFamily: MONO, fontSize: "0.6rem", fontWeight: 700,
+                                      marginLeft: 7, fontFamily: MONO, fontSize: "0.6875rem", fontWeight: 700,
                                       color: "var(--text-muted)", border: "1px solid var(--border)",
                                       borderRadius: 999, padding: "1px 6px", cursor: "help", whiteSpace: "nowrap",
                                     }}
@@ -659,7 +676,7 @@ function CompareInner() {
                               </td>
                               {unavailable ? (
                                 <td colSpan={stocks.length} style={{ textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)" }}>
-                                  <span style={{ fontFamily: SANS, fontSize: "0.68rem", fontWeight: 600, color: "var(--accent-gold)" }}>
+                                  <span style={{ fontFamily: SANS, fontSize: "0.72rem", fontWeight: 600, color: "var(--accent-gold)" }}>
                                     Not available with current data
                                   </span>
                                 </td>
@@ -670,7 +687,7 @@ function CompareInner() {
                                   return (
                                     <td key={s.ticker} style={{ textAlign: "right", padding: "8px 14px", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>
                                       <span style={{ color: isBest ? "var(--positive)" : "var(--text-secondary)", fontWeight: isBest ? 600 : undefined }}>
-                                        {isBest && <span style={{ color: "var(--accent-gold)", marginRight: 4 }}>★</span>}
+                                        {isBest && <Icon name="star" size={11} filled title="Best in row" style={{ color: "var(--accent-gold)", marginRight: 5, verticalAlign: "-0.05em" }} />}
                                         {metric.fmt(val)}
                                       </span>
                                     </td>
@@ -679,8 +696,7 @@ function CompareInner() {
                               )}
                               <td style={{
                                 padding: "8px 14px", borderBottom: "1px solid var(--border)",
-                                fontFamily: SANS, fontSize: "0.63rem", fontWeight: 500,
-                                textTransform: "uppercase", letterSpacing: "0.07em",
+                                fontFamily: SANS, fontSize: "0.74rem",
                                 color: "var(--text-muted)", whiteSpace: "nowrap",
                               }}>
                                 {metric.bench ? `Many stocks: ${metric.bench}` : ""}
@@ -696,12 +712,12 @@ function CompareInner() {
             </table>
           </div>
 
-          <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
             Fundamentals from each company&apos;s SEC filings; prices from licensed market data. Rows marked
             <em> consensus</em> are published analyst estimates; rows marked <em>model</em> are projected from the
             filed trend and should be read as estimates, not forecasts.
           </div>
-        </>
+        </div>
       )}
     </div>
   );

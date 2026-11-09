@@ -1,8 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useState, useCallback, Suspense } from "react";
 import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
+import TickerInput from "@/components/TickerInput";
+import Icon from "@/components/Icon";
+import { ErrorNote, SkeletonTable } from "@/components/States";
+import { useUrlTicker } from "@/lib/useUrlTicker";
+import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
@@ -31,7 +36,7 @@ const CARD: React.CSSProperties = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
 };
 const LABEL: React.CSSProperties = {
-  fontSize: "0.58rem", textTransform: "uppercase", letterSpacing: "0.14em",
+  fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.14em",
   color: "var(--text-secondary)",
 };
 
@@ -72,19 +77,19 @@ function PayoffChart({ c, spot }: { c: Contract; spot: number | null }) {
           <CartesianGrid stroke="var(--border)" strokeDasharray="2 4" vertical={false} />
           <XAxis dataKey="px" type="number" domain={[lo, hi]}
             tickFormatter={(v: any) => `$${Math.round(v)}`}
-            tick={{ fontFamily: MONO, fontSize: 9, fill: "var(--text-muted)" }} />
+            tick={{ fontFamily: MONO, fontSize: 11, fill: "var(--text-muted)" }} />
           <YAxis tickFormatter={(v: any) => (v === 0 ? "0" : `$${Math.round(v)}`)}
-            tick={{ fontFamily: MONO, fontSize: 9, fill: "var(--text-muted)" }} width={52} />
+            tick={{ fontFamily: MONO, fontSize: 11, fill: "var(--text-muted)" }} width={52} />
           <Tooltip
             contentStyle={{ background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 12, fontFamily: MONO, fontSize: "0.7rem" }}
             formatter={(v: any) => [`$${Number(v).toFixed(0)}`, "P/L per contract"]}
             labelFormatter={(v: any) => `Underlying $${Number(v).toFixed(2)}`} />
           <ReferenceLine y={0} stroke="var(--text-muted)" strokeWidth={1} />
           <ReferenceLine x={breakeven} stroke="var(--accent-gold)" strokeDasharray="4 3"
-            label={{ value: "B/E", position: "top", fill: "var(--accent-gold)", fontSize: 9, fontFamily: MONO }} />
+            label={{ value: "B/E", position: "top", fill: "var(--accent-gold)", fontSize: 11, fontFamily: MONO }} />
           {spot != null && (
             <ReferenceLine x={spot} stroke="var(--text-secondary)" strokeDasharray="2 3"
-              label={{ value: "Spot", position: "top", fill: "var(--text-secondary)", fontSize: 9, fontFamily: MONO }} />
+              label={{ value: "Spot", position: "top", fill: "var(--text-secondary)", fontSize: 11, fontFamily: MONO }} />
           )}
           <Line type="monotone" dataKey="pl" stroke="var(--accent-gold)" strokeWidth={2} dot={false} />
         </LineChart>
@@ -99,7 +104,7 @@ function Row({ k, v, hint }: { k: string; v: string; hint?: string }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
       <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
-        {k}{hint && <span style={{ color: "var(--text-muted)", fontSize: "0.64rem" }}> · {hint}</span>}
+        {k}{hint && <span style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}> · {hint}</span>}
       </span>
       <span style={{ fontFamily: MONO, fontSize: "0.8rem" }}>{v}</span>
     </div>
@@ -119,18 +124,19 @@ function Detail({ c, spot, onClose }: { c: Contract; spot: number | null; onClos
           <div style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 500 }}>
             {c.side === "call" ? "Call" : "Put"} · ${c.strike} · {fmtExpiry(c.expiry)}
           </div>
-          <div style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 3 }}>
+          <div style={{ fontFamily: MONO, fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 3 }}>
             {c.symbol} · {daysTo(c.expiry)}d to expiry
             {itm != null && (
               <span style={{ color: itm ? "var(--positive)" : "var(--text-muted)" }}> · {itm ? "in the money" : "out of the money"}</span>
             )}
           </div>
         </div>
-        <button onClick={onClose} style={{
+        <button type="button" onClick={onClose} style={{
+          display: "inline-flex", alignItems: "center", gap: 7,
           background: "var(--accent-gold)", border: "none", color: "var(--on-accent)",
-          borderRadius: 999, padding: "8px 18px", fontSize: "0.72rem", fontWeight: 700,
+          borderRadius: 999, padding: "9px 18px", fontSize: "0.78rem", fontWeight: 700,
           cursor: "pointer", fontFamily: SANS, whiteSpace: "nowrap",
-        }}>← Back to chain</button>
+        }}><Icon name="arrow-left" size={14} strokeWidth={2.2} /> Back to chain</button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 20 }}>
@@ -168,7 +174,7 @@ function Detail({ c, spot, onClose }: { c: Contract; spot: number | null; onClos
         Profit / loss at expiry — one contract (100 shares)
       </div>
       <PayoffChart c={c} spot={spot} />
-      <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
+      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
         Payoff is computed from the strike and the current mid — it&rsquo;s what this contract is worth at
         expiry for a given underlying price, not a prediction. The feed publishes a snapshot with no
         per-contract history, so there is no price series to chart.
@@ -216,7 +222,7 @@ function ChainTable({
   const thBand: React.CSSProperties = {
     ...LABEL, padding: "6px 8px", height: BAND_H, whiteSpace: "nowrap",
     position: "sticky", top: 0, zIndex: 2, background: "var(--bg-primary)",
-    fontSize: "0.62rem", fontWeight: 700,
+    fontSize: "0.6875rem", fontWeight: 700,
   };
   const th: React.CSSProperties = {
     ...LABEL, padding: "7px 8px", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap",
@@ -247,11 +253,11 @@ function ChainTable({
           <thead>
             <tr>
               <th colSpan={5} style={{ ...thBand, ...callEdge, textAlign: "center", color: "var(--positive)" }}>
-                ▲ Calls — right to buy
+                Calls: the right to buy
               </th>
               <th style={{ ...thBand, textAlign: "center", color: "var(--text-secondary)" }}>Strike</th>
               <th colSpan={5} style={{ ...thBand, ...putEdge, textAlign: "center", color: "var(--negative)" }}>
-                ▼ Puts — right to sell
+                Puts: the right to sell
               </th>
             </tr>
             <tr>
@@ -303,82 +309,42 @@ function ChainTable({
 }
 
 function OptionsChainInner() {
-  const search = useSearchParams();
-  const initial = (search.get("ticker") ?? DEFAULT_TICKER).toUpperCase();
-  const [input, setInput] = useState(initial);
-  const [chain, setChain] = useState<Chain | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [picked, setPicked] = useState<Contract | null>(null);
+  const [ticker, setTicker] = useUrlTicker(DEFAULT_TICKER);
+  // The chosen expiry belongs to one ticker; a new ticker starts at its nearest expiry.
+  const [chosen, setChosen] = useState<{ ticker: string; expiry: string } | null>(null);
+  const expiry = chosen && chosen.ticker === ticker ? chosen.expiry : null;
+  const { data: chain, loading, stale, error, retry } = useTickerData<Chain>(
+    ticker, (t) => `/api/options-chain/${t}${expiry ? `?expiry=${encodeURIComponent(expiry)}` : ""}`);
+  const [pickedRaw, setPicked] = useState<Contract | null>(null);
+  // A contract stays open only while the chain it came from is the one on screen.
+  const picked = pickedRaw && chain && (chain.calls.includes(pickedRaw) || chain.puts.includes(pickedRaw)) ? pickedRaw : null;
   // The chain is scrolled when a row is clicked, so the detail would otherwise
   // open below the fold on the view it replaces.
   const pick = useCallback((c: Contract) => {
     setPicked(c);
-    document.querySelector(".main-content")?.scrollTo({ top: 0 });
     window.scrollTo({ top: 0 });
   }, []);
-  const booted = React.useRef(false);
-
-  const load = useCallback(async (ticker: string, expiry?: string) => {
-    setLoading(true); setError(null);
-    try {
-      const qs = expiry ? `?expiry=${encodeURIComponent(expiry)}` : "";
-      const res = await fetch(`/api/options-chain/${ticker.toUpperCase()}${qs}`);
-      const j = await res.json();
-      if (!res.ok || j.error) throw new Error(j.error ?? "Request failed");
-      setChain(j);
-      setPicked(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load"); setChain(null);
-    } finally { setLoading(false); }
-  }, []);
-
-  // The guard is set when the timer FIRES, not when the effect runs. Setting it
-  // up front meant StrictMode's mount/cleanup/mount cancelled the scheduled load
-  // on the first pass and skipped it on the second, so the chain never loaded in
-  // development while production (single mount) looked fine.
-  useEffect(() => {
-    if (booted.current) return;
-    const id = setTimeout(() => { booted.current = true; load(initial); }, 0);
-    return () => clearTimeout(id);
-  }, [initial, load]);
 
   return (
-    <div style={{ fontFamily: SANS, color: "var(--text-primary)", paddingBottom: "3rem" }}>
-      <h1 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "0.35rem" }}>
-        Options Chain
-      </h1>
-      <div style={{ height: 1, background: "linear-gradient(to right, var(--accent-gold), transparent)", opacity: 0.45, maxWidth: 200, marginBottom: "0.9rem" }} />
-      <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginBottom: "1.4rem" }}>
-        Live quotes, implied volatility and greeks for every listed contract — click any row for detail
-      </div>
+    <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
+      <PageHeader title="Options Chain"
+        subtitle="Quotes, implied volatility and Greeks for every listed contract. Select a row for the detail.">
+        <TickerInput value={ticker} onSubmit={setTicker} loading={loading} action="Load chain" />
+      </PageHeader>
 
-      <form onSubmit={(e) => { e.preventDefault(); load(input); }}
-        style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: "1.3rem" }}>
-        <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} placeholder="Ticker"
-          style={{
-            width: 130, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999,
-            padding: "8px 14px", color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.8rem", outline: "none",
-          }} />
-        <button type="submit" style={{
-          background: "var(--accent-gold)", color: "var(--on-accent)", border: "none", borderRadius: 999,
-          padding: "9px 22px", fontFamily: SANS, fontSize: "0.72rem", fontWeight: 700, cursor: "pointer",
-        }}>Load chain</button>
-        {loading && <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>Loading…</span>}
-        {chain?.spot != null && !loading && (
-          <span style={{ fontFamily: MONO, fontSize: "0.85rem" }}>
-            {chain.ticker} <span style={{ color: "var(--accent-gold)" }}>{money(chain.spot)}</span>
-            <span style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}> · {int(chain.totalContracts)} contracts</span>
-          </span>
-        )}
-      </form>
-
-      {error && (
-        <div style={{ ...CARD, padding: "1rem 1.2rem", fontSize: "0.8rem", color: "var(--negative)" }}>{error}</div>
+      {chain?.spot != null && (
+        <div style={{ fontFamily: MONO, fontSize: "0.9rem", marginBottom: "1.2rem" }}>
+          <span style={{ fontWeight: 600 }}>{chain.ticker}</span>{" "}
+          <span style={{ color: "var(--accent-gold)" }}>{money(chain.spot)}</span>
+          <span style={{ color: "var(--text-muted)", fontSize: "0.76rem" }}> · {int(chain.totalContracts)} contracts</span>
+        </div>
       )}
 
+      {error && <ErrorNote title={`${ticker} didn't load`} message={lookupErrorText(error)} onRetry={retry} />}
+      {loading && !chain && <SkeletonTable rows={12} />}
+
       {chain && (
-        <>
+        <div className={stale ? "is-stale" : undefined} aria-busy={stale}>
           {picked ? (
             <Detail c={picked} spot={chain.spot} onClose={() => setPicked(null)} />
           ) : (
@@ -388,11 +354,11 @@ function OptionsChainInner() {
           </div>
           <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: "1.4rem" }}>
             {chain.expiries.map((e) => (
-              <button key={e} onClick={() => load(chain.ticker, e)} style={{
+              <button key={e} type="button" aria-pressed={e === chain.expiry} onClick={() => setChosen({ ticker: chain.ticker, expiry: e })} style={{
                 background: e === chain.expiry ? "var(--accent-gold)" : "var(--bg-elevated)",
                 color: e === chain.expiry ? "var(--on-accent)" : "var(--text-secondary)",
-                border: "1px solid var(--border)", borderRadius: 999, padding: "0.3rem 0.75rem",
-                fontFamily: MONO, fontSize: "0.72rem", cursor: "pointer", whiteSpace: "nowrap",
+                border: "1px solid var(--border)", borderRadius: 999, padding: "0.36rem 0.8rem",
+                fontFamily: MONO, fontSize: "0.74rem", cursor: "pointer", whiteSpace: "nowrap",
               }}>
                 {fmtExpiry(e)} <span style={{ opacity: 0.65 }}>{daysTo(e)}d</span>
               </button>
@@ -409,9 +375,9 @@ function OptionsChainInner() {
             {chain.asOf && <> — newest print in this file is {chain.asOf.replace("T", " ").slice(0, 16)}</>}.
             Delta, gamma, theta, vega, rho and implied volatility come from the exchange rather than being
             modelled here, unlike the Black-Scholes figures on{" "}
-            <Link href="/covered-calls" style={{ color: "var(--accent-gold)", textDecoration: "none" }}>Covered Calls</Link>.
+            <Link href="/covered-calls" style={{ color: "var(--accent-gold)" }}>Covered Calls</Link>.
           </div>
-        </>
+        </div>
       )}
     </div>
   );
@@ -419,7 +385,7 @@ function OptionsChainInner() {
 
 export default function OptionsChainPage() {
   return (
-    <Suspense fallback={<div style={{ fontFamily: SANS, fontSize: "0.8rem", color: "var(--text-secondary)" }}>Loading…</div>}>
+    <Suspense fallback={null}>
       <OptionsChainInner />
     </Suspense>
   );

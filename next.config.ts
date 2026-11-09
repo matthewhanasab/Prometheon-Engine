@@ -37,6 +37,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    // Local development without data keys: start the dev server with
+    // DEV_API_ORIGIN set to the live site and every /api call is answered from
+    // there, so pages render with real data. Never active in a production build.
+    const origin = process.env.NODE_ENV !== "production" ? process.env.DEV_API_ORIGIN : undefined;
+    if (!origin) return [];
+    return {
+      beforeFiles: [{ source: "/api/:path*", destination: `${origin}/api/:path*` }],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async redirects() {
     // The old dual-edition URLs — the mirror became the site.
     return [

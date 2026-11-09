@@ -59,7 +59,7 @@ export default function MarketStrip({ showBonds = true }: { showBonds?: boolean 
               background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22,
               borderTop: `2px solid ${tone(ix.pctDay)}`, padding: "12px 14px", minWidth: 0,
             }}>
-              <div style={{ fontFamily: SANS, fontSize: "0.56rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>
+              <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>
                 {ix.label}
               </div>
               <div style={{ fontFamily: SERIF, fontSize: "1.25rem", fontWeight: 500, letterSpacing: "-0.02em", marginTop: 4, color: "var(--text-primary)" }}>
@@ -68,7 +68,7 @@ export default function MarketStrip({ showBonds = true }: { showBonds?: boolean 
               <div style={{ fontFamily: MONO, fontSize: "0.72rem", fontWeight: 600, color: tone(ix.pctDay), marginTop: 2 }}>
                 {signed(ix.pctDay)} <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>today</span>
               </div>
-              <div style={{ display: "flex", gap: 8, fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-muted)", marginTop: 6, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 8, fontFamily: MONO, fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: 6, flexWrap: "wrap" }}>
                 <span>W <span style={{ color: tone(ix.pctWeek) }}>{signed(ix.pctWeek, 1)}</span></span>
                 <span>M <span style={{ color: tone(ix.pctMonth) }}>{signed(ix.pctMonth, 1)}</span></span>
                 <span>Y <span style={{ color: tone(ix.pctYear) }}>{signed(ix.pctYear, 1)}</span></span>
@@ -80,7 +80,7 @@ export default function MarketStrip({ showBonds = true }: { showBonds?: boolean 
 
       {showBonds && data.bonds.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10, alignItems: "center" }}>
-          <span style={{ fontFamily: SANS, fontSize: "0.56rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginRight: 4 }}>
+          <span style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", marginRight: 4 }}>
             10-year yields
           </span>
           {data.bonds.map((b) => (
@@ -88,10 +88,10 @@ export default function MarketStrip({ showBonds = true }: { showBonds?: boolean 
               display: "inline-flex", alignItems: "baseline", gap: 6, padding: "5px 12px",
               background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999,
             }}>
-              <span style={{ fontFamily: SANS, fontSize: "0.64rem", fontWeight: 600, color: "var(--text-secondary)" }}>{b.label}</span>
+              <span style={{ fontFamily: SANS, fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary)" }}>{b.label}</span>
               <span style={{ fontFamily: MONO, fontSize: "0.74rem", fontWeight: 700, color: "var(--text-primary)" }}>{b.yieldPct.toFixed(2)}%</span>
               {b.changeDay != null && (
-                <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: tone(b.changeDay) }}>{signed(b.changeDay, 2, "")}</span>
+                <span style={{ fontFamily: MONO, fontSize: "0.6875rem", color: tone(b.changeDay) }}>{signed(b.changeDay, 2, "")}</span>
               )}
             </span>
           ))}

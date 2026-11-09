@@ -45,7 +45,7 @@ export default function RangeToggle({ range, onChange, ranges = RANGES }: {
           onClick={() => onChange(r)}
           style={{
             padding: "5px 11px", borderRadius: 999, border: "none", cursor: "pointer",
-            fontFamily: "'Public Sans', sans-serif", fontSize: "0.62rem", fontWeight: 600, letterSpacing: "0.06em",
+            fontFamily: "'Public Sans', sans-serif", fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.06em",
             background: range === r ? "var(--accent-gold)" : "transparent",
             color: range === r ? "var(--on-accent)" : "var(--text-secondary)",
             transition: "background 0.15s ease, color 0.15s ease",

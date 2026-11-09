@@ -1,7 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import SiteFooter from "@/components/SiteFooter";
+import CommandMenu from "@/components/CommandMenu";
+import ScrollMemory from "@/components/ScrollMemory";
 import AccessibilityWidget from "@/components/AccessibilityWidget";
+
+// viewport-fit=cover lets the page paint under the notch and home indicator;
+// the fixed bars pad themselves back out with env(safe-area-inset-*).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://prometheonengine.com"),
@@ -46,9 +57,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{ height: "100%" }} suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Browser chrome colour. The theme is a saved choice, not the OS
+            setting, so the script below keeps this in step with it. */}
+        <meta name="theme-color" id="theme-color" content="#0C1220" />
         {/* Structured data: Organization + WebSite (with a sitelinks search box
             targeting ticker research) + WebApplication for rich results. */}
         <script
@@ -105,6 +118,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     var t = localStorage.getItem("theme");
     if (t !== "dark" && t !== "light") t = "dark";
     document.documentElement.dataset.theme = t;
+    var m = document.getElementById("theme-color");
+    if (m) m.setAttribute("content", t === "dark" ? "#0C1220" : "#D6D8DD");
   } catch (e) { document.documentElement.dataset.theme = "dark"; }
 })();
         ` }} />
@@ -112,29 +127,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style dangerouslySetInnerHTML={{ __html: `
 button { border-radius: 999px !important; text-transform: none !important; letter-spacing: 0.01em !important; }
 input, select { border-radius: 999px !important; padding-left: 1.1rem !important; padding-right: 1.1rem !important; }
-[style*="border:1px solid var(--border)"] {
-  backdrop-filter: blur(22px) saturate(1.35);
-  -webkit-backdrop-filter: blur(22px) saturate(1.35);
-  box-shadow: var(--card-shadow), var(--glass-inset);
-  background-image: var(--glass-sheen) !important;
-}
-tr[style*="border:1px solid var(--border)"],
-td[style*="border:1px solid var(--border)"],
-th[style*="border:1px solid var(--border)"] {
-  backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; background-image: none !important;
-}
-
 .logo-on-dark { display: none; }
 :root[data-theme="dark"] .logo-on-dark { display: inline-block; }
 :root[data-theme="dark"] .logo-on-light { display: none; }
-
-/* Room for the fixed top nav bar the Sidebar renders on app pages */
-html[data-topbar="1"] .main-content { padding-top: 5.9rem !important; }
-@media (max-width: 1023px) {
-  html[data-topbar="1"] .main-content { padding-top: 4.6rem !important; }
-}
-.topnav-link { transition: color 0.12s ease, background 0.12s ease; }
-.topnav-link:hover { color: var(--text-primary) !important; background: var(--bg-elevated); }
 
 /* Accessibility preferences (set by AccessibilityWidget) */
 html[data-a11y-text="lg"] { font-size: clamp(18.4px, 1.44vw, 23px) !important; }
@@ -146,13 +141,13 @@ html[data-a11y-motion="reduce"] *::after {
   animation: none !important; transition: none !important; scroll-behavior: auto !important;
 }
 :root[data-a11y-contrast="high"] {
-  --text-secondary: #3A3F4C;
-  --text-muted:     #555B69;
+  --text-secondary: #33384A;
+  --text-muted:     #3F4554;
   --border:         rgba(35, 40, 55, 0.32);
 }
 :root[data-theme="dark"][data-a11y-contrast="high"] {
   --text-secondary: #C7D2E5;
-  --text-muted:     #9AA8C0;
+  --text-muted:     #A9B6CC;
   --border:         rgba(255, 255, 255, 0.24);
 }
 html[data-a11y-spacing="wide"] body { letter-spacing: 0.08em !important; word-spacing: 0.16em !important; }
@@ -183,7 +178,7 @@ html[data-a11y-cursor="big"], html[data-a11y-cursor="big"] * {
   --on-accent:     #071021;
   --text-primary:  #EDF2FA;
   --text-secondary:#93A2BC;
-  --text-muted:    #5E6D87;
+  --text-muted:    #8391AB;
   --positive:      #4ADE80;
   --negative:      #F87171;
   --tick:          #93A2BC;
@@ -196,16 +191,27 @@ html[data-a11y-cursor="big"], html[data-a11y-cursor="big"] * {
   --bg-g2:         #0C1220;
   --bg-g3:         #0A0F1B;
   --card-shadow:   0 16px 40px rgba(0, 0, 0, 0.40);
-  --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.10), inset 0 -1px 0 rgba(255, 255, 255, 0.03);
-  --glass-sheen:   linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.015) 55%, rgba(255, 255, 255, 0.04) 100%);
+  --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --bar-bg:        rgba(12, 18, 32, 0.80);
+  --scrim:         rgba(2, 6, 14, 0.58);
+  --series-1:      #5A8DEE;
+  --series-2:      #D9692F;
+  --series-3:      #22A5BA;
+  --series-4:      #C98500;
+  --series-5:      #D55181;
+  --series-6:      #8F84E8;
 }
         ` }} />
       </head>
-      <body style={{ display: "flex", width: "100%", height: "100%", background: "var(--bg-primary)", margin: 0, overflow: "hidden" }}>
+      <body>
+        <a href="#main" className="skip-link">Skip to content</a>
         <Sidebar />
-        <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: "2rem 2.5rem" }} className="main-content">
+        <main id="main" tabIndex={-1} className="main-content">
           {children}
+          <SiteFooter />
         </main>
+        <CommandMenu />
+        <ScrollMemory />
         <AccessibilityWidget />
       </body>
     </html>

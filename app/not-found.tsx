@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = { title: "Page not found", robots: { index: false } };
 
 // Branded 404. The framework default was a bare "404 | This page could not
 // be found" with no way back in.
@@ -20,12 +23,12 @@ export default function NotFound() {
         The address may have changed, or it never existed. Try a ticker instead.
       </p>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-        <Link href="/research" style={{
+        <Link href="/research" className="pressable" style={{
           background: "var(--accent-gold)", color: "var(--on-accent)", borderRadius: 999, padding: "10px 22px",
           fontSize: "0.74rem", fontWeight: 700, textDecoration: "none",
         }}>Stock Research</Link>
         {[["/compare", "Compare"], ["/charts", "Charts"], ["/mna", "M&A Activity"], ["/", "Home"]].map(([href, label]) => (
-          <Link key={href} href={href} style={{
+          <Link key={href} href={href} className="pressable" style={{
             background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)",
             borderRadius: 999, padding: "10px 18px", fontSize: "0.74rem", fontWeight: 600, textDecoration: "none",
           }}>{label}</Link>
