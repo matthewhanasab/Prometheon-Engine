@@ -1,6 +1,6 @@
 "use client";
 import type { EarningsSurprise } from "@/lib/analystEstimates";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, Fragment } from "react";
 import Link from "next/link";
 import CompanyLogo from "@/components/CompanyLogo";
 import PageHeader from "@/components/PageHeader";
@@ -550,20 +550,7 @@ function MarketstackResearchInner() {
                 <div style={{ fontFamily: MONO, fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: 3 }}>{data.ticker}</div>
               </div>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, alignItems: "center" }}>
-              {[
-                prof?.sector, prof?.industry, exchangeName(prof?.exchange),
-                prof?.ipoDate ? `IPO ${String(prof.ipoDate).slice(0, 4)}` : null,
-                prof?.founded ? `Founded ${String(prof.founded).slice(0, 4)}` : null,
-                prof?.employees != null ? `${Number(prof.employees).toLocaleString()} employees` : null,
-                fyEndLabel(prof?.fiscalYearEnd),
-              ].filter(Boolean).map((chip, i) => (
-                <span key={i} style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: "3px 10px" }}>
-                  {chip as string}
-                </span>
-              ))}
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap", marginTop: 14 }}>
               <span style={{ fontFamily: MONO, fontSize: "clamp(1.9rem, 8vw, 2.4rem)", fontWeight: 600, letterSpacing: "-0.02em" }}>{money(headPrice)}</span>
               <span style={{ fontFamily: MONO, fontSize: "1rem", fontWeight: 500, color: (headChange ?? 0) >= 0 ? "var(--positive)" : "var(--negative)", display: "inline-flex", alignItems: "center", gap: 5 }}>
                 <Icon name={(headChange ?? 0) >= 0 ? "tri-up" : "tri-down"} size={13} filled title={(headChange ?? 0) >= 0 ? "Up" : "Down"} />
@@ -1409,6 +1396,19 @@ function MarketstackResearchInner() {
               <div style={{ ...CARD, padding: "16px 20px", fontSize: "0.82rem", lineHeight: 1.65, color: "var(--text-secondary)" }}>
                 {prof.about}
                 <dl style={{ display: "grid", gridTemplateColumns: "max-content 1fr", gap: "6px 16px", margin: "14px 0 0", fontSize: "0.76rem" }}>
+                  {/* The facts that used to sit as tags under the company name. */}
+                  {([
+                    ["Sector", [prof.sector, prof.industry].filter(Boolean).join(", ")],
+                    ["Exchange", exchangeName(prof.exchange)],
+                    ["Listed", prof.ipoDate ? String(prof.ipoDate).slice(0, 4) : null],
+                    ["Founded", prof.founded ? String(prof.founded).slice(0, 4) : null],
+                    ["Fiscal year", fyEndLabel(prof.fiscalYearEnd)?.replace(/^FY ends/, "Ends")],
+                  ] as [string, string | null | undefined][]).filter(([, v]) => v).map(([k, v]) => (
+                    <Fragment key={k}>
+                      <dt style={{ color: "var(--text-muted)" }}>{k}</dt>
+                      <dd style={{ margin: 0, color: "var(--text-primary)" }}>{v}</dd>
+                    </Fragment>
+                  ))}
                   {prof.employees != null && <><dt style={{ color: "var(--text-muted)" }}>Employees</dt><dd style={{ margin: 0, fontFamily: MONO, color: "var(--text-primary)" }}>{Number(prof.employees).toLocaleString()}</dd></>}
                   {prof.address && <><dt style={{ color: "var(--text-muted)" }}>Headquarters</dt><dd style={{ margin: 0, color: "var(--text-primary)" }}>{prof.address}</dd></>}
                   {prof.website && <><dt style={{ color: "var(--text-muted)" }}>Website</dt><dd style={{ margin: 0, minWidth: 0, overflowWrap: "anywhere" }}><a href={prof.website} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-gold)" }}>{String(prof.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a></dd></>}
