@@ -53,7 +53,21 @@ export default function ScrollMemory() {
       window.removeEventListener("keydown", stop);
     };
 
+    // A link to a section of the page already open (#eps) also fires
+    // "popstate", and it is the opposite of a Back: the visitor is asking to go
+    // somewhere new. Restoring on it puts the page back where it was, which
+    // made every such link look dead from anywhere but the top of the page.
+    let jumpedAt = -1e9;
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a || !a.hash) return;
+      if (a.origin === location.origin && a.pathname === location.pathname && a.search === location.search) {
+        jumpedAt = performance.now();
+      }
+    };
+
     const onPop = () => {
+      if (performance.now() - jumpedAt < 800) return;
       stop();
       // Read the target before anything can overwrite it, then wait for the
       // new address and its content.
@@ -76,7 +90,9 @@ export default function ScrollMemory() {
 
     window.addEventListener("scroll", save, { passive: true });
     window.addEventListener("popstate", onPop);
+    document.addEventListener("click", onClick, true);
     return () => {
+      document.removeEventListener("click", onClick, true);
       stop();
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", save);
