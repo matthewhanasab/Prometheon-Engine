@@ -62,6 +62,7 @@ Light values live in `app/globals.css` (`:root`); dark values in the inline bloc
 - FMP Stable API (`https://financialmodelingprep.com/stable`) — key in `FMP_KEY`. The legacy v3 API does NOT work with this key. Screener endpoint is `/company-screener` (not `/stock-screener`).
 - Finnhub free tier: recommendations + news only. Price targets come from FMP `/price-target-consensus`.
 - FRED key in `FRED_KEY`.
+- Options quotes are the exchange's delayed snapshot (`/api/options-chain`), which has no history. No keyless feed carries the price history of an individual contract, so the contract chart on the options page is an estimate (`lib/optionValue.ts`: Black-Scholes on the underlying's daily closes from `/api/option-history`, at the volatility that reproduces today's quote). It is drawn dashed and labelled as an estimate; keep it that way unless a licensed per-contract history feed is added.
 - recharts Tooltip `formatter`/`labelFormatter` params must be typed `any` (TS mismatch with recharts types).
 - Run `npm run build` before every push — Vercel deploys `main` automatically.
 - Local development without the data keys: start the dev server with `DEV_API_ORIGIN=https://www.prometheonengine.com` (the `prometheon-live-data` launch entry) and `/api/*` is answered by the live site. Restart the dev server after editing `app/globals.css`; it does not always hot-reload.

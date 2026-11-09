@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, Suspense } from "react";
+import React, { useState, useCallback, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import TickerInput from "@/components/TickerInput";
@@ -9,9 +9,10 @@ import { ErrorNote, SkeletonTable } from "@/components/States";
 import { useUrlTicker } from "@/lib/useUrlTicker";
 import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ReferenceDot,
 } from "recharts";
-import { ChartTip, seriesTip, lineCursor, grid } from "@/components/charts/kit";
+import { ChartTip, seriesTip, lineCursor, grid, xAxis, yAxis, activeDot, LegendRow, useTimeframe } from "@/components/charts/kit";
+import { valueHistory, type Close, type Valued } from "@/lib/optionValue";
 
 const SANS = "'Public Sans', sans-serif";
 const SERIF = "'Space Grotesk', Georgia, serif";
@@ -55,9 +56,163 @@ function daysTo(d: string) {
 }
 
 // ── Contract detail ───────────────────────────────────────────────────────────
-// The feed is a snapshot with no per-contract history, so there is no price
-// series to plot. What can be drawn honestly is the payoff at expiry, which is
-// a property of the strike and what you'd pay today, not a forecast.
+
+// The underlying's daily closes, fetched once per ticker and shared by every
+// contract opened on it.
+const closesCache = new Map<string, Promise<Close[]>>();
+function loadCloses(ticker: string): Promise<Close[]> {
+  let hit = closesCache.get(ticker);
+  if (!hit) {
+    hit = fetch(`/api/option-history/${ticker}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j) => (Array.isArray(j?.closes) ? (j.closes as Close[]) : Promise.reject(new Error("empty"))));
+    // A failure is not remembered, so opening another contract tries again.
+    hit.catch(() => closesCache.delete(ticker));
+    closesCache.set(ticker, hit);
+  }
+  return hit;
+}
+
+/** The standard monthly expiry: the third Friday of its month. */
+function isThirdFriday(d: string): boolean {
+  const date = new Date(`${d}T00:00:00Z`);
+  const day = date.getUTCDate();
+  return date.getUTCDay() === 5 && day >= 15 && day <= 21;
+}
+const longDate = (d: string) =>
+  new Date(`${d}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+const tickDate = (d: string) =>
+  new Date(`${d}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+
+/**
+ * The contract's value over time.
+ *
+ * No feed the site can read carries the price history of an individual
+ * contract, so the line is an estimate (see lib/optionValue.ts): the contract
+ * valued on each past day at the stock's close, holding volatility at the
+ * level that reproduces today's quote. It is drawn dashed, the way a
+ * projection is, and the two prices that are real, today's quote and the
+ * previous close, are drawn as solid dots on top of it so the gap between
+ * model and market is visible instead of hidden.
+ */
+function ValueChart({ c, spot, ticker, asOf }: { c: Contract; spot: number | null; ticker: string; asOf: string | null }) {
+  const [loaded, setLoaded] = useState<{ ticker: string; closes: Close[] | null } | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadCloses(ticker).then(
+      (closes) => { if (live) setLoaded({ ticker, closes }); },
+      () => { if (live) setLoaded({ ticker, closes: null }); },
+    );
+    return () => { live = false; };
+  }, [ticker]);
+  const state = loaded && loaded.ticker === ticker ? loaded : null;
+
+  const price = c.mid ?? c.last ?? c.theo;
+  const today = (asOf ?? new Date().toISOString()).slice(0, 10);
+  // A contract can't be valued for days before it existed, and the feed doesn't
+  // say when it was listed. The listing calendar does, roughly: the monthly
+  // series (third Friday) are opened many months ahead, while weekly and daily
+  // expiries appear only about six weeks before they expire. So a weekly is
+  // drawn over six weeks at most.
+  const monthly = isThirdFriday(c.expiry);
+  const est = useMemo(() => {
+    if (!state?.closes || price == null || spot == null) return null;
+    const from = monthly ? "" : new Date(Date.parse(`${today}T00:00:00Z`) - 45 * 864e5).toISOString().slice(0, 10);
+    return valueHistory({
+      side: c.side, strike: c.strike, expiry: c.expiry, price, spot, today,
+      closes: state.closes.filter((x) => x.date >= from), fallbackVol: c.iv,
+    });
+  }, [state, price, spot, today, monthly, c.side, c.strike, c.expiry, c.iv]);
+
+  const frame = useTimeframe<Valued>(est?.series ?? [], (r) => r.date, {
+    label: "Time frame for the value chart", frames: ["1W", "1M", "3M", "6M", "1Y"], initial: "3M",
+  });
+  const rows = frame.rows;
+  const last = rows[rows.length - 1];
+  const prior = rows.length > 1 ? rows[rows.length - 2] : null;
+  const first = rows[0];
+  const move = first && last && first.value > 0 ? (last.value - first.value) / first.value : null;
+
+  const head = (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px 12px", borderBottom: "1px solid var(--border)", paddingBottom: 6, marginTop: 18 }}>
+      <span style={LABEL}>Estimated value over time, per share</span>
+      {frame.control}
+    </div>
+  );
+
+  if (!state) {
+    return (
+      <>
+        {head}
+        <div role="status" aria-label="Loading the value chart" className="skeleton-bar" style={{ height: 220, borderRadius: 14, marginTop: 12 }} />
+      </>
+    );
+  }
+  if (!est || rows.length < 3) {
+    return (
+      <>
+        {head}
+        <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: "12px 0 0", maxWidth: "70ch" }}>
+          {!state.closes
+            ? "The stock's price history didn't load, so the contract's value can't be estimated right now. Close this contract and open it again to retry."
+            : "There is no quote for this contract to value it from: it has no bid, ask or recent trade."}
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {head}
+      <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "2px 14px", margin: "12px 0 2px" }}>
+        <LegendRow items={[
+          { name: "Estimated value", color: "var(--series-1)", shape: "dash" },
+          { name: "Actual quote", color: "var(--text-primary)", shape: "box" },
+        ]} />
+        {move != null && first && (
+          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+            From about <span style={{ fontFamily: MONO, color: "var(--text-secondary)" }}>{money(first.value)}</span> on {tickDate(first.date)} to{" "}
+            <span style={{ fontFamily: MONO, color: "var(--text-secondary)" }}>{money(last.value)}</span> now
+          </span>
+        )}
+      </div>
+      <div style={{ height: 240 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={rows} margin={{ top: 8, right: 22, bottom: 0, left: 0 }}>
+            <CartesianGrid {...grid} />
+            <XAxis dataKey="date" {...xAxis} tickFormatter={tickDate} minTickGap={40} />
+            <YAxis {...yAxis} width={52} tickFormatter={(v: number) => `$${v >= 100 || (v >= 10 && Number.isInteger(v)) ? Math.round(v) : v.toFixed(v >= 10 ? 1 : 2)}`} domain={["auto", "auto"]} />
+            <Tooltip isAnimationActive={false} cursor={lineCursor} wrapperStyle={{ outline: "none", zIndex: 5 }}
+              content={<ChartTip build={(r: Valued) => ({
+                title: longDate(r.date),
+                rows: [{ value: money(r.value) }],
+                sub: r.date === today ? "actual quote" : "estimate",
+                notes: [{ name: "Stock closed at", value: money(r.stock), tone: "flat" as const }],
+              })} />} />
+            <Line type="linear" dataKey="value" stroke="var(--series-1)" strokeWidth={2} strokeDasharray="5 4" strokeLinejoin="round"
+              dot={false} isAnimationActive={false} activeDot={{ ...activeDot, fill: "var(--series-1)" }} />
+            {prior && c.prevClose != null && c.prevClose > 0 && (
+              <ReferenceDot x={prior.date} y={c.prevClose} r={4} fill="var(--text-primary)" stroke="var(--surface-solid)" strokeWidth={2} ifOverflow="extendDomain" />
+            )}
+            {last && <ReferenceDot x={last.date} y={last.value} r={4.5} fill="var(--text-primary)" stroke="var(--surface-solid)" strokeWidth={2} />}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 8, lineHeight: 1.6, maxWidth: "82ch" }}>
+        The dashed line is an estimate, not a record of trades: no public feed carries the price history of a single
+        contract. It values this contract on each day from the stock&rsquo;s closing price and the time then left to
+        expiry, holding implied volatility at {(est.vol * 100).toFixed(1)}%{est.calibrated ? ", the level that reproduces today's quote" : ", the level the exchange reports"}.
+        Real prices would also have moved with volatility itself, most of all around earnings.{" "}
+        {monthly
+          ? "The contract may not have been listed for the whole period."
+          : "Weekly contracts are listed about six weeks before they expire, so the chart goes back no further."} The solid dots are actual quotes: today&rsquo;s{prior && c.prevClose != null && c.prevClose > 0 ? " and the previous close" : ""}.
+      </p>
+    </>
+  );
+}
+
+// The payoff at expiry is a property of the strike and what you'd pay today,
+// not a forecast.
 function PayoffChart({ c, spot }: { c: Contract; spot: number | null }) {
   const cost = c.mid ?? c.last ?? c.theo;
   if (cost == null) return null;
@@ -110,7 +265,7 @@ function Row({ k, v, hint }: { k: string; v: string; hint?: string }) {
   );
 }
 
-function Detail({ c, spot, onClose }: { c: Contract; spot: number | null; onClose: () => void }) {
+function Detail({ c, spot, ticker, asOf, onClose }: { c: Contract; spot: number | null; ticker: string; asOf: string | null; onClose: () => void }) {
   const cost = c.mid ?? c.last ?? c.theo;
   const breakeven = cost == null ? null : c.side === "call" ? c.strike + cost : c.strike - cost;
   const itm = spot == null ? null : c.side === "call" ? spot > c.strike : spot < c.strike;
@@ -169,14 +324,15 @@ function Detail({ c, spot, onClose }: { c: Contract; spot: number | null; onClos
         </div>
       </div>
 
-      <div style={{ ...LABEL, borderBottom: "1px solid var(--border)", paddingBottom: 5, marginTop: 16 }}>
-        Profit / loss at expiry — one contract (100 shares)
+      <ValueChart key={c.symbol} c={c} spot={spot} ticker={ticker} asOf={asOf} />
+
+      <div style={{ ...LABEL, borderBottom: "1px solid var(--border)", paddingBottom: 5, marginTop: 20 }}>
+        Profit or loss at expiry, one contract (100 shares)
       </div>
       <PayoffChart c={c} spot={spot} />
       <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
-        Payoff is computed from the strike and the current mid — it&rsquo;s what this contract is worth at
-        expiry for a given underlying price, not a prediction. The feed publishes a snapshot with no
-        per-contract history, so there is no price series to chart.
+        Payoff is computed from the strike and the current mid. It is what this contract is worth at
+        expiry for a given stock price, not a prediction.
       </div>
     </div>
   );
@@ -345,7 +501,7 @@ function OptionsChainInner() {
       {chain && (
         <div className={stale ? "is-stale" : undefined} aria-busy={stale}>
           {picked ? (
-            <Detail c={picked} spot={chain.spot} onClose={() => setPicked(null)} />
+            <Detail c={picked} spot={chain.spot} ticker={chain.ticker} asOf={chain.asOf} onClose={() => setPicked(null)} />
           ) : (
             <>
           <div style={{ ...LABEL, borderBottom: "1px solid var(--border)", paddingBottom: "0.45rem", marginBottom: "0.7rem" }}>
