@@ -17,6 +17,12 @@ export default function SectionNav({ items, watch }: {
   // After a click the chosen link stays marked while the page scrolls to it;
   // otherwise the mark would flick through every section passed on the way.
   const heldUntil = useRef(0);
+  // The bar has no surface of its own while it sits in the page, so it reads as
+  // part of the page. It takes the frosted bar surface only once it is pinned
+  // under the top bar, where content scrolls beneath it and it needs one.
+  const [stuck, setStuck] = useState(false);
+  const sentinel = useRef<HTMLDivElement>(null);
+  const bar = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const ids = items.map((i) => i.id).filter((id) => document.getElementById(id));
@@ -60,10 +66,28 @@ export default function SectionNav({ items, watch }: {
   };
 
   const shown = items.filter((i) => present.includes(i.id));
-  if (shown.length < 3) return null;
+  const visible = shown.length >= 3;
+
+  useEffect(() => {
+    const mark = sentinel.current, nav = bar.current;
+    if (!visible || !mark || !nav) return;
+    // A marker just above the bar: once it has gone up behind the top bar, the
+    // bar below it is pinned. The offset is the bar's own sticky position.
+    const offset = Math.round(parseFloat(getComputedStyle(nav).top) || 0);
+    const obs = new IntersectionObserver(
+      ([entry]) => setStuck(!entry.isIntersecting && entry.boundingClientRect.top < offset + 2),
+      { rootMargin: `-${offset + 1}px 0px 0px 0px`, threshold: 0 },
+    );
+    obs.observe(mark);
+    return () => obs.disconnect();
+  }, [visible]);
+
+  if (!visible) return null;
 
   return (
-    <nav aria-label="On this page" className="subnav app-bar">
+    <>
+    <div ref={sentinel} aria-hidden style={{ height: 1, marginBottom: -1 }} />
+    <nav ref={bar} aria-label="On this page" className="subnav" data-stuck={stuck}>
       {shown.map((i) => (
         <a key={i.id} href={`#${i.id}`} aria-current={active === i.id ? "true" : undefined} className="subnav-link"
           onClick={(e) => jump(e, i.id)}>
@@ -71,5 +95,6 @@ export default function SectionNav({ items, watch }: {
         </a>
       ))}
     </nav>
+    </>
   );
 }

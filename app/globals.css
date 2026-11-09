@@ -339,7 +339,17 @@ button:disabled { cursor: default; }
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  border-bottom: 1px solid var(--border);
+  /* No surface while it sits in the page; the frosted bar surface and its
+     hairline arrive only when it is pinned (SectionNav sets data-stuck). */
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.subnav[data-stuck="true"] {
+  background: var(--bar-bg);
+  -webkit-backdrop-filter: saturate(1.5) blur(16px);
+  backdrop-filter: saturate(1.5) blur(16px);
+  border-bottom-color: var(--border);
 }
 .subnav::-webkit-scrollbar { display: none; }
 .subnav-link {

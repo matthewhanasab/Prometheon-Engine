@@ -601,9 +601,11 @@ function ChartsInner() {
 
           <Headline m={m} quarters={n} />
 
-          <div style={{ marginTop: 22 }}>
-            <SectionNav items={SECTIONS} watch={`${ticker}${seg ? "s" : ""}`} />
-          </div>
+          {/* Not wrapped: a sticky bar only stays pinned for as long as its
+              parent is on screen, and a wrapper of its own height scrolls away
+              with it. */}
+          <div aria-hidden style={{ height: 22 }} />
+          <SectionNav items={SECTIONS} watch={`${ticker}${seg ? "s" : ""}`} />
 
           <section className="chart-group" style={{ marginTop: 8 }}>
             <GroupHead id="growth" title="Growth">What the company sells, and what it keeps.</GroupHead>
