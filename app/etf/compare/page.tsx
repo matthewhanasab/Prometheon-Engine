@@ -7,6 +7,7 @@ import { ErrorNote } from "@/components/States";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
+import { ChartTip, seriesTip, lineCursor, activeDot, grid } from "@/components/charts/kit";
 import CompanyLogo from "@/components/CompanyLogo";
 import CompareChart from "@/components/CompareChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
@@ -271,18 +272,15 @@ function CompareInner() {
                 ) : (
                 <ResponsiveContainer width="100%" height={320}>
                   <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                    <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                    <CartesianGrid {...grid} />
                     <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: MONO }} axisLine={false} tickLine={false}
                       tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
                     <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: MONO }} axisLine={false} tickLine={false} width={52} />
-                    <Tooltip
-                      labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
-                      contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: MONO, fontSize: 12 }}
-                      formatter={(v: any, name: any) => [`${Number(v) >= 0 ? "+" : ""}${Number(v).toFixed(1)}%`, name]}
-                    />
+                    <Tooltip isAnimationActive={false} cursor={lineCursor} wrapperStyle={{ outline: "none", zIndex: 5 }}
+                    content={<ChartTip build={seriesTip({ title: (l) => String(l), sub: "return", value: (v) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%` })} />} />
                     <Legend wrapperStyle={{ fontFamily: MONO, fontSize: 13 }} />
                     {funds.map((f, i) => (
-                      <Line key={f.ticker} type="monotone" dataKey={f.ticker} stroke={COLORS[i]} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
+                      <Line key={f.ticker} type="monotone" dataKey={f.ticker} stroke={COLORS[i]} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} activeDot={{ ...activeDot, fill: COLORS[i] }} />
                     ))}
                   </LineChart>
                 </ResponsiveContainer>

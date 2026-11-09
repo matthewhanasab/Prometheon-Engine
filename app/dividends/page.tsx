@@ -1,5 +1,5 @@
 "use client";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import CompanyLogo from "@/components/CompanyLogo";
 import PageHeader from "@/components/PageHeader";
 import TickerInput from "@/components/TickerInput";
@@ -7,7 +7,12 @@ import { ErrorNote, EmptyNote, SkeletonCards } from "@/components/States";
 import { useUrlTicker } from "@/lib/useUrlTicker";
 import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { loadDirectory } from "@/lib/tickerDirectory";
+import {
+  xAxis, yAxis, grid, barCursor, dollars, ChartTip, changeNote, Delta, ChartCard, StatCell,
+} from "@/components/charts/kit";
+
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 // Dividends, Market Stack edition — the one dataset where marketstack outshines
 // the paid tiers of most rivals: full history, upcoming declared payments,
@@ -20,14 +25,34 @@ const SANS = "'Public Sans', sans-serif";
 const SERIF = "'Space Grotesk', Georgia, serif";
 const PICKS = ["KO", "JNJ", "AAPL", "MSFT", "O"];
 
-function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "good" | "bad" }) {
-  const color = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : "var(--text-primary)";
+type Year = { year: number; total: number; change: number | null };
+
+/** Dividends per share by year. Pointing at a year lights it and the year before, the pair the readout compares. */
+function YearsPlot({ rows }: { rows: Year[] }) {
+  const [hover, setHover] = useState<number | null>(null);
   return (
-    <div style={{ ...CARD, padding: "14px 16px" }}>
-      <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 5 }}>{label}</div>
-      <div style={{ fontFamily: MONO, fontSize: "1.15rem", fontWeight: 600, color }}>{value}</div>
-      {sub && <div style={{ fontFamily: SANS, fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: 3 }}>{sub}</div>}
-    </div>
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={rows} margin={{ top: 6, right: 14, left: 0, bottom: 0 }} barCategoryGap="22%"
+        onMouseMove={(st: any) => {
+          const i = st?.isTooltipActive ? Number(st.activeTooltipIndex) : NaN;
+          setHover(Number.isFinite(i) ? i : null);
+        }}
+        onMouseLeave={() => setHover(null)}>
+        <CartesianGrid {...grid} />
+        <XAxis dataKey="year" {...xAxis} />
+        <YAxis {...yAxis} tickFormatter={(v: number) => `$${v.toFixed(2)}`} width={52} />
+        <Tooltip isAnimationActive={false} cursor={barCursor} wrapperStyle={{ outline: "none", zIndex: 5 }}
+          content={<ChartTip build={(r: Year) => ({
+            title: String(r.year), sub: "per share", rows: [{ value: `$${r.total.toFixed(4)}` }],
+            notes: changeNote(`vs ${r.year - 1}`, r.change),
+          })} />} />
+        <Bar dataKey="total" fill="var(--series-1)" radius={[3, 3, 0, 0]} maxBarSize={24} isAnimationActive={false}>
+          {rows.map((r, i) => (
+            <Cell key={r.year} fillOpacity={hover == null || i === hover || i === hover - 1 ? 1 : 0.3} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -35,7 +60,22 @@ function DividendsInner() {
   const [ticker, setTicker] = useUrlTicker("KO");
   const { data, loading, stale, error, retry } = useTickerData<any>(ticker, (t) => `/api/marketstack-dividends/${t}`);
 
-  const yearly = (data?.yearly ?? []).filter((y: any) => !y.partial);
+  const yearly: Year[] = (data?.yearly ?? [])
+    .filter((y: any) => !y.partial)
+    .map((y: any, i: number, all: any[]) => ({
+      year: Number(y.year), total: Number(y.total),
+      change: i > 0 && all[i - 1].total > 0 && Number(all[i - 1].year) === Number(y.year) - 1 ? (y.total - all[i - 1].total) / all[i - 1].total : null,
+    }));
+  const lastYear = yearly[yearly.length - 1];
+  // Growth over the last ten full years, or as many as there are.
+  const base = yearly.length > 2 ? yearly[Math.max(0, yearly.length - 11)] : null;
+  const span = base && lastYear ? lastYear.year - base.year : 0;
+  const rate = base && lastYear && base.total > 0 && lastYear.total > 0 && span >= 2
+    ? Math.pow(lastYear.total / base.total, 1 / span) - 1 : null;
+
+  const [names, setNames] = useState<Map<string, string> | null>(null);
+  useEffect(() => { loadDirectory().then((d) => setNames(new Map(d))); }, []);
+  const company = data?.ticker ? names?.get(data.ticker) : undefined;
 
   return (
     <div style={{ fontFamily: SANS, color: "var(--text-primary)" }}>
@@ -64,61 +104,55 @@ function DividendsInner() {
 
       {data && data.count > 0 && (
         <div className={stale ? "is-stale" : undefined} aria-busy={stale}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1rem", flexWrap: "wrap" }}>
-            <CompanyLogo ticker={data.ticker} size={40} />
-            <h2 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 600, margin: 0 }}>{data.ticker}</h2>
-            <span style={{ fontFamily: MONO, fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              {data.count} payments since {String(data.oldest).slice(0, 4)}
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+            <CompanyLogo ticker={data.ticker} size={44} fallback />
+            <div style={{ minWidth: 0 }}>
+              <h2 style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "2px 10px", margin: 0 }}>
+                <span style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{company ?? data.ticker}</span>
+                {company && <span style={{ fontFamily: MONO, fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data.ticker}</span>}
+              </h2>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: 3 }}>
+                {data.count} payments on record since {String(data.oldest).slice(0, 4)}
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10, marginBottom: "0.6rem" }}>
-            <Stat label="TTM Dividends" value={`$${Number(data.ttm).toFixed(2)}`} />
-            <Stat label="Yield" value={data.yieldPct != null ? `${data.yieldPct.toFixed(2)}%` : "—"} sub={data.price ? `at $${Number(data.price).toFixed(2)}` : undefined} tone="good" />
-            <Stat label="Frequency" value={data.freq === "q" ? "Quarterly" : data.freq === "m" ? "Monthly" : data.freq === "s" ? "Semi-Annual" : data.freq ?? "—"} />
-            <Stat label="Growth Streak" value={`${data.growthStreak} yrs`} sub="consecutive annual raises" tone={data.growthStreak >= 5 ? "good" : undefined} />
-            {data.upcoming?.length > 0
-              ? <Stat label="Next Ex-Date" value={data.upcoming[0].date} sub={`$${data.upcoming[0].amount}${data.upcoming[0].paymentDate ? ` · pays ${data.upcoming[0].paymentDate}` : ""}`} tone="good" />
-              : data.projectedNext
-              ? <Stat label="Next Ex-Date" value={`~ ${data.projectedNext.date}`}
-                  sub={`expected · ${data.projectedNext.basis} cadence, not yet declared`} />
-              : <Stat label="Next Ex-Date" value="Not declared" />}
+          <div className="stat-strip">
+            <div className="stat-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(170px, 44vw), 1fr))" }}>
+              <StatCell label="Paid, last 12 months" value={dollars(Number(data.ttm))} sub="per share" />
+              <StatCell label="Yield" value={data.yieldPct != null ? `${data.yieldPct.toFixed(2)}%` : "n/a"}
+                sub={data.price ? `at $${Number(data.price).toFixed(2)} a share` : undefined} />
+              <StatCell label="Paid" value={data.freq === "q" ? "Quarterly" : data.freq === "m" ? "Monthly" : data.freq === "s" ? "Twice a year" : data.freq === "a" ? "Yearly" : data.freq ?? "n/a"} />
+              <StatCell label="Growth streak" value={`${data.growthStreak} ${data.growthStreak === 1 ? "year" : "years"}`} sub="of raises in a row" />
+              {data.upcoming?.length > 0
+                ? <StatCell label="Next ex-dividend date" value={data.upcoming[0].date}
+                    sub={`$${data.upcoming[0].amount}${data.upcoming[0].paymentDate ? `, paid ${data.upcoming[0].paymentDate}` : ""}`} />
+                : data.projectedNext
+                ? <StatCell label="Next ex-dividend date" value={`~${data.projectedNext.date}`}
+                    sub={`Expected from its ${data.projectedNext.basis} pattern; not declared`} />
+                : <StatCell label="Next ex-dividend date" value="Not declared" />}
+            </div>
           </div>
 
-          {yearly.length >= 2 && (
-            <>
-              <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", padding: "1.4rem 0 0.5rem", marginBottom: "0.9rem" }}>
-                Dividends Per Share, By Year
-              </div>
-              <div style={{ ...CARD, padding: "18px 10px 6px", height: 280 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={yearly} margin={{ top: 4, right: 12, left: 4, bottom: 0 }}>
-                    <XAxis dataKey="year" tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: MONO }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                    <YAxis tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: MONO }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${v.toFixed(2)}`} width={56} />
-                    <Tooltip
-                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, fontFamily: MONO, fontSize: 12 }}
-                      formatter={(v: any) => [`$${Number(v).toFixed(4)}`, "per share"]}
-                    />
-                    <Bar dataKey="total" radius={[5, 5, 0, 0]}>
-                      {yearly.map((_: any, i: number) => (
-                        <Cell key={i} fill="var(--accent-gold)" fillOpacity={0.5 + 0.5 * (i / Math.max(1, yearly.length - 1))} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </>
+          {yearly.length >= 2 && lastYear && (
+            <div className="chart-grid" style={{ marginTop: 16 }}>
+              <ChartCard title="Dividends per share, by year" wide ticker={data.ticker} company={company}
+                figure={dollars(lastYear.total)}
+                delta={<Delta frac={lastYear.change} label={`vs ${lastYear.year - 1}`} />}
+                caption={[`Paid in ${lastYear.year}`, rate != null ? `${rate >= 0 ? "Up" : "Down"} ${Math.abs(rate * 100).toFixed(1)}% a year over ${span} years` : null].filter(Boolean).join(" · ")}>
+                <YearsPlot rows={yearly} />
+              </ChartCard>
+            </div>
           )}
 
-          <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", padding: "1.6rem 0 0.5rem", marginBottom: "0.9rem" }}>
-        Recent Payments
-          </div>
+          <h3 style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", padding: "1.8rem 0 0.5rem", margin: "0 0 0.9rem" }}>
+            Recent payments
+          </h3>
           <div style={{ ...CARD, padding: "6px 0", overflowX: "auto", maxHeight: 360, overflowY: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem", fontFamily: MONO }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem", fontFamily: MONO, whiteSpace: "nowrap" }}>
               <thead>
                 <tr style={{ color: "var(--text-secondary)", fontFamily: SANS, fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                  <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Ex-Date</th>
+                  <th style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>Ex-date</th>
                   <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Amount</th>
                   <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600 }}>Declared</th>
                   <th style={{ textAlign: "right", padding: "8px 14px", fontWeight: 600 }}>Paid</th>

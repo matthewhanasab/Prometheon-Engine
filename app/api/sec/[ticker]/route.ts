@@ -16,8 +16,12 @@ export async function GET(
       getSecFilings(t),
       getInsiderTrades(t),
     ]);
+    // Every listed company has filings, so nothing at all means EDGAR turned
+    // the lookup away (it throttles bursts). That answer must not be kept:
+    // cached, it left Apple's page reading "No filings found" for a day.
+    const empty = filings.length === 0 && insiders.length === 0;
     return NextResponse.json({ filings, insiders }, {
-      headers: { "Cache-Control": "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400" },
+      headers: { "Cache-Control": empty ? "no-store" : "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400" },
     });
   } catch (e) {
     console.error(e);

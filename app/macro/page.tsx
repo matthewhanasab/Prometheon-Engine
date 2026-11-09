@@ -15,6 +15,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
+import { FormattedTip, lineCursor, grid } from "@/components/charts/kit";
 
 // ── types ──────────────────────────────────────────────────────────────────────
 interface FredSeries {
@@ -176,16 +177,12 @@ function ChartCard({
   );
 }
 
+// Every chart on the page shares one hover readout; each still supplies its own
+// `formatter` and `labelFormatter`.
 const ttStyle = {
-  contentStyle: {
-    background: "var(--border)",
-    border: "1px solid var(--tooltip-border)",
-    borderRadius: 22,
-    fontFamily: "Spline Sans Mono, monospace",
-    fontSize: 11,
-    color: "var(--text-primary)",
-  },
-  labelStyle: { color: "var(--text-muted)" },
+  content: <FormattedTip />,
+  isAnimationActive: false,
+  wrapperStyle: { outline: "none", zIndex: 5 },
 };
 
 function XAx() {
@@ -222,7 +219,7 @@ function YAx({
 
 function Grid() {
   return (
-    <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+    <CartesianGrid {...grid} />
   );
 }
 
@@ -324,7 +321,7 @@ function SpreadChart({ data }: { data: FredSeries[] }) {
         <XAx />
         <YAx unit="%" />
         <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
           {...ttStyle}
           formatter={(v: any) => [`${v.toFixed(2)}%`, "Spread"]}
           labelFormatter={tickDate}
@@ -627,7 +624,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                 {...ttStyle}
                 formatter={(v: any, name: any) => [
                   `${fmt(v)}%`,
@@ -691,7 +688,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                 {...ttStyle}
                 formatter={(v: any, name: any) => [
                   `${fmt(v)}%`,
@@ -743,7 +740,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                 {...ttStyle}
                 formatter={(v: any) => [`${fmt(v)}%`, "10Y Breakeven"]}
                 labelFormatter={tickDate}
@@ -792,7 +789,7 @@ export default function MacroPage() {
               <XAx />
               <YAx unit="%" />
               <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                 {...ttStyle}
                 formatter={(v: any) => [`${fmt(v)}%`, "Unemployment"]}
                 labelFormatter={tickDate}
@@ -819,7 +816,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                 {...ttStyle}
                 formatter={(v: any) => [fmtK(v), "Init. Claims"]}
                 labelFormatter={tickDate}
@@ -847,7 +844,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "Sentiment"]}
                 labelFormatter={tickDate}
@@ -897,7 +894,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "VIX"]}
                 labelFormatter={tickDate}
@@ -950,7 +947,7 @@ export default function MacroPage() {
               <XAx />
               <YAx />
               <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                 {...ttStyle}
                 formatter={(v: any) => [fmt(v, 1), "Sentiment"]}
                 labelFormatter={tickDate}
@@ -989,7 +986,7 @@ export default function MacroPage() {
                   />
                   <YAx unit="%" />
                   <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                     {...ttStyle}
                     formatter={(v: any) => [`${fmt(v)}%`, "Yield"]}
                   />
@@ -1118,7 +1115,7 @@ export default function MacroPage() {
                     width={44}
                   />
                   <Tooltip
-                  cursor={{ fill: "var(--cursor-fill)" }}
+                  cursor={lineCursor}
                     {...ttStyle}
                     formatter={(v: any) => [String(v), "Fear & Greed"]}
                     labelFormatter={(l: any) => {

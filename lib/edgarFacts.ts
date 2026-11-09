@@ -14,6 +14,8 @@ const FACTS_URL = (cik: string) =>
   `https://data.sec.gov/api/xbrl/companyfacts/CIK${cik.padStart(10, "0")}.json`;
 
 import { unstable_cache } from "next/cache";
+import { adjustPerShare, despike, type SplitEvent } from "./splitAdjust";
+export type { SplitEvent };
 
 type RawFact = {
   start?: string; end: string; val: number;
@@ -735,9 +737,9 @@ function dcf(f: Facts, shares: number | null) {
  * every fourth bar would be missing, since US filers fold Q4 into the 10-K.
  * Balance-sheet items are point-in-time and need no reconstruction.
  */
-/** A stock split as the price feed reports it: `factor` is the multiplier
- *  (4 for a 4-for-1; 0.1 for a 1-for-10 reverse), effective on `date`. */
-export type SplitEvent = { date: string; factor: number };
+// SplitEvent (re-exported above): a stock split as the price feed reports it.
+// `factor` is the multiplier (4 for a 4-for-1; 0.1 for a 1-for-10 reverse),
+// effective on `date`.
 
 export function deriveChartSeries(f: Facts, limit = 28, splits: SplitEvent[] = []) {
   // `rawDate` is the cover-page date a share count was reported on, kept
@@ -892,7 +894,12 @@ export function deriveChartSeries(f: Facts, limit = 28, splits: SplitEvent[] = [
   // restatement doesn't line up with split dates).
   const sharesCover = validSplits.length ? applySplits(coverRaw, validSplits) : splitAdjust(coverRaw, dilutedRaw);
   const sharesQ = splitAdjust(dilutedRaw, sharesCover);
-  const shares = sharesCover.length >= 4 ? sharesCover : sharesQ;
+  // One-quarter spikes survive both passes: a cover page dated across a split
+  // (Alphabet, twice in 2022) or typed in thousands (Chipotle, 2022).
+  const shares = despike(sharesCover.length >= 4 ? sharesCover : sharesQ, validSplits);
+  // Per-share figures are as-reported too, on whatever share basis each filing
+  // used. See splitAdjust.ts.
+  const eps = adjustPerShare(epsQ, netIncome, shares, validSplits);
 
   const fcf = align(ocf, capex, (o, c) => o - c);
   const revTtm = ttm(revenue);
@@ -902,7 +909,7 @@ export function deriveChartSeries(f: Facts, limit = 28, splits: SplitEvent[] = [
     ocf: { q: ocf, ttm: ttm(ocf) },
     operatingIncome: { q: operatingIncome, ttm: ttm(operatingIncome) },
     netIncome: { q: netIncome, ttm: ttm(netIncome) },
-    eps: { q: epsQ, ttm: ttm(epsQ) },
+    eps: { q: eps, ttm: ttm(eps) },
     fcf: { q: fcf, ttm: ttm(fcf) },
     // Per-share divides by the share count for that quarter, not a TTM sum of
     // share counts — shares are a stock, not a flow, so summing four quarters
@@ -921,7 +928,7 @@ export function deriveChartSeries(f: Facts, limit = 28, splits: SplitEvent[] = [
     shortTermInvestments: stock(C.shortTermInvestments),
     debt: stock(C.longTermDebt),
     // TTM EPS/revenue power the historical P/E and P/S charts.
-    epsTtm: ttm(epsQ),
+    epsTtm: ttm(eps),
     revenueTtm: revTtm,
     sharesForRatio: shares,
   };
@@ -936,7 +943,7 @@ export function deriveChartSeries(f: Facts, limit = 28, splits: SplitEvent[] = [
  * and un-cumulates the year-to-date cash-flow tagging; balance-sheet rows are
  * point-in-time and read directly.
  */
-export function deriveStatements(f: Facts, period: "annual" | "quarterly", limit = 12) {
+export function deriveStatements(f: Facts, period: "annual" | "quarterly", limit = 12, splits: SplitEvent[] = []) {
   const flow = (aliases: string[]): Period[] =>
     period === "annual" ? f.annual(aliases) : f.quarterlyComplete(aliases);
   const stockSeries = (aliases: string[]): Period[] => f.instant(aliases);
@@ -993,6 +1000,21 @@ export function deriveStatements(f: Facts, period: "annual" | "quarterly", limit
   const assets = B(C.assets);
   const equity = B(C.equity);
 
+  // EPS on today's share basis. Without this a company that has split shows
+  // its older years many times too high (NVIDIA: $3.85 for fiscal 2022 beside
+  // $0.17 for fiscal 2023).
+  const epsRow = (): (number | null)[] => {
+    if (!splits.length) return F(C.epsDiluted);
+    const cs = deriveChartSeries(f, 64, splits);
+    const at = (pts: { date: string; value: number }[]) => {
+      const m = new Map(pts.map((p) => [p.date, p.value]));
+      return dates.map((d) => m.get(d) ?? null);
+    };
+    if (period === "quarterly") return at(cs.eps.q);
+    const yearly = (aliases: string[]) => f.annual(aliases).map((p) => ({ date: p.end, label: "", value: p.val }));
+    return at(adjustPerShare(yearly(C.epsDiluted), yearly(C.netIncome), cs.shares, splits));
+  };
+
   const rows: Record<string, (number | null)[]> = {
     // Income statement
     revenue,
@@ -1007,7 +1029,7 @@ export function deriveStatements(f: Facts, period: "annual" | "quarterly", limit
     netIncome,
     // EBITDA isn't a GAAP line — reconstructed as operating income + D&A.
     ebitda: add(operatingIncome, dna),
-    epsDiluted: F(C.epsDiluted),
+    epsDiluted: epsRow(),
 
     // Balance sheet
     cashAndCashEquivalents: B(C.cash),

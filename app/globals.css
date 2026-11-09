@@ -33,6 +33,9 @@
   --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.65);
   --bar-bg:        rgba(214, 216, 221, 0.82);
   --scrim:         rgba(20, 24, 34, 0.38);
+  /* The card surface as one opaque colour, for the ring that separates a
+     chart marker from the line it sits on. */
+  --surface-solid: #E8E9EC;
 
   /* Chart series, in fixed order: a company keeps its colour whatever else is
      on the chart. Each theme has its own steps of the same six hues, checked
@@ -552,10 +555,85 @@ iframe { color-scheme: light; }
 }
 .settle { animation: settleIn 0.28s var(--ease-out) both; }
 
+/* ── Charts ──────────────────────────────────────────────────────────────────
+   One anatomy for every chart on the site: a card that leads with the figure,
+   then the plot. Two to a row on a desk, one on a phone. */
+.chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.chart-grid > .chart-card-wide, .chart-grid > :only-child { grid-column: 1 / -1; }
+@media (max-width: 1023px) { .chart-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.chart-card, .stat-strip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: var(--glass-inset);
+}
+@supports (corner-shape: squircle) { .chart-card, .stat-strip { corner-shape: squircle; } }
+.chart-card { display: flex; flex-direction: column; min-width: 0; padding: 18px 18px 10px; }
+@media (max-width: 640px) { .chart-card { padding: 16px 12px 8px; } }
+
+/* A card settles in the first time it scrolls into view and its bars rise from
+   the baseline. Once only: the attribute is cleared afterwards, so switching
+   the period or range redraws without replaying it. */
+.chart-card[data-in="1"] { animation: settleIn 0.28s var(--ease-out) both; }
+.chart-card[data-in="1"] .recharts-bar-rectangles {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: barRise 0.3s var(--ease-out) both;
+}
+@keyframes barRise {
+  from { transform: scaleY(0.4); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+.recharts-wrapper, .recharts-surface { outline: none; }
+.recharts-surface:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 4px; border-radius: 8px; }
+.recharts-bar-rectangle path { transition: fill-opacity var(--dur-fast) ease; }
+
+/* Headline figures in one ruled strip, the way a terminal prints them. */
+.stat-strip { overflow: hidden; }
+.stat-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin: 0 -1px -1px 0; }
+.stat-cell {
+  display: block; min-width: 0; padding: 16px 18px 14px;
+  border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  color: inherit; text-decoration: none;
+  transition: background-color var(--dur-fast) ease;
+}
+@media (max-width: 1180px) { .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat-cell { padding: 14px 14px 12px; }
+}
+@media (hover: hover) and (pointer: fine) { a.stat-cell:hover { background: var(--bg-elevated); } }
+
+/* A choice between a few views: one pill, the chosen one filled. */
+.seg {
+  display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+}
+.seg-btn {
+  min-height: 30px; padding: 0 13px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--text-secondary); cursor: pointer;
+  font-family: 'Public Sans', sans-serif; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+  transition: color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
+}
+.seg-btn[aria-checked="true"] { background: var(--accent-gold); color: var(--on-accent); }
+@media (hover: hover) and (pointer: fine) { .seg-btn:not([aria-checked="true"]):hover { color: var(--text-primary); } }
+@media (pointer: coarse) { .seg-btn { min-height: 36px; padding: 0 15px; } }
+
+.chart-group { margin-top: 2.5rem; }
+/* A group with nothing to draw (no price history, so no multiples) goes with its heading. */
+.chart-group:has(> .chart-grid:empty) { display: none; }
+.chart-group-head {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 16px;
+  margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+
 /* ── Reduced motion ──────────────────────────────────────────────────────────
    Movement goes; state changes stay legible through opacity and colour. */
 @media (prefers-reduced-motion: reduce) {
   .skeleton-bar, .spinner, .heartbeat, .fade-up, .settle { animation: none; }
+  .chart-card[data-in="1"], .chart-card[data-in="1"] .recharts-bar-rectangles { animation: none; }
+  .recharts-bar-rectangle path { transition: none; }
   .fade-up { opacity: 1; }
   .skeleton-bar { opacity: 0.5; }
   button:not(:disabled):active, .pressable:active { transform: none; }

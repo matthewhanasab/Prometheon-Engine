@@ -11,6 +11,7 @@ import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
+import { ChartTip, seriesTip, lineCursor, grid } from "@/components/charts/kit";
 
 const SANS = "'Public Sans', sans-serif";
 const SERIF = "'Space Grotesk', Georgia, serif";
@@ -74,16 +75,14 @@ function PayoffChart({ c, spot }: { c: Contract; spot: number | null }) {
     <div style={{ height: 200, marginTop: 10 }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={pts} margin={{ top: 6, right: 8, bottom: 4, left: 4 }}>
-          <CartesianGrid stroke="var(--border)" strokeDasharray="2 4" vertical={false} />
+          <CartesianGrid {...grid} />
           <XAxis dataKey="px" type="number" domain={[lo, hi]}
             tickFormatter={(v: any) => `$${Math.round(v)}`}
             tick={{ fontFamily: MONO, fontSize: 11, fill: "var(--text-muted)" }} />
           <YAxis tickFormatter={(v: any) => (v === 0 ? "0" : `$${Math.round(v)}`)}
             tick={{ fontFamily: MONO, fontSize: 11, fill: "var(--text-muted)" }} width={52} />
-          <Tooltip
-            contentStyle={{ background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 12, fontFamily: MONO, fontSize: "0.7rem" }}
-            formatter={(v: any) => [`$${Number(v).toFixed(0)}`, "P/L per contract"]}
-            labelFormatter={(v: any) => `Underlying $${Number(v).toFixed(2)}`} />
+          <Tooltip isAnimationActive={false} cursor={lineCursor} wrapperStyle={{ outline: "none", zIndex: 5 }}
+                    content={<ChartTip build={seriesTip({ title: (l) => `Stock at $${Number(l).toFixed(2)}`, sub: "per contract", single: true, value: (v) => `${v < 0 ? "−" : ""}$${Math.abs(v).toFixed(0)}` })} />} />
           <ReferenceLine y={0} stroke="var(--text-muted)" strokeWidth={1} />
           <ReferenceLine x={breakeven} stroke="var(--accent-gold)" strokeDasharray="4 3"
             label={{ value: "B/E", position: "top", fill: "var(--accent-gold)", fontSize: 11, fontFamily: MONO }} />

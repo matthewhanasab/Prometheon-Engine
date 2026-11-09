@@ -8,6 +8,7 @@ import { ErrorNote } from "@/components/States";
 import {
   ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend,
 } from "recharts";
+import { ChartTip, seriesTip, lineCursor, activeDot, grid } from "@/components/charts/kit";
 import CompareChart from "@/components/CompareChart";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
 import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
@@ -568,18 +569,15 @@ function CompareInner() {
               {chartMode === "builtin" ? (
                 <ResponsiveContainer width="100%" height={340}>
                   <LineChart data={perfData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                    <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                    <CartesianGrid {...grid} />
                     <XAxis dataKey="date" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                       tickFormatter={(d: any) => String(d).slice(0, 7)} minTickGap={70} />
                     <YAxis tickFormatter={(v) => `${v.toFixed(0)}%`} tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={56} />
-                    <Tooltip
-                      labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
-                      contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
-                      formatter={(v: any, name: any) => [`${Number(v) >= 0 ? "+" : ""}${Number(v).toFixed(1)}%`, name]}
-                    />
+                    <Tooltip isAnimationActive={false} cursor={lineCursor} wrapperStyle={{ outline: "none", zIndex: 5 }}
+                    content={<ChartTip build={seriesTip({ title: (l) => String(l), sub: "return", value: (v) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%` })} />} />
                     <Legend wrapperStyle={{ fontFamily: "Spline Sans Mono", fontSize: 13 }} />
                     {stocks.map((s, i) => (
-                      <Line key={s.ticker} type="monotone" dataKey={s.ticker} stroke={COLORS[i]} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
+                      <Line key={s.ticker} type="monotone" dataKey={s.ticker} stroke={COLORS[i]} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} activeDot={{ ...activeDot, fill: COLORS[i] }} />
                     ))}
                   </LineChart>
                 </ResponsiveContainer>

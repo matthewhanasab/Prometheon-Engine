@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 import { copyImageToClipboard, saveImage, prefersNativeShare } from "./shareImage";
+import Icon from "./Icon";
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -33,7 +34,7 @@ function inlineComputed(src: Element, clone: Element) {
 async function captureChart(
   svg: SVGSVGElement,
   legend: { text: string; color: string }[],
-  opts: { title: string; ticker: string; companyName?: string }
+  opts: { title: string; ticker: string; companyName?: string; sub?: string }
 ): Promise<Blob> {
   const isDark = document.documentElement.dataset.theme === "dark";
   const rect = svg.getBoundingClientRect();
@@ -67,6 +68,7 @@ async function captureChart(
   await Promise.all([
     document.fonts.load("700 26px 'Space Grotesk'"),
     document.fonts.load("700 14px 'Public Sans'"),
+    document.fonts.load("500 15px 'Spline Sans Mono'"),
   ]).catch(() => {});
 
   // ── Background (theme-aware so the chart's colors match) ──
@@ -100,7 +102,14 @@ async function captureChart(
   ctx.fillStyle = titleColor;
   ctx.textBaseline = "alphabetic";
   const head = `${opts.companyName ?? opts.ticker}  —  ${opts.title}`;
-  ctx.fillText(head, textX, PAD + 31);
+  // With a figure line beneath it, the title sits a little higher so the pair
+  // centres on the logo tile.
+  ctx.fillText(head, textX, opts.sub ? PAD + 22 : PAD + 31);
+  if (opts.sub) {
+    ctx.font = "500 15px 'Spline Sans Mono', monospace";
+    ctx.fillStyle = isDark ? "#93A2BC" : "#4A505E";
+    ctx.fillText(opts.sub, textX, PAD + 44);
+  }
 
   // ── Chart ──
   const chartY = PAD + HEADER;
@@ -179,8 +188,16 @@ export default function ChartShotButton({ ticker, companyName }: { ticker: strin
       const color = sym ? (window.getComputedStyle(sym).fill || window.getComputedStyle(sym).stroke) : null;
       if (text) legend.push({ text, color: color && color !== "none" ? color : "#888" });
     });
+    // Chart cards draw their own legend in HTML, and lead with a figure.
+    const whole = labelEl?.closest("[data-chart-card]");
+    whole?.querySelectorAll<HTMLElement>("[data-legend-item]").forEach((el) => {
+      const key = el.querySelector("[data-legend-key]");
+      const text = el.dataset.legendItem;
+      if (text && key) legend.push({ text, color: window.getComputedStyle(key).backgroundColor || "#888" });
+    });
+    const sub = (labelEl?.querySelector<HTMLElement>("[data-shot-figure]")?.innerText ?? "").replace(/\s+/g, " ").trim() || undefined;
 
-    const blob = await captureChart(svg, legend, { title, ticker, companyName });
+    const blob = await captureChart(svg, legend, { title, ticker, companyName, sub });
     return { blob, title };
   }
 
@@ -206,7 +223,7 @@ export default function ChartShotButton({ ticker, companyName }: { ticker: strin
   }
 
   const done = state === "copied" || state === "saved";
-  const saveLabel = prefersNativeShare() ? "Save to Photos" : "Download";
+  const saveLabel = prefersNativeShare() ? "Save to Photos" : "Download image";
 
   return (
     <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
@@ -227,16 +244,7 @@ export default function ChartShotButton({ ticker, companyName }: { ticker: strin
           transition: "background 0.15s ease, color 0.15s ease",
         }}
       >
-        {done ? (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 6L9 17l-5-5" />
-          </svg>
-        ) : (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-            <circle cx="12" cy="13" r="4" />
-          </svg>
-        )}
+        <Icon name={done ? "check" : "camera"} size={15} strokeWidth={done ? 2.4 : 1.75} />
       </button>
       {open && (
         <div style={{
@@ -244,7 +252,7 @@ export default function ChartShotButton({ ticker, companyName }: { ticker: strin
           background: "var(--bg-primary)", border: "1px solid var(--border)", borderRadius: 14,
           padding: 5, minWidth: 160, boxShadow: "0 10px 28px rgba(0,0,0,0.28)",
         }}>
-          <ChartMenuItem label="Copy Image" onClick={handleCopy} />
+          <ChartMenuItem label="Copy image" onClick={handleCopy} />
           <ChartMenuItem label={saveLabel} onClick={handleSave} />
         </div>
       )}

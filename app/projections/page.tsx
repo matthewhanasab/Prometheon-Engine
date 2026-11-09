@@ -6,6 +6,7 @@ import { ErrorNote, EmptyNote } from "@/components/States";
 import { useUrlTicker } from "@/lib/useUrlTicker";
 import Link from "next/link";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from "recharts";
+import { ChartTip, seriesTip, lineCursor, activeDot, grid } from "@/components/charts/kit";
 import CompanyLogo from "@/components/CompanyLogo";
 
 // Projections — bull, base and bear five-year scenarios for a stock.
@@ -215,16 +216,14 @@ function ProjectionsInner() {
             <div style={{ ...CARD, padding: "18px 10px 8px" }}>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={rows} margin={{ top: 8, right: 16, left: 4, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+                  <CartesianGrid {...grid} />
                   <XAxis dataKey="year" tickFormatter={(y: number) => (y === 0 ? "Today" : `Yr ${y}`)} tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} />
                   <YAxis tickFormatter={(v: number) => `$${Math.round(v)}`} tick={{ fill: "var(--text-muted)", fontSize: 11, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false} width={60} domain={["auto", "auto"]} />
-                  <Tooltip
-                    contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 14, fontFamily: "Spline Sans Mono", fontSize: 12 }}
-                    labelFormatter={(y: unknown) => (Number(y) === 0 ? "Today" : `Year ${String(y)}`)}
-                    formatter={(v: unknown, name: unknown) => [money(Number(v)), String(name).replace(/^\w/, (c) => c.toUpperCase())]} />
+                  <Tooltip isAnimationActive={false} cursor={lineCursor} wrapperStyle={{ outline: "none", zIndex: 5 }}
+                    content={<ChartTip build={seriesTip({ title: (y) => (Number(y) === 0 ? "Today" : `Year ${y}`), value: (v) => money(v), name: (k) => k.replace(/^\w/, (c) => c.toUpperCase()) })} />} />
                   <ReferenceLine y={price} stroke="var(--text-muted)" strokeDasharray="4 4" />
                   {SCENARIOS.map((s) => (
-                    <Line key={s.key} type="monotone" dataKey={s.key} stroke={s.color} strokeWidth={s.key === "base" ? 2.2 : 1.6} dot={{ r: 2.5 }} isAnimationActive={false} />
+                    <Line key={s.key} type="monotone" dataKey={s.key} stroke={s.color} strokeWidth={2} dot={{ r: 3, strokeWidth: 2, stroke: "var(--surface-solid)", fill: s.color }} activeDot={{ ...activeDot, fill: s.color }} isAnimationActive={false} />
                   ))}
                 </LineChart>
               </ResponsiveContainer>

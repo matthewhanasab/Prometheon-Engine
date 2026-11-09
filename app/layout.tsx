@@ -194,6 +194,7 @@ html[data-a11y-cursor="big"], html[data-a11y-cursor="big"] * {
   --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.07);
   --bar-bg:        rgba(12, 18, 32, 0.80);
   --scrim:         rgba(2, 6, 14, 0.58);
+  --surface-solid: #171D2A;
   --series-1:      #5A8DEE;
   --series-2:      #D9692F;
   --series-3:      #22A5BA;

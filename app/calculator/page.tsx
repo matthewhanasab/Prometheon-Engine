@@ -6,6 +6,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, Area, AreaChart, ResponsiveContainer
 } from "recharts";
+import { ChartTip, seriesTip, lineCursor, grid } from "@/components/charts/kit";
 
 const HEADING: React.CSSProperties = {
   fontFamily: "'Space Grotesk', Georgia, serif",
@@ -196,23 +197,13 @@ export default function CalculatorPage() {
               <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "16px 18px" }}>
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 8, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="bandFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--accent-gold)" stopOpacity={0.07} />
-                        <stop offset="95%" stopColor="var(--accent-gold)" stopOpacity={0.01} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
+                    <CartesianGrid {...grid} />
                     <XAxis dataKey="year" stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 11, fontFamily: "Spline Sans Mono" }} />
                     <YAxis stroke="var(--text-secondary)" tick={{ fill: "var(--text-secondary)", fontSize: 11, fontFamily: "Spline Sans Mono" }} tickFormatter={v => fmtDollar(v)} width={75} />
-                    <Tooltip
-                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 22, fontSize: 12, fontFamily: "Spline Sans Mono" }}
-                      labelStyle={{ color: "var(--accent-gold)" }}
-                      formatter={(v: any) => fmtDollar(v)}
-                      labelFormatter={(l) => `Year ${l}`}
-                    />
+                    <Tooltip isAnimationActive={false} cursor={lineCursor} wrapperStyle={{ outline: "none", zIndex: 5 }}
+                    content={<ChartTip build={seriesTip({ title: (l) => `Year ${l}`, value: (v) => fmtDollar(v) })} />} />
                     <Legend wrapperStyle={{ fontSize: 12, fontFamily: "Spline Sans Mono", paddingTop: 8 }} />
-                    <Area type="monotone" dataKey="High" stroke="var(--positive)"    strokeWidth={2} fill="url(#bandFill)" dot={false} />
+                    <Area type="monotone" dataKey="High" stroke="var(--positive)"    strokeWidth={2} fill="var(--accent-gold)" fillOpacity={0.06} dot={false} />
                     <Line type="monotone" dataKey="Base" stroke="var(--accent-gold)" strokeWidth={2} strokeDasharray="5 3" dot={false} />
                     <Line type="monotone" dataKey="Low"  stroke="var(--negative)"    strokeWidth={2} dot={false} />
                   </AreaChart>

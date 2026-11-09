@@ -119,7 +119,15 @@ function SecInner() {
 
       {loading && !data && <SkeletonTable rows={10} />}
 
-      {data && activeTicker && (
+      {/* Every listed company has filings; none at all means EDGAR turned the
+          lookup away, which is worth saying rather than showing two empty tables. */}
+      {data && activeTicker && !error && !stale && filings.length === 0 && insiders.length === 0 && (
+        <ErrorNote title={`Nothing came back for ${activeTicker}`}
+          message="The SEC limits how often its filing system can be asked, and it turned this lookup away. It usually answers on a second try. If the ticker is a fund or a foreign listing, it may not file with the SEC at all."
+          onRetry={retry} />
+      )}
+
+      {data && activeTicker && (filings.length > 0 || insiders.length > 0) && (
         <div className={stale ? "is-stale" : undefined} aria-busy={stale}>
           {/* Recent Filings */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 24, overflow: "hidden", marginBottom: "1.75rem" }}>

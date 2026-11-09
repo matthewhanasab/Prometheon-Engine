@@ -10,6 +10,7 @@ import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
+import { ChartTip, seriesTip, lineCursor, grid } from "@/components/charts/kit";
 
 import {
   callPrice, callDelta, callTheta, gamma as bsGamma, vega as bsVega, callRho,
@@ -387,17 +388,13 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
               <div style={labelStyle}>Payoff at Expiration — ${best.strike} Call</div>
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={payoffData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                  <CartesianGrid {...grid} />
                   <XAxis dataKey="px" tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(v: any) => `$${v}`} minTickGap={50} />
                   <YAxis tick={{ fill: "var(--tick)", fontSize: 12, fontFamily: "Spline Sans Mono" }} axisLine={false} tickLine={false}
                     tickFormatter={(v: any) => `$${v.toLocaleString()}`} width={80} />
-                  <Tooltip
-                    labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }}
-                    contentStyle={{ background: "var(--tooltip-bg)", border: "1px solid var(--tooltip-border)", borderRadius: 22, fontFamily: "Spline Sans Mono", fontSize: 12 }}
-                    formatter={(v: any) => [`$${Number(v).toLocaleString()}`, "P&L"]}
-                    labelFormatter={(l: any) => `Stock at $${l}`}
-                  />
+                  <Tooltip isAnimationActive={false} cursor={lineCursor} wrapperStyle={{ outline: "none", zIndex: 5 }}
+                    content={<ChartTip build={seriesTip({ title: (l) => `Stock at $${l}`, sub: "profit or loss", single: true, value: (v) => `${v < 0 ? "−" : ""}$${Math.abs(v).toLocaleString()}` })} />} />
                   <ReferenceLine y={0} stroke="var(--border-active)" />
                   <ReferenceLine x={best.breakeven} stroke="var(--accent-gold)" strokeDasharray="4 3"
                     label={{ value: `B/E $${fmt(best.breakeven)}`, fill: "var(--accent-gold)", fontSize: 11, fontFamily: "Spline Sans Mono", position: "insideTopLeft" }} />

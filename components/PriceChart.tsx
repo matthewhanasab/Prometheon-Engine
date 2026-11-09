@@ -1,5 +1,6 @@
 "use client";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { grid } from "@/components/charts/kit";
 import Icon from "@/components/Icon";
 
 interface PricePoint { date: string; price: number; }
@@ -97,13 +98,7 @@ export default function PriceChart({ data, label }: { data: PricePoint[]; label?
       )}
       <ResponsiveContainer width="100%" height={220}>
         <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%"  stopColor={color} stopOpacity={0.18} />
-              <stop offset="95%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+          <CartesianGrid {...grid} />
           <XAxis
             dataKey="date"
             tickFormatter={(v) => asLocal(v).toLocaleString("en-US", tickOpts)}
@@ -129,7 +124,7 @@ export default function PriceChart({ data, label }: { data: PricePoint[]; label?
             dataKey="price"
             stroke={color}
             strokeWidth={1.5}
-            fill="url(#priceGrad)"
+            fill={color} fillOpacity={0.1}
             dot={false}
           />
         </AreaChart>
