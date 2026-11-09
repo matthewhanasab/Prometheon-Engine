@@ -36,6 +36,11 @@ type View = "q" | "ttm";
 type Range = "3y" | "5y" | "all";
 
 const QUARTERS: Record<Range, number> = { "3y": 12, "5y": 20, all: 400 };
+const RANGES: { value: Range; label: string; title: string }[] = [
+  { value: "3y", label: "3Y", title: "3 years" },
+  { value: "5y", label: "5Y", title: "5 years" },
+  { value: "all", label: "All", title: "All available" },
+];
 
 const DAY = 864e5;
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / DAY);
@@ -390,6 +395,15 @@ function ChartsInner() {
     window.history.replaceState(null, "", qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
   };
   const n = QUARTERS[range];
+  // Each chart can also be given its own range from the switch in its card.
+  // Choosing a range for the whole page clears those, so the page control
+  // always means "everything".
+  const [own, setOwn] = useState<Record<string, Range>>({});
+  const nOf = (card: string) => QUARTERS[own[card] ?? range];
+  const rangeSwitch = (card: string) => (
+    <Segmented size="sm" label={`Range for ${card.toLowerCase()}`} value={own[card] ?? range} options={RANGES}
+      onChange={(v) => setOwn((o) => ({ ...o, [card]: v }))} />
+  );
 
   // Segment revenue comes from the 10-K's XBRL instance, which is a whole
   // filing (1.4MB for Apple, 15MB for JPMorgan), so it loads after the page
@@ -488,6 +502,7 @@ function ChartsInner() {
 
   /** A flow measure (revenue, cash flow, earnings) as a card of columns. */
   const flowCard = (id: string | undefined, title: string, g: { q: Row[]; ttm: Row[] }, fmt: (v: number) => string, axisFmt: (v: number) => string, wide = false) => {
+    const n = nOf(title);
     const rows = (view === "ttm" ? g.ttm : g.q).slice(-n);
     const end = last(rows);
     if (rows.length < 2) { missing.push(title); return null; }
@@ -495,7 +510,7 @@ function ChartsInner() {
     // either end can't skew it.
     const rate = rateText(yearlyRate(g.ttm, n));
     return (
-      <ChartCard id={id} title={title} wide={wide} {...common}
+      <ChartCard id={id} title={title} wide={wide} {...common} control={rangeSwitch(title)}
         figure={end ? fmt(end.value) : undefined}
         delta={end && <Delta frac={end.yoy} label="vs year ago" />}
         caption={end ? [view === "ttm" ? `12 months to ${end.label}` : end.label, rate].filter(Boolean).join(" · ") : undefined}>
@@ -506,13 +521,14 @@ function ChartsInner() {
 
   /** A valuation multiple against its own history. */
   const multipleCard = (id: string | undefined, title: string, all: Row[], basis: string) => {
+    const n = nOf(title);
     const rows = all.slice(-n);
     const end = last(rows);
     const avg = rows.length ? mean(rows.map((r) => r.value)) : 0;
     const lo = Math.min(...rows.map((r) => r.value)), hi = Math.max(...rows.map((r) => r.value));
     if (rows.length < 2) { missing.push(title); return null; }
     return (
-      <ChartCard id={id} title={title} {...common}
+      <ChartCard id={id} title={title} {...common} control={rangeSwitch(title)}
         figure={end ? times(end.value) : undefined}
         delta={end && avg > 0 && <Delta frac={(end.value - avg) / avg} tone="neutral" label="vs its average" />}
         caption={end ? `${basis}, at each quarter's close · between ${times(lo)} and ${times(hi)}` : undefined}
@@ -562,8 +578,8 @@ function ChartsInner() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               <Segmented label="Period" value={view} onChange={(v) => setParam("view", v, "q")}
                 options={[{ value: "q", label: "Quarterly" }, { value: "ttm", label: "Trailing 12 months" }]} />
-              <Segmented label="Range" value={range} onChange={(v) => setParam("range", v, "5y")}
-                options={[{ value: "3y", label: "3Y", title: "3 years" }, { value: "5y", label: "5Y", title: "5 years" }, { value: "all", label: "All", title: "All available" }]} />
+              <Segmented label="Range for every chart" value={range} options={RANGES}
+                onChange={(v) => { setOwn({}); setParam("range", v, "5y"); }} />
             </div>
           </div>
 
@@ -601,7 +617,7 @@ function ChartsInner() {
           <section className="chart-group">
             <GroupHead id="margins" title="Margins">How much of each dollar of sales survives each layer of cost.</GroupHead>
             {(() => {
-              const rows = (view === "ttm" ? m.margins.ttm : m.margins.q).slice(-n);
+              const rows = (view === "ttm" ? m.margins.ttm : m.margins.q).slice(-nOf("Margins"));
               const shown = MARGIN_SERIES.filter((d) => rows.some((r) => r[d.key] != null));
               const end = (key: string) => [...rows].reverse().find((r) => r[key] != null);
               const lead = shown[0];
@@ -614,7 +630,7 @@ function ChartsInner() {
               }));
               return (
                 <div className="chart-grid">
-                  <ChartCard title={marginTitle(shown.map((d) => d.name))} wide {...common} shot={rows.length >= 2}
+                  <ChartCard title={marginTitle(shown.map((d) => d.name))} wide {...common} shot={rows.length >= 2} control={rangeSwitch("Margins")}
                     figure={leadEnd ? pct(leadEnd[lead.key] as number) : undefined}
                     delta={move != null && <Delta frac={move} text={`${Math.abs(move).toFixed(1)} pts`} label="vs year ago" />}
                     caption={leadEnd ? `${lead.name} margin, ${view === "ttm" ? `12 months to ${leadEnd.label}` : leadEnd.label}` : undefined}
@@ -643,11 +659,11 @@ function ChartsInner() {
             <GroupHead id="capital" title="Capital">How many shares the results are split between, and the book value behind them.</GroupHead>
             <div className="chart-grid">
               {(() => {
-                const rows = m.shares.slice(-n);
+                const rows = m.shares.slice(-nOf("Shares outstanding"));
                 const end = last(rows), start = rows[0];
                 const drift = end && start && start.value > 0 ? (end.value - start.value) / start.value : null;
                 return (
-                  <ChartCard title="Shares outstanding" {...common} shot={rows.length >= 2}
+                  <ChartCard title="Shares outstanding" {...common} shot={rows.length >= 2} control={rangeSwitch("Shares outstanding")}
                     figure={end ? count(end.value) : undefined}
                     delta={end && <Delta frac={end.yoy} tone="neutral" label="vs year ago" />}
                     caption={end && drift != null ? `${end.label} · ${signedPct(drift)} since ${start.label}, adjusted for splits` : undefined}>
@@ -658,10 +674,10 @@ function ChartsInner() {
                 );
               })()}
               {(() => {
-                const rows = m.equity.slice(-n);
+                const rows = m.equity.slice(-nOf("Shareholders' equity"));
                 const end = last(rows);
                 return (
-                  <ChartCard title="Shareholders' equity" {...common} shot={rows.length >= 2}
+                  <ChartCard title="Shareholders' equity" {...common} shot={rows.length >= 2} control={rangeSwitch("Shareholders' equity")}
                     figure={end ? money(end.value) : undefined}
                     delta={end && <Delta frac={end.yoy} label="vs year ago" />}
                     caption={end ? `${end.label} · assets less liabilities` : undefined}>
@@ -692,11 +708,11 @@ function ChartsInner() {
             <GroupHead id="balance" title="Balance sheet">What it holds against what it owes.</GroupHead>
             <div className="chart-grid">
               {(() => {
-                const rows = m.liquidity.slice(-n);
+                const rows = m.liquidity.slice(-nOf("Current assets and current liabilities"));
                 const end = last(rows);
                 const ratio = end && (end.liabilities as number) > 0 ? (end.assets as number) / (end.liabilities as number) : null;
                 return (
-                  <ChartCard title="Current assets and current liabilities" {...common} shot={rows.length >= 2}
+                  <ChartCard title="Current assets and current liabilities" {...common} shot={rows.length >= 2} control={rangeSwitch("Current assets and current liabilities")}
                     figure={ratio != null ? times(ratio, 2) : undefined}
                     delta={ratio != null && <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: "var(--text-secondary)" }}>current ratio</span>}
                     caption={end ? `${end.label} · ${money(end.assets as number, 1)} of current assets against ${money(end.liabilities as number, 1)} of current liabilities` : undefined}
@@ -716,11 +732,11 @@ function ChartsInner() {
                 );
               })()}
               {(() => {
-                const rows = m.funds.slice(-n);
+                const rows = m.funds.slice(-nOf("Cash, securities and debt"));
                 const end = last(rows);
                 const net = end ? (end.net as number) : null;
                 return (
-                  <ChartCard id="net-cash" title="Cash, securities and debt" {...common} shot={rows.length >= 2}
+                  <ChartCard id="net-cash" title="Cash, securities and debt" {...common} shot={rows.length >= 2} control={rangeSwitch("Cash, securities and debt")}
                     figure={net != null ? money(Math.abs(net)) : undefined}
                     delta={net != null && <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: "var(--text-secondary)" }}>{net >= 0 ? "net cash" : "net debt"}</span>}
                     caption={end ? `${end.label} · ${money((end.cash as number) + (end.securities as number), 1)} on hand, ${money(end.debt as number, 1)} of long-term debt` : undefined}

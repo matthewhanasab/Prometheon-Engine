@@ -10,7 +10,7 @@ import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
-import { ChartTip, seriesTip, lineCursor, grid } from "@/components/charts/kit";
+import { ChartTip, seriesTip, lineCursor, grid, StatCell, StatStrip } from "@/components/charts/kit";
 
 import {
   callPrice, callDelta, callTheta, gamma as bsGamma, vega as bsVega, callRho,
@@ -93,15 +93,10 @@ const cardStyle: React.CSSProperties = {
   padding: "1.1rem 1.25rem",
 };
 
+// One cell of a figure strip. "good" and "bad" colour the line beneath, where
+// it is a flag worth noticing (earnings before expiry); the figure stays ink.
 function Metric({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "good" | "bad" | "gold" }) {
-  const subColor = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : tone === "gold" ? "var(--accent-gold)" : "var(--text-secondary)";
-  return (
-    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "12px 14px" }}>
-      <div style={labelStyle}>{label}</div>
-      <div style={{ fontFamily: "'Spline Sans Mono', monospace", fontSize: "1.15rem", fontWeight: 600, color: "var(--text-primary)" }}>{value}</div>
-      {sub && <div style={{ fontSize: "0.7rem", color: subColor, marginTop: 4, fontFamily: "'Public Sans', sans-serif" }}>{sub}</div>}
-    </div>
-  );
+  return <StatCell label={label} value={value} sub={sub} subTone={tone === "good" ? "up" : tone === "bad" ? "down" : undefined} />;
 }
 
 // Arrow-key navigation: right-arrow at the end of a field jumps to the next one,
@@ -293,7 +288,7 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
           )}
 
           {/* Overview */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: "1.5rem" }}>
+          <StatStrip min={160} style={{ marginBottom: "1.5rem" }}>
             <Metric label={data.ticker} value={`$${fmt(data.price)}`} sub={data.name.slice(0, 26)} />
             <Metric label="Est. IV (21d HV)" value={data.hv21 != null ? `${(data.hv21 * 100).toFixed(1)}%` : "—"}
               sub={data.hvRank != null ? `Vol rank ${data.hvRank.toFixed(0)}/100 ${data.hvRank >= 50 ? "· premium rich" : "· premium thin"}` : undefined}
@@ -303,17 +298,17 @@ export function CoveredCallsInner({ apiBase = "/api/ms-options" }: { apiBase?: s
               sub={earningsBeforeExpiry ? "Before expiry" : "After expiry"} tone={earningsBeforeExpiry ? "bad" : "good"} />
             <Metric label="Position" value={`${numShares.toLocaleString()} sh`} sub={`${contracts} contract${contracts !== 1 ? "s" : ""}${basis > 0 ? ` · basis $${fmt(basis)}` : ""}`} />
             <Metric label="Risk-Free Rate" value={`${(rfr * 100).toFixed(2)}%`} sub="FRED 3M Treasury" />
-          </div>
+          </StatStrip>
 
           {/* Expected move stats */}
           {S > 0 && iv > 0 && (() => {
             const em = expectedMove(S, iv, T);
             return (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: "1.5rem" }}>
+              <StatStrip min={160} style={{ marginBottom: "1.5rem" }}>
                 <Metric label="Expected Move by Expiry" value={`±$${fmt(em)}`} sub={`±${((em / S) * 100).toFixed(1)}% (1 std dev)`} tone="gold" />
                 <Metric label="ATM IV (est.)" value={`${(iv * 100).toFixed(1)}%`} sub="21-day historical vol" />
                 <Metric label="1SD Range" value={`$${fmt(S - em)} – $${fmt(S + em)}`} sub={`by ${expiryDate.toISOString().slice(0, 10)}`} />
-              </div>
+              </StatStrip>
             );
           })()}
 

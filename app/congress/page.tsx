@@ -5,6 +5,7 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import { ErrorNote, SkeletonTable } from "@/components/States";
 import PageHeader from "@/components/PageHeader";
+import { StatCell, StatStrip } from "@/components/charts/kit";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Amount {
@@ -172,23 +173,12 @@ export default function CongressPage() {
       {data && (
         <>
           {/* Summary cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14, marginBottom: "1.6rem" }}>
-            {[
-              { label: "Disclosed trades", value: data.total.toLocaleString("en-US"), tone: "var(--accent-gold)" },
-              { label: "Purchases", value: data.totals.purchases.toLocaleString("en-US"), sub: `≈ ${fmtCompact(data.totals.purchaseVolume)}`, tone: "var(--positive)" },
-              { label: "Sales", value: data.totals.sales.toLocaleString("en-US"), sub: `≈ ${fmtCompact(data.totals.saleVolume)}`, tone: "var(--negative)" },
-              { label: "Members", value: data.totals.members.toLocaleString("en-US"), tone: "var(--accent-gold)" },
-            ].map((c) => (
-              <div key={c.label} style={{
-                background: "var(--bg-surface)", border: "1px solid var(--border)", borderTop: `2px solid ${c.tone}`,
-                borderRadius: 22, padding: "0.9rem 1rem",
-              }}>
-                <div style={{ ...LABEL_STYLE, marginBottom: "0.5rem" }}>{c.label}</div>
-                <div style={{ ...MONO, fontSize: "1.35rem", fontWeight: 500 }}>{c.value}</div>
-                {c.sub && <div style={{ ...MONO, fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>{c.sub}</div>}
-              </div>
-            ))}
-          </div>
+          <StatStrip style={{ marginBottom: "1.6rem" }}>
+            <StatCell label="Disclosed trades" value={data.total.toLocaleString("en-US")} sub="in the reports on file" />
+            <StatCell label="Purchases" value={data.totals.purchases.toLocaleString("en-US")} sub={`about ${fmtCompact(data.totals.purchaseVolume)}`} />
+            <StatCell label="Sales" value={data.totals.sales.toLocaleString("en-US")} sub={`about ${fmtCompact(data.totals.saleVolume)}`} />
+            <StatCell label="Members" value={data.totals.members.toLocaleString("en-US")} sub="with a trade disclosed" />
+          </StatStrip>
 
           {/* Controls */}
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "flex-end", marginBottom: "1.4rem" }}>

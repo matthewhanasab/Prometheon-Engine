@@ -9,7 +9,7 @@ import { useTickerData, lookupErrorText } from "@/lib/useTickerData";
 
 import { loadDirectory } from "@/lib/tickerDirectory";
 import {
-  xAxis, yAxis, grid, barCursor, dollars, ChartTip, changeNote, Delta, ChartCard, StatCell,
+  xAxis, yAxis, grid, barCursor, dollars, ChartTip, changeNote, Delta, ChartCard, StatCell, useTimeframe,
 } from "@/components/charts/kit";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
@@ -67,6 +67,7 @@ function DividendsInner() {
       change: i > 0 && all[i - 1].total > 0 && Number(all[i - 1].year) === Number(y.year) - 1 ? (y.total - all[i - 1].total) / all[i - 1].total : null,
     }));
   const lastYear = yearly[yearly.length - 1];
+  const frame = useTimeframe(yearly, (y) => `${y.year}-12-31`, { label: "Years shown", frames: ["5Y", "10Y", "20Y"] });
   // Growth over the last ten full years, or as many as there are.
   const base = yearly.length > 2 ? yearly[Math.max(0, yearly.length - 11)] : null;
   const span = base && lastYear ? lastYear.year - base.year : 0;
@@ -136,11 +137,11 @@ function DividendsInner() {
 
           {yearly.length >= 2 && lastYear && (
             <div className="chart-grid" style={{ marginTop: 16 }}>
-              <ChartCard title="Dividends per share, by year" wide ticker={data.ticker} company={company}
+              <ChartCard title="Dividends per share, by year" wide ticker={data.ticker} company={company} control={frame.control}
                 figure={dollars(lastYear.total)}
                 delta={<Delta frac={lastYear.change} label={`vs ${lastYear.year - 1}`} />}
                 caption={[`Paid in ${lastYear.year}`, rate != null ? `${rate >= 0 ? "Up" : "Down"} ${Math.abs(rate * 100).toFixed(1)}% a year over ${span} years` : null].filter(Boolean).join(" · ")}>
-                <YearsPlot rows={yearly} />
+                <YearsPlot rows={frame.rows} />
               </ChartCard>
             </div>
           )}

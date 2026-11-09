@@ -6,6 +6,7 @@ import Icon from "@/components/Icon";
 import Sheet from "@/components/Sheet";
 import { ErrorNote, EmptyNote } from "@/components/States";
 import PageHeader from "@/components/PageHeader";
+import { StatCell, StatStrip } from "@/components/charts/kit";
 
 // M&A Activity — one card per deal, filterable by industry and deal type.
 //
@@ -183,19 +184,11 @@ export default function MnaPage() {
       ) : (
         <>
           {/* Summary of the current view */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: "1.2rem" }}>
-            {[
-              ["Deals", String(deals.length), industry === "all" ? "across every industry" : industryLabel(industry)],
-              ["Combined value", totalValue > 0 ? fmtValue(totalValue, "USD") : "—", "USD-denominated deals with a disclosed value"],
-              ["Largest", largest ? fmtValue(largest.value, largest.currency) ?? "—" : "—", largest ? largest.title : ""],
-            ].map(([label, value, sub]) => (
-              <div key={label} style={{ ...CARD, borderTop: "2px solid var(--accent-gold)", padding: "12px 16px" }}>
-                <div style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)" }}>{label}</div>
-                <div style={{ fontFamily: MONO, fontSize: "1.35rem", fontWeight: 600, marginTop: 4 }}>{value}</div>
-                <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</div>
-              </div>
-            ))}
-          </div>
+          <StatStrip min={200} style={{ marginBottom: "1.2rem" }}>
+            <StatCell label="Deals" value={String(deals.length)} sub={industry === "all" ? "across every industry" : industryLabel(industry)} />
+            <StatCell label="Combined value" value={totalValue > 0 ? fmtValue(totalValue, "USD") ?? "n/a" : "n/a"} sub="US-dollar deals with a disclosed value" />
+            <StatCell label="Largest" value={largest ? fmtValue(largest.value, largest.currency) ?? "n/a" : "n/a"} sub={largest ? largest.title : undefined} />
+          </StatStrip>
 
           {deals.length === 0 ? (
             <EmptyNote title="No deals match those filters">

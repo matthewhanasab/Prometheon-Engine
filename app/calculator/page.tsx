@@ -6,7 +6,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, Area, AreaChart, ResponsiveContainer
 } from "recharts";
-import { ChartTip, seriesTip, lineCursor, grid } from "@/components/charts/kit";
+import { ChartTip, seriesTip, lineCursor, grid, Segmented } from "@/components/charts/kit";
 
 const HEADING: React.CSSProperties = {
   fontFamily: "'Space Grotesk', Georgia, serif",
@@ -195,6 +195,11 @@ export default function CalculatorPage() {
                 <SummaryCard label="High" result={results.high} color="var(--positive)" />
               </div>
               <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "16px 18px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontFamily: "'Public Sans', sans-serif", fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>Portfolio value, year by year</span>
+                  <Segmented size="sm" label="Years shown" value={String(inputs.years)} onChange={(v) => handleChange("years", Number(v))}
+                    options={[10, 15, 20, 30, 40].map((y) => ({ value: String(y), label: `${y}Y`, title: `${y} years` }))} />
+                </div>
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 8, bottom: 0 }}>
                     <CartesianGrid {...grid} />

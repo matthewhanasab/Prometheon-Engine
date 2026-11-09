@@ -15,7 +15,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
-import { FormattedTip, lineCursor, grid } from "@/components/charts/kit";
+import { FormattedTip, lineCursor, grid, useTimeframe, StatCell, StatStrip, Delta } from "@/components/charts/kit";
 
 // ── types ──────────────────────────────────────────────────────────────────────
 interface FredSeries {
@@ -141,10 +141,13 @@ function ChartCard({
   children,
   height = 270,
   title,
+  control,
 }: {
   children: React.ReactNode;
   height?: number;
   title?: string;
+  /** This chart's own time-frame switch. */
+  control?: React.ReactNode;
 }) {
   return (
     <div
@@ -153,27 +156,50 @@ function ChartCard({
         border: "1px solid var(--border)",
         borderRadius: 22,
         padding: "12px 8px 4px",
-        height,
+        minHeight: height,
       }}
     >
-      {title && (
-        <div
-          style={{
-            fontFamily: "'Public Sans', sans-serif",
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            color: "var(--text-secondary)",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            marginBottom: 8,
-            paddingLeft: 8,
-          }}
-        >
-          {title}
+      {(title || control) && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "6px 10px", minHeight: 30, margin: "0 6px 8px 8px" }}>
+          <div
+            style={{
+              fontFamily: "'Public Sans', sans-serif",
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              color: "var(--text-secondary)",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+            }}
+          >
+            {title}
+          </div>
+          {control}
         </div>
       )}
       {children}
     </div>
+  );
+}
+
+/** A chart card for a series over time: it owns the time-frame switch and hands the chart the rows inside it. */
+function Framed<T>({
+  rows,
+  dateOf = (r: T) => (r as { date: string }).date,
+  title,
+  height,
+  children,
+}: {
+  rows: T[];
+  dateOf?: (r: T) => string | number | Date;
+  title: string;
+  height?: number;
+  children: (rows: T[]) => React.ReactNode;
+}) {
+  const frame = useTimeframe(rows ?? [], dateOf, { label: `Time frame for ${title}` });
+  return (
+    <ChartCard title={title} height={height} control={frame.control}>
+      {children(frame.rows)}
+    </ChartCard>
   );
 }
 
@@ -223,7 +249,7 @@ function Grid() {
   );
 }
 
-// Snapshot metric card
+// One cell of the snapshot strip.
 function MCard({
   label,
   value,
@@ -238,72 +264,9 @@ function MCard({
   /** The day or month the figure is for. */
   asOf?: string;
 }) {
-  const subColor =
-    tone === "bad"
-      ? "var(--negative)"
-      : tone === "good"
-      ? "var(--positive)"
-      : "var(--text-secondary)";
   return (
-    <div
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        borderRadius: 22,
-        padding: "14px 16px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 4,
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "'Public Sans', sans-serif",
-          fontSize: "0.6875rem",
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: "0.12em",
-          color: "var(--text-secondary)",
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          fontFamily: "'Space Grotesk', Georgia, serif",
-          fontSize: "1.5rem",
-          fontWeight: 500,
-          color: "var(--text-primary)",
-          letterSpacing: "-0.02em",
-        }}
-      >
-        {value}
-      </div>
-      {sub && (
-        <div
-          style={{
-            fontFamily: "'Public Sans', sans-serif",
-            fontSize: "0.7rem",
-            color: subColor,
-          }}
-        >
-          {sub}
-        </div>
-      )}
-      {asOf && (
-        <div
-          style={{
-            fontFamily: "'Spline Sans Mono', monospace",
-            fontSize: "0.6875rem",
-            color: "var(--text-muted)",
-            marginTop: "auto",
-            paddingTop: 2,
-          }}
-        >
-          {asOf}
-        </div>
-      )}
-    </div>
+    <StatCell label={label} value={value} sub={sub} foot={asOf}
+      subTone={tone === "bad" ? "down" : tone === "good" ? "up" : undefined} />
   );
 }
 
@@ -367,58 +330,10 @@ const MARKET_META: Record<
 
 function MarketCard({ q }: { q: MarketQuote }) {
   const meta = MARKET_META[q.symbol] ?? { label: q.symbol, color: "var(--text-muted)" };
-  const up = q.changesPercentage >= 0;
   return (
-    <div
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        borderTop: `2px solid ${meta.color}`,
-        borderRadius: 22,
-        padding: "14px 16px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-        flex: 1,
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "'Public Sans', sans-serif",
-          fontSize: "0.6875rem",
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: "0.14em",
-          color: "var(--text-secondary)",
-        }}
-      >
-        {meta.label}
-      </div>
-      <div
-        style={{
-          fontFamily: "'Space Grotesk', Georgia, serif",
-          fontSize: "1.35rem",
-          fontWeight: 500,
-          color: "var(--text-primary)",
-          letterSpacing: "-0.02em",
-        }}
-      >
-        {q.symbol === "BTCUSD"
-          ? "$" + fmtK(q.price)
-          : "$" + fmt(q.price)}
-      </div>
-      <div
-        style={{
-          fontFamily: "Spline Sans Mono, monospace",
-          fontSize: "0.72rem",
-          color: up ? "var(--positive)" : "var(--negative)",
-        }}
-      >
-        {up ? "+" : ""}
-        {fmt(q.changesPercentage, 2)}% today
-      </div>
-    </div>
+    <StatCell label={meta.label}
+      value={q.symbol === "BTCUSD" ? "$" + fmtK(q.price) : "$" + fmt(q.price)}
+      delta={<Delta frac={q.changesPercentage / 100} label="today" size="0.75rem" />} />
   );
 }
 
@@ -591,14 +506,8 @@ export default function MacroPage() {
 
       {/* 1. Snapshot */}
       <SL>Snapshot</SL>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-          gap: 8,
-          marginBottom: "0.5rem",
-        }}
-      >
+      {/* Five to a row on a desk, so ten figures make two even rows. */}
+      <StatStrip min={250} style={{ marginBottom: "0.5rem" }}>
         {snapCards.map((c) => (
           <MCard
             key={c.label}
@@ -609,15 +518,15 @@ export default function MacroPage() {
             asOf={"asOf" in c ? c.asOf : undefined}
           />
         ))}
-      </div>
+      </StatStrip>
 
       {/* 2. Interest Rates */}
       <SL>Interest Rates</SL>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
-        <ChartCard height={chartH + 40} title="Policy Rate vs Treasury Yields">
+        <Framed height={chartH + 40} title="Policy Rate vs Treasury Yields" rows={rateData}>{(rows) => (
           <ResponsiveContainer width="100%" height={chartH}>
             <LineChart
-              data={rateData}
+              data={rows}
               margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
             >
               <Grid />
@@ -666,22 +575,22 @@ export default function MacroPage() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </ChartCard>
+        )}</Framed>
 
-        <ChartCard height={chartH + 40} title="Yield Curve — 10Y minus 2Y">
+        <Framed height={chartH + 40} title="Yield Curve — 10Y minus 2Y" rows={fred.spread}>{(rows) => (
           <div style={{ height: chartH }}>
-            <SpreadChart data={fred.spread} />
+            <SpreadChart data={rows} />
           </div>
-        </ChartCard>
+        )}</Framed>
       </div>
 
       {/* 3. Inflation */}
       <SL>Inflation</SL>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
-        <ChartCard height={chartH + 40} title="CPI & PCE — Year-over-Year">
+        <Framed height={chartH + 40} title="CPI & PCE — Year-over-Year" rows={inflData}>{(rows) => (
           <ResponsiveContainer width="100%" height={chartH}>
             <LineChart
-              data={inflData}
+              data={rows}
               margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
             >
               <Grid />
@@ -728,12 +637,12 @@ export default function MacroPage() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </ChartCard>
+        )}</Framed>
 
-        <ChartCard height={chartH + 40} title="10Y Breakeven Inflation">
+        <Framed height={chartH + 40} title="10Y Breakeven Inflation" rows={fred.bei}>{(rows) => (
           <ResponsiveContainer width="100%" height={chartH}>
             <AreaChart
-              data={fred.bei}
+              data={rows}
               margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
             >
               <Grid />
@@ -767,7 +676,7 @@ export default function MacroPage() {
               />
             </AreaChart>
           </ResponsiveContainer>
-        </ChartCard>
+        )}</Framed>
       </div>
 
       {/* 4. Labor Market */}
@@ -779,10 +688,10 @@ export default function MacroPage() {
           gap: 12,
         }}
       >
-        <ChartCard height={chartH + 40} title="Unemployment Rate">
+        <Framed height={chartH + 40} title="Unemployment Rate" rows={fred.unemp}>{(rows) => (
           <ResponsiveContainer width="100%" height={chartH}>
             <LineChart
-              data={fred.unemp}
+              data={rows}
               margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
             >
               <Grid />
@@ -804,12 +713,12 @@ export default function MacroPage() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </ChartCard>
+        )}</Framed>
 
-        <ChartCard height={chartH + 40} title="Initial Jobless Claims">
+        <Framed height={chartH + 40} title="Initial Jobless Claims" rows={fred.claims}>{(rows) => (
           <ResponsiveContainer width="100%" height={chartH}>
             <AreaChart
-              data={fred.claims}
+              data={rows}
               margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
             >
               <Grid />
@@ -832,12 +741,12 @@ export default function MacroPage() {
               />
             </AreaChart>
           </ResponsiveContainer>
-        </ChartCard>
+        )}</Framed>
 
-        <ChartCard height={chartH + 40} title="Consumer Sentiment">
+        <Framed height={chartH + 40} title="Consumer Sentiment" rows={fred.sentiment}>{(rows) => (
           <ResponsiveContainer width="100%" height={chartH}>
             <AreaChart
-              data={fred.sentiment}
+              data={rows}
               margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
             >
               <Grid />
@@ -860,34 +769,27 @@ export default function MacroPage() {
               />
             </AreaChart>
           </ResponsiveContainer>
-        </ChartCard>
+        )}</Framed>
       </div>
 
       {/* 5. Markets */}
       <SL>Markets Overview</SL>
       <MarketStrip />
-      <div
-        style={{
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-          marginTop: 10,
-        }}
-      >
+      <StatStrip style={{ marginTop: 10 }}>
         {["GLD", "USO", "BTCUSD", "UUP"].map((sym) => {
           const q = markets.find((m) => m.symbol === sym);
           if (!q) return null;
           return <MarketCard key={sym} q={q} />;
         })}
-      </div>
+      </StatStrip>
 
       {/* 6. Recession Watch */}
       <SL>Recession Watch</SL>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
-        <ChartCard height={chartH + 40} title="VIX — Market Fear Index">
+        <Framed height={chartH + 40} title="VIX — Market Fear Index" rows={fred.vix}>{(rows) => (
           <ResponsiveContainer width="100%" height={chartH}>
             <AreaChart
-              data={fred.vix}
+              data={rows}
               margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
             >
               <Grid />
@@ -932,15 +834,14 @@ export default function MacroPage() {
               />
             </AreaChart>
           </ResponsiveContainer>
-        </ChartCard>
+        )}</Framed>
 
-        <ChartCard
+        <Framed
           height={chartH + 40}
-          title="Consumer Sentiment — U. of Michigan"
-        >
+          title="Consumer Sentiment — U. of Michigan" rows={fred.sentiment}>{(rows) => (
           <ResponsiveContainer width="100%" height={chartH}>
             <AreaChart
-              data={fred.sentiment}
+              data={rows}
               margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
             >
               <Grid />
@@ -963,7 +864,7 @@ export default function MacroPage() {
               />
             </AreaChart>
           </ResponsiveContainer>
-        </ChartCard>
+        )}</Framed>
       </div>
 
       {/* 7. Yield Curve */}
@@ -1088,10 +989,10 @@ export default function MacroPage() {
               </div>
             </div>
 
-            <ChartCard height={chartH + 40} title="Fear & Greed — 30 Days">
+            <Framed height={chartH + 40} title="Fear & Greed" rows={fearGreed.history} dateOf={(r) => Number(r.timestamp) * 1000}>{(rows) => (
               <ResponsiveContainer width="100%" height={chartH}>
                 <AreaChart
-                  data={fearGreed.history}
+                  data={rows}
                   margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
                 >
                   <Grid />
@@ -1136,7 +1037,7 @@ export default function MacroPage() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </ChartCard>
+            )}</Framed>
           </div>
         </>
       )}

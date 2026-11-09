@@ -6,7 +6,7 @@ import { ErrorNote, EmptyNote } from "@/components/States";
 import { useUrlTicker } from "@/lib/useUrlTicker";
 import Link from "next/link";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from "recharts";
-import { ChartTip, seriesTip, lineCursor, activeDot, grid } from "@/components/charts/kit";
+import { ChartTip, seriesTip, lineCursor, activeDot, grid, Segmented } from "@/components/charts/kit";
 import CompanyLogo from "@/components/CompanyLogo";
 
 // Projections — bull, base and bear five-year scenarios for a stock.
@@ -213,7 +213,12 @@ function ProjectionsInner() {
 
           {/* Chart + assumptions */}
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.6fr) minmax(280px, 1fr)", gap: 12, alignItems: "start" }}>
-            <div style={{ ...CARD, padding: "18px 10px 8px" }}>
+            <div style={{ ...CARD, padding: "16px 12px 8px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, margin: "0 6px 12px" }}>
+                <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>Price path by scenario</span>
+                <Segmented size="sm" label="Years projected" value={String(a.years)} onChange={(v) => setA((p) => p && ({ ...p, years: Number(v) }))}
+                  options={[3, 5, 10].map((y) => ({ value: String(y), label: `${y}Y`, title: `${y} years` }))} />
+              </div>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={rows} margin={{ top: 8, right: 16, left: 4, bottom: 0 }}>
                   <CartesianGrid {...grid} />

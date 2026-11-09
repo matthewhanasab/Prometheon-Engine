@@ -12,6 +12,7 @@ import PriceChart from "@/components/PriceChart";
 import TradingViewChart from "@/components/TradingViewChart";
 import RangeToggle, { RangeKey, sliceRange } from "@/components/RangeToggle";
 import ChartModeToggle, { ChartMode } from "@/components/ChartModeToggle";
+import { StatCell, StatStrip } from "@/components/charts/kit";
 
 // ETF Hub. Holdings come from SEC N-PORT filings (via marketstack), so the
 // portfolio is as-of a quarterly report date rather than live — that date is
@@ -51,15 +52,10 @@ function SectionLabel({ children, hint, right }: { children: React.ReactNode; hi
   );
 }
 
-function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "good" | "bad" }) {
-  const color = tone === "good" ? "var(--positive)" : tone === "bad" ? "var(--negative)" : "var(--text-primary)";
-  return (
-    <div style={{ ...CARD, padding: "14px 16px" }}>
-      <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", marginBottom: 5 }}>{label}</div>
-      <div style={{ fontFamily: MONO, fontSize: "1.15rem", fontWeight: 600, color }}>{value}</div>
-      {sub && <div style={{ fontFamily: SANS, fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: 3 }}>{sub}</div>}
-    </div>
-  );
+// One cell of a figure strip. `move` colours the figure, and is only for a
+// figure that is itself a gain or a loss.
+function Stat({ label, value, sub, move }: { label: string; value: string; sub?: string; move?: "up" | "down" }) {
+  return <StatCell label={label} value={value} sub={sub} valueTone={move} />;
 }
 
 /** Horizontal weight bar used by the allocation blocks. */
@@ -163,16 +159,16 @@ function EtfInner() {
           {q?.returns?.length > 0 && (
             <>
               <SectionLabel>Total Return</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10 }}>
+              <StatStrip min={160}>
                 {q.returns.map((r: any) => (
                   <Stat key={r.years} label={`${r.years}-Year Return`} value={pct(r.totalPct, 0)}
-                    sub={`${pct(r.cagrPct, 1)}/yr`} tone={r.totalPct >= 0 ? "good" : "bad"} />
+                    sub={`${pct(r.cagrPct, 1)} a year`} move={r.totalPct >= 0 ? "up" : "down"} />
                 ))}
                 {q.pos52 != null && (
                   <Stat label="52-Week Range" value={`${q.pos52.toFixed(0)}%`}
                     sub={`${money(q.week52Low)} – ${money(q.week52High)}`} />
                 )}
-              </div>
+              </StatStrip>
             </>
           )}
 
@@ -199,35 +195,31 @@ function EtfInner() {
           ) : (
             <>
               <SectionLabel hint={`as filed ${fund?.reportDate ?? "—"}`}>Fund Facts</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10 }}>
+              <StatStrip min={160}>
                 <Stat label="Net Assets" value={big(data.totals?.netAssets)} sub="per latest N-PORT filing" />
                 <Stat label="Holdings" value={String(data.totals?.count ?? "—")} sub="positions reported" />
                 <Stat label="Dividend Yield" value={q?.yieldPct != null ? `${q.yieldPct.toFixed(2)}%` : "—"}
-                  sub={q?.ttmDividend ? `$${q.ttmDividend.toFixed(2)} TTM · ${q.payoutsPerYear ?? "?"}×/yr` : undefined} tone="good" />
+                  sub={q?.ttmDividend ? `$${q.ttmDividend.toFixed(2)} TTM · ${q.payoutsPerYear ?? "?"}×/yr` : undefined} />
                 <Stat label="Expense Ratio" value={q?.expenseRatio != null ? `${q.expenseRatio.toFixed(2)}%` : "—"}
-                  sub={q?.expenseRatio != null ? `$${(q.expenseRatio * 100).toFixed(0)}/yr per $10k` : "not in reference table"}
-                  tone={q?.expenseRatio != null && q.expenseRatio <= 0.1 ? "good" : q?.expenseRatio != null && q.expenseRatio > 0.4 ? "bad" : undefined} />
+                  sub={q?.expenseRatio != null ? `$${(q.expenseRatio * 100).toFixed(0)}/yr per $10k` : "not in reference table"} />
                 <Stat label="Top 10 Weight" value={`${(data.totals?.top10Weight ?? 0).toFixed(1)}%`}
                   sub="concentration in largest names" />
                 <Stat label="Effective Holdings" value={data.totals?.effectiveHoldings != null ? String(Math.round(data.totals.effectiveHoldings)) : "—"}
                   sub="equal-weight equivalent (1/Σw²)" />
-              </div>
-              <div style={{ height: 8 }} />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 44vw), 1fr))", gap: 10 }}>
                 <Stat label="Largest Position" value={data.totals?.largestWeight != null ? `${data.totals.largestWeight.toFixed(2)}%` : "—"}
                   sub={data.totals?.largestName ?? undefined} />
                 <Stat label="Securities on Loan" value={data.totals?.onLoanPct != null ? `${data.totals.onLoanPct.toFixed(2)}%` : "—"}
                   sub="lent out for income" />
                 {data.totals?.shortPct > 0 && (
-                  <Stat label="Short Exposure" value={`${data.totals.shortPct.toFixed(1)}%`} sub="short positions" tone="bad" />
+                  <Stat label="Short Exposure" value={`${data.totals.shortPct.toFixed(1)}%`} sub="short positions" />
                 )}
                 {data.fairValue?.[0] && (
                   <Stat label="Priced at Market (L1)"
                     value={`${(data.fairValue.find((f: any) => f.key === "Level 1")?.weightPct ?? 0).toFixed(1)}%`}
-                    sub="quoted prices vs modelled" tone="good" />
+                    sub="quoted prices vs modelled" />
                 )}
                 <Stat label="Report Date" value={fund?.reportDate ?? "—"} sub="SEC N-PORT as-of" />
-              </div>
+              </StatStrip>
 
               <div style={{
                 ...CARD, padding: "12px 16px", marginTop: 12, borderStyle: "dashed",

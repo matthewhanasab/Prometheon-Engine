@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/Icon";
 import ChartShotButton from "@/components/ChartShotButton";
 
@@ -288,11 +288,13 @@ export function LegendRow({ items }: { items: LegendItem[] }) {
 }
 
 /** A choice between a few views. Arrow keys move the choice, as in any radio group. */
-export function Segmented<T extends string>({ label, value, options, onChange }: {
+export function Segmented<T extends string>({ label, value, options, onChange, size }: {
   label: string;
   value: T;
   options: { value: T; label: string; title?: string }[];
   onChange: (v: T) => void;
+  /** "sm" sits in a card header beside the camera button. */
+  size?: "sm";
 }) {
   const onKey = (e: React.KeyboardEvent) => {
     const dir = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
@@ -305,15 +307,76 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
     btns[(i + dir + options.length) % options.length]?.focus();
   };
   return (
-    <div role="radiogroup" aria-label={label} className="seg" onKeyDown={onKey}>
-      {options.map((o) => (
+    <div role="radiogroup" aria-label={label} className={size === "sm" ? "seg seg-sm" : "seg"} onKeyDown={onKey}>
+      {options.map((o, i) => (
         <button key={o.value} type="button" role="radio" aria-checked={o.value === value} aria-label={o.title}
-          tabIndex={o.value === value ? 0 : -1} className="seg-btn" onClick={() => onChange(o.value)}>
+          tabIndex={o.value === value || (i === 0 && !options.some((x) => x.value === value)) ? 0 : -1}
+          className="seg-btn" onClick={() => onChange(o.value)}>
           {o.label}
         </button>
       ))}
     </div>
   );
+}
+
+// ── Time frames ──────────────────────────────────────────────────────────────
+
+const FRAMES = [
+  { key: "1W", days: 7, title: "1 week" },
+  { key: "1M", days: 31, title: "1 month" },
+  { key: "3M", days: 92, title: "3 months" },
+  { key: "6M", days: 183, title: "6 months" },
+  { key: "1Y", days: 366, title: "1 year" },
+  { key: "3Y", days: 1096, title: "3 years" },
+  { key: "5Y", days: 1827, title: "5 years" },
+  { key: "10Y", days: 3653, title: "10 years" },
+  { key: "20Y", days: 7305, title: "20 years" },
+] as const;
+export type FrameKey = (typeof FRAMES)[number]["key"] | "All";
+
+const toMs = (d: string | number | Date) =>
+  d instanceof Date ? d.getTime() : typeof d === "number" ? d : Date.parse(d.length <= 10 ? `${d}T00:00:00Z` : d);
+
+/**
+ * A time-frame switch for one chart, and the rows inside the chosen frame.
+ *
+ * Only frames the data can fill are offered (a series three months long gets
+ * "1M" and "All", not a "5Y" button that would change nothing), at most four
+ * of them plus "All", which is where every chart starts.
+ */
+export function useTimeframe<T>(rows: T[], dateOf: (r: T) => string | number | Date, opts?: {
+  label?: string;
+  /** Restrict the choice to these frames (still dropped when the data is shorter). */
+  frames?: FrameKey[];
+  initial?: FrameKey;
+}): { rows: T[]; control: React.ReactNode; frame: FrameKey } {
+  const [picked, setPicked] = useState<FrameKey>(opts?.initial ?? "All");
+  const allow = opts?.frames;
+  const { offered, last } = useMemo(() => {
+    if (rows.length < 2) return { offered: [] as (typeof FRAMES)[number][], last: 0 };
+    const a = toMs(dateOf(rows[0])), b = toMs(dateOf(rows[rows.length - 1]));
+    const span = (b - a) / 864e5;
+    let fit = FRAMES.filter((f) => f.days < span * 0.97 && (!allow || allow.includes(f.key)));
+    // The longest few: the short ones matter least on a long history.
+    if (fit.length > 4) fit = fit.slice(-4);
+    return { offered: fit, last: b };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, allow?.join(",")]);
+  // A frame that this data no longer offers (the company changed) falls back to All.
+  const frame: FrameKey = picked !== "All" && offered.some((f) => f.key === picked) ? picked : "All";
+  const cut = useMemo(() => {
+    const f = FRAMES.find((x) => x.key === frame);
+    if (!f) return rows;
+    const from = last - f.days * 864e5;
+    const out = rows.filter((r) => toMs(dateOf(r)) >= from);
+    return out.length >= 2 ? out : rows.slice(-2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, frame, last]);
+  const control = offered.length ? (
+    <Segmented size="sm" label={opts?.label ?? "Time frame"} value={frame} onChange={setPicked}
+      options={[...offered.map((f) => ({ value: f.key as FrameKey, label: f.key, title: f.title })), { value: "All" as FrameKey, label: "All", title: "All available" }]} />
+  ) : null;
+  return { rows: cut, control, frame };
 }
 
 // ── The card ─────────────────────────────────────────────────────────────────
@@ -342,7 +405,7 @@ function useReveal<T extends HTMLElement>() {
  * then the plot. The camera button copies or saves the chart as an image.
  */
 export function ChartCard({
-  id, title, figure, delta, caption, legend, note, wide, ticker, company, shot = true, children,
+  id, title, figure, delta, caption, legend, note, wide, ticker, company, shot = true, control, children,
 }: {
   id?: string;
   title: string;
@@ -359,13 +422,15 @@ export function ChartCard({
   ticker?: string;
   company?: string;
   shot?: boolean;
+  /** This chart's own switch (its time frame), shown beside the camera. */
+  control?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const ref = useReveal<HTMLElement>();
   return (
     <section ref={ref} id={id} data-chart-card className={`chart-card${wide ? " chart-card-wide" : ""}`}>
-      <header data-chart-section style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-        <div style={{ minWidth: 0 }}>
+      <header data-chart-section style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px 12px", marginBottom: 12 }}>
+        <div style={{ minWidth: 0, flex: "1 1 180px" }}>
           <h3 data-section-title style={{
             fontFamily: SANS, fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)",
             margin: 0, letterSpacing: "0.005em",
@@ -382,7 +447,12 @@ export function ChartCard({
             <div style={{ fontFamily: SANS, fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 5, lineHeight: 1.45 }}>{caption}</div>
           )}
         </div>
-        {shot && ticker && <ChartShotButton ticker={ticker} companyName={company} />}
+        {(control || (shot && ticker)) && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
+            {control}
+            {shot && ticker && <ChartShotButton ticker={ticker} companyName={company} />}
+          </div>
+        )}
       </header>
       {legend && legend.length > 1 && <LegendRow items={legend} />}
       <div style={{ minWidth: 0, flex: 1 }}>{children}</div>
@@ -394,25 +464,48 @@ export function ChartCard({
 }
 
 /** One cell of the headline strip. A link when it has somewhere to jump to. */
-export function StatCell({ label, value, delta, sub, spark, href }: {
+export function StatCell({ label, value, delta, sub, foot, spark, href, valueTone, subTone }: {
   label: string;
   value: string;
   delta?: React.ReactNode;
   sub?: string;
+  /** A last small line: the date a figure is for. */
+  foot?: string;
   spark?: number[];
   href?: string;
+  /** Green or red on the figure itself: only for a figure that is a gain or a loss. */
+  valueTone?: "up" | "down";
+  /** Green or red on the line beneath, where it states a direction or a warning. */
+  subTone?: "up" | "down";
 }) {
+  const toneColor = (t: "up" | "down" | undefined, fallback: string) =>
+    t === "up" ? "var(--positive)" : t === "down" ? "var(--negative)" : fallback;
   const body = (
     <>
       <div style={{ fontFamily: SANS, fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{label}</div>
-      <div style={{ fontFamily: MONO, fontSize: "1.25rem", fontWeight: 500, letterSpacing: "-0.02em", color: "var(--text-primary)", marginTop: 8, lineHeight: 1.15 }}>{value}</div>
+      <div style={{ fontFamily: MONO, fontSize: "1.25rem", fontWeight: 500, letterSpacing: "-0.02em", color: toneColor(valueTone, "var(--text-primary)"), marginTop: 8, lineHeight: 1.15, overflowWrap: "anywhere" }}>{value}</div>
       <div style={{ minHeight: "1.2rem", marginTop: 4 }}>
-        {delta ?? (sub && <span style={{ fontFamily: SANS, fontSize: "0.72rem", color: "var(--text-muted)" }}>{sub}</span>)}
+        {delta ?? (sub && <span style={{ fontFamily: SANS, fontSize: "0.72rem", lineHeight: 1.4, color: toneColor(subTone, "var(--text-muted)") }}>{sub}</span>)}
       </div>
+      {foot && <div style={{ fontFamily: MONO, fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: 4 }}>{foot}</div>}
       {spark && <div style={{ marginTop: 8 }}><Sparkline values={spark} /></div>}
     </>
   );
   return href
     ? <a href={href} className="stat-cell">{body}</a>
     : <div className="stat-cell">{body}</div>;
+}
+
+/**
+ * A row of headline figures as one ruled strip. `min` is the narrowest a cell
+ * may get before the row wraps; two cells always fit across a phone.
+ */
+export function StatStrip({ children, min = 170, style }: { children: React.ReactNode; min?: number; style?: React.CSSProperties }) {
+  return (
+    <div className="stat-strip" style={style}>
+      <div className="stat-grid" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}px, 44vw), 1fr))` }}>
+        {children}
+      </div>
+    </div>
+  );
 }

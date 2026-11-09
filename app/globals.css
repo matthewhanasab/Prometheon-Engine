@@ -619,6 +619,10 @@ iframe { color-scheme: light; }
 .seg-btn[aria-checked="true"] { background: var(--accent-gold); color: var(--on-accent); }
 @media (hover: hover) and (pointer: fine) { .seg-btn:not([aria-checked="true"]):hover { color: var(--text-primary); } }
 @media (pointer: coarse) { .seg-btn { min-height: 36px; padding: 0 15px; } }
+/* Compact, for a chart's own time-frame switch in its card header. */
+.seg-sm { padding: 2px; }
+.seg-sm .seg-btn { min-height: 24px; padding: 0 9px; font-size: 0.6875rem; }
+@media (pointer: coarse) { .seg-sm .seg-btn { min-height: 30px; padding: 0 11px; } }
 
 .chart-group { margin-top: 2.5rem; }
 /* A group with nothing to draw (no price history, so no multiples) goes with its heading. */
