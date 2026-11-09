@@ -25,6 +25,8 @@ export default function TickerInput({
   suggest = true,
   navIndex,
   compact = false,
+  large = false,
+  preferName = false,
   onDraftChange,
   id,
 }: {
@@ -43,6 +45,15 @@ export default function TickerInput({
   /** Keeps the arrow-key field navigation some forms already use. */
   navIndex?: number;
   compact?: boolean;
+  /** The home page's search: taller, with larger type. */
+  large?: boolean;
+  /**
+   * Read a short word as a company name before a symbol: "coca" opens
+   * Coca-Cola, not a ticker called COCA. For the home page, where a visitor is
+   * more likely to type a name; the app pages keep symbols first, since a
+   * ticker missing from the company list must still be reachable.
+   */
+  preferName?: boolean;
   /** For forms with their own submit button: reports what is typed so far. */
   onDraftChange?: (text: string) => void;
   /** Lets a visible <label htmlFor> name the field. */
@@ -97,12 +108,12 @@ export default function TickerInput({
         const typed = text.trim();
         const isSymbol = /^[A-Za-z]{1,5}([.-][A-Za-z])?$/.test(typed);
         const exact = matches.find(([s]) => s === typed.toUpperCase());
-        submit(exact || isSymbol || !matches.length ? typed : matches[0][0]);
+        submit(exact || !matches.length || (isSymbol && !preferName) ? typed : matches[0][0]);
       }
     }
   };
 
-  const h = compact ? 38 : 42;
+  const h = large ? 52 : compact ? 38 : 42;
 
   return (
     <div ref={box} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", width: action ? undefined : width, maxWidth: "100%" }}>
@@ -124,9 +135,9 @@ export default function TickerInput({
           enterKeyHint="search"
           data-nav={navIndex}
           style={{
-            width: "100%", height: h, padding: "0 1.1rem",
+            width: "100%", height: h, padding: large ? "0 1.4rem" : "0 1.1rem",
             background: "var(--bg-elevated)", border: "1px solid var(--border)",
-            color: "var(--text-primary)", fontFamily: MONO, fontSize: "0.9rem", outline: "none",
+            color: "var(--text-primary)", fontFamily: MONO, fontSize: large ? "1rem" : "0.9rem", outline: "none",
           }}
         />
         {showList && (
