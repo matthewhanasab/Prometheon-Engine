@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/Icon";
 import ChartShotButton from "@/components/ChartShotButton";
 
@@ -381,22 +381,106 @@ export function useTimeframe<T>(rows: T[], dateOf: (r: T) => string | number | D
 
 // ── The card ─────────────────────────────────────────────────────────────────
 
-/** Marks a card the first time it scrolls into view, then clears the mark. */
-function useReveal<T extends HTMLElement>() {
+// GSAP is loaded the first time a chart card mounts, so pages without charts
+// never download it.
+type Gsap = (typeof import("gsap"))["gsap"];
+let gsapLoading: Promise<Gsap> | null = null;
+const loadGsap = () =>
+  (gsapLoading ??= import("gsap").then((m) => m.gsap, (e) => { gsapLoading = null; throw e; }));
+
+/**
+ * Draws a chart in: its bars rise from the baseline one after another and its
+ * lines fade up. It plays the first time the card scrolls into view, and again
+ * whenever `motionKey` changes (the reader switched the time frame), so a
+ * redraw reads as an answer to the click and not as a swap.
+ *
+ * Each bar takes 280ms; the cascade across them is capped at 200ms however
+ * many there are. Only transform and opacity move. Nothing plays for a reader
+ * who has asked for reduced motion, and a new switch interrupts the last.
+ */
+function useChartMotion<T extends HTMLElement>(motionKey: unknown) {
   const ref = useRef<T>(null);
-  useEffect(() => {
+  const seen = useRef(false);
+
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const obs = new IntersectionObserver((entries) => {
-      if (!entries.some((e) => e.isIntersecting)) return;
-      obs.disconnect();
-      el.dataset.in = "1";
-      timer = setTimeout(() => { el.dataset.in = "done"; }, 700);
-    }, { rootMargin: "0px 0px -8% 0px" });
-    obs.observe(el);
-    return () => { obs.disconnect(); if (timer) clearTimeout(timer); };
-  }, []);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let ctx: { revert: () => void } | undefined;
+    let gone = false;
+    let failsafe: ReturnType<typeof setTimeout> | undefined;
+    let obs: IntersectionObserver | undefined;
+    let raf = 0;
+    // Set once the chart has been shown without waiting for the library; a
+    // draw-in arriving after that would replay over a chart already read.
+    let late = false;
+    const show = () => { delete el.dataset.motion; };
+    const giveUp = () => { late = true; show(); };
+
+    const animate = (gsap: Gsap) => {
+      if (gone || late) return;
+      if (failsafe) clearTimeout(failsafe);
+      ctx = gsap.context(() => {
+        const bars = el.querySelectorAll(".recharts-bar-rectangle");
+        if (bars.length) {
+          gsap.fromTo(bars,
+            { scaleY: 0.35, opacity: 0, transformOrigin: "50% 100%" },
+            {
+              scaleY: 1, opacity: 1, duration: 0.28, ease: "power3.out",
+              stagger: { amount: Math.min(0.2, bars.length * 0.012) },
+              clearProps: "transform,opacity", overwrite: true,
+            });
+        }
+        const lines = el.querySelectorAll(".recharts-line, .recharts-area");
+        if (lines.length) {
+          gsap.fromTo(lines, { opacity: 0 }, { opacity: 1, duration: 0.26, ease: "power2.out", clearProps: "opacity", overwrite: true });
+        }
+      }, el);
+      // The tweens have set their own starting state, so the hold can go.
+      show();
+    };
+    // recharts draws its marks a frame or two after React commits, replacing
+    // the ones from the first pass. Animating before that plays on nodes that
+    // are about to be thrown away, so wait for the plot to settle first.
+    const draw = (gsap: Gsap) => {
+      raf = requestAnimationFrame(() => { raf = requestAnimationFrame(() => animate(gsap)); });
+    };
+    // Hold the marks back (see .chart-card[data-motion]) so they don't show at
+    // full height before they rise. If the library is slow or blocked, the
+    // failsafe shows the chart anyway.
+    const hold = () => {
+      el.dataset.motion = "wait";
+      failsafe = setTimeout(giveUp, 1200);
+    };
+
+    if (seen.current) {
+      // A switch on a chart already on screen.
+      hold();
+      loadGsap().then(draw, giveUp);
+    } else {
+      el.dataset.motion = "wait";
+      loadGsap().catch(show);
+      obs = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        obs?.disconnect();
+        seen.current = true;
+        failsafe = setTimeout(giveUp, 1200);
+        loadGsap().then(draw, giveUp);
+      }, { rootMargin: "0px 0px -6% 0px" });
+      obs.observe(el);
+    }
+
+    return () => {
+      gone = true;
+      obs?.disconnect();
+      cancelAnimationFrame(raf);
+      if (failsafe) clearTimeout(failsafe);
+      ctx?.revert();
+      show();
+    };
+  }, [motionKey]);
+
   return ref;
 }
 
@@ -405,7 +489,7 @@ function useReveal<T extends HTMLElement>() {
  * then the plot. The camera button copies or saves the chart as an image.
  */
 export function ChartCard({
-  id, title, figure, delta, caption, legend, note, wide, ticker, company, shot = true, control, children,
+  id, title, figure, delta, caption, legend, note, wide, ticker, company, shot = true, control, motionKey, children,
 }: {
   id?: string;
   title: string;
@@ -424,9 +508,11 @@ export function ChartCard({
   shot?: boolean;
   /** This chart's own switch (its time frame), shown beside the camera. */
   control?: React.ReactNode;
+  /** Changes when the chart is redrawn on purpose (a new time frame), to replay the draw-in. */
+  motionKey?: string | number;
   children: React.ReactNode;
 }) {
-  const ref = useReveal<HTMLElement>();
+  const ref = useChartMotion<HTMLElement>(motionKey);
   return (
     <section ref={ref} id={id} data-chart-card className={`chart-card${wide ? " chart-card-wide" : ""}`}>
       <header data-chart-section style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px 12px", marginBottom: 12 }}>

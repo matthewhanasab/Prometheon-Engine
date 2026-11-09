@@ -572,19 +572,12 @@ iframe { color-scheme: light; }
 .chart-card { display: flex; flex-direction: column; min-width: 0; padding: 18px 18px 10px; }
 @media (max-width: 640px) { .chart-card { padding: 16px 12px 8px; } }
 
-/* A card settles in the first time it scrolls into view and its bars rise from
-   the baseline. Once only: the attribute is cleared afterwards, so switching
-   the period or range redraws without replaying it. */
-.chart-card[data-in="1"] { animation: settleIn 0.28s var(--ease-out) both; }
-.chart-card[data-in="1"] .recharts-bar-rectangles {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: barRise 0.3s var(--ease-out) both;
-}
-@keyframes barRise {
-  from { transform: scaleY(0.4); opacity: 0; }
-  to   { transform: scaleY(1); opacity: 1; }
-}
+/* A chart's marks are held back until its draw-in starts (kit.tsx,
+   useChartMotion), so they don't show at full height for a frame first. The
+   attribute is only ever set by script, and only when motion is welcome. */
+.chart-card[data-motion="wait"] .recharts-bar-rectangle,
+.chart-card[data-motion="wait"] .recharts-line,
+.chart-card[data-motion="wait"] .recharts-area { opacity: 0; }
 .recharts-wrapper, .recharts-surface { outline: none; }
 .recharts-surface:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 4px; border-radius: 8px; }
 .recharts-bar-rectangle path { transition: fill-opacity var(--dur-fast) ease; }
@@ -636,7 +629,6 @@ iframe { color-scheme: light; }
    Movement goes; state changes stay legible through opacity and colour. */
 @media (prefers-reduced-motion: reduce) {
   .skeleton-bar, .spinner, .heartbeat, .fade-up, .settle { animation: none; }
-  .chart-card[data-in="1"], .chart-card[data-in="1"] .recharts-bar-rectangles { animation: none; }
   .recharts-bar-rectangle path { transition: none; }
   .fade-up { opacity: 1; }
   .skeleton-bar { opacity: 0.5; }

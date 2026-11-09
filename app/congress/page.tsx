@@ -151,6 +151,14 @@ export default function CongressPage() {
   }, [chamber, side, query]);
 
   const rows = data?.trades ?? [];
+  // Fifty rows at a time. All 500 at once made a page twenty screens long that
+  // was slow to draw and impossible to scan; the count is remembered per
+  // filter, so a new filter starts back at the top fifty.
+  const PAGE = 50;
+  const filterKey = `${chamber}|${side}|${query.trim()}`;
+  const [paging, setPaging] = useState<{ key: string; n: number }>({ key: filterKey, n: PAGE });
+  const shownCount = paging.key === filterKey ? paging.n : PAGE;
+  const visible = rows.slice(0, shownCount);
 
   const th: React.CSSProperties = {
     textAlign: "left", padding: "0.6rem 0.7rem", fontSize: "0.6875rem", textTransform: "uppercase",
@@ -254,7 +262,7 @@ export default function CongressPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((t, i) => {
+                  {visible.map((t, i) => {
                     const lag = lagDays(t);
                     return (
                       <tr key={`${t.source}-${t.ticker}-${t.transactionDate}-${i}`}
@@ -293,7 +301,22 @@ export default function CongressPage() {
                 </tbody>
               </table>
             </div>
-            {data.total > rows.length && (
+            {rows.length > visible.length && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, padding: "0.7rem 1rem", borderTop: "1px solid var(--border)" }}>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                  Showing {visible.length} of {rows.length.toLocaleString("en-US")} loaded
+                </span>
+                <button type="button" onClick={() => setPaging({ key: filterKey, n: shownCount + PAGE })}
+                  style={{
+                    height: 36, padding: "0 16px", borderRadius: 999, cursor: "pointer",
+                    background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                    fontFamily: "'Public Sans', sans-serif", fontSize: "0.78rem", fontWeight: 600,
+                  }}>
+                  Show {Math.min(PAGE, rows.length - visible.length)} more
+                </button>
+              </div>
+            )}
+            {data.total > rows.length && visible.length === rows.length && (
               <div style={{ padding: "0.7rem 1rem", fontSize: "0.7rem", color: "var(--text-muted)", borderTop: "1px solid var(--border)" }}>
                 Showing the {rows.length.toLocaleString("en-US")} most recent of {data.total.toLocaleString("en-US")} matching disclosures — narrow the filter to see older ones.
               </div>

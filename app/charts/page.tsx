@@ -116,7 +116,7 @@ function NoSeries({ children = "Not reported in this company's filings." }: { ch
  * One series as columns. Pointing at a quarter keeps it and the same quarter a
  * year earlier lit and dims the rest: the comparison the readout is quoting.
  */
-function BarsPlot({ rows, fmt, axisFmt, height }: {
+function BarsPlotImpl({ rows, fmt, axisFmt, height }: {
   rows: Row[]; fmt: (v: number) => string; axisFmt: (v: number) => string; height: number;
 }) {
   const [hover, setHover] = useState<number | null>(null);
@@ -150,7 +150,7 @@ function BarsPlot({ rows, fmt, axisFmt, height }: {
 }
 
 /** One series as a line over a faint wash, with its own average ruled across. */
-function TrendPlot({ rows, fmt, axisFmt, height, average, fromZero = false }: {
+function TrendPlotImpl({ rows, fmt, axisFmt, height, average, fromZero = false }: {
   rows: Row[]; fmt: (v: number) => string; axisFmt: (v: number) => string; height: number;
   average?: number; fromZero?: boolean;
 }) {
@@ -185,7 +185,7 @@ type Flow = { q: Row[]; ttm: Row[] };
 type Derived = { revenue: Flow; ocf: Flow; fcf: Flow; eps: Flow; pe: Row[]; margins: { q: Keyed[]; ttm: Keyed[] }; funds: Keyed[] };
 
 /** Several series as lines on one axis; the readout lists all of them at the pointer. */
-function LinesPlot({ rows, series, fmt, axisFmt, height }: {
+function LinesPlotImpl({ rows, series, fmt, axisFmt, height }: {
   rows: Keyed[]; series: SeriesDef[]; fmt: (v: number) => string; axisFmt: (v: number) => string; height: number;
 }) {
   return (
@@ -213,7 +213,7 @@ function LinesPlot({ rows, series, fmt, axisFmt, height }: {
 }
 
 /** Several series as columns: side by side, or stacked where `stack` names a pile. */
-function ColumnsPlot({ rows, series, fmt, axisFmt, height, footer }: {
+function ColumnsPlotImpl({ rows, series, fmt, axisFmt, height, footer }: {
   rows: Keyed[]; series: (SeriesDef & { stack?: string })[];
   fmt: (v: number) => string; axisFmt: (v: number) => string; height: number;
   footer?: (r: Keyed) => { name: string; value: string }[];
@@ -243,6 +243,20 @@ function ColumnsPlot({ rows, series, fmt, axisFmt, height, footer }: {
     </ResponsiveContainer>
   );
 }
+
+// The plots are memoised on their data. recharts rebuilds every mark whenever
+// its chart re-renders, so without this an unrelated update to the page (the
+// company name arriving, the segment report loading) would throw away bars in
+// the middle of their draw-in and restart every hover transition. The format
+// functions are left out of the comparison: they belong to the card and never
+// change over its life.
+const sameRows = <T,>(a: T[], b: T[]) => a.length === b.length && a.every((x, i) => x === b[i]);
+const sameKeys = (a: SeriesDef[], b: SeriesDef[]) => a.length === b.length && a.every((x, i) => x.key === b[i].key);
+const BarsPlot = React.memo(BarsPlotImpl, (a, b) => a.height === b.height && sameRows(a.rows, b.rows));
+const TrendPlot = React.memo(TrendPlotImpl, (a, b) =>
+  a.height === b.height && a.average === b.average && a.fromZero === b.fromZero && sameRows(a.rows, b.rows));
+const LinesPlot = React.memo(LinesPlotImpl, (a, b) => a.height === b.height && sameKeys(a.series, b.series) && sameRows(a.rows, b.rows));
+const ColumnsPlot = React.memo(ColumnsPlotImpl, (a, b) => a.height === b.height && sameKeys(a.series, b.series) && sameRows(a.rows, b.rows));
 
 // ── Segments ─────────────────────────────────────────────────────────────────
 
@@ -400,6 +414,8 @@ function ChartsInner() {
   // always means "everything".
   const [own, setOwn] = useState<Record<string, Range>>({});
   const nOf = (card: string) => QUARTERS[own[card] ?? range];
+  /** Changes when a card is redrawn on purpose, so its draw-in replays. */
+  const motionKey = (card: string) => `${view}-${own[card] ?? range}`;
   const rangeSwitch = (card: string) => (
     <Segmented size="sm" label={`Range for ${card.toLowerCase()}`} value={own[card] ?? range} options={RANGES}
       onChange={(v) => setOwn((o) => ({ ...o, [card]: v }))} />
@@ -510,7 +526,7 @@ function ChartsInner() {
     // either end can't skew it.
     const rate = rateText(yearlyRate(g.ttm, n));
     return (
-      <ChartCard id={id} title={title} wide={wide} {...common} control={rangeSwitch(title)}
+      <ChartCard id={id} title={title} wide={wide} {...common} control={rangeSwitch(title)} motionKey={motionKey(title)}
         figure={end ? fmt(end.value) : undefined}
         delta={end && <Delta frac={end.yoy} label="vs year ago" />}
         caption={end ? [view === "ttm" ? `12 months to ${end.label}` : end.label, rate].filter(Boolean).join(" · ") : undefined}>
@@ -528,7 +544,7 @@ function ChartsInner() {
     const lo = Math.min(...rows.map((r) => r.value)), hi = Math.max(...rows.map((r) => r.value));
     if (rows.length < 2) { missing.push(title); return null; }
     return (
-      <ChartCard id={id} title={title} {...common} control={rangeSwitch(title)}
+      <ChartCard id={id} title={title} {...common} control={rangeSwitch(title)} motionKey={motionKey(title)}
         figure={end ? times(end.value) : undefined}
         delta={end && avg > 0 && <Delta frac={(end.value - avg) / avg} tone="neutral" label="vs its average" />}
         caption={end ? `${basis}, at each quarter's close · between ${times(lo)} and ${times(hi)}` : undefined}
@@ -630,7 +646,7 @@ function ChartsInner() {
               }));
               return (
                 <div className="chart-grid">
-                  <ChartCard title={marginTitle(shown.map((d) => d.name))} wide {...common} shot={rows.length >= 2} control={rangeSwitch("Margins")}
+                  <ChartCard title={marginTitle(shown.map((d) => d.name))} wide {...common} shot={rows.length >= 2} control={rangeSwitch("Margins")} motionKey={motionKey("Margins")}
                     figure={leadEnd ? pct(leadEnd[lead.key] as number) : undefined}
                     delta={move != null && <Delta frac={move} text={`${Math.abs(move).toFixed(1)} pts`} label="vs year ago" />}
                     caption={leadEnd ? `${lead.name} margin, ${view === "ttm" ? `12 months to ${leadEnd.label}` : leadEnd.label}` : undefined}
@@ -663,7 +679,7 @@ function ChartsInner() {
                 const end = last(rows), start = rows[0];
                 const drift = end && start && start.value > 0 ? (end.value - start.value) / start.value : null;
                 return (
-                  <ChartCard title="Shares outstanding" {...common} shot={rows.length >= 2} control={rangeSwitch("Shares outstanding")}
+                  <ChartCard title="Shares outstanding" {...common} shot={rows.length >= 2} control={rangeSwitch("Shares outstanding")} motionKey={motionKey("Shares outstanding")}
                     figure={end ? count(end.value) : undefined}
                     delta={end && <Delta frac={end.yoy} tone="neutral" label="vs year ago" />}
                     caption={end && drift != null ? `${end.label} · ${signedPct(drift)} since ${start.label}, adjusted for splits` : undefined}>
@@ -677,7 +693,7 @@ function ChartsInner() {
                 const rows = m.equity.slice(-nOf("Shareholders' equity"));
                 const end = last(rows);
                 return (
-                  <ChartCard title="Shareholders' equity" {...common} shot={rows.length >= 2} control={rangeSwitch("Shareholders' equity")}
+                  <ChartCard title="Shareholders' equity" {...common} shot={rows.length >= 2} control={rangeSwitch("Shareholders' equity")} motionKey={motionKey("Shareholders' equity")}
                     figure={end ? money(end.value) : undefined}
                     delta={end && <Delta frac={end.yoy} label="vs year ago" />}
                     caption={end ? `${end.label} · assets less liabilities` : undefined}>
@@ -712,7 +728,7 @@ function ChartsInner() {
                 const end = last(rows);
                 const ratio = end && (end.liabilities as number) > 0 ? (end.assets as number) / (end.liabilities as number) : null;
                 return (
-                  <ChartCard title="Current assets and current liabilities" {...common} shot={rows.length >= 2} control={rangeSwitch("Current assets and current liabilities")}
+                  <ChartCard title="Current assets and current liabilities" {...common} shot={rows.length >= 2} control={rangeSwitch("Current assets and current liabilities")} motionKey={motionKey("Current assets and current liabilities")}
                     figure={ratio != null ? times(ratio, 2) : undefined}
                     delta={ratio != null && <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: "var(--text-secondary)" }}>current ratio</span>}
                     caption={end ? `${end.label} · ${money(end.assets as number, 1)} of current assets against ${money(end.liabilities as number, 1)} of current liabilities` : undefined}
@@ -736,7 +752,7 @@ function ChartsInner() {
                 const end = last(rows);
                 const net = end ? (end.net as number) : null;
                 return (
-                  <ChartCard id="net-cash" title="Cash, securities and debt" {...common} shot={rows.length >= 2} control={rangeSwitch("Cash, securities and debt")}
+                  <ChartCard id="net-cash" title="Cash, securities and debt" {...common} shot={rows.length >= 2} control={rangeSwitch("Cash, securities and debt")} motionKey={motionKey("Cash, securities and debt")}
                     figure={net != null ? money(Math.abs(net)) : undefined}
                     delta={net != null && <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: "var(--text-secondary)" }}>{net >= 0 ? "net cash" : "net debt"}</span>}
                     caption={end ? `${end.label} · ${money((end.cash as number) + (end.securities as number), 1)} on hand, ${money(end.debt as number, 1)} of long-term debt` : undefined}

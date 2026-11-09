@@ -52,7 +52,7 @@ Light values live in `app/globals.css` (`:root`); dark values in the inline bloc
 - The page scrolls (not an inner container). Fixed bars pad for `env(safe-area-inset-*)`.
 - Hover styles go inside `@media (hover: hover) and (pointer: fine)`. Every button has a press state (global).
 - Inputs are 16px on touch and every field has a real label (`htmlFor`/`aria-label`).
-- Motion: under 300ms, `var(--ease-out)`, transform and opacity only, and it must respect `prefers-reduced-motion`.
+- Motion: under 300ms, `var(--ease-out)`, transform and opacity only, and it must respect `prefers-reduced-motion`. Interface motion is CSS. GSAP is in the project for one job, the chart draw-in in `components/charts/kit` (`useChartMotion`), and is loaded on demand there; use it only for sequenced motion CSS cannot do, and never import it at the top of a page. Motion answers an action or draws data; sections do not fade or slide in as they scroll into view.
 - Data attribution ("Powered by X") stays off the UI.
 - All rem-based sizing — the root font-size is responsive on desktop.
 - Files must be saved UTF-8 (no BOM). Watch for mojibake when scripting edits — it has bitten this repo before.

@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, memo, useEffect, useState } from "react";
 import CompanyLogo from "@/components/CompanyLogo";
 import PageHeader from "@/components/PageHeader";
 import TickerInput from "@/components/TickerInput";
@@ -28,7 +28,7 @@ const PICKS = ["KO", "JNJ", "AAPL", "MSFT", "O"];
 type Year = { year: number; total: number; change: number | null };
 
 /** Dividends per share by year. Pointing at a year lights it and the year before, the pair the readout compares. */
-function YearsPlot({ rows }: { rows: Year[] }) {
+function YearsPlotImpl({ rows }: { rows: Year[] }) {
   const [hover, setHover] = useState<number | null>(null);
   return (
     <ResponsiveContainer width="100%" height={280}>
@@ -55,6 +55,11 @@ function YearsPlot({ rows }: { rows: Year[] }) {
     </ResponsiveContainer>
   );
 }
+
+// Memoised on the figures themselves, so the chart is not rebuilt (and its
+// draw-in cut short) when the page re-renders for another reason.
+const YearsPlot = memo(YearsPlotImpl, (a, b) =>
+  a.rows.length === b.rows.length && a.rows.every((r, i) => r.year === b.rows[i].year && r.total === b.rows[i].total));
 
 function DividendsInner() {
   const [ticker, setTicker] = useUrlTicker("KO");
@@ -137,7 +142,7 @@ function DividendsInner() {
 
           {yearly.length >= 2 && lastYear && (
             <div className="chart-grid" style={{ marginTop: 16 }}>
-              <ChartCard title="Dividends per share, by year" wide ticker={data.ticker} company={company} control={frame.control}
+              <ChartCard title="Dividends per share, by year" wide ticker={data.ticker} company={company} control={frame.control} motionKey={frame.frame}
                 figure={dollars(lastYear.total)}
                 delta={<Delta frac={lastYear.change} label={`vs ${lastYear.year - 1}`} />}
                 caption={[`Paid in ${lastYear.year}`, rate != null ? `${rate >= 0 ? "Up" : "Down"} ${Math.abs(rate * 100).toFixed(1)}% a year over ${span} years` : null].filter(Boolean).join(" · ")}>

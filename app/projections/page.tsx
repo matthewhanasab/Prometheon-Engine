@@ -236,17 +236,8 @@ function ProjectionsInner() {
 
             <div style={{ ...CARD, padding: "16px 18px" }}>
               <div style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--text-secondary)", borderBottom: "1px solid var(--border)", paddingBottom: 6, marginBottom: 12 }}>Assumptions</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+              <div style={{ marginBottom: 12 }}>
                 <Field label="Starting EPS" value={a.eps} step={0.1} suffix="$" onChange={(v) => setA((p) => p && ({ ...p, eps: Math.max(0.01, v) }))} />
-                <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)" }}>Horizon</span>
-                  <span style={{ display: "inline-flex", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 999, padding: 3, gap: 2 }}>
-                    {[3, 5, 10].map((y) => (
-                      <button key={y} type="button" onClick={() => setA((p) => p && ({ ...p, years: y }))}
-                        style={{ flex: 1, padding: "5px 0", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: MONO, fontSize: "0.7rem", fontWeight: 700, background: a.years === y ? "var(--accent-gold)" : "transparent", color: a.years === y ? "var(--on-accent)" : "var(--text-secondary)" }}>{y}y</button>
-                    ))}
-                  </span>
-                </label>
               </div>
               {SCENARIOS.map((s) => (
                 <div key={s.key} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
