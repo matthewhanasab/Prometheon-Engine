@@ -29,7 +29,7 @@ Light values live in `app/globals.css` (`:root`); dark values in the inline bloc
 ### Typography (three fonts in the app, three jobs; a fourth on the home page)
 
 - **Space Grotesk** — page titles and section headings. h1 is 1.75rem / 500 / -0.02em.
-- **Newsreader** — the home page only: its headline and section titles, at weight 400. An editorial serif for the one page that is a front page rather than a tool. Do not use it inside the app.
+- **Schibsted Grotesk** — the home page only: its headline and section titles, at weight 500. A newspaper grotesque for the one page that is a front page rather than a tool. Do not use it inside the app.
 - **Public Sans** — labels, body copy, buttons.
 - **Spline Sans Mono** — every number: prices, tickers, table figures, chart ticks.
 - **Nothing below `0.6875rem`** (11px on a phone). Chart ticks no smaller than 11.
