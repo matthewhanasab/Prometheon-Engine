@@ -26,6 +26,9 @@ import { loadDirectory, searchDirectory } from "@/lib/tickerDirectory";
 // figures and labels stay in Public Sans and the mono. The app pages keep
 // Space Grotesk for their headings.
 const DISPLAY = "'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif";
+// Headings in this face opt out of the site-wide tabular figures. In Schibsted
+// Grotesk that setting also widens the full stop to the width of a digit, which
+// left each period floating a space away from its word.
 const SANS = "'Public Sans', sans-serif";
 const MONO = "'Spline Sans Mono', monospace";
 
@@ -177,7 +180,7 @@ export default function LandingPage() {
           </div>
 
           <h1 className="fade-up fade-d1" style={{
-            fontFamily: DISPLAY, fontSize: "clamp(1.8rem, 3.8vw, 2.7rem)", fontWeight: 500, letterSpacing: "-0.028em",
+            fontFamily: DISPLAY, fontVariantNumeric: "normal", fontSize: "clamp(1.8rem, 3.8vw, 2.7rem)", fontWeight: 500, letterSpacing: "-0.028em",
             lineHeight: 1.08, margin: "1.6rem 0 0", textWrap: "balance",
           }}>
             Every number that matters.<br />One software.
@@ -219,7 +222,7 @@ export default function LandingPage() {
       {/* ── What's inside ── */}
       <section aria-labelledby="inside" style={{ maxWidth: 1080, margin: "0 auto", padding: "4.5rem 1.5rem 4rem" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: "4px 20px", marginBottom: "1.4rem" }}>
-          <h2 id="inside" style={{ fontFamily: DISPLAY, fontSize: "1.6rem", fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.1, margin: 0 }}>
+          <h2 id="inside" style={{ fontFamily: DISPLAY, fontVariantNumeric: "normal", fontSize: "1.6rem", fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.1, margin: 0 }}>
             What&rsquo;s inside
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0 }}>
@@ -229,7 +232,7 @@ export default function LandingPage() {
 
         {FEATURE_GROUPS.map((g) => (
           <div key={g.label} className="home-group">
-            <h3 style={{ fontFamily: DISPLAY, fontSize: "1rem", fontWeight: 500, letterSpacing: "-0.015em", color: "var(--text-secondary)", margin: 0, padding: "8px 0" }}>
+            <h3 style={{ fontFamily: DISPLAY, fontVariantNumeric: "normal", fontSize: "1rem", fontWeight: 500, letterSpacing: "-0.015em", color: "var(--text-secondary)", margin: 0, padding: "8px 0" }}>
               {g.label}
             </h3>
             <div>
