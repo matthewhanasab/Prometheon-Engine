@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
-import { fetchFacts, deriveStatements, resolveCik, type SplitEvent } from "@/lib/edgarFacts";
+import { fetchFacts, deriveStatements, resolveCik } from "@/lib/edgarFacts";
+import { cleanSplits, type SplitEvent } from "@/lib/splits";
 
 // Financial statements for the Market Stack edition, straight from SEC EDGAR
 // XBRL. marketstack's own Statements endpoints are on the Business plan's
@@ -27,9 +28,7 @@ export async function GET(
   const splitsReq: Promise<SplitEvent[]> = key
     ? fetch(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`, { next: { revalidate: 86400 } })
         .then((r) => r.json())
-        .then((j) => (Array.isArray(j?.data) ? j.data : [])
-          .map((r: any) => ({ date: String(r.date ?? "").slice(0, 10), factor: Number(r.split_factor ?? 1) }))
-          .filter((ev: SplitEvent) => /^\d{4}-\d{2}-\d{2}$/.test(ev.date) && ev.factor > 0 && ev.factor !== 1))
+        .then((j) => cleanSplits(Array.isArray(j?.data) ? j.data : []))
         .catch(() => [])
     : Promise.resolve([]);
 
@@ -38,7 +37,7 @@ export async function GET(
 
   let statements;
   try {
-    statements = deriveStatements(facts, period as "annual" | "quarterly", 12, splits);
+    statements = deriveStatements(facts.withSplits(splits), period as "annual" | "quarterly", 12, splits);
   } catch (e: any) {
     console.error("ms-financials derive failed", t, e);
     return NextResponse.json({ error: "Could not derive the statements for this ticker." }, { status: 500 });

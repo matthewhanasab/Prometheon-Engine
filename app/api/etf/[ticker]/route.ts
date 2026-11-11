@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
 import { expenseRatioFor } from "@/lib/etfExpenseRatios";
+import { cleanSplits, adjustBars, adjustOne, factorAfter } from "@/lib/splits";
 
 // ETF fund data: holdings, allocation, and a live quote.
 //
@@ -72,7 +73,7 @@ export async function GET(
     return d.toISOString().slice(0, 10);
   };
 
-  const [holdRaw, eodRaw, infoRaw, divRaw, anchor10Raw] = await Promise.all([
+  const [holdRaw, eodRaw, infoRaw, divRaw, anchor10Raw, splitRaw] = await Promise.all([
     get(`${MS}/etfholdings?access_key=${key}&ticker=${t}`),
     // Five years of daily closes: powers the chart AND the 1/3/5-year returns,
     // and its newest two rows give the live quote + prior close.
@@ -80,19 +81,17 @@ export async function GET(
     get(`${MS}/tickerinfo?access_key=${key}&ticker=${t}`),
     get(`${MS}/dividends?access_key=${key}&symbols=${t}&limit=20`),
     get(`${MS}/eod?access_key=${key}&symbols=${t}&date_from=${anchorFor(10)}&sort=ASC&limit=1`),
+    get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`),
   ]);
 
   // ── Price series (ascending) — chart + returns + 52-week stats ──
-  const series = (Array.isArray(eodRaw?.data) ? eodRaw.data : [])
-    .map((r: any) => ({
-      date: String(r.date ?? "").slice(0, 10),
-      close: numOf(r.close),
-      adj: numOf(r.adj_close ?? r.close),
-      high: numOf(r.high),
-      low: numOf(r.low),
-    }))
-    .filter((r: any) => r.date && r.close > 0)
-    .sort((a: any, b: any) => a.date.localeCompare(b.date));
+  // On today's share basis (lib/splits.ts): funds split too, and reverse
+  // splits are routine among leveraged ones.
+  const { bars, events: splitEvents } = adjustBars(
+    Array.isArray(eodRaw?.data) ? eodRaw.data : [],
+    cleanSplits(Array.isArray(splitRaw?.data) ? splitRaw.data : []),
+  );
+  const series = bars.map((b) => ({ date: b.date, close: b.close, adj: b.total, high: b.high, low: b.low }));
 
   const last = series[series.length - 1] ?? null;
   const prevBar = series[series.length - 2] ?? null;
@@ -124,16 +123,17 @@ export async function GET(
     retOf(anchorFromSeries(anchorFor(1)), 1),
     retOf(anchorFromSeries(anchorFor(3)), 3),
     retOf(anchorFromSeries(anchorFor(5)), 5),
-    anchor10 && numOf(anchor10.adj_close ?? anchor10.close) > 0
-      ? retOf({ adj: numOf(anchor10.adj_close ?? anchor10.close) }, 10)
-      : null,
+    (() => { const one = adjustOne(anchor10, splitEvents); return one && one.total > 0 ? retOf({ adj: one.total }, 10) : null; })(),
   ].filter(Boolean);
 
   const info = Array.isArray(infoRaw?.data) ? infoRaw.data[0] : infoRaw?.data;
   const name = typeof info?.name === "string" ? info.name.replace(/&amp;/g, "&") : t;
 
   const divs = (Array.isArray(divRaw?.data) ? divRaw.data : [])
-    .map((r: any) => ({ date: String(r.date ?? "").slice(0, 10), amount: numOf(r.dividend) }))
+    .map((r: any) => {
+      const date = String(r.date ?? "").slice(0, 10);
+      return { date, amount: numOf(r.dividend) / factorAfter(date, splitEvents) };
+    })
     .filter((d: any) => d.amount > 0);
   const ttmCutoff = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
   const ttmDiv = divs.filter((d: any) => d.date >= ttmCutoff).reduce((a: number, d: any) => a + d.amount, 0);

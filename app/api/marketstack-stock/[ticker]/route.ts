@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchFacts, deriveFundamentals, resolveCik, C } from "@/lib/edgarFacts";
+import { cleanSplits, adjustBars, adjustOne, factorAfter } from "@/lib/splits";
 import { get10YTreasury } from "@/lib/fred";
 import { guard } from "@/lib/rateLimit";
 import { dropDividendOutliers, projectNextExDate } from "@/lib/dividends";
@@ -174,26 +175,23 @@ export async function GET(
   // The probe IS the ticker's five-year pull, so both the recent window and the
   // beta regression read from it rather than re-requesting the same series.
   const eodRes = probe;
-  const stock5yRes = probe;
   const spy5yRes = tailRes[longHorizons.length];
   const subsRes = tailRes[longHorizons.length + 1];
 
-  // ── EOD series (newest-first). Filter marketstack's occasional close=0 rows. ──
-  const eod = rows(eodRes.data)
-    .map((r) => ({
-      date: String(r.date ?? "").slice(0, 10),
-      close: Number(r.close ?? 0),
-      high: Number(r.high ?? 0),
-      low: Number(r.low ?? 0),
-      volume: Number(r.volume ?? 0),
-    }))
-    .filter((r) => r.close > 0);
-  if (eod.length === 0) {
+  // ── EOD series, put on today's share basis (see lib/splits.ts). The feed's
+  // own adjusted close is only partly adjusted for some recent splits
+  // (Carvana's 5-for-1: a cliff at New Year, a one-year return of -78%, a
+  // 52-week high of $485 on a $73 stock), so every price here is rebuilt from
+  // the raw closes and the cleaned split record. ──
+  const { bars, events: splitEvents } = adjustBars(rows(eodRes.data), cleanSplits(rows(splitRes.data)));
+  if (bars.length === 0) {
     return NextResponse.json(
       { error: eodRes.err ? `No price data (${eodRes.err})` : "Ticker not found" },
       { status: 404 }
     );
   }
+  // Newest first, as the rest of this route reads it.
+  const eod = [...bars].reverse().map((b) => ({ date: b.date, close: b.close, high: b.high, low: b.low, volume: b.volume }));
 
   const last = { close: eod[0].close, date: eod[0].date };
   const prevClose = eod.find((r) => r.date < last.date)?.close ?? eod[1]?.close ?? null;
@@ -210,10 +208,7 @@ export async function GET(
 
   // Ascending 5-year daily series (adj_close) — the source for the 1/3/5-year
   // return anchors, so those no longer need their own API calls.
-  const stock5yAsc = rows(stock5yRes?.data)
-    .map((r) => ({ date: String(r.date ?? "").slice(0, 10), close: Number(r.adj_close ?? r.close ?? 0) }))
-    .filter((r) => r.date && r.close > 0)
-    .sort((a, b) => a.date.localeCompare(b.date));
+  const stock5yAsc = bars.map((b) => ({ date: b.date, close: b.total }));
 
   // First bar on or after a target date — mirrors the old anchor query
   // (date_from=…&sort=ASC&limit=1).
@@ -227,9 +222,10 @@ export async function GET(
       row = anchorFromSeries(anchorFor(y));
     } else {
       const raw = rows(longAnchorRes[longHorizons.indexOf(y)]?.data)[0];
-      // adj_close, not close: raw closes across a split make old anchors look
-      // 2-10x too expensive (KO's 2011 close is pre-2012-split).
-      row = raw ? { date: String(raw.date ?? "").slice(0, 10), close: Number(raw.adj_close ?? raw.close) } : null;
+      // Adjusted for splits first: raw closes across a split make old anchors
+      // look 2-10x too expensive (KO's 2011 close is pre-2012-split).
+      const one = adjustOne(raw, splitEvents);
+      row = one ? { date: one.date, close: one.total } : null;
     }
     const c = row ? row.close : 0;
     if (!(c > 0)) return { years: y, available: false as const };
@@ -276,7 +272,15 @@ export async function GET(
     }
     return new Map([...byMonth].map(([m, v]) => [m, v.close]));
   };
-  const stockM = monthEnds(stock5yRes);
+  const stockM = (() => {
+    const byMonth = new Map<string, { date: string; close: number }>();
+    for (const b of bars) {
+      const m = b.date.slice(0, 7);
+      const cur = byMonth.get(m);
+      if (!cur || b.date > cur.date) byMonth.set(m, { date: b.date, close: b.total });
+    }
+    return new Map([...byMonth].map(([m, v]) => [m, v.close]));
+  })();
   const spyM = monthEnds(spy5yRes);
   const months = [...stockM.keys()].filter((m) => spyM.has(m)).sort();
   const paired: { s: number; m: number }[] = [];
@@ -298,15 +302,9 @@ export async function GET(
   const rf = (await get10YTreasury()) ?? 0.043;
 
   // ── Daily series for the built-in chart, ascending. Sourced from the 5-year
-  // pull so every range toggle (1M…5Y) has data, and on adj_close so a split
+  // pull so every range toggle (1M…5Y) has data, and split-adjusted so a split
   // doesn't draw a cliff mid-chart. ──
-  const priceSeries = rows(stock5yRes?.data)
-    .map((r) => ({
-      date: String(r.date ?? "").slice(0, 10),
-      price: Number(r.adj_close ?? r.close ?? 0),
-    }))
-    .filter((r) => r.date && r.price > 0)
-    .sort((a, b) => a.date.localeCompare(b.date));
+  const priceSeries = bars.map((b) => ({ date: b.date, price: b.total }));
 
   // ── Profile ──
   const infoRaw = infoRes.data?.data;
@@ -347,10 +345,14 @@ export async function GET(
   // ── Dividends ──
   // /tickers/{symbol}/dividends nests the list under data.dividends (and
   // carries the declaration, record and payment dates /dividends lacks).
+  // Amounts come back as paid at the time. Divided by the splits since, so a
+  // payment from before a split is comparable with one after it, and a split
+  // inside the last twelve months doesn't corrupt the yield and payout ratio.
   const divsRaw = rows(Array.isArray(divRes.data?.data?.dividends) ? { data: divRes.data.data.dividends } : divRes.data)
     .map((r) => ({
       date: String(r.date ?? "").slice(0, 10),
-      amount: Number(r.dividend ?? 0),
+      amount: Number(r.dividend ?? 0) / factorAfter(String(r.date ?? "").slice(0, 10), splitEvents),
+      rawAmount: Number(r.dividend ?? 0),
       paymentDate: r.payment_date ? String(r.payment_date).slice(0, 10) : null,
       declarationDate: r.declaration_date ? String(r.declaration_date).slice(0, 10) : null,
       freq: r.distr_freq ?? null,
@@ -374,11 +376,8 @@ export async function GET(
     .filter((d) => d.date <= today && d.date >= ttmCutoff)
     .reduce((a, d) => a + d.amount, 0);
 
-  // ── Splits ──
-  const splits = rows(splitRes.data).map((r) => ({
-    date: String(r.date ?? "").slice(0, 10),
-    factor: Number(r.split_factor ?? 1),
-  }));
+  // ── Splits: each real split once, newest first, dated as the price stepped ──
+  const splits = [...splitEvents].sort((x, y) => y.date.localeCompare(x.date));
 
   // ── SEC filings + XBRL fundamentals (already fetched in parallel above).
   // Fundamentals come from EDGAR directly — marketstack's Statements/Facts/
@@ -391,7 +390,8 @@ export async function GET(
     (await cikPromise) ?? (tickMeta?.cik ? String(tickMeta.cik).padStart(10, "0") : null);
   if (facts) {
     try {
-      fundamentals = deriveFundamentals(facts, last.close);
+      // Share counts and per-share figures on today's basis, by filing date.
+      fundamentals = deriveFundamentals(facts.withSplits(splitEvents), last.close);
     } catch {
       fundamentals = null;
     }

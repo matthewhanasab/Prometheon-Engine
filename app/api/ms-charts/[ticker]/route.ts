@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
-import { fetchFacts, deriveChartSeries, resolveCik, type SplitEvent } from "@/lib/edgarFacts";
+import { fetchFacts, deriveChartSeries, resolveCik } from "@/lib/edgarFacts";
+import { cleanSplits, adjustBars } from "@/lib/splits";
 
 // Charts data for the Market Stack edition.
 //
@@ -51,13 +52,15 @@ export async function GET(
   ]);
   if (!facts) return NextResponse.json({ error: `No XBRL filings for ${t}` }, { status: 404 });
 
-  const splits: SplitEvent[] = (Array.isArray(splitRaw?.data) ? splitRaw.data : [])
-    .map((r: any) => ({ date: String(r.date ?? "").slice(0, 10), factor: Number(r.split_factor ?? 1) }))
-    .filter((ev: SplitEvent) => ev.date && ev.factor > 0 && ev.factor !== 1);
+  // Prices on today's share basis from the raw closes and the cleaned split
+  // record (lib/splits.ts); the feed's adjusted close is only partly adjusted
+  // for some recent splits. Valuation multiples take the split-adjusted close,
+  // not the dividend-adjusted one: a P/E is the price paid then over earnings.
+  const { bars, events: splits } = adjustBars(Array.isArray(eodRaw?.data) ? eodRaw.data : [], cleanSplits(Array.isArray(splitRaw?.data) ? splitRaw.data : []));
 
   let series: any;
   try {
-    series = deriveChartSeries(facts, 28, splits);
+    series = deriveChartSeries(facts.withSplits(splits), 28, splits);
   } catch (e: any) {
     console.error("ms-charts derive failed", t, e);
     return NextResponse.json({ error: "Could not derive the chart series for this ticker." }, { status: 500 });
@@ -68,10 +71,7 @@ export async function GET(
     typeof s === "string" ? s.replace(/&amp;/g, "&").replace(/&#0?39;/g, "'").replace(/&quot;/g, '"') : s;
 
   // ── Price at each quarter end, for the valuation-multiple charts ──
-  const prices = (Array.isArray(eodRaw?.data) ? eodRaw.data : [])
-    .map((r: any) => ({ date: String(r.date ?? "").slice(0, 10), price: Number(r.adj_close ?? r.close ?? 0) }))
-    .filter((p: any) => p.date && p.price > 0)
-    .sort((a: any, b: any) => a.date.localeCompare(b.date));
+  const prices = bars.map((b) => ({ date: b.date, price: b.close }));
 
   const priceAt = (date: string): number | null => {
     // Last close on or before the period end; quarter ends often fall on a

@@ -48,9 +48,35 @@ function dedupeByEnd(facts: RawFact[]): RawFact[] {
 export class Facts {
   private us: Record<string, any>;
   private dei: Record<string, any>;
+  private json: any;
+  private splits: SplitEvent[] = [];
   constructor(json: any) {
+    this.json = json;
     this.us = json?.facts?.["us-gaap"] ?? {};
     this.dei = json?.facts?.dei ?? {};
+  }
+
+  /** True once share counts and per-share figures are on today's share basis. */
+  get splitAdjusted(): boolean { return this.splits.length > 0; }
+
+  /**
+   * The same filings, with every share count and per-share figure put on
+   * today's share basis.
+   *
+   * Companyfacts is as-reported, and what basis a number is on is settled by
+   * when it was filed: accounting rules have a filer restate every period it
+   * presents once a split has taken effect, so a figure filed after the split
+   * is on the new basis and one filed before it is on the old. Each fact
+   * carries its filing date, so the adjustment is exact rather than guessed:
+   * a count filed before a split is multiplied by its ratio, a per-share
+   * figure divided by it. Dollar totals are untouched.
+   */
+  withSplits(splits: SplitEvent[]): Facts {
+    const events = splits.filter((ev) => ev.factor > 0 && ev.factor !== 1);
+    if (!events.length) return this;
+    const f = new Facts(this.json);
+    f.splits = [...events].sort((a, b) => a.date.localeCompare(b.date));
+    return f;
   }
 
   private raw(concept: string): RawFact[] {
@@ -58,7 +84,37 @@ export class Facts {
     if (!node?.units) return [];
     const unit = Object.keys(node.units)[0];
     const arr = node.units[unit];
-    return Array.isArray(arr) ? arr.filter((f: any) => Number.isFinite(f?.val)) : [];
+    const facts: RawFact[] = Array.isArray(arr) ? arr.filter((f: any) => Number.isFinite(f?.val)) : [];
+    const perShare = unit === "USD/shares";
+    if (!this.splits.length || (unit !== "shares" && !perShare)) return facts;
+    return facts.map((f) => {
+      // No filing date (it is always present in practice): fall back to the
+      // period end, which is right for everything but a late restatement.
+      const filed = String(f.filed ?? f.end);
+      let k = 1;
+      for (const ev of this.splits) if (ev.date > filed) k *= ev.factor;
+      return k === 1 ? f : { ...f, val: perShare ? f.val / k : f.val * k };
+    });
+  }
+
+  /**
+   * The most recent weighted-average share count, from whichever period ended
+   * last, a quarter or a fiscal year. `yearsBack` reaches the count a year (or
+   * more) before that. A share count is a level, not a flow, so it is never
+   * summed across quarters.
+   */
+  latestCount(aliases: string[], yearsBack = 0): number | null {
+    const all = [...this.quarterly(aliases), ...this.annual(aliases)].sort((a, b) => a.end.localeCompare(b.end));
+    if (!all.length) return null;
+    const newest = all[all.length - 1];
+    if (!yearsBack) return newest.val;
+    const target = Date.parse(newest.end) - yearsBack * 365 * 864e5;
+    let best: Period | null = null, gap = Infinity;
+    for (const p of all) {
+      const g = Math.abs(Date.parse(p.end) - target);
+      if (g < gap) { gap = g; best = p; }
+    }
+    return best && gap < 60 * 864e5 ? best.val : null;
   }
 
   /**
@@ -892,14 +948,18 @@ export function deriveChartSeries(f: Facts, limit = 28, splits: SplitEvent[] = [
   // onto it exactly. The step detection stays as the fallback for callers
   // without that record (and for the diluted series, whose partial
   // restatement doesn't line up with split dates).
-  const sharesCover = validSplits.length ? applySplits(coverRaw, validSplits) : splitAdjust(coverRaw, dilutedRaw);
+  // Facts adjusted at the source (withSplits) need none of this; the older
+  // routes are kept for callers that pass unadjusted facts.
+  const sharesCover = f.splitAdjusted
+    ? coverRaw
+    : validSplits.length ? applySplits(coverRaw, validSplits) : splitAdjust(coverRaw, dilutedRaw);
   const sharesQ = splitAdjust(dilutedRaw, sharesCover);
   // One-quarter spikes survive both passes: a cover page dated across a split
   // (Alphabet, twice in 2022) or typed in thousands (Chipotle, 2022).
   const shares = despike(sharesCover.length >= 4 ? sharesCover : sharesQ, validSplits);
   // Per-share figures are as-reported too, on whatever share basis each filing
   // used. See splitAdjust.ts.
-  const eps = adjustPerShare(epsQ, netIncome, shares, validSplits);
+  const eps = adjustPerShare(epsQ, netIncome, shares, f.splitAdjusted ? [] : validSplits);
 
   const fcf = align(ocf, capex, (o, c) => o - c);
   const revTtm = ttm(revenue);
@@ -1004,7 +1064,7 @@ export function deriveStatements(f: Facts, period: "annual" | "quarterly", limit
   // its older years many times too high (NVIDIA: $3.85 for fiscal 2022 beside
   // $0.17 for fiscal 2023).
   const epsRow = (): (number | null)[] => {
-    if (!splits.length) return F(C.epsDiluted);
+    if (!splits.length || f.splitAdjusted) return F(C.epsDiluted);
     const cs = deriveChartSeries(f, 64, splits);
     const at = (pts: { date: string; value: number }[]) => {
       const m = new Map(pts.map((p) => [p.date, p.value]));
@@ -1081,18 +1141,28 @@ export function deriveFundamentals(f: Facts, price: number | null) {
   const opIncome = f.ttm(C.operatingIncome);
   const netIncome = f.ttm(C.netIncome);
   const netIncomePrior = f.ttmPrior(C.netIncome);
-  const dilutedShares = f.ttm(C.dilutedShares);
-  const dilutedSharesPrior = f.ttmPrior(C.dilutedShares);
-  // Coca-Cola last tagged EarningsPerShareDiluted in 2009; derive per-share
-  // earnings from net income when the concept is missing or stale.
-  const epsTagged = f.ttm(C.epsDiluted);
-  const epsTaggedPrior = f.ttmPrior(C.epsDiluted);
-  const epsFresh = f.annual(C.epsDiluted).slice(-1)[0]?.end;
-  const epsUsable =
-    epsTagged != null && epsFresh != null &&
-    Date.parse(epsFresh) > Date.now() - 2 * 365 * 864e5;
+  // The latest weighted-average count, not a sum of four quarters of counts.
+  const dilutedShares = f.latestCount(C.dilutedShares);
+  const dilutedSharesPrior = f.latestCount(C.dilutedShares, 1);
+  // Tagged EPS is used when its quarters run right up to the latest quarter of
+  // net income. Otherwise per-share earnings come from net income over the
+  // share count: Coca-Cola last tagged diluted EPS in 2009, and Carvana tags it
+  // for full years only, which left its "trailing" EPS a year stale.
+  const epsQ = f.quarterlyComplete(C.epsDiluted);
+  const niQ = f.quarterlyComplete(C.netIncome);
+  const epsWindow = (offset: number): number | null => {
+    const end = epsQ.length - offset;
+    if (end < 4) return null;
+    const win = epsQ.slice(end - 4, end);
+    const span = days(win[0].start!, win[3].end);
+    return span > 330 && span < 400 ? win.reduce((a, x) => a + x.val, 0) : null;
+  };
+  const epsCurrent =
+    epsQ.length > 0 && niQ.length > 0 && epsQ[epsQ.length - 1].end === niQ[niQ.length - 1].end;
+  const epsTagged = epsCurrent ? epsWindow(0) : null;
+  const epsUsable = epsTagged != null;
   const eps = epsUsable ? epsTagged : safeDiv(netIncome, dilutedShares);
-  const epsPrior = epsUsable ? epsTaggedPrior : safeDiv(netIncomePrior, dilutedSharesPrior);
+  const epsPrior = epsUsable ? epsWindow(4) : safeDiv(netIncomePrior, dilutedSharesPrior);
 
   // Share count, in falling order of directness — and freshness-checked the
   // same way EPS above is, because the cover-page tag goes stale silently.

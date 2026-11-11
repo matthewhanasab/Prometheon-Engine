@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
 import { fetchFacts, resolveCik, Facts, C } from "@/lib/edgarFacts";
+import { cleanSplits, adjustBars } from "@/lib/splits";
 
 // Options inputs for the Market Stack edition.
 //
@@ -87,8 +88,9 @@ export async function GET(
   const key = process.env.MARKETSTACK_KEY;
   if (!key) return NextResponse.json({ error: "Marketstack key not configured" }, { status: 500 });
 
-  const [eodRaw, intraRaw, infoRaw, rfr, cik] = await Promise.all([
+  const [eodRaw, splitRaw, intraRaw, infoRaw, rfr, cik] = await Promise.all([
     get(`${MS}/eod?access_key=${key}&symbols=${t}&limit=400`),
+    get(`${MS}/splits?access_key=${key}&symbols=${t}&limit=60`, 86400),
     // Option strikes are picked relative to spot, so prefer the live IEX print
     // over the previous close when the market is open.
     get(`${MS}/intraday?access_key=${key}&symbols=${t}&interval=1min&limit=1`, 120),
@@ -97,15 +99,13 @@ export async function GET(
     resolveCik(t),
   ]);
 
-  const rows = (Array.isArray(eodRaw?.data) ? eodRaw.data : [])
-    .map((r: any) => ({
-      date: String(r.date ?? "").slice(0, 10),
-      price: Number(r.adj_close ?? r.close ?? 0),
-      high: Number(r.high ?? 0),
-      low: Number(r.low ?? 0),
-    }))
-    .filter((r: any) => r.date && r.price > 0)
-    .sort((a: any, b: any) => a.date.localeCompare(b.date));
+  // On today's share basis (lib/splits.ts), so a split inside the window can't
+  // appear as a one-day crash in the volatility estimate or leave a 52-week
+  // high from before the split sitting above today's price.
+  const rows = adjustBars(
+    Array.isArray(eodRaw?.data) ? eodRaw.data : [],
+    cleanSplits(Array.isArray(splitRaw?.data) ? splitRaw.data : []),
+  ).bars.map((b) => ({ date: b.date, price: b.close, high: b.high, low: b.low }));
 
   if (rows.length < 30) {
     return NextResponse.json({ error: "Ticker not found" }, { status: 404 });

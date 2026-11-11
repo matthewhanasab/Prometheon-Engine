@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/rateLimit";
+import { cleanSplits } from "@/lib/splits";
 import { projectNextExDate } from "@/lib/dividends";
 
 // Full dividend record for the Market Stack edition's Dividends page.
@@ -41,9 +42,9 @@ export async function GET(
   // Dividend amounts come back unadjusted, so KO's 1977 payout reads $1.94 —
   // six 2-for-1 splits before today. Charted raw, history looks like a decline;
   // divide each payment by the product of all later split factors instead.
-  const splits = (Array.isArray(splitRaw?.data) ? splitRaw.data : [])
-    .map((r: any) => ({ date: String(r.date ?? "").slice(0, 10), factor: Number(r.split_factor ?? 1) }))
-    .filter((s: any) => s.date && s.factor > 0 && s.factor !== 1);
+  // A split listed twice (Carvana's 5-for-1 appears on two consecutive days)
+  // would otherwise be applied twice.
+  const splits = cleanSplits(Array.isArray(splitRaw?.data) ? splitRaw.data : []);
   const adjustFor = (date: string) =>
     splits.reduce((f: number, s: any) => (s.date > date ? f * s.factor : f), 1);
 

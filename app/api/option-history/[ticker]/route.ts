@@ -45,10 +45,22 @@ export async function GET(
     );
   }
 
-  const closes = rows
+  // The exchange's closes are already adjusted for splits, but the file carries
+  // the odd stray print left on the old basis (Carvana shows $304 on a market
+  // holiday between two days near $61, five times its price, which is its 5-for-1
+  // split). A close that sits far from BOTH neighbours, while they agree with
+  // each other, is not a price; it is dropped.
+  const dated = rows
     .map((r) => ({ date: String(r.date ?? "").slice(0, 10), close: Number(r.close) }))
     .filter((r) => /^\d{4}-\d{2}-\d{2}$/.test(r.date) && Number.isFinite(r.close) && r.close > 0)
-    .slice(-380);
+    .slice(-382);
+  const closes = dated.filter((r, i) => {
+    const a = dated[i - 1]?.close, b = dated[i + 1]?.close;
+    if (!a || !b) return true;
+    const neighboursAgree = Math.abs(Math.log(a / b)) < 0.25;
+    const far = Math.abs(Math.log(r.close / a)) > 0.7 && Math.abs(Math.log(r.close / b)) > 0.7;
+    return !(neighboursAgree && far);
+  }).slice(-380);
   if (closes.length < 5) return NextResponse.json({ error: `No price history for ${t}` }, { status: 404 });
 
   return NextResponse.json({ ticker: t, closes }, {

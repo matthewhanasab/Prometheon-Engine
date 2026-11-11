@@ -1381,7 +1381,7 @@ function MarketstackResearchInner() {
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {data.splits.map((s: any) => (
                   <span key={s.date} style={{ ...CARD, borderRadius: 999, padding: "6px 14px", fontFamily: MONO, fontSize: "0.74rem" }}>
-                    <span style={{ fontWeight: 700 }}>{s.factor}:1</span>
+                    <span style={{ fontWeight: 700 }}>{s.factor >= 1 ? `${s.factor}-for-1` : `1-for-${Math.round(1 / s.factor)} reverse`}</span>
                     <span style={{ color: "var(--text-muted)", marginLeft: 8 }}>{s.date}</span>
                   </span>
                 ))}
