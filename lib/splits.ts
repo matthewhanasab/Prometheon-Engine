@@ -12,8 +12,11 @@
 //   - The split record can list one split twice, a day apart. Applied twice,
 //     a 5-for-1 becomes a 25-for-1.
 //
-// So prices are adjusted here from the raw closes and the cleaned split record,
-// and the feed's own adjusted close is used only where it agrees.
+// So nothing in the feed is taken on trust. Prices are put on today's share basis
+// from the closes themselves, by finding where they step by a recorded split's
+// ratio (findSteps), and the feed's dividend adjustment is kept only where it is
+// believable. Share counts and per-share figures from SEC filings are adjusted
+// by the date each was filed against the split record (Facts.withSplits).
 
 export type SplitEvent = { date: string; factor: number };
 
@@ -49,29 +52,46 @@ export function factorAfter(date: string, events: SplitEvent[]): number {
 }
 
 /**
- * Move each split to the day the raw close actually stepped.
+ * Where the daily closes change share basis.
  *
- * The record's date can be a day off the first day of trading on the new
- * basis, and one day off is the difference between a clean series and a single
- * bar five times too tall. Within a week either side, the day whose close moved
- * by the split ratio is the real one. A split with no such step in the prices
- * keeps its recorded date.
+ * The price feed cannot be trusted to put a split on the recorded date, or even
+ * near it. Carvana split 5-for-1 on 8 May 2026; its closes drop by a factor of
+ * five on 2 January, four months earlier (and are continuous across 8 May), as
+ * if the vendor had applied the split to part of the history. So the position
+ * of a split is read from the prices themselves: it is the day the close steps
+ * by the split's ratio. Each recorded split is matched to at most one such
+ * step, the nearest in time among the good fits. A split with no matching step
+ * means the feed's closes are already on one basis throughout, and nothing is
+ * adjusted for it.
+ *
+ * Returns the steps, each dated the first day of the new basis. Closes before
+ * that date are divided by the factor.
  */
-export function settleSplits(barsAsc: { date: string; close: number }[], events: SplitEvent[]): SplitEvent[] {
-  if (!events.length || barsAsc.length < 2) return events;
-  return events.map((ev) => {
-    const at = Date.parse(ev.date);
-    let best: { date: string; miss: number } | null = null;
-    for (let i = 1; i < barsAsc.length; i++) {
-      const t = Date.parse(barsAsc[i].date);
-      if (t < at - 7 * DAY) continue;
-      if (t > at + 7 * DAY) break;
-      const step = barsAsc[i].close / barsAsc[i - 1].close;
-      const miss = Math.abs(Math.log(step * ev.factor));
-      if (miss < 0.3 && (!best || miss < best.miss)) best = { date: barsAsc[i].date, miss };
+export function findSteps(barsAsc: { date: string; close: number }[], events: SplitEvent[]): SplitEvent[] {
+  if (!events.length || barsAsc.length < 2) return [];
+  type Cand = { i: number; k: number; score: number };
+  const cands: Cand[] = [];
+  for (let i = 1; i < barsAsc.length; i++) {
+    const move = barsAsc[i].close / barsAsc[i - 1].close;
+    for (let k = 0; k < events.length; k++) {
+      // A forward split divides the price (move ≈ 1/factor), a reverse split
+      // multiplies it; either way move × factor ≈ 1. The tolerance leaves room
+      // for the day's own price change.
+      const miss = Math.abs(Math.log(move * events[k].factor));
+      if (miss > 0.28) continue;
+      const yearsAway = Math.abs(Date.parse(barsAsc[i].date) - Date.parse(events[k].date)) / (365 * DAY);
+      cands.push({ i, k, score: miss + 0.2 * yearsAway });
     }
-    return best ? { date: best.date, factor: ev.factor } : ev;
-  });
+  }
+  cands.sort((a, b) => a.score - b.score);
+  const usedEvent = new Set<number>(), usedBar = new Set<number>();
+  const steps: SplitEvent[] = [];
+  for (const c of cands) {
+    if (usedEvent.has(c.k) || usedBar.has(c.i)) continue;
+    usedEvent.add(c.k); usedBar.add(c.i);
+    steps.push({ date: barsAsc[c.i].date, factor: events[c.k].factor });
+  }
+  return steps.sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export type Bar = {
@@ -91,10 +111,10 @@ export type Bar = {
 const DIVIDEND_RANGE: [number, number] = [0.3, 1.08];
 
 /**
- * Daily rows from the price feed, oldest first, on today's share basis.
- * Returns the bars and the split events as settled against them.
+ * Daily rows from the price feed, oldest first, on today's share basis, given
+ * the split record. Returns the bars and the steps found in them.
  */
-export function adjustBars(rawRows: unknown, rawEvents: SplitEvent[]): { bars: Bar[]; events: SplitEvent[] } {
+export function adjustBars(rawRows: unknown, record: SplitEvent[]): { bars: Bar[]; steps: SplitEvent[]; basis: FeedBasis } {
   const rows = (Array.isArray(rawRows) ? rawRows : [])
     .map((r: any) => ({
       date: String(r?.date ?? "").slice(0, 10),
@@ -106,10 +126,10 @@ export function adjustBars(rawRows: unknown, rawEvents: SplitEvent[]): { bars: B
     }))
     .filter((r) => isDate(r.date) && r.close > 0)
     .sort((a, b) => a.date.localeCompare(b.date));
-  const events = settleSplits(rows, rawEvents);
+  const steps = findSteps(rows, record);
 
   const bars: Bar[] = rows.map((r) => {
-    const k = factorAfter(r.date, events);
+    const k = factorAfter(r.date, steps);
     return { date: r.date, close: r.close / k, total: NaN, high: (r.high || r.close) / k, low: (r.low || r.close) / k, volume: r.volume * k };
   });
   // Dividend adjustment, newest to oldest: take the feed's where it is
@@ -121,16 +141,41 @@ export function adjustBars(rawRows: unknown, rawEvents: SplitEvent[]): { bars: B
     if (Number.isFinite(q) && q >= DIVIDEND_RANGE[0] && q <= DIVIDEND_RANGE[1]) carry = q;
     bars[i].total = bars[i].close * carry;
   }
-  return { bars, events };
+  return { bars, steps, basis: feedBasis(rows, record, steps) };
 }
 
-/** One row from the feed (a long-horizon anchor) on today's basis, dividend-adjusted where the feed's figure is believable. */
-export function adjustOne(raw: any, events: SplitEvent[]): { date: string; close: number; total: number } | null {
+/**
+ * What the feed's closes are on, judged by the splits inside the window:
+ * "raw" if they stepped at (or near) each recorded split, "adjusted" if they
+ * did not, so the feed had already divided the whole history, and "unknown"
+ * when no recorded split falls in the window to judge by. Rows from before the
+ * window (a ten-year anchor) are on the same basis as the rest.
+ */
+export type FeedBasis = "raw" | "adjusted" | "unknown";
+function feedBasis(rows: { date: string }[], record: SplitEvent[], steps: SplitEvent[]): FeedBasis {
+  if (rows.length < 2) return "unknown";
+  const inside = record.filter((ev) => ev.date > rows[0].date && ev.date <= rows[rows.length - 1].date);
+  if (!inside.length) return "unknown";
+  return steps.length === 0 ? "adjusted" : "raw";
+}
+
+/**
+ * One row from the feed far back in time (a ten-year anchor) on today's basis,
+ * dividend-adjusted where the feed's figure is believable. `basis` is what the
+ * rest of the same ticker's closes turned out to be (see adjustBars); when it
+ * is unknown the feed's adjusted close arbitrates: whichever reading of the
+ * close it is consistent with, as a dividend adjustment, wins.
+ */
+export function adjustOne(raw: any, record: SplitEvent[], basis: FeedBasis = "unknown"): { date: string; close: number; total: number } | null {
   const date = String(raw?.date ?? "").slice(0, 10);
   const close = Number(raw?.close ?? 0);
   if (!isDate(date) || !(close > 0)) return null;
-  const split = close / factorAfter(date, events);
-  const q = Number(raw?.adj_close ?? NaN) / split;
-  const ok = Number.isFinite(q) && q >= DIVIDEND_RANGE[0] && q <= DIVIDEND_RANGE[1];
-  return { date, close: split, total: ok ? split * q : split };
+  const adj = Number(raw?.adj_close ?? NaN);
+  const believable = (x: number) => { const q = adj / x; return Number.isFinite(q) && q >= DIVIDEND_RANGE[0] && q <= DIVIDEND_RANGE[1]; };
+  const byRecord = close / factorAfter(date, record);
+  let split: number;
+  if (basis === "adjusted") split = close;
+  else if (basis === "raw") split = byRecord;
+  else split = believable(byRecord) || !believable(close) ? byRecord : close;
+  return { date, close: split, total: believable(split) ? adj : split };
 }

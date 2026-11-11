@@ -56,7 +56,8 @@ export async function GET(
   // record (lib/splits.ts); the feed's adjusted close is only partly adjusted
   // for some recent splits. Valuation multiples take the split-adjusted close,
   // not the dividend-adjusted one: a P/E is the price paid then over earnings.
-  const { bars, events: splits } = adjustBars(Array.isArray(eodRaw?.data) ? eodRaw.data : [], cleanSplits(Array.isArray(splitRaw?.data) ? splitRaw.data : []));
+  const splits = cleanSplits(Array.isArray(splitRaw?.data) ? splitRaw.data : []);
+  const { bars } = adjustBars(Array.isArray(eodRaw?.data) ? eodRaw.data : [], splits);
 
   let series: any;
   try {

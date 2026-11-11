@@ -956,7 +956,34 @@ export function deriveChartSeries(f: Facts, limit = 28, splits: SplitEvent[] = [
   const sharesQ = splitAdjust(dilutedRaw, sharesCover);
   // One-quarter spikes survive both passes: a cover page dated across a split
   // (Alphabet, twice in 2022) or typed in thousands (Chipotle, 2022).
-  const shares = despike(sharesCover.length >= 4 ? sharesCover : sharesQ, validSplits);
+  // Weighted-average counts are tagged for some quarters only (Carvana files
+  // them for Q2 and Q3 as discrete quarters, and the other two inside
+  // year-to-date totals), which left the quarters between with no share count
+  // and so no per-share figure. A count moves slowly, so a missing quarter takes
+  // the line between its neighbours, as long as they are within a year.
+  const fillCounts = (series: Pt[], dates: string[]): Pt[] => {
+    if (series.length < 2) return series;
+    const have = new Map(series.map((p) => [p.date, p]));
+    const sorted = [...series].sort((a, b) => a.date.localeCompare(b.date));
+    const out: Pt[] = [...series];
+    for (const d of dates) {
+      if (have.has(d)) continue;
+      const t = Date.parse(d);
+      const before = [...sorted].reverse().find((p) => p.date < d);
+      const after = sorted.find((p) => p.date > d);
+      const near = (p?: Pt) => p != null && Math.abs(Date.parse(p.date) - t) <= 380 * 864e5;
+      let value: number | null = null;
+      if (near(before) && near(after)) {
+        const a = Date.parse(before!.date), b = Date.parse(after!.date);
+        value = before!.value + ((after!.value - before!.value) * (t - a)) / (b - a);
+      } else if (near(before)) value = before!.value;
+      else if (near(after)) value = after!.value;
+      if (value != null) out.push({ date: d, label: qLabel(d), value });
+    }
+    return out.sort((a, b) => a.date.localeCompare(b.date));
+  };
+  const quarterEnds = netIncome.map((p) => p.date);
+  const shares = despike(sharesCover.length >= 4 ? sharesCover : fillCounts(sharesQ, quarterEnds), validSplits);
   // Per-share figures are as-reported too, on whatever share basis each filing
   // used. See splitAdjust.ts.
   const eps = adjustPerShare(epsQ, netIncome, shares, f.splitAdjusted ? [] : validSplits);

@@ -182,8 +182,9 @@ export async function GET(
   // own adjusted close is only partly adjusted for some recent splits
   // (Carvana's 5-for-1: a cliff at New Year, a one-year return of -78%, a
   // 52-week high of $485 on a $73 stock), so every price here is rebuilt from
-  // the raw closes and the cleaned split record. ──
-  const { bars, events: splitEvents } = adjustBars(rows(eodRes.data), cleanSplits(rows(splitRes.data)));
+  // the closes themselves and the cleaned split record. ──
+  const splitEvents = cleanSplits(rows(splitRes.data));
+  const { bars, basis } = adjustBars(rows(eodRes.data), splitEvents);
   if (bars.length === 0) {
     return NextResponse.json(
       { error: eodRes.err ? `No price data (${eodRes.err})` : "Ticker not found" },
@@ -224,7 +225,7 @@ export async function GET(
       const raw = rows(longAnchorRes[longHorizons.indexOf(y)]?.data)[0];
       // Adjusted for splits first: raw closes across a split make old anchors
       // look 2-10x too expensive (KO's 2011 close is pre-2012-split).
-      const one = adjustOne(raw, splitEvents);
+      const one = adjustOne(raw, splitEvents, basis);
       row = one ? { date: one.date, close: one.total } : null;
     }
     const c = row ? row.close : 0;
@@ -376,7 +377,7 @@ export async function GET(
     .filter((d) => d.date <= today && d.date >= ttmCutoff)
     .reduce((a, d) => a + d.amount, 0);
 
-  // ── Splits: each real split once, newest first, dated as the price stepped ──
+  // ── Splits: each real split once, newest first ──
   const splits = [...splitEvents].sort((x, y) => y.date.localeCompare(x.date));
 
   // ── SEC filings + XBRL fundamentals (already fetched in parallel above).

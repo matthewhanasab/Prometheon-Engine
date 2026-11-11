@@ -87,10 +87,8 @@ export async function GET(
   // ── Price series (ascending) — chart + returns + 52-week stats ──
   // On today's share basis (lib/splits.ts): funds split too, and reverse
   // splits are routine among leveraged ones.
-  const { bars, events: splitEvents } = adjustBars(
-    Array.isArray(eodRaw?.data) ? eodRaw.data : [],
-    cleanSplits(Array.isArray(splitRaw?.data) ? splitRaw.data : []),
-  );
+  const splitEvents = cleanSplits(Array.isArray(splitRaw?.data) ? splitRaw.data : []);
+  const { bars, basis } = adjustBars(Array.isArray(eodRaw?.data) ? eodRaw.data : [], splitEvents);
   const series = bars.map((b) => ({ date: b.date, close: b.close, adj: b.total, high: b.high, low: b.low }));
 
   const last = series[series.length - 1] ?? null;
@@ -123,7 +121,7 @@ export async function GET(
     retOf(anchorFromSeries(anchorFor(1)), 1),
     retOf(anchorFromSeries(anchorFor(3)), 3),
     retOf(anchorFromSeries(anchorFor(5)), 5),
-    (() => { const one = adjustOne(anchor10, splitEvents); return one && one.total > 0 ? retOf({ adj: one.total }, 10) : null; })(),
+    (() => { const one = adjustOne(anchor10, splitEvents, basis); return one && one.total > 0 ? retOf({ adj: one.total }, 10) : null; })(),
   ].filter(Boolean);
 
   const info = Array.isArray(infoRaw?.data) ? infoRaw.data[0] : infoRaw?.data;

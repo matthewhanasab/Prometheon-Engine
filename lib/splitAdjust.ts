@@ -127,7 +127,14 @@ export function adjustPerShare(perShare: Pt[], total: Pt[], shares: Pt[], splits
   // quarters (Coca-Cola tags two, from 2008 and 2009) would otherwise sit at
   // the front of the chart, a decade from their neighbours.
   const since = sparse && total.length ? total[0].date : "";
-  const spine = [...new Set([...perShare.map((p) => p.date), ...(sparse ? total.map((p) => p.date) : [])])]
+  // A filer can also stop tagging quarterly EPS partway through (Carvana's
+  // last quarterly figure is Q1 2024; since then it tags full years only), which
+  // would leave every quarter after that blank and the trailing sums and
+  // multiples built on them with it. Quarters past the last tagged one are
+  // filled from net income over shares too.
+  const lastTagged = perShare.length ? perShare[perShare.length - 1].date : "";
+  const tail = total.filter((p) => p.date > lastTagged).map((p) => p.date);
+  const spine = [...new Set([...perShare.map((p) => p.date), ...(sparse ? total.map((p) => p.date) : tail)])]
     .filter((d) => d >= since)
     .sort();
   const labelAt = new Map([...total, ...perShare].map((p) => [p.date, p.label]));
@@ -139,7 +146,11 @@ export function adjustPerShare(perShare: Pt[], total: Pt[], shares: Pt[], splits
     const ref = implied(date);
     // No reference either: the number can't be placed on any basis, and a
     // wrong figure is worse than a gap.
-    if (ref != null) out.push({ date, label: labelAt.get(date) ?? "", value: ref * scale });
+    // Past the last tagged quarter the figure is plain net income over shares,
+    // the same arithmetic the trailing EPS on the research page falls back to,
+    // so the chart and the page agree. The scale is for gaps between tagged
+    // quarters, where it keeps a rebuilt quarter in line with its neighbours.
+    if (ref != null) out.push({ date, label: labelAt.get(date) ?? "", value: date > lastTagged ? ref : ref * scale });
   }
   return out;
 }
